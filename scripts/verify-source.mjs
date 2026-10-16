@@ -19,7 +19,7 @@ const ids = [
 for (const id of ids) {
   assert(html.includes('id="' + id + '"'), "HTML missing " + id);
 }
-assert(html.includes('type="module" src="auth.js"'), "auth.js must be loaded");
+assert(/type="module"\s+src="auth\.js(?:\?v=[0-9-]+)?"/.test(html), "auth.js must be loaded");
 assert(auth.includes("GoogleAuthProvider"), "Google sign-in missing");
 assert(auth.includes("emailVerified"), "Email must be verified");
 assert(auth.includes("serverTimestamp()"), "Server timestamps missing");
