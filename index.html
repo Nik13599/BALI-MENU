@@ -19,7 +19,7 @@
 <body>
     <div class="bali-preview-banner" role="status">
       ТЕСТОВАЯ ВЕРСИЯ: доступна регистрация через Google после включения домена.
-      Меню и реальные предзаказы пока не принимаются.
+      Каталог подключается к Firestore; реальные предзаказы пока не принимаются.
     </div>
     <!-- Header -->
     <header class="header">
@@ -68,11 +68,7 @@
     <section class="categories">
         <div class="container">
             <div class="category-buttons" id="categoryFilter">
-                <button class="category-btn active" data-category="all">All</button>
-                <button class="category-btn" data-category="appetizer">Appetizers</button>
-                <button class="category-btn" data-category="main">Main Course</button>
-                <button class="category-btn" data-category="dessert">Desserts</button>
-                <button class="category-btn" data-category="drinks">Drinks</button>
+                <button class="category-btn active" data-category="all">Всё меню</button>
             </div>
         </div>
     </section>
@@ -108,7 +104,7 @@
 
         <div class="cart-footer">
             <div class="cart-total">
-                <span>Total:</span>
+                <span>Итого (ориентировочно):</span>
                 <span class="total-amount" id="totalAmount">$0.00</span>
             </div>
             <button class="checkout-btn" id="checkoutBtn">Оформить предзаказ</button>
@@ -129,7 +125,7 @@
         <div class="account-panel">
           <p class="auth-help">Для регистрации войдите через Google. Почтовый адрес подтверждается вашим Google-аккаунтом и используется для последующих входов. Имя и телефон обязательны.</p>
           <p class="auth-status" id="authMessage" role="status" aria-live="polite"></p>
-          <p class="auth-help" id="authBuild">Версия авторизации: 17.10.2026-6</p>
+          <p class="auth-help" id="authBuild">Версия авторизации: 17.10.2026-7</p>
           <div class="auth-actions">
             <button class="auth-btn" type="button" id="authGoogleBtn">Войти через Google</button>
             <button class="auth-outline-btn" type="button" id="authSignOutBtn" hidden>Выйти из аккаунта</button>
@@ -178,21 +174,29 @@
                     <input type="email" id="customerEmail" autocomplete="email" readonly required>
                 </div>
                 <div class="form-group">
-                    <label for="eventDate">Дата мероприятия *</label>
-                    <input type="date" id="eventDate" required>
+                    <label for="eventSelect">Дата мероприятия *</label>
+                    <select id="eventSelect" required>
+                      <option value="">Мероприятия загружаются...</option>
+                    </select>
+                    <input type="hidden" id="eventDate">
                 </div>
                 <div class="form-group">
-                    <label for="tableNumber">Номер столика *</label>
-                    <input type="text" id="tableNumber" maxlength="20" required placeholder="Например, 12">
+                    <label for="tableNumber">Номер столика</label>
+                    <input type="text" id="tableNumber" maxlength="20" placeholder="Например, 12">
+                </div>
+                <div class="form-group">
+                    <label for="bookingId">ID бронирования</label>
+                    <input type="text" id="bookingId" maxlength="60" placeholder="Например, BALI-4826">
+                    <p class="auth-help">Укажи номер столика или ID бронирования. Достаточно одного из двух.</p>
                 </div>
 
                 <div class="form-group">
-                    <label for="orderNotes">Special Instructions (Optional)</label>
-                    <textarea id="orderNotes" rows="2" placeholder="No onions, extra spicy, etc."></textarea>
+                    <label for="orderNotes">Пожелания к заказу (необязательно)</label>
+                    <textarea id="orderNotes" rows="2" placeholder="Например, уточнение по времени подачи"></textarea>
                 </div>
 
                 <div class="order-summary">
-                    <h4>Order Summary</h4>
+                    <h4>Состав предзаказа</h4>
                     <div id="checkoutItems"></div>
                     <div class="summary-total">
                         <span>Total:</span>
@@ -201,7 +205,7 @@
                 </div>
 
                 <button type="submit" class="submit-order-btn">
-                    <span>Place Order</span>
+                    <span>Отправить предзаказ</span>
                     <span class="btn-icon">→</span>
                 </button>
             </form>
@@ -226,9 +230,10 @@
         </div>
     </div>
 
-    <script src="firebase-config.js?v=20261017-6"></script>
+    <script src="firebase-config.js?v=20261017-7"></script>
     <script src="app.js?v=20261017-6"></script>
     <script type="module" src="auth.js?v=20261017-6"></script>
+    <script type="module" src="menu-firestore.js?v=20261017-7"></script>
 </body>
 
 </html>
