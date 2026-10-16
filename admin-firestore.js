@@ -156,25 +156,40 @@ $("eventForm").addEventListener("submit",async (event)=>{
   finally{btn.disabled=false;}
 });
 
-$("adminSignIn").addEventListener("click",async ()=>{
-  try {await signInWithPopup(auth,new GoogleAuthProvider());}
-  catch(e){renderStatus("loginStatus","Ошибка входа: "+(e.code||"unknown"));}
-});
-$("adminSignOut").addEventListener("click",()=>signOut(auth));
-
-onAuthStateChanged(auth,async(user)=>{
+// Диагностика входа: показываем только email и UID текущего вошедшего пользователя.
+function signInStatus(text) {
+  renderStatus("loginStatus",text);
+}
+function showLoginIdentity(user) {
+  $("adminSwitchAccount").hidden = !user;
+  $("loginIdentity").textContent = user ? "Google-аккаунт: " + (user.email || "email недоступен") : "";
+  $("adminUid").textContent = user ? "Ваш Firebase UID: " + user.uid : "";
+}
+async function checkAdminAccess(user) {
   if(unsubMenu){unsubMenu();unsubMenu=null;}
   if(unsubEvents){unsubEvents();unsubEvents=null;}
   authorized=false;
   $("adminView").hidden=true;
   $("loginView").hidden=false;
-  if(!user)return;
-  if(!user.emailVerified){renderStatus("loginStatus","Почта Google не подтверждена.");return;}
-  try{
+  showLoginIdentity(user);
+  if(!user) {
+    signInStatus("Войдите через Google, чтобы проверить права.");
+    return;
+  }
+  if(!user.emailVerified) {
+    signInStatus("Email Google-аккаунта не подтверждён.");
+    return;
+  }
+  signInStatus("Проверяем роль администратора в Firestore...");
+  try {
     const role=await getDoc(doc(db,"admins",user.uid));
-    if(auth.currentUser?.uid!==user.uid)return;
-    if(!role.exists() || role.data().active!==true){
-      renderStatus("loginStatus","Вход выполнен, но прав администратора нет. UID можно найти в Firebase Authentication → Users; владелец должен создать admins/{UID} с active=true в Firestore.");
+    if(auth.currentUser?.uid!==user.uid) return;
+    if(!role.exists()) {
+      signInStatus("Google-вход выполнен, но документ admins/ВАШ_UID не найден. Сравните UID выше с Document ID в Firestore.");
+      return;
+    }
+    if(role.data().active!==true) {
+      signInStatus("Роль найдена, но поле active должно иметь тип boolean и значение true.");
       return;
     }
     authorized=true;
@@ -185,10 +200,45 @@ onAuthStateChanged(auth,async(user)=>{
       menu.clear();
       for(const d of snap.docs){const x=d.data();if(typeof x.name==="string"&&Number.isFinite(x.price))menu.set(d.id,x);}
       menuRender();
-    },e=>renderStatus("menuStatus","Чтение меню: "+(e.code||"unknown")));
+    },error=>renderStatus("menuStatus","Не удалось прочитать каталог: "+(error.code||"unknown")));
     unsubEvents=onSnapshot(collection(db,"events"),snap=>{
-      events.clear();for(const d of snap.docs)events.set(d.id,d.data());
+      events.clear();
+      for(const d of snap.docs)events.set(d.id,d.data());
       eventRender();
-    },e=>renderStatus("eventStatus","Чтение мероприятий: "+(e.code||"unknown")));
-  }catch(e){renderStatus("loginStatus","Нет доступа к роли администратора: "+(e.code||"unknown"));}
+    },error=>renderStatus("eventStatus","Не удалось прочитать мероприятия: "+(error.code||"unknown")));
+  } catch(error) {
+    if(auth.currentUser?.uid!==user.uid) return;
+    const code=String(error.code||"unknown");
+    const explanation=code==="permission-denied"
+      ? "Нет права читать свою роль admins/{UID}. Откройте Firestore → Rules и опубликуйте последнюю версию firestore.rules из GitHub."
+      : "Ошибка проверки роли Firebase: "+code+".";
+    signInStatus(explanation+" [код: "+code+"]");
+  }
+}
+
+$("adminSignIn").addEventListener("click",async ()=>{
+  $("adminSignIn").disabled=true;
+  signInStatus("Открывается окно Google...");
+  try {
+    const result=await signInWithPopup(auth,new GoogleAuthProvider());
+    await checkAdminAccess(result.user);
+  } catch(error) {
+    signInStatus("Не удалось войти через Google [код: "+(error.code||"unknown")+"]");
+  } finally {
+    $("adminSignIn").disabled=false;
+  }
+});
+$("adminSwitchAccount").addEventListener("click",async()=>{
+  try {
+    await signOut(auth);
+    signInStatus("Вы вышли. Нажмите «Войти через Google», чтобы выбрать нужный аккаунт.");
+  } catch(error) {
+    signInStatus("Ошибка выхода [код: "+(error.code||"unknown")+"]");
+  }
+});
+$("adminSignOut").addEventListener("click",()=>signOut(auth));
+onAuthStateChanged(auth,(user)=>{
+  void checkAdminAccess(user);
+},(error)=>{
+  signInStatus("Ошибка Firebase Authentication [код: "+(error.code||"unknown")+"]");
 });
