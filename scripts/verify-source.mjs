@@ -44,4 +44,18 @@ assert(cfg.authDomain === cfg.projectId + ".firebaseapp.com", "Firebase auth dom
 assert(!Object.values(cfg).some(v => typeof v === "string" && v.startsWith("REPLACE_WITH_")), "Firebase placeholders remain");
 assert(firebaseJson.firestore.rules === "firestore.rules", "Missing Firestore rules path");
 assert(firebaseJson.hosting.public === ".", "Unexpected Firebase Hosting public directory");
+const admin = source("admin.html");
+const menuClient = source("menu-firestore.js");
+const adminClient = source("admin-firestore.js");
+assert(html.includes('id="eventSelect"'), "Preorder event selection missing");
+assert(html.includes('id="bookingId"'), "Booking ID input missing");
+assert(html.includes('id="tableNumber"'), "Table number input missing");
+assert(html.includes('menu-firestore.js?v='), "Firestore public catalog module missing");
+assert(admin.includes('admin-firestore.js?v='), "Secure admin module missing");
+assert(!admin.includes('id="adminPassword"'), "Legacy admin password form must be removed");
+assert(menuClient.includes('collection(db, "menu")') && menuClient.includes('collection(db, "events")'), "Catalog must read Firestore menu and events");
+assert(adminClient.includes('doc(db,"admins",user.uid)') && adminClient.includes('role.data().active!==true'), "Admin role check missing");
+assert(rules.includes('match /menu/{itemId}') && rules.includes('match /events/{eventId}'), "Firestore catalog rules missing");
+assert(rules.includes('allow create, update: if isAdmin()'), "Catalog writes must require admin role");
+assert((rules.match(/match \/\{document=\*\*\}/g) || []).length === 1, "Unexpected catch-all rules or corrupted rules");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs + security checks.");
