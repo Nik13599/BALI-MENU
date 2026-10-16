@@ -29,6 +29,16 @@
       <button type="button" id="adminSignOut">Выйти</button>
     </div>
     <div class="notice">В этой версии можно управлять каталогом и мероприятиями. Реальные предзаказы пока отключены до настройки защищённого хранения заказов.</div>
+    <section class="card">
+      <h2>Импорт меню BALI с фотографии</h2>
+      <p class="hint">Подготовлены 18 позиций из пяти разделов исходного меню. Цены указаны в BYN. Сначала проверьте список ниже, затем нажмите «Добавить отсутствующие позиции».</p>
+      <div id="seedPreview" class="seed-preview" aria-live="polite"></div>
+      <div class="actions">
+        <button type="button" class="primary" id="seedImportBtn">Добавить отсутствующие позиции</button>
+        <span class="hint">Существующие товары не перезаписываются.</span>
+      </div>
+      <p id="seedImportStatus" class="status" role="status" aria-live="polite"></p>
+    </section>
     <div class="columns">
       <section class="card">
         <h2>Добавить или изменить товар</h2>
@@ -73,6 +83,6 @@
   </section>
 </main>
 <script src="firebase-config.js?v=20261017-8"></script>
-<script type="module" src="admin-firestore.js?v=20261017-8"></script>
+<script type="module" src="admin-firestore.js?v=20261017-9"></script>
 </body>
 </html>
