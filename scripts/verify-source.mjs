@@ -1,0 +1,37 @@
+import { readFileSync } from "node:fs";
+import assert from "node:assert/strict";
+
+const source = (name) => readFileSync(name, "utf8");
+const html = source("index.html");
+const auth = source("auth.js");
+const app = source("app.js");
+const rules = source("firestore.rules");
+const backend = source("Code.gs");
+const config = source("firebase-config.js");
+const firebaseJson = JSON.parse(source("firebase.json"));
+
+const ids = [
+  "accountBtn", "authModal", "closeAuth", "authGoogleBtn",
+  "authProfileForm", "authName", "authPhone", "authEmail",
+  "authMessage", "authSignOutBtn", "customerName",
+  "customerPhone", "customerEmail", "eventDate", "tableNumber"
+];
+for (const id of ids) {
+  assert(html.includes('id="' + id + '"'), "HTML missing " + id);
+}
+assert(html.includes('type="module" src="auth.js"'), "auth.js must be loaded");
+assert(auth.includes("GoogleAuthProvider"), "Google sign-in missing");
+assert(auth.includes("emailVerified"), "Email must be verified");
+assert(auth.includes("serverTimestamp()"), "Server timestamps missing");
+assert(auth.includes('doc(database, "users", user.uid)'), "User profile persistence missing");
+assert(app.includes("BaliAuth.requireProfile()"), "Checkout must require profile");
+assert(app.includes("BaliAuth.getIdToken()"), "Checkout must obtain ID token");
+assert(rules.includes("request.auth.uid == uid"), "Rules need UID ownership");
+assert(rules.includes("data.email == request.auth.token.email"), "Rules must pin email");
+assert(rules.includes("allow read, write: if false"), "Default deny required");
+assert(backend.includes("function verifyAdminToken(token) { return false; }"), "Legacy admin auth must be disabled");
+assert(backend.includes("Google authentication is not yet configured"), "Legacy order endpoint must remain disabled");
+assert(config.includes("REPLACE_WITH_FIREBASE_"), "Repo must not embed a live project config yet");
+assert(firebaseJson.firestore.rules === "firestore.rules", "Missing Firestore rules path");
+assert(firebaseJson.hosting.public === ".", "Unexpected Firebase Hosting public directory");
+console.log("BALI source checks passed: " + ids.length + " required UI IDs + security checks.");
