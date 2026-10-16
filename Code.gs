@@ -30,77 +30,7 @@ function getSpreadsheet() {
 // ============================================
 
 function setupDatabase() {
-  const ss = getSpreadsheet();
-  
-  // 1. Config Sheet
-  let configSheet = ss.getSheetByName(SHEETS.CONFIG);
-  if (!configSheet) configSheet = ss.insertSheet(SHEETS.CONFIG);
-  configSheet.clear();
-  configSheet.appendRow(['Key', 'Value', 'Description']);
-  configSheet.appendRow(['restaurant_name', 'BALI', 'Name of the restaurant']);
-  configSheet.appendRow(['admin_password', 'NOT_CONFIGURED', 'Admin panel password']);
-  configSheet.appendRow(['contact_phone', 'PHONE_NOT_CONFIGURED', 'Contact Phone']);
-  configSheet.appendRow(['contact_email', 'EMAIL_NOT_CONFIGURED', 'Contact Email']);
-  configSheet.appendRow(['currency_symbol', 'BYN', 'Currency Symbol']);
-  
-  // 2. Menu Sheet
-   let menuSheet = ss.getSheetByName(SHEETS.MENU);
-  if (!menuSheet) menuSheet = ss.insertSheet(SHEETS.MENU);
-  menuSheet.clear();
-  menuSheet.appendRow(['ID', 'Name', 'Description', 'Price', 'Category', 'Image URL', 'Available']);
-  // Add sample items
-  menuSheet.appendRow([1, 'Margherita Pizza', 'Classic tomato and mozzarella', 12000, 'Pizza', 'https://via.placeholder.com/400x200?text=Margherita', true]);
-  menuSheet.appendRow([2, 'Cheeseburger', 'Juicy beef patty with cheese', 10000, 'Burgers', 'https://via.placeholder.com/400x200?text=Burger', true]);
-  menuSheet.appendRow([3, 'Caesar Salad', 'Fresh romaine with caesar dressing', 8000, 'Salads', 'https://via.placeholder.com/400x200?text=Salad', true]);
-
-  // 3. Orders Sheet
-  let ordersSheet = ss.getSheetByName(SHEETS.ORDERS);
-  if (!ordersSheet) ordersSheet = ss.insertSheet(SHEETS.ORDERS);
-  ordersSheet.clear();
-  ordersSheet.appendRow(['Order ID', 'Date', 'Customer Name', 'Phone', 'Address', 'Items JSON', 'Total', 'Status', 'Notes']);
-
-  // 4. OrderItems Sheet
-  let orderItemsSheet = ss.getSheetByName(SHEETS.ORDER_ITEMS);
-  if (!orderItemsSheet) orderItemsSheet = ss.insertSheet(SHEETS.ORDER_ITEMS);
-  orderItemsSheet.clear();
-  orderItemsSheet.appendRow(['Order ID', 'Item ID', 'Name', 'Quantity', 'Price']);
-  
-  return 'Database setup complete! URL: ' + ss.getUrl();
-}
-
-function resetAdminPassword() {
-  const ss = getSpreadsheet();
-  const configSheet = ss.getSheetByName(SHEETS.CONFIG);
-  const data = configSheet.getDataRange().getValues();
-  
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0] === 'admin_password') {
-      configSheet.getRange(i + 1, 2).setValue('NOT_CONFIGURED');
-      return 'Password has been reset to: NOT_CONFIGURED';
-    }
-  }
-  return 'Could not find password field!';
-}
-
-function updateRestaurantConfig() {
-   const ss = getSpreadsheet();
-   const configSheet = ss.getSheetByName(SHEETS.CONFIG);
-   const data = configSheet.getDataRange().getValues();
-   
-   const updates = {
-     'restaurant_name': 'BALI',
-     'contact_phone': 'PHONE_NOT_CONFIGURED',
-     'contact_email': 'EMAIL_NOT_CONFIGURED',
-     'currency_symbol': 'BYN'
-   };
-   
-   for (let i = 1; i < data.length; i++) {
-     const key = data[i][0];
-     if (updates.hasOwnProperty(key)) {
-       configSheet.getRange(i + 1, 2).setValue(updates[key]);
-     }
-   }
-   return 'Restaurant details updated!';
+  throw new Error('Старый setupDatabase отключён: он очищал листы и добавлял тестовые заказы. Настройте безопасный сервер по AUTH_SETUP.md.');
 }
 
 // ============================================
@@ -126,12 +56,7 @@ function doGet(e) {
         response = getMenuItems();
         break;
       case 'order':
-        const orderId = e.parameter.id;
-        if (!orderId) {
-          response = { success: false, error: 'Order ID required' };
-        } else {
-          response = getOrderById(orderId);
-        }
+        response = { success: false, error: 'Просмотр чужого заказа по номеру без авторизации отключён' };
         break;
       case 'orders':
         // Admin only - verify token
