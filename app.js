@@ -11,6 +11,18 @@ const CONFIG = {
 let menuItems = [];
 let cart = [];
 let currentCategory = 'all';
+function escapeHTML(value) {
+    return String(value ?? '').replace(/[&<>"']/g, c =>
+        ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function safeImageUrl(value) {
+    try {
+        const u = new URL(String(value ?? ''));
+        if (u.protocol === 'https:' || u.protocol === 'http:') return escapeHTML(u.href);
+    } catch (_) { /* fallback */ }
+    return 'https://placehold.co/400x200?text=BALI';
+}
+
 
 // DOM Elements
 const elements = {
@@ -176,28 +188,24 @@ function displayMenuItems(items) {
 
 function createMenuItemHTML(item) {
     const unavailable = !item.available;
-
+    const id = Number(item.id);
+    const price = Number(item.price) || 0;
+    if (!Number.isSafeInteger(id) || id < 0 || price < 0) return '';
     return `
-        <div class="menu-item ${unavailable ? 'unavailable' : ''}" data-id="${item.id}">
-            <img 
-                src="${item.image_url || 'https://via.placeholder.com/400x200?text=No+Image'}" 
-                alt="${item.name}" 
-                class="menu-item-image"
-            >
+        <div class="menu-item ${unavailable ? 'unavailable' : ''}" data-id="${id}">
+            <img src="${safeImageUrl(item.image_url)}"
+                alt="${escapeHTML(item.name)}" class="menu-item-image">
             <div class="menu-item-content">
-                <span class="menu-item-category">${item.category}</span>
+                <span class="menu-item-category">${escapeHTML(item.category)}</span>
                 <div class="menu-item-header">
-                    <h3 class="menu-item-name">${item.name}</h3>
-                    <span class="menu-item-price">${CONFIG.CURRENCY_SYMBOL}${item.price.toFixed(2)}</span>
+                    <h3 class="menu-item-name">${escapeHTML(item.name)}</h3>
+                    <span class="menu-item-price">${CONFIG.CURRENCY_SYMBOL} ${price.toFixed(2)}</span>
                 </div>
-                <p class="menu-item-description">${item.description}</p>
+                <p class="menu-item-description">${escapeHTML(item.description)}</p>
                 ${unavailable
-            ? '<span class="unavailable-badge">Currently Unavailable</span>'
-            : `<button class="add-to-cart-btn" data-id="${item.id}">
-                        <span>Add to Cart</span>
-                        <span>+</span>
-                    </button>`
-        }
+                    ? '<span class="unavailable-badge">Недоступно</span>'
+                    : `<button class="add-to-cart-btn" data-id="${id}">В корзину +</button>`
+                }
             </div>
         </div>
     `;
@@ -324,7 +332,7 @@ function createCartItemHTML(item) {
     return `
         <div class="cart-item" data-id="${item.id}">
             <div class="cart-item-header">
-                <span class="cart-item-name">${item.name}</span>
+                <span class="cart-item-name">${escapeHTML(item.name)}</span>
                 <button class="remove-item" data-id="${item.id}">✕</button>
             </div>
             <div class="cart-item-details">
@@ -373,11 +381,24 @@ function saveCart() {
 }
 
 function loadCart() {
-    const saved = localStorage.getItem('foodhub_cart');
-    if (saved) {
-        cart = JSON.parse(saved);
-        updateCartUI();
+    try {
+        const parsed = JSON.parse(localStorage.getItem('foodhub_cart') || '[]');
+        cart = Array.isArray(parsed) ? parsed.slice(0, 100).filter(item =>
+            Number.isSafeInteger(Number(item.id)) &&
+            Number.isFinite(Number(item.price)) &&
+            Number(item.price) >= 0 &&
+            Number.isInteger(Number(item.quantity)) &&
+            Number(item.quantity) >= 1 && Number(item.quantity) <= 99
+        ).map(item => ({
+            id: Number(item.id),
+            name: String(item.name ?? '').slice(0, 150),
+            price: Number(item.price),
+            quantity: Number(item.quantity)
+        })) : [];
+    } catch (error) {
+        cart = [];
     }
+    updateCartUI();
 }
 
 function clearCart() {
@@ -425,7 +446,7 @@ async function openCheckout() {
     elements.checkoutItems.innerHTML = cart
         .map(item => `
             <div class="summary-item">
-                <span>${item.name} × ${item.quantity}</span>
+                <span>${escapeHTML(item.name)} × ${item.quantity}</span>
                 <span>${CONFIG.CURRENCY_SYMBOL}${(item.price * item.quantity).toFixed(2)}</span>
             </div>
         `)
