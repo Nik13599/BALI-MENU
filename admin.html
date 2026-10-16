@@ -17,7 +17,11 @@
     <h1>Администратор BALI</h1>
     <p>Войдите через Google. Доступ предоставляется только сотрудникам с правами администратора, назначенными в Firestore.</p>
     <button type="button" id="adminSignIn" class="primary">Войти через Google</button>
+    <button type="button" id="adminSwitchAccount" hidden>Выйти и выбрать другой аккаунт</button>
+    <p id="loginIdentity" class="hint" role="status"></p>
+    <p id="adminUid" class="hint"></p>
     <p id="loginStatus" class="status" role="status" aria-live="polite"></p>
+    <p class="hint">Версия админ-панели: 17.10.2026-8</p>
   </section>
   <section id="adminView" hidden>
     <div class="heading">
@@ -68,7 +72,7 @@
     </div>
   </section>
 </main>
-<script src="firebase-config.js?v=20261017-7"></script>
-<script type="module" src="admin-firestore.js?v=20261017-7"></script>
+<script src="firebase-config.js?v=20261017-8"></script>
+<script type="module" src="admin-firestore.js?v=20261017-8"></script>
 </body>
 </html>
