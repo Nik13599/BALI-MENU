@@ -38,13 +38,18 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Администратор назначается ТОЛЬКО через Firebase Console / Admin SDK.
-    // Клиенты не могут создать себе админские права.
+    // Служебная роль назначается вручную в Firebase Console.
+    // Клиент не может назначить себе права администратора.
     function isAdmin() {
       return request.auth != null
         && request.auth.token.email_verified == true
         && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
         && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true;
+    }
+
+    match /admins/{uid} {
+      allow get: if signedInAs(uid);
+      allow list, create, update, delete: if false;
     }
 
     function validMenu(data) {
@@ -56,27 +61,17 @@ service cloud.firestore {
         && data.description is string && data.description.size() <= 800
         && data.price is number && data.price >= 0 && data.price <= 20000
         && data.image_url is string && data.image_url.size() <= 1000
-        && (data.image_url == '' || data.image_url.matches('^https://[^ ]+
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
-))
+        && (data.image_url == '' || data.image_url.matches('^https://[^ ]+$'))
         && data.available is bool
         && data.sort is int && data.sort >= 0 && data.sort <= 100000
         && data.updatedAt == request.time;
     }
 
-    match /admins/{uid} {
-      allow get: if signedInAs(uid);
-      allow list, create, update, delete: if false;
-    }
-
-    // Каталог публичный, так как содержит только информацию о блюдах и ценах.
     match /menu/{itemId} {
       allow read: if true;
-      allow create, update: if isAdmin() && validMenu(request.resource.data);
+      allow create, update: if isAdmin()
+        && validMenu(request.resource.data)
+        && itemId == request.resource.data.id.toString();
       allow delete: if isAdmin();
     }
 
@@ -84,23 +79,12 @@ service cloud.firestore {
       return data.keys().hasAll(['date','title','preorderEnabled','cutoff','updatedAt'])
         && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','updatedAt'])
         && data.date == eventId
-        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
-)
+        && data.date is string
+        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
         && data.preorderEnabled is bool
         && data.cutoff is string
-        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
-))
+        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
         && data.updatedAt == request.time;
     }
 
