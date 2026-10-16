@@ -23,6 +23,7 @@ const els = {
   phone: $("authPhone"),
   email: $("authEmail"),
   status: $("authMessage"),
+  saveStatus: $("authSaveMessage"),
   signOut: $("authSignOutBtn"),
   overlay: $("overlay")
 };
@@ -48,6 +49,12 @@ const ready = new Promise((resolve) => {
 function message(text, isError = false) {
   els.status.textContent = text;
   els.status.classList.toggle("error", isError);
+}
+
+function saveMessage(text, isError = false) {
+  if (!els.saveStatus) return;
+  els.saveStatus.textContent = text;
+  els.saveStatus.classList.toggle("error", isError);
 }
 
 function normalizePhone(raw) {
@@ -79,6 +86,7 @@ function render() {
 }
 
 function show() {
+  saveMessage("");
   render();
   els.dialog.classList.add("active");
   els.dialog.setAttribute("aria-hidden", "false");
@@ -168,22 +176,25 @@ els.form.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!auth?.currentUser || !database || !user ||
       auth.currentUser.uid !== user.uid || !user.emailVerified || !user.email) {
-    message("Сначала войдите с подтверждённой электронной почтой.", true);
+    const info = "Сначала войдите с подтверждённой электронной почтой.";
+    message(info, true);
+    saveMessage(info, true);
     return;
   }
   const name = els.name.value.trim().replace(/\s+/g, " ");
   const phone = normalizePhone(els.phone.value);
   if (name.length < 2 || name.length > 100) {
-    message("Введите имя от 2 до 100 символов.", true); return;
+    saveMessage("Введите имя от 2 до 100 символов.", true); return;
   }
   if (!/^\+[1-9]\d{7,14}$/.test(phone)) {
-    message("Укажите телефон в международном формате, например +375291234567.", true);
+    saveMessage("Укажите телефон в международном формате, например +375291234567.", true);
     return;
   }
 
   const submit = els.form.querySelector('button[type="submit"]');
   submit.disabled = true;
-  message("Сохраняем профиль...");
+  submit.textContent = "Сохраняем...";
+  saveMessage("Сохраняем профиль...");
   try {
     const ref = doc(database, "users", user.uid);
     const existing = await getDoc(ref);
@@ -198,13 +209,20 @@ els.form.addEventListener("submit", async (event) => {
         updatedAt: serverTimestamp()
       });
     }
+    // Закрываем форму только после подтверждённой Firestore записи.
+    if (auth.currentUser?.uid !== user.uid) return;
     profile = { uid: user.uid, email: user.email, name, phone };
     render();
-    message("Профиль сохранён. Теперь можно оформлять предзаказ.");
+    message("Профиль успешно сохранён.");
+    hide();
+    els.button.focus();
   } catch (error) {
-    message(friendlyError(error), true);
+    const info = friendlyError(error);
+    message(info, true);
+    saveMessage(info, true);
   } finally {
     submit.disabled = false;
+    submit.textContent = "Сохранить профиль";
   }
 });
 
