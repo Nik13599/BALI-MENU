@@ -7,6 +7,7 @@
     <title>BALI MENU — Предзаказы</title>
     <meta name="description"
         content="BALI — меню и предварительные заказы к вашему столику.">
+    <meta name="robots" content="noindex, nofollow">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="auth.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,6 +17,10 @@
 </head>
 
 <body>
+    <div class="bali-preview-banner" role="status">
+      ТЕСТОВАЯ ВЕРСИЯ: доступна регистрация через Google после включения домена.
+      Меню и реальные предзаказы пока не принимаются.
+    </div>
     <!-- Header -->
     <header class="header">
         <div class="container header-content">
@@ -25,7 +30,7 @@
             </div>
             <nav class="nav">
                 <a href="index.html" class="nav-link active">Меню</a>
-                <a href="track.html" class="nav-link">Мой заказ</a>
+                <span class="nav-link" title="Отслеживание заказов пока не подключено">Мои заказы (скоро)</span>
                 <button type="button" class="account-btn" id="accountBtn">Войти / Регистрация</button>
                 <button class="cart-btn" id="cartBtn">
                     <span class="cart-icon">🛒</span>
@@ -80,7 +85,7 @@
                 <!-- Loading state -->
                 <div class="loading-state">
                     <div class="spinner"></div>
-                    <p>Loading menu...</p>
+                    <p>Меню готовится к публикации...</p>
                 </div>
             </div>
         </div>
@@ -205,7 +210,7 @@
     <div class="modal" id="successModal">
         <div class="modal-content success-content">
             <div class="success-icon">✓</div>
-            <h3>Order Placed Successfully!</h3>
+            <h3>Предзаказ отправлен</h3>
             <p>Your order has been received and is being prepared.</p>
             <div class="order-id-box">
                 <span>Order ID:</span>
