@@ -1,0 +1,18 @@
+:root{font-family:Inter,system-ui,Arial,sans-serif;background:#0d1229;color:#f5f5fb;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0}.topbar{display:flex;justify-content:space-between;align-items:center;padding:18px max(24px,calc((100vw - 1180px)/2));border-bottom:1px solid #353b55;background:#191f3c}
+.brand{font-size:22px;letter-spacing:.05em}.brand span{color:#d9bb7c}.topbar small{display:block;color:#bbc0cf;font-size:12px;padding-top:6px}
+a{color:#e5c383;text-decoration:none}.layout{max-width:1180px;margin:32px auto;padding:0 18px}.heading,.actions{display:flex;gap:12px;align-items:center;justify-content:space-between}
+h1{font-size:25px}h2{font-size:20px;margin:0 0 20px}.heading p{color:#acb6ca;font-size:13px}
+.card{background:#1b213b;border:1px solid #353e60;padding:25px;border-radius:18px;margin-bottom:22px}
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:18px}.columns .card{min-width:0}
+.notice{padding:14px 18px;background:#332f25;border:1px solid #7b6744;border-radius:12px;margin-bottom:22px;color:#f1d59c}
+label{display:block;color:#d5daea;font-size:14px;margin-bottom:15px;font-weight:550}input,textarea{display:block;width:100%;margin-top:8px;background:#262d4e;border:1px solid #505c7b;border-radius:9px;padding:12px;color:#fff;font:inherit;font-size:15px}
+textarea{min-height:75px;resize:vertical}.double{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.check{display:flex;gap:10px;align-items:center}.check input{width:auto;margin:0}
+button{padding:11px 17px;border:1px solid #60708f;background:transparent;color:#f7f7ff;border-radius:10px;cursor:pointer;font:inherit}
+button.primary{background:#d8bb83;border:0;color:#171b28;font-weight:700}button:disabled{opacity:.6;cursor:wait}
+.hint{color:#aeb5c9;font-size:13px}.status,#menuStatus,#eventStatus{color:#efcfa0;font-size:14px;overflow-wrap:anywhere}
+.scroll-list{max-height:530px;overflow:auto}.entry{border-bottom:1px solid #37405b;padding:14px 0;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.entry small{display:block;margin-top:5px;color:#b0bad0}.entry button{font-size:13px;padding:8px 12px}.row-actions{display:flex;gap:6px;flex-wrap:wrap}
+.entry strong{font-size:14px}.entry .disabled{color:#ffbfa6}
+@media(max-width:760px){.columns{grid-template-columns:1fr}.topbar{padding:18px}.layout{padding:0 12px}.card{padding:17px}.double{grid-template-columns:1fr}}
