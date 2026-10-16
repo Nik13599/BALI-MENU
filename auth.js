@@ -105,15 +105,27 @@ function hide() {
 }
 
 function friendlyError(error) {
+  const code = String(error?.code || "unknown-error");
   const errors = {
-    "auth/popup-closed-by-user": "Вход отменён.",
-    "auth/cancelled-popup-request": "Повторный вход отменён.",
+    "auth/invalid-api-key": "Некорректный Firebase API-ключ. Проверьте настройки приложения.",
+    "auth/app-not-authorized": "Этот сайт не разрешён для Firebase API-ключа.",
     "auth/unauthorized-domain": "Домен сайта не разрешён в Firebase Authentication.",
+    "auth/configuration-not-found": "Для проекта не найдены настройки Firebase Authentication.",
+    "auth/operation-not-allowed": "В Firebase не включён вход через Google.",
+    "auth/network-request-failed": "Не удалось связаться с Firebase. Проверьте соединение, VPN или блокировку запросов.",
+    "auth/internal-error": "Ошибка Google-входа. Проверьте конфигурацию и повторите.",
+    "auth/invalid-app-credential": "Ошибка настроек авторизации Firebase.",
+    "auth/invalid-credential": "Не удалось проверить учётные данные Google.",
+    "auth/web-storage-unsupported": "Браузер блокирует хранилище, необходимое для входа.",
+    "auth/popup-blocked": "Браузер заблокировал окно Google. Разрешите всплывающие окна.",
+    "auth/popup-closed-by-user": "Окно входа было закрыто.",
+    "auth/cancelled-popup-request": "Повторный вход отменён.",
     "auth/account-exists-with-different-credential": "Почта уже связана с другим способом входа.",
-    "permission-denied": "Сохранение запрещено. Проверьте правила Firestore.",
-    "unavailable": "Сервис временно недоступен. Повторите позже."
+    "permission-denied": "Нет доступа к Firestore. Проверьте опубликованные правила доступа.",
+    "unavailable": "Сервис Firestore временно недоступен."
   };
-  return errors[error?.code] || "Не удалось выполнить действие. Проверьте подключение Firebase и повторите.";
+  // Выводим только код ошибки, но не технические детали, токены или email.
+  return (errors[code] || "Не удалось выполнить действие в Firebase.") + " [код: " + code + "]";
 }
 
 els.button.addEventListener("click", show);
@@ -138,8 +150,13 @@ els.google.addEventListener("click", async () => {
   } catch (error) {
     if (error.code === "auth/popup-blocked" ||
         error.code === "auth/operation-not-supported-in-this-environment") {
-      await signInWithRedirect(auth, new GoogleAuthProvider());
-      return;
+      try {
+        await signInWithRedirect(auth, new GoogleAuthProvider());
+        return;
+      } catch (redirectError) {
+        message(friendlyError(redirectError), true);
+        return;
+      }
     }
     message(friendlyError(error), true);
   } finally {
@@ -223,8 +240,8 @@ async function handleUser(authUser) {
       profile = validProfile(candidate, user) ? candidate : null;
       if (!profile) show();
     } catch (error) {
-      message(friendlyError(error), true);
       show();
+      message(friendlyError(error), true);
     }
   }
   render();
