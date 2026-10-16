@@ -1,0 +1,18 @@
+/* BALI: авторизация гостя и редактирование профиля */
+.account-btn, .auth-btn {
+  cursor: pointer; background: linear-gradient(135deg,#9a7746,#d9b979);
+  border: 0; border-radius: 12px; color: #10131d; font-weight: 700;
+  padding: .75rem 1rem; font: inherit;
+}
+.account-btn { max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .9rem; }
+.account-panel { padding: 1.5rem; display: grid; gap: 1rem; }
+.account-panel .form-group { display: grid; gap: .5rem; }
+.account-panel input { width:100%; padding: .85rem; border-radius: 10px; background: #252b4a; border: 1px solid #4c536d; color: #fff; font: inherit; }
+.account-panel input[readonly], .checkout-form input[readonly] { opacity: .85; cursor: not-allowed; }
+.auth-status { color: #e2c491; font-size: .92rem; min-height: 1.5em; }
+.auth-status.error { color: #ffaaaa; }
+.auth-help { color: #b5bfd0; line-height: 1.5; font-size: .87rem; }
+.auth-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+.auth-outline-btn { background: transparent; border: 1px solid #616b83; padding: .7rem 1rem; border-radius: 10px; color: white; cursor: pointer; }
+.auth-outline-btn[hidden], [hidden] { display: none !important; }
+@media (max-width: 600px) { .account-btn { padding: .5rem .65rem; max-width: 110px; } .nav { gap: .6rem; } }
