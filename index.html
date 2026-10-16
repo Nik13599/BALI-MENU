@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BALI MENU - Order Food Online</title>
+    <meta name="description"
+        content="Order delicious food online with fast delivery. Browse our menu and track your order in real-time.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <div class="logo">
+                <span class="logo-icon">🍕</span>
+                <span class="logo-text">BALI MENU</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link active">Menu</a>
+                <a href="track.html" class="nav-link">Track Order</a>
+                <button class="cart-btn" id="cartBtn">
+                    <span class="cart-icon">🛒</span>
+                    <span class="cart-count" id="cartCount">0</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Delicious Food, <span class="gradient-text">Delivered Fast</span></h1>
+                <p class="hero-subtitle">Order your favorite meals and track them in real-time</p>
+                <div class="hero-features">
+                    <div class="feature">
+                        <span class="feature-icon">⚡</span>
+                        <span>Fast Delivery</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">📍</span>
+                        <span>Real-time Tracking</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">⭐</span>
+                        <span>Quality Food</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Category Filter -->
+    <section class="categories">
+        <div class="container">
+            <div class="category-buttons" id="categoryFilter">
+                <button class="category-btn active" data-category="all">All</button>
+                <button class="category-btn" data-category="appetizer">Appetizers</button>
+                <button class="category-btn" data-category="main">Main Course</button>
+                <button class="category-btn" data-category="dessert">Desserts</button>
+                <button class="category-btn" data-category="drinks">Drinks</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Menu Items -->
+    <section class="menu-section">
+        <div class="container">
+            <h2 class="section-title">Our Menu</h2>
+            <div class="menu-grid" id="menuGrid">
+                <!-- Loading state -->
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Loading menu...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Shopping Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>Your Cart</h3>
+            <button class="close-cart" id="closeCart">✕</button>
+        </div>
+
+        <div class="cart-items" id="cartItems">
+            <div class="empty-cart">
+                <span class="empty-icon">🛒</span>
+                <p>Your cart is empty</p>
+                <p class="empty-subtitle">Add items from the menu</p>
+            </div>
+        </div>
+
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span class="total-amount" id="totalAmount">$0.00</span>
+            </div>
+            <button class="checkout-btn" id="checkoutBtn">Checkout</button>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Checkout Modal -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Complete Your Order</h3>
+                <button class="close-modal" id="closeCheckout">✕</button>
+            </div>
+
+            <form class="checkout-form" id="checkoutForm">
+                <div class="form-group">
+                    <label for="customerName">Full Name *</label>
+                    <input type="text" id="customerName" required placeholder="John Doe">
+                </div>
+
+                <div class="form-group">
+                    <label for="customerPhone">Phone Number *</label>
+                    <input type="tel" id="customerPhone" required placeholder="+1 (555) 123-4567">
+                </div>
+
+                <div class="form-group">
+                    <label for="deliveryAddress">Delivery Address *</label>
+                    <div class="location-input-group">
+                        <textarea id="deliveryAddress" required rows="3"
+                            placeholder="123 Main Street, Apt 4B, City, State, ZIP"></textarea>
+                        <button type="button" id="shareLocationBtn" class="location-btn"
+                            title="Share my current location">
+                            📍 Pin Location
+                        </button>
+                    </div>
+                    <input type="hidden" id="latitude">
+                    <input type="hidden" id="longitude">
+                </div>
+
+                <div class="form-group">
+                    <label for="orderNotes">Special Instructions (Optional)</label>
+                    <textarea id="orderNotes" rows="2" placeholder="No onions, extra spicy, etc."></textarea>
+                </div>
+
+                <div class="order-summary">
+                    <h4>Order Summary</h4>
+                    <div id="checkoutItems"></div>
+                    <div class="summary-total">
+                        <span>Total:</span>
+                        <span id="checkoutTotal">$0.00</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-order-btn">
+                    <span>Place Order</span>
+                    <span class="btn-icon">→</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="successModal">
+        <div class="modal-content success-content">
+            <div class="success-icon">✓</div>
+            <h3>Order Placed Successfully!</h3>
+            <p>Your order has been received and is being prepared.</p>
+            <div class="order-id-box">
+                <span>Order ID:</span>
+                <strong id="displayOrderId">ORD123456</strong>
+            </div>
+            <p class="success-note">Save this ID to track your order</p>
+            <div class="success-actions">
+                <a href="track.html" class="track-order-btn">Track Order</a>
+                <button class="close-success-btn" id="closeSuccess">Continue Shopping</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
