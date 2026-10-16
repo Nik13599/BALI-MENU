@@ -1,11 +1,11 @@
 /**
  * BALI MENU — регистрация гостя.
- * Вход через Google (проверенный email); имя и телефон хранятся в users/{uid}.
+ * Вход через Google или Apple (подтверждённый email); имя и телефон хранятся в users/{uid}.
  * До развёртывания Firebase + firestore.rules авторизация НЕ работает.
  */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+  getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, signInWithRedirect,
   getRedirectResult, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
@@ -18,6 +18,7 @@ const els = {
   dialog: $("authModal"),
   close: $("closeAuth"),
   google: $("authGoogleBtn"),
+  apple: $("authAppleBtn"),
   form: $("authProfileForm"),
   name: $("authName"),
   phone: $("authPhone"),
@@ -67,6 +68,7 @@ function render() {
     !user ? "Войти / Регистрация" :
     profile ? "👤 " + profile.name : "Заполнить профиль";
   els.google.hidden = !isConfigured || !!user;
+  els.apple.hidden = !isConfigured || !!user;
   els.form.hidden = !isConfigured || !user;
   els.signOut.hidden = !user;
   if (user) {
@@ -90,7 +92,7 @@ function show() {
   } else if (user && profile) {
     message("Профиль сохранён. Вы можете изменить имя или телефон.");
   } else {
-    message("Войдите через Google, чтобы подтвердить электронную почту.");
+    message("Войдите через Google или Apple. Почта будет привязана к выбранному аккаунту.");
   }
 }
 
@@ -109,6 +111,8 @@ function friendlyError(error) {
     "auth/popup-closed-by-user": "Вход отменён.",
     "auth/cancelled-popup-request": "Повторный вход отменён.",
     "auth/unauthorized-domain": "Домен сайта не разрешён в Firebase Authentication.",
+    "auth/operation-not-allowed": "Этот способ входа ещё не подключён в Firebase Authentication.",
+    "auth/invalid-credential": "Проверьте настройку Apple Services ID, Team ID и OAuth-ключа.",
     "auth/account-exists-with-different-credential": "Почта уже связана с другим способом входа.",
     "permission-denied": "Сохранение запрещено. Проверьте правила Firestore.",
     "unavailable": "Сервис временно недоступен. Повторите позже."
@@ -144,6 +148,33 @@ els.google.addEventListener("click", async () => {
     message(friendlyError(error), true);
   } finally {
     els.google.disabled = false;
+  }
+});
+
+// Apple использует OAuthProvider('apple.com'); email может быть адресом Apple Private Relay.
+els.apple.addEventListener("click", async () => {
+  if (!auth) return;
+  message("Открывается вход Apple...");
+  els.apple.disabled = true;
+  const provider = new OAuthProvider("apple.com");
+  provider.addScope("email");
+  provider.addScope("name");
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    if (error.code === "auth/popup-blocked" ||
+        error.code === "auth/operation-not-supported-in-this-environment") {
+      try {
+        await signInWithRedirect(auth, provider);
+        return;
+      } catch (redirectError) {
+        message(friendlyError(redirectError), true);
+      }
+    } else {
+      message(friendlyError(error), true);
+    }
+  } finally {
+    els.apple.disabled = false;
   }
 });
 
