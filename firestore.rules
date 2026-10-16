@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedInAs(uid) {
+      return request.auth != null
+        && request.auth.uid == uid
+        && request.auth.token.email_verified == true
+        && request.auth.token.email is string;
+    }
+
+    function validProfile(data, uid) {
+      return data.keys().hasAll(['uid', 'email', 'name', 'phone', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'email', 'name', 'phone', 'createdAt', 'updatedAt'])
+        && data.uid == uid
+        && data.email == request.auth.token.email
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 100
+        && data.phone is string
+        && data.phone.matches('^\\+[1-9][0-9]{7,14}$')
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /users/{uid} {
+      allow get: if signedInAs(uid);
+      allow list: if false;
+      allow create: if signedInAs(uid)
+        && validProfile(request.resource.data, uid)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if signedInAs(uid)
+        && validProfile(request.resource.data, uid)
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['name','phone','updatedAt']);
+      allow delete: if false;
+    }
+
+    // Заказы и права администратора будут проходить только через серверные функции.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
