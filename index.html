@@ -129,7 +129,7 @@
         <div class="account-panel">
           <p class="auth-help">Для регистрации войдите через Google. Почтовый адрес подтверждается вашим Google-аккаунтом и используется для последующих входов. Имя и телефон обязательны.</p>
           <p class="auth-status" id="authMessage" role="status" aria-live="polite"></p>
-          <p class="auth-help" id="authBuild">Версия авторизации: 17.10.2026-4</p>
+          <p class="auth-help" id="authBuild">Версия авторизации: 17.10.2026-5</p>
           <div class="auth-actions">
             <button class="auth-btn" type="button" id="authGoogleBtn">Войти через Google</button>
             <button class="auth-outline-btn" type="button" id="authSignOutBtn" hidden>Выйти из аккаунта</button>
@@ -148,7 +148,8 @@
               <input id="authEmail" name="email" type="email" autocomplete="email" readonly required>
             </div>
             <p class="auth-help">Номер телефона сохраняется как контактный. Подтверждение номера через SMS пока не реализовано.</p>
-            <button type="submit" class="auth-btn">Сохранить профиль</button>
+            <button type="submit" id="authSaveBtn" class="auth-btn">Сохранить профиль</button>
+            <p id="authSaveMessage" class="auth-save-message" role="status" aria-live="polite" aria-atomic="true"></p>
           </form>
         </div>
       </div>
@@ -225,9 +226,9 @@
         </div>
     </div>
 
-    <script src="firebase-config.js?v=20261017-4"></script>
-    <script src="app.js?v=20261017-4"></script>
-    <script type="module" src="auth.js?v=20261017-4"></script>
+    <script src="firebase-config.js?v=20261017-5"></script>
+    <script src="app.js?v=20261017-5"></script>
+    <script type="module" src="auth.js?v=20261017-5"></script>
 </body>
 
 </html>
