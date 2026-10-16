@@ -1,8 +1,7 @@
-// Публичная конфигурация Firebase Web App BALI MENU.
-// Получена из настроек Firebase (Project settings → Your apps → SDK configuration).
-// Серверные ключи / секреты здесь хранить нельзя.
+// Публичная конфигурация веб-приложения BALI MENU, дословно скопированная из Firebase Console.
+// Здесь нет служебных ключей или паролей.
 window.BALI_FIREBASE_CONFIG = Object.freeze({
-  "apiKey": "AIzaSyAiGyt506x2V0pBNIJ2pOlXxBgaYqzzUA",
+  "apiKey": "AIzaSyAiGyt5O6x2V0pBNIJ2pOlXxXBgaYqzzUA",
   "authDomain": "bali-menu-5a48b.firebaseapp.com",
   "projectId": "bali-menu-5a48b",
   "storageBucket": "bali-menu-5a48b.firebasestorage.app",
