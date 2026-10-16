@@ -13,6 +13,67 @@ const BALI_API_CONFIGURED = /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/e
 let menuItems = [];
 let cart = [];
 let currentCategory = 'all';
+let availableEvents = [];
+
+// Публичный каталог и календарь поступают из Firestore.
+window.addEventListener('bali:menu', ({ detail }) => {
+    menuItems = detail.items;
+    // Цены в старой корзине никогда не используем: пересчитываем по свежему каталогу.
+    const actual = new Map(menuItems.filter(x => x.available).map(x => [Number(x.id), x]));
+    cart = cart.flatMap(old => {
+        const product = actual.get(Number(old.id));
+        return product ? [{
+            id: product.id, name: product.name, price: product.price,
+            quantity: Math.min(50, Math.max(1, Number(old.quantity) || 1))
+        }] : [];
+    });
+    saveCart();
+    updateCartUI();
+    updateCategoryButtons();
+    displayMenuItems(menuItems);
+});
+window.addEventListener('bali:menu-error', () => showError('Не удалось загрузить меню из Firestore. Проверьте правила доступа.'));
+window.addEventListener('bali:events', ({ detail }) => {
+    availableEvents = detail.events;
+    populateEvents();
+});
+window.addEventListener('bali:events-error', () => {
+    const select = document.getElementById('eventSelect');
+    if (select) select.innerHTML = '<option value="">Не удалось загрузить мероприятия</option>';
+});
+function updateCategoryButtons() {
+    const all = [...new Set(menuItems.map(i => i.category).filter(Boolean))];
+    if (currentCategory !== 'all' && !all.includes(currentCategory)) currentCategory = 'all';
+    elements.categoryFilter.replaceChildren();
+    for (const category of ['all', ...all]) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'category-btn' + (currentCategory === category ? ' active' : '');
+        button.dataset.category = category;
+        button.textContent = category === 'all' ? 'Всё меню' : category;
+        elements.categoryFilter.append(button);
+    }
+}
+function minskDateToday() {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Minsk', day: '2-digit', month: '2-digit', year: 'numeric'
+    }).formatToParts(new Date());
+    const p = Object.fromEntries(parts.map(x => [x.type,x.value]));
+    return p.year + '-' + p.month + '-' + p.day;
+}
+function populateEvents() {
+    const select = document.getElementById('eventSelect');
+    if (!select) return;
+    const chosen = select.value;
+    select.replaceChildren(new Option('Выбери мероприятие', ''));
+    for (const event of availableEvents.filter(e => e.preorderEnabled && e.date >= minskDateToday())) {
+        const opt = new Option(event.date + ' — ' + event.title, event.date);
+        select.add(opt);
+    }
+    if (availableEvents.some(e => e.date === chosen && e.preorderEnabled)) select.value=chosen;
+    document.getElementById('eventDate').value = select.value;
+    if (select.length === 1) select.options[0].textContent = 'Доступных мероприятий пока нет';
+}
 function escapeHTML(value) {
     return String(value ?? '').replace(/[&<>"']/g, c =>
         ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -79,6 +140,11 @@ async function loadConfig() {
 }
 
 function attachEventListeners() {
+    const eventSelect = document.getElementById('eventSelect');
+    if (eventSelect) eventSelect.addEventListener('change', () => {
+        document.getElementById('eventDate').value = eventSelect.value;
+    });
+
     // Cart controls
     document.getElementById('cartBtn').addEventListener('click', openCart);
     document.getElementById('closeCart').addEventListener('click', closeCart);
@@ -110,26 +176,7 @@ function attachEventListeners() {
 // ============================================
 
 async function fetchMenuItems() {
-    if (!BALI_API_CONFIGURED) {
-        elements.menuGrid.innerHTML = '<div class="loading-state"><p>Меню BALI появится здесь после подключения каталога и цен.</p></div>';
-        return;
-    }
-    try {
-        showLoading();
-
-        const response = await fetch(`${CONFIG.API_URL}?path=menu`);
-        const data = await response.json();
-
-        if (data.success) {
-            menuItems = data.items;
-            displayMenuItems(menuItems);
-        } else {
-            showError('Failed to load menu items');
-        }
-    } catch (error) {
-        console.error('Error fetching menu:', error);
-        showError('Unable to connect to server');
-    }
+    elements.menuGrid.innerHTML = '<div class="loading-state"><p>Загружаем меню BALI...</p></div>';
 }
 
 async function placeOrder(orderData) {
@@ -169,7 +216,7 @@ function displayMenuItems(items) {
     if (!items || items.length === 0) {
         elements.menuGrid.innerHTML = `
             <div class="loading-state">
-                <p>No menu items available</p>
+                <p>Меню ещё не заполнено администратором.</p>
             </div>
         `;
         return;
@@ -259,7 +306,7 @@ function handleCategoryFilter(e) {
 
 function addToCart(itemId) {
     const item = menuItems.find(i => i.id === itemId);
-    if (!item) return;
+    if (!item || !item.available) return;
 
     const existingItem = cart.find(i => i.id === itemId);
 
@@ -519,10 +566,15 @@ async function handleCheckout(e) {
     if (!window.BaliAuth || !(await window.BaliAuth.requireProfile())) return;
     const customer = window.BaliAuth.getProfile();
     if (!customer) return;
-    const eventDate = document.getElementById('eventDate').value;
+    const eventDate = document.getElementById('eventSelect').value;
     const tableNumber = document.getElementById('tableNumber').value.trim();
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate) || !tableNumber) {
-        alert('Укажите дату мероприятия и номер столика.');
+    const bookingId = document.getElementById('bookingId').value.trim();
+    if (!availableEvents.some(e => e.date === eventDate && e.preorderEnabled)) {
+        alert('Выберите доступное мероприятие из списка.');
+        return;
+    }
+    if (!tableNumber && !bookingId) {
+        alert('Укажите номер столика или ID бронирования.');
         return;
     }
 
@@ -533,6 +585,7 @@ async function handleCheckout(e) {
         customer_email: customer.email,
         event_date: eventDate,
         table_number: tableNumber,
+        booking_id: bookingId,
         notes: document.getElementById('orderNotes').value,
         items: cart,
         total_amount: calculateTotal()
@@ -541,7 +594,7 @@ async function handleCheckout(e) {
     // Disable button
     const submitBtn = e.target.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span>Placing Order...</span>';
+    submitBtn.textContent = 'Отправляем...';
 
     const result = await placeOrder(formData);
 
@@ -561,7 +614,7 @@ async function handleCheckout(e) {
         // Reset form
         elements.checkoutForm.reset();
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<span>Place Order</span><span class="btn-icon">→</span>';
+        submitBtn.textContent = 'Отправить предзаказ';
     } else {
         alert('Failed to place order: ' + (result.error || 'Unknown error'));
         submitBtn.disabled = false;
