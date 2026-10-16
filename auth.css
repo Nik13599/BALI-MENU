@@ -16,3 +16,14 @@
 .auth-outline-btn { background: transparent; border: 1px solid #616b83; padding: .7rem 1rem; border-radius: 10px; color: white; cursor: pointer; }
 .auth-outline-btn[hidden], [hidden] { display: none !important; }
 @media (max-width: 600px) { .account-btn { padding: .5rem .65rem; max-width: 110px; } .nav { gap: .6rem; } }
+
+/* Явная пометка предварительной публичной версии */
+.bali-preview-banner {
+  padding: .65rem 1rem;
+  background: #3a2b18;
+  color: #ffdea1;
+  font-size: .87rem;
+  text-align: center;
+  line-height: 1.55;
+  border-bottom: 1px solid #6f5328;
+}
