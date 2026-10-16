@@ -16,3 +16,19 @@
 .auth-outline-btn { background: transparent; border: 1px solid #616b83; padding: .7rem 1rem; border-radius: 10px; color: white; cursor: pointer; }
 .auth-outline-btn[hidden], [hidden] { display: none !important; }
 @media (max-width: 600px) { .account-btn { padding: .5rem .65rem; max-width: 110px; } .nav { gap: .6rem; } }
+
+/* Firebase Apple OAuth: distinct monochrome button, responsive like Google */
+.auth-apple-btn {
+  cursor: pointer;
+  background: #050505;
+  border: 1px solid rgba(255,255,255,.38);
+  border-radius: 12px;
+  color: white;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 650;
+  padding: .75rem 1rem;
+}
+.auth-apple-btn:hover { border-color: #fff; background: #171717; }
+.auth-apple-btn:disabled, .auth-btn:disabled { opacity: .5; cursor: wait; }
+.auth-apple-btn:focus-visible { outline: 3px solid #e5cc9c; outline-offset: 3px; }
