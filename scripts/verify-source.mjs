@@ -31,7 +31,16 @@ assert(rules.includes("data.email == request.auth.token.email"), "Rules must pin
 assert(rules.includes("allow read, write: if false"), "Default deny required");
 assert(backend.includes("function verifyAdminToken(token) { return false; }"), "Legacy admin auth must be disabled");
 assert(backend.includes("Google authentication is not yet configured"), "Legacy order endpoint must remain disabled");
-assert(config.includes("REPLACE_WITH_FIREBASE_"), "Repo must not embed a live project config yet");
+assert(!config.includes("PRIVATE KEY") && !config.includes("client_secret"), "Secrets must not be in client config");
+const parseConfig = config.match(/window\\.BALI_FIREBASE_CONFIG = Object\\.freeze\\((\\{[\\s\\S]*?\\})\\);/);
+assert(parseConfig, "Missing web Firebase config");
+const cfg = JSON.parse(parseConfig[1]);
+for (const field of ["apiKey", "authDomain", "projectId", "appId"]) {
+  assert(typeof cfg[field] === "string" && cfg[field].trim(), "Firebase config missing " + field);
+}
+assert(cfg.projectId === "bali-menu-5a48b", "Unexpected Firebase project");
+assert(cfg.authDomain === cfg.projectId + ".firebaseapp.com", "Firebase auth domain mismatch");
+assert(!Object.values(cfg).some(v => typeof v === "string" && v.startsWith("REPLACE_WITH_")), "Firebase placeholders remain");
 assert(firebaseJson.firestore.rules === "firestore.rules", "Missing Firestore rules path");
 assert(firebaseJson.hosting.public === ".", "Unexpected Firebase Hosting public directory");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs + security checks.");
