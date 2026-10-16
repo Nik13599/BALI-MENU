@@ -1,0 +1,44 @@
+name: Firebase Hosting — ручная проверочная публикация
+
+# Не публикуем автоматически ни при push, ни при создании PR.
+# GitHub OIDC + Google Workload Identity Federation: без JSON-ключей в репозитории.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  preview:
+    name: Публикация ограниченного тестового превью
+    runs-on: ubuntu-latest
+    environment: firebase-preview
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+      FIREBASE_API_KEY: ${{ vars.FIREBASE_API_KEY }}
+      FIREBASE_AUTH_DOMAIN: ${{ vars.FIREBASE_AUTH_DOMAIN }}
+      FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Проверка исходного шаблона
+        run: |
+          node --check app.js
+          node --input-type=module --check < auth.js
+          node scripts/verify-source.mjs
+      - name: Проверка и генерация публичной Firebase-конфигурации
+        run: |
+          node scripts/prepare-firebase-config.mjs
+          node --check firebase-config.js
+      - name: Google Cloud без статического ключа
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.FIREBASE_WIF_PROVIDER }}
+          service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Firebase CLI
+        run: npm install -g firebase-tools
+      - name: Развернуть только Hosting-превью, без изменения рабочей БД
+        run: firebase hosting:channel:deploy bali-preorder-preview --project "$FIREBASE_PROJECT_ID" --expires 7d --non-interactive
