@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BALI MENU - Order Food Online</title>
+    <title>BALI MENU — Предзаказы</title>
     <meta name="description"
-        content="Order delicious food online with fast delivery. Browse our menu and track your order in real-time.">
+        content="BALI — меню и предварительные заказы к вашему столику.">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -19,12 +20,13 @@
     <header class="header">
         <div class="container header-content">
             <div class="logo">
-                <span class="logo-icon">🍕</span>
+                <span class="logo-icon">✦</span>
                 <span class="logo-text">BALI MENU</span>
             </div>
             <nav class="nav">
-                <a href="index.html" class="nav-link active">Menu</a>
-                <a href="track.html" class="nav-link">Track Order</a>
+                <a href="index.html" class="nav-link active">Меню</a>
+                <a href="track.html" class="nav-link">Мой заказ</a>
+                <button type="button" class="account-btn" id="accountBtn">Войти / Регистрация</button>
                 <button class="cart-btn" id="cartBtn">
                     <span class="cart-icon">🛒</span>
                     <span class="cart-count" id="cartCount">0</span>
@@ -37,20 +39,20 @@
     <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title">Delicious Food, <span class="gradient-text">Delivered Fast</span></h1>
-                <p class="hero-subtitle">Order your favorite meals and track them in real-time</p>
+                <h1 class="hero-title">BALI <span class="gradient-text">PREORDER</span></h1>
+                <p class="hero-subtitle">Выбирайте еду и напитки заранее — к дате мероприятия и вашему столику.</p>
                 <div class="hero-features">
                     <div class="feature">
                         <span class="feature-icon">⚡</span>
-                        <span>Fast Delivery</span>
+                        <span>Меню онлайн</span>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">📍</span>
-                        <span>Real-time Tracking</span>
+                        <span>Статус заказа</span>
                     </div>
                     <div class="feature">
                         <span class="feature-icon">⭐</span>
-                        <span>Quality Food</span>
+                        <span>Предзаказ к столику</span>
                     </div>
                 </div>
             </div>
@@ -73,7 +75,7 @@
     <!-- Menu Items -->
     <section class="menu-section">
         <div class="container">
-            <h2 class="section-title">Our Menu</h2>
+            <h2 class="section-title">Меню BALI</h2>
             <div class="menu-grid" id="menuGrid">
                 <!-- Loading state -->
                 <div class="loading-state">
@@ -87,7 +89,7 @@
     <!-- Shopping Cart Sidebar -->
     <div class="cart-sidebar" id="cartSidebar">
         <div class="cart-header">
-            <h3>Your Cart</h3>
+            <h3>Корзина</h3>
             <button class="close-cart" id="closeCart">✕</button>
         </div>
 
@@ -104,44 +106,77 @@
                 <span>Total:</span>
                 <span class="total-amount" id="totalAmount">$0.00</span>
             </div>
-            <button class="checkout-btn" id="checkoutBtn">Checkout</button>
+            <button class="checkout-btn" id="checkoutBtn">Оформить предзаказ</button>
         </div>
     </div>
 
     <!-- Overlay -->
     <div class="overlay" id="overlay"></div>
 
+    <!-- Личный кабинет: обязательные имя, телефон и подтверждённая почта -->
+    <div class="modal" id="authModal" role="dialog" aria-modal="true" aria-hidden="true"
+         aria-labelledby="authModalTitle">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="authModalTitle">Личный кабинет BALI</h3>
+          <button class="close-modal" id="closeAuth" type="button" aria-label="Закрыть">✕</button>
+        </div>
+        <div class="account-panel">
+          <p class="auth-help">Для регистрации войдите через Google. Почтовый адрес подтверждается вашим Google-аккаунтом и используется для последующих входов. Имя и телефон обязательны.</p>
+          <p class="auth-status" id="authMessage" role="status" aria-live="polite"></p>
+          <div class="auth-actions">
+            <button class="auth-btn" type="button" id="authGoogleBtn">Войти через Google</button>
+            <button class="auth-outline-btn" type="button" id="authSignOutBtn" hidden>Выйти из аккаунта</button>
+          </div>
+          <form id="authProfileForm" hidden>
+            <div class="form-group">
+              <label for="authName">Имя *</label>
+              <input id="authName" name="name" minlength="2" maxlength="100" autocomplete="name" required>
+            </div>
+            <div class="form-group">
+              <label for="authPhone">Номер телефона *</label>
+              <input id="authPhone" name="phone" type="tel" autocomplete="tel" placeholder="+375291234567" required>
+            </div>
+            <div class="form-group">
+              <label for="authEmail">Email (подтверждён Google) *</label>
+              <input id="authEmail" name="email" type="email" autocomplete="email" readonly required>
+            </div>
+            <p class="auth-help">Номер телефона сохраняется как контактный. Подтверждение номера через SMS пока не реализовано.</p>
+            <button type="submit" class="auth-btn">Сохранить профиль</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <!-- Checkout Modal -->
     <div class="modal" id="checkoutModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Complete Your Order</h3>
+                <h3>Данные предзаказа</h3>
                 <button class="close-modal" id="closeCheckout">✕</button>
             </div>
 
             <form class="checkout-form" id="checkoutForm">
+                <p class="auth-help">Имя, телефон и email берутся из вашего зарегистрированного профиля.</p>
                 <div class="form-group">
-                    <label for="customerName">Full Name *</label>
-                    <input type="text" id="customerName" required placeholder="John Doe">
+                    <label for="customerName">Имя *</label>
+                    <input type="text" id="customerName" autocomplete="name" readonly required>
                 </div>
-
                 <div class="form-group">
-                    <label for="customerPhone">Phone Number *</label>
-                    <input type="tel" id="customerPhone" required placeholder="+1 (555) 123-4567">
+                    <label for="customerPhone">Номер телефона *</label>
+                    <input type="tel" id="customerPhone" autocomplete="tel" readonly required>
                 </div>
-
                 <div class="form-group">
-                    <label for="deliveryAddress">Delivery Address *</label>
-                    <div class="location-input-group">
-                        <textarea id="deliveryAddress" required rows="3"
-                            placeholder="123 Main Street, Apt 4B, City, State, ZIP"></textarea>
-                        <button type="button" id="shareLocationBtn" class="location-btn"
-                            title="Share my current location">
-                            📍 Pin Location
-                        </button>
-                    </div>
-                    <input type="hidden" id="latitude">
-                    <input type="hidden" id="longitude">
+                    <label for="customerEmail">Подтверждённый email *</label>
+                    <input type="email" id="customerEmail" autocomplete="email" readonly required>
+                </div>
+                <div class="form-group">
+                    <label for="eventDate">Дата мероприятия *</label>
+                    <input type="date" id="eventDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="tableNumber">Номер столика *</label>
+                    <input type="text" id="tableNumber" maxlength="20" required placeholder="Например, 12">
                 </div>
 
                 <div class="form-group">
@@ -184,7 +219,9 @@
         </div>
     </div>
 
+    <script src="firebase-config.js"></script>
     <script src="app.js"></script>
+    <script type="module" src="auth.js"></script>
 </body>
 
 </html>
