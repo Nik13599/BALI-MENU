@@ -114,7 +114,13 @@ async function fetchMenuItems() {
 }
 
 async function placeOrder(orderData) {
+    // Заказы пока заблокированы на сервере до проверки ID-токенов и прав.
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(CONFIG.API_URL)) {
+        return { success: false, error: 'Приём предзаказов пока не подключён. Настройте безопасный сервер.' };
+    }
     try {
+        const token = await window.BaliAuth?.getIdToken();
+        if (!token) return { success: false, error: 'Необходимо войти через Google' };
         const response = await fetch(CONFIG.API_URL, {
             method: 'POST',
             redirect: 'follow',
@@ -123,6 +129,7 @@ async function placeOrder(orderData) {
             },
             body: JSON.stringify({
                 path: 'order/create',
+                id_token: token,
                 ...orderData
             })
         });
@@ -397,8 +404,16 @@ function closeCart() {
 // CHECKOUT & LOCATION
 // ============================================
 
-function openCheckout() {
+async function openCheckout() {
     if (cart.length === 0) return;
+
+    // Незарегистрированный пользователь не может попасть к оформлению.
+    if (!window.BaliAuth || !(await window.BaliAuth.requireProfile())) return;
+    const customer = window.BaliAuth.getProfile();
+    if (!customer) return;
+    document.getElementById('customerName').value = customer.name;
+    document.getElementById('customerPhone').value = customer.phone;
+    document.getElementById('customerEmail').value = customer.email;
 
     closeCart();
 
@@ -468,16 +483,27 @@ function handleShareLocation() {
 async function handleCheckout(e) {
     e.preventDefault();
 
+    // Проверяем актуальную авторизацию повторно перед отправкой.
+    if (!window.BaliAuth || !(await window.BaliAuth.requireProfile())) return;
+    const customer = window.BaliAuth.getProfile();
+    if (!customer) return;
+    const eventDate = document.getElementById('eventDate').value;
+    const tableNumber = document.getElementById('tableNumber').value.trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate) || !tableNumber) {
+        alert('Укажите дату мероприятия и номер столика.');
+        return;
+    }
+
     const formData = {
-        customer_name: document.getElementById('customerName').value,
-        customer_phone: document.getElementById('customerPhone').value,
-        delivery_address: document.getElementById('deliveryAddress').value,
+        customer_uid: customer.uid,
+        customer_name: customer.name,
+        customer_phone: customer.phone,
+        customer_email: customer.email,
+        event_date: eventDate,
+        table_number: tableNumber,
         notes: document.getElementById('orderNotes').value,
         items: cart,
-        total_amount: calculateTotal(),
-        // Send lat/long separately if needed, or rely on address string
-        latitude: document.getElementById('latitude').value,
-        longitude: document.getElementById('longitude').value
+        total_amount: calculateTotal()
     };
 
     // Disable button
