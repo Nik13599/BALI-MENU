@@ -21,6 +21,10 @@ for (const id of ids) {
 }
 assert(html.includes('type="module" src="auth.js"'), "auth.js must be loaded");
 assert(auth.includes("GoogleAuthProvider"), "Google sign-in missing");
+assert(html.includes('id="authAppleBtn"'), "Apple sign-in button missing");
+assert(auth.includes("OAuthProvider"), "Apple OAuth import missing");
+assert(auth.includes('new OAuthProvider("apple.com")'), "Apple sign-in missing");
+assert(auth.includes('provider.addScope("email")'), "Apple email scope missing");
 assert(auth.includes("emailVerified"), "Email must be verified");
 assert(auth.includes("serverTimestamp()"), "Server timestamps missing");
 assert(auth.includes('doc(database, "users", user.uid)'), "User profile persistence missing");
