@@ -32,9 +32,10 @@ assert(rules.includes("allow read, write: if false"), "Default deny required");
 assert(backend.includes("function verifyAdminToken(token) { return false; }"), "Legacy admin auth must be disabled");
 assert(backend.includes("Google authentication is not yet configured"), "Legacy order endpoint must remain disabled");
 assert(!config.includes("PRIVATE KEY") && !config.includes("client_secret"), "Secrets must not be in client config");
-const parseConfig = config.match(/window\\.BALI_FIREBASE_CONFIG = Object\\.freeze\\((\\{[\\s\\S]*?\\})\\);/);
-assert(parseConfig, "Missing web Firebase config");
-const cfg = JSON.parse(parseConfig[1]);
+const start = config.indexOf("Object.freeze(");
+const end = config.indexOf(");", start);
+assert(start >= 0 && end > start, "Missing web Firebase config");
+const cfg = JSON.parse(config.slice(start + "Object.freeze(".length, end));
 for (const field of ["apiKey", "authDomain", "projectId", "appId"]) {
   assert(typeof cfg[field] === "string" && cfg[field].trim(), "Firebase config missing " + field);
 }
