@@ -122,10 +122,11 @@
           <button class="close-modal" id="closeAuth" type="button" aria-label="Закрыть">✕</button>
         </div>
         <div class="account-panel">
-          <p class="auth-help">Для регистрации войдите через Google. Почтовый адрес подтверждается вашим Google-аккаунтом и используется для последующих входов. Имя и телефон обязательны.</p>
+          <p class="auth-help">Для регистрации войдите через Google или Apple. Почтовый адрес из выбранного аккаунта используется для следующих входов; имя и телефон обязательны. Apple может скрыть ваш адрес и предоставить почту-псевдоним.</p>
           <p class="auth-status" id="authMessage" role="status" aria-live="polite"></p>
           <div class="auth-actions">
             <button class="auth-btn" type="button" id="authGoogleBtn">Войти через Google</button>
+            <button class="auth-apple-btn" type="button" id="authAppleBtn"><span aria-hidden="true">●</span> Войти через Apple</button>
             <button class="auth-outline-btn" type="button" id="authSignOutBtn" hidden>Выйти из аккаунта</button>
           </div>
           <form id="authProfileForm" hidden>
@@ -138,7 +139,7 @@
               <input id="authPhone" name="phone" type="tel" autocomplete="tel" placeholder="+375291234567" required>
             </div>
             <div class="form-group">
-              <label for="authEmail">Email (подтверждён Google) *</label>
+              <label for="authEmail">Email для авторизации (Google / Apple) *</label>
               <input id="authEmail" name="email" type="email" autocomplete="email" readonly required>
             </div>
             <p class="auth-help">Номер телефона сохраняется как контактный. Подтверждение номера через SMS пока не реализовано.</p>
