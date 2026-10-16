@@ -38,6 +38,78 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Администратор назначается ТОЛЬКО через Firebase Console / Admin SDK.
+    // Клиенты не могут создать себе админские права.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true;
+    }
+
+    function validMenu(data) {
+      return data.keys().hasAll(['id','name','category','description','price','image_url','available','sort','updatedAt'])
+        && data.keys().hasOnly(['id','name','category','description','price','image_url','available','sort','updatedAt'])
+        && data.id is int && data.id > 0
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 120
+        && data.category is string && data.category.size() >= 2 && data.category.size() <= 60
+        && data.description is string && data.description.size() <= 800
+        && data.price is number && data.price >= 0 && data.price <= 20000
+        && data.image_url is string && data.image_url.size() <= 1000
+        && (data.image_url == '' || data.image_url.matches('^https://[^ ]+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+))
+        && data.available is bool
+        && data.sort is int && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /admins/{uid} {
+      allow get: if signedInAs(uid);
+      allow list, create, update, delete: if false;
+    }
+
+    // Каталог публичный, так как содержит только информацию о блюдах и ценах.
+    match /menu/{itemId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validMenu(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    function validEvent(data, eventId) {
+      return data.keys().hasAll(['date','title','preorderEnabled','cutoff','updatedAt'])
+        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','updatedAt'])
+        && data.date == eventId
+        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+)
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
+        && data.preorderEnabled is bool
+        && data.cutoff is string
+        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+))
+        && data.updatedAt == request.time;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validEvent(request.resource.data, eventId);
+      allow delete: if isAdmin();
+    }
+
     // Заказы и права администратора будут проходить только через серверные функции.
     match /{document=**} {
       allow read, write: if false;
