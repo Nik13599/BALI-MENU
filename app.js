@@ -408,7 +408,11 @@ async function openCheckout() {
     if (cart.length === 0) return;
 
     // Незарегистрированный пользователь не может попасть к оформлению.
-    if (!window.BaliAuth || !(await window.BaliAuth.requireProfile())) return;
+    if (!window.BaliAuth) {
+        alert('Модуль авторизации недоступен. Проверьте соединение и настройки Firebase.');
+        return;
+    }
+    if (!(await window.BaliAuth.requireProfile())) return;
     const customer = window.BaliAuth.getProfile();
     if (!customer) return;
     document.getElementById('customerName').value = customer.name;
