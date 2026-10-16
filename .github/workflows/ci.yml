@@ -21,6 +21,8 @@ jobs:
         run: |
           node --check app.js
           node --input-type=module --check < auth.js
+          node --input-type=module --check < menu-firestore.js
+          node --input-type=module --check < admin-firestore.js
           node --check admin.js
           node --check track.js
           node --check firebase-config.js
