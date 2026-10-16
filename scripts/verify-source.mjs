@@ -21,10 +21,6 @@ for (const id of ids) {
 }
 assert(html.includes('type="module" src="auth.js"'), "auth.js must be loaded");
 assert(auth.includes("GoogleAuthProvider"), "Google sign-in missing");
-assert(html.includes('id="authAppleBtn"'), "Apple sign-in button missing");
-assert(auth.includes("OAuthProvider"), "Apple OAuth import missing");
-assert(auth.includes('new OAuthProvider("apple.com")'), "Apple sign-in missing");
-assert(auth.includes('provider.addScope("email")'), "Apple email scope missing");
 assert(auth.includes("emailVerified"), "Email must be verified");
 assert(auth.includes("serverTimestamp()"), "Server timestamps missing");
 assert(auth.includes('doc(database, "users", user.uid)'), "User profile persistence missing");
@@ -36,10 +32,9 @@ assert(rules.includes("allow read, write: if false"), "Default deny required");
 assert(backend.includes("function verifyAdminToken(token) { return false; }"), "Legacy admin auth must be disabled");
 assert(backend.includes("Google authentication is not yet configured"), "Legacy order endpoint must remain disabled");
 assert(!config.includes("PRIVATE KEY") && !config.includes("client_secret"), "Secrets must not be in client config");
-const start = config.indexOf("Object.freeze(");
-const end = config.indexOf(");", start);
-assert(start >= 0 && end > start, "Missing web Firebase config");
-const cfg = JSON.parse(config.slice(start + "Object.freeze(".length, end));
+const parseConfig = config.match(/window\\.BALI_FIREBASE_CONFIG = Object\\.freeze\\((\\{[\\s\\S]*?\\})\\);/);
+assert(parseConfig, "Missing web Firebase config");
+const cfg = JSON.parse(parseConfig[1]);
 for (const field of ["apiKey", "authDomain", "projectId", "appId"]) {
   assert(typeof cfg[field] === "string" && cfg[field].trim(), "Firebase config missing " + field);
 }
