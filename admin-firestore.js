@@ -1,10 +1,11 @@
 // BALI MENU: администратор через Google Auth + вручную назначенный admins/{uid}.
+import { BALI_MENU_SEED } from "./menu-seed.js?v=20261017-9";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, serverTimestamp
+  getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, runTransaction, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebase = initializeApp(window.BALI_FIREBASE_CONFIG);
@@ -14,6 +15,69 @@ const $ = (id) => document.getElementById(id);
 const menu = new Map(), events = new Map();
 const renderStatus = (id, text) => { $(id).textContent = text; };
 let unsubMenu = null, unsubEvents = null, authorized = false;
+
+function showSeedPreview() {
+  const preview = $("seedPreview");
+  if (!preview) return;
+  preview.replaceChildren();
+  for (const group of [...new Set(BALI_MENU_SEED.map(item => item.category))]) {
+    const heading = document.createElement("h3");
+    heading.textContent = group;
+    preview.append(heading);
+    for (const item of BALI_MENU_SEED.filter(x => x.category === group)) {
+      const row = document.createElement("div");
+      row.className = "seed-row";
+      const product = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = item.name;
+      const description = document.createElement("small");
+      description.textContent = item.description + " · ID " + item.id;
+      product.append(title, description);
+      const price = document.createElement("span");
+      price.textContent = item.price.toFixed(2) + " BYN";
+      row.append(product, price);
+      preview.append(row);
+    }
+  }
+  const caution = document.createElement("p");
+  caution.className = "hint";
+  caution.textContent = "Проверьте написание состава мясного ассорти и слово «джугасом» в позиции с гренками: они перенесены с фотографии без самостоятельных исправлений.";
+  preview.append(caution);
+}
+showSeedPreview();
+
+$("seedImportBtn").addEventListener("click", async () => {
+  if (!authorized || !auth.currentUser) {
+    renderStatus("seedImportStatus", "Сначала войдите как администратор.");
+    return;
+  }
+  if (!confirm("Добавить в Firestore отсутствующие позиции меню BALI (" + BALI_MENU_SEED.length + " шт.)? Уже существующие ID будут пропущены.")) return;
+  const button = $("seedImportBtn");
+  button.disabled = true;
+  renderStatus("seedImportStatus", "Проверяем товары и добавляем отсутствующие...");
+  try {
+    const result = await runTransaction(db, async transaction => {
+      const refs = BALI_MENU_SEED.map(item => doc(db, "menu", String(item.id)));
+      // Firestore требует сначала все чтения, затем все записи.
+      const current = await Promise.all(refs.map(ref => transaction.get(ref)));
+      let added = 0;
+      for (let i = 0; i < refs.length; i++) {
+        if (current[i].exists()) continue;
+        transaction.set(refs[i], { ...BALI_MENU_SEED[i], updatedAt: serverTimestamp() });
+        added++;
+      }
+      return { added, skipped: refs.length - added };
+    });
+    renderStatus("seedImportStatus", "Импорт завершён. Добавлено: " + result.added + "; уже существовали: " + result.skipped + ". Посмотрите каталог справа и откройте гостевое меню.");
+  } catch (error) {
+    const code = error?.code || "unknown";
+    renderStatus("seedImportStatus", code === "permission-denied"
+      ? "Недостаточно прав для импорта. Проверьте опубликованные правила Firestore и поле admins/{UID}.active=true. [permission-denied]"
+      : "Импорт не выполнен. Ошибка Firestore: " + code);
+  } finally {
+    button.disabled = false;
+  }
+});
 
 function createEntry(title, subtitle, onEdit, onDelete) {
   const row = document.createElement("div");
