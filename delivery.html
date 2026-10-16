@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Portal - BALI MENU</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        .delivery-body {
+            background-color: #f3f4f6;
+            padding: 20px;
+        }
+
+        .scanner-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #reader {
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .order-card {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .btn-scan {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-map {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .manual-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .manual-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+    </style>
+    <!-- HTML5-QRCode Library -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+
+<body class="delivery-body">
+
+    <!-- Login Section -->
+    <div id="loginSection" class="scanner-container">
+        <h2>Delivery Login</h2>
+        <div class="form-group">
+            <input type="password" id="deliveryPassword" placeholder="Enter Admin/Delivery Password"
+                style="width: 100%; padding: 10px; margin: 10px 0;">
+        </div>
+        <button id="loginBtn" class="action-btn btn-scan">Login</button>
+    </div>
+
+    <!-- Scanner Section -->
+    <div id="scannerSection" class="scanner-container hidden">
+        <div class="header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2>Delivery Scan</h2>
+            <button id="logoutBtn"
+                style="border: none; background: none; color: #ef4444; font-weight: 600;">Logout</button>
+        </div>
+
+        <div id="reader"></div>
+
+        <div class="manual-input">
+            <input type="text" id="manualOrderId" placeholder="Or enter Order ID (e.g., ORD123)">
+            <button id="manualSearchBtn" class="primary-btn" style="padding: 0 15px;">Go</button>
+        </div>
+
+        <!-- Order Details Display -->
+        <div id="orderDetails" class="order-card hidden">
+            <h3 style="margin-top: 0;">Order Details</h3>
+            <p><strong>ID:</strong> <span id="dispId"></span></p>
+            <p><strong>Customer:</strong> <span id="dispName"></span></p>
+            <p><strong>Address:</strong> <span id="dispAddress"></span></p>
+            <p><strong>Status:</strong> <span id="dispStatus" style="font-weight: bold; color: #2563eb;"></span></p>
+
+            <div id="actionButtons" style="margin-top: 15px;">
+                <a id="mapLink" href="#" target="_blank" class="action-btn btn-map"
+                    style="display: block; text-align: center; text-decoration: none; margin-bottom: 10px;">
+                    📍 Open in Maps
+                </a>
+                <button id="markDeliveredBtn" class="action-btn btn-success">✅ Mark as Delivered</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="delivery.js"></script>
+</body>
+
+</html>
