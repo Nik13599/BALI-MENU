@@ -27,3 +27,14 @@
   line-height: 1.55;
   border-bottom: 1px solid #6f5328;
 }
+
+/* Сообщение после сохранения видно рядом с кнопкой даже при прокрутке формы. */
+.auth-save-message {
+  margin-top: .7rem;
+  color: #e6d6a7;
+  font-size: .92rem;
+  font-weight: 600;
+  min-height: 1.4em;
+  overflow-wrap: anywhere;
+}
+.auth-save-message.error { color: #ff9d9d; }
