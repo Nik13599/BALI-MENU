@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Your Order - BALI MENU</title>
+    <meta name="description" content="Track your food order in real-time. See preparation and delivery status.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <div class="logo">
+                <span class="logo-icon">🍕</span>
+                <span class="logo-text">BALI MENU</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Menu</a>
+                <a href="track.html" class="nav-link active">Track Order</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Track Order Section -->
+    <section class="track-section">
+        <div class="container">
+            <div class="track-container">
+                <h1 class="page-title">Track Your Order</h1>
+                <p class="page-subtitle">Enter your order ID to see real-time status</p>
+
+                <!-- Order ID Input -->
+                <div class="track-input-container" id="trackInputContainer">
+                    <div class="input-group">
+                        <input type="text" id="orderIdInput" placeholder="Enter Order ID (e.g., ORD1702345678901)"
+                            class="track-input">
+                        <button class="track-btn" id="trackBtn">
+                            <span>Track Order</span>
+                            <span class="btn-icon">🔍</span>
+                            <div class="step-icon">👨‍🍳</div>
+                            <div class="step-label">Preparing</div>
+                    </div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step" data-status="ready">
+                        <div class="step-icon">✓</div>
+                        <div class="step-label">Ready</div>
+                    </div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step" data-status="out_for_delivery">
+                        <div class="step-icon">🚗</div>
+                        <div class="step-label">Out for Delivery</div>
+                    </div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step" data-status="delivered">
+                        <div class="step-icon">🎉</div>
+                        <div class="step-label">Delivered</div>
+                    </div>
+                    <div class="order-status-timeline" id="statusTimeline">
+                        <!-- Status steps injected by JS -->
+                    </div>
+
+                    <!-- QR Code Section -->
+                    <div class="qr-section" id="qrSection" style="text-align: center; margin-top: 30px; display: none;">
+                        <h3>For Delivery</h3>
+                        <p>Show this code to your delivery driver</p>
+                        <img id="orderQrCode" src="" alt="Order QR Code" style="max-width: 200px; margin: 10px auto;">
+                    </div>
+                </div>
+
+                <!-- Order Details Card -->
+                <div class="order-details-card">
+                    <div class="card-header">
+                        <h3>Order Details</h3>
+                        <span class="status-badge" id="statusBadge">Pending</span>
+                    </div>
+
+                    <div class="order-info">
+                        <div class="info-row">
+                            <span class="info-label">Order ID:</span>
+                            <span class="info-value" id="orderIdDisplay">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Date:</span>
+                            <span class="info-value" id="orderDateDisplay">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Customer:</span>
+                            <span class="info-value" id="customerNameDisplay">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Phone:</span>
+                            <span class="info-value" id="customerPhoneDisplay">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Delivery Address:</span>
+                            <span class="info-value" id="deliveryAddressDisplay">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="order-items-section">
+                        <h4>Items Ordered</h4>
+                        <div class="order-items-list" id="orderItemsList"></div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="order-total">
+                        <span>Total Amount:</span>
+                        <span class="total-value" id="orderTotalDisplay">$0.00</span>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="order-notes" id="orderNotesSection">
+                        <h4>Special Instructions</h4>
+                        <p id="orderNotesDisplay"></p>
+                    </div>
+                </div>
+
+                <!-- Track Another Order Button -->
+                <button class="secondary-btn" id="trackAnotherBtn">Track Another Order</button>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-message hidden" id="errorMessage">
+                <span class="error-icon">⚠️</span>
+                <p id="errorText">Order not found</p>
+            </div>
+        </div>
+        </div>
+    </section>
+
+    <script src="track.js"></script>
+</body>
+
+</html>
