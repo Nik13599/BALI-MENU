@@ -25,7 +25,7 @@ assert(auth.includes("emailVerified"), "Email must be verified");
 assert(auth.includes("serverTimestamp()"), "Server timestamps missing");
 assert(auth.includes('doc(database, "users", user.uid)'), "User profile persistence missing");
 assert(app.includes("BaliAuth.requireProfile()"), "Checkout must require profile");
-assert(app.includes("BaliAuth.getIdToken()"), "Checkout must obtain ID token");
+assert(/BaliAuth\??\.getIdToken\(\)/.test(app), "Checkout must obtain ID token");
 assert(rules.includes("request.auth.uid == uid"), "Rules need UID ownership");
 assert(rules.includes("data.email == request.auth.token.email"), "Rules must pin email");
 assert(rules.includes("allow read, write: if false"), "Default deny required");
