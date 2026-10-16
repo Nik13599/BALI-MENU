@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - BALI MENU</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="admin-body">
+    <!-- Login Screen -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-card">
+            <div class="login-header">
+                <span class="login-icon">🔐</span>
+                <h1>Admin Panel</h1>
+                <p>Enter password to continue</p>
+            </div>
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <input type="password" id="adminPassword" placeholder="Enter admin password" required
+                        autocomplete="current-password">
+                </div>
+                <button type="submit" class="login-btn">
+                    <span>Login</span>
+                    <span>→</span>
+                </button>
+                <div class="error-message hidden" id="loginError">
+                    Invalid password
+                </div>
+            </form>
+            <!-- DEBUG CONSOLE -->
+            <div id="debugConsole"
+                style="margin-top: 20px; padding: 10px; background: #333; color: #0f0; font-family: monospace; font-size: 12px; border-radius: 4px; max-height: 200px; overflow-y: auto; text-align: left; display: none;">
+                <div>Debug Log:</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Admin Dashboard -->
+    <div class="admin-dashboard hidden" id="adminDashboard">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <span class="logo-icon">🍕</span>
+                <span class="logo-text">BALI MENU Admin</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="orders">
+                    <span class="nav-icon">📋</span>
+                    <span>Orders</span>
+                    <span class="badge" id="pendingCount">0</span>
+                </button>
+                <button class="nav-item" data-tab="menu">
+                    <span class="nav-icon">🍽️</span>
+                    <span>Menu Management</span>
+                </button>
+                <button class="nav-item" data-tab="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="logout-btn" id="logoutBtn">
+                    <span>🚪</span>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1 id="pageTitle">Orders Management</h1>
+                <button class="refresh-btn" id="refreshBtn">
+                    <span class="refresh-icon">🔄</span>
+                    <span>Refresh</span>
+                </button>
+            </header>
+
+            <!-- Orders Tab -->
+            <div class="tab-content active" id="ordersTab">
+                <div class="filters">
+                    <button class="filter-btn active" data-status="all">
+                        All Orders <span class="filter-count" id="countAll">0</span>
+                    </button>
+                    <button class="filter-btn" data-status="pending">
+                        Pending <span class="filter-count" id="countPending">0</span>
+                    </button>
+                    <button class="filter-btn" data-status="preparing">
+                        Preparing <span class="filter-count" id="countPreparing">0</span>
+                    </button>
+                    <button class="filter-btn" data-status="ready">
+                        Ready <span class="filter-count" id="countReady">0</span>
+                    </button>
+                    <button class="filter-btn" data-status="out_for_delivery">
+                        Out for Delivery <span class="filter-count" id="countOutForDelivery">0</span>
+                    </button>
+                    <button class="filter-btn" data-status="delivered">
+                        Delivered <span class="filter-count" id="countDelivered">0</span>
+                    </button>
+                </div>
+
+                <div class="orders-table-container">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <tr>
+                                <td colspan="7" class="loading-cell">
+                                    <div class="spinner"></div>
+                                    <p>Loading orders...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Menu Tab -->
+            <div class="tab-content" id="menuTab">
+                <div class="content-header">
+                    <button class="primary-btn" id="addMenuItemBtn">
+                        <span>+</span>
+                        <span>Add New Item</span>
+                    </button>
+                </div>
+
+                <div class="menu-items-grid" id="menuItemsGrid">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading menu items...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div class="tab-content" id="settingsTab">
+                <div class="settings-container">
+                    <section class="settings-section">
+                        <h2>Restaurant Details</h2>
+                        <form id="settingsForm">
+                            <div class="form-group">
+                                <label for="restaurantName">Restaurant Name</label>
+                                <input type="text" id="restaurantName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contactPhone">Contact Phone</label>
+                                <input type="tel" id="contactPhone" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contactEmail">Contact Email</label>
+                                <input type="email" id="contactEmail" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="currencySymbol">Currency Symbol</label>
+                                <input type="text" id="currencySymbol" required>
+                            </div>
+                            <button type="submit" class="primary-btn">Save Settings</button>
+                        </form>
+                    </section>
+
+                    <section class="settings-section">
+                        <h2>Change Password</h2>
+                        <form id="passwordForm">
+                            <div class="form-group">
+                                <label for="currentPassword">Current Password</label>
+                                <input type="password" id="currentPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="newPassword">New Password</label>
+                                <input type="password" id="newPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm Password</label>
+                                <input type="password" id="confirmPassword" required>
+                            </div>
+                            <button type="submit" class="secondary-btn">Update Password</button>
+                        </form>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Order Details Modal -->
+            <div class="modal" id="orderModal">
+                <div class="modal-content modal-large">
+                    <div class="modal-header">
+                        <h3>Order Details</h3>
+                        <div class="modal-header-actions">
+                            <button class="edit-mode-btn" id="toggleEditMode">
+                                <span>✏️</span>
+                                <span id="editModeText">Edit</span>
+                            </button>
+                            <button class="close-modal" id="closeOrderModal">✕</button>
+                        </div>
+                    </div>
+                    <div class="modal-body" id="orderModalBody">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <div class="modal-footer hidden" id="orderModalFooter">
+                        <button class="primary-btn" id="saveOrderBtn">Save Changes</button>
+                        <button class="secondary-btn" id="cancelOrderEdit">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Item Edit Modal -->
+            <div class="modal" id="menuItemModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="menuModalTitle">Add Menu Item</h3>
+                        <button class="close-modal" id="closeMenuModal">✕</button>
+                    </div>
+                    <div class="modal-body">
+                        <form class="menu-item-form" id="menuItemForm">
+                            <input type="hidden" id="menuItemId">
+
+                            <div class="form-group">
+                                <label for="itemName">Item Name *</label>
+                                <input type="text" id="itemName" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="itemDescription">Description</label>
+                                <textarea id="itemDescription" rows="3"></textarea>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="itemPrice">Price *</label>
+                                    <input type="number" id="itemPrice" step="0.01" min="0" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="itemCategory">Category *</label>
+                                    <select id="itemCategory" required>
+                                        <option value="appetizer">Appetizer</option>
+                                        <option value="main">Main Course</option>
+                                        <option value="dessert">Dessert</option>
+                                        <option value="drinks">Drinks</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="itemImageUrl">Image URL</label>
+                                <input type="url" id="itemImageUrl">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="itemAvailable" checked>
+                                    <span>Available for order</span>
+                                </label>
+                            </div>
+
+                            <div class="modal-actions">
+                                <button type="submit" class="primary-btn">Save Item</button>
+                                <button type="button" class="secondary-btn" id="cancelMenuEdit">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overlay -->
+            <div class="overlay" id="overlay"></div>
+
+            <script src="admin.js"></script>
+</body>
+
+</html>
