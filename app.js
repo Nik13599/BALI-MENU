@@ -7,6 +7,8 @@ const CONFIG = {
     CURRENCY_SYMBOL: 'BYN'
 };
 
+const BALI_API_CONFIGURED = /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(CONFIG.API_URL);
+
 // State
 let menuItems = [];
 let cart = [];
@@ -57,6 +59,7 @@ function initializeApp() {
 }
 
 async function loadConfig() {
+    if (!BALI_API_CONFIGURED) return;
     try {
         const response = await fetch(`${CONFIG.API_URL}?path=config`);
         const data = await response.json();
@@ -107,6 +110,10 @@ function attachEventListeners() {
 // ============================================
 
 async function fetchMenuItems() {
+    if (!BALI_API_CONFIGURED) {
+        elements.menuGrid.innerHTML = '<div class="loading-state"><p>Меню BALI появится здесь после подключения каталога и цен.</p></div>';
+        return;
+    }
     try {
         showLoading();
 
