@@ -56,11 +56,13 @@ const themeCss=source("bali-theme.css");
 const neutralLimeCss=source("bali-lime-neutral.css");
 assert(html.includes('class="bali-yandex-pin"') &&
   !html.includes('<circle cx="12" cy="12" r="4.25" fill="white"/>') &&
+  html.includes('M12 7.75a4.25 4.25 0 1 0 0 8.5') &&
+  html.includes('fill-rule="evenodd" clip-rule="evenodd"') &&
   neutralLimeCss.includes('#homeSection .bali-home-contacts-card .bali-yandex-pin{') &&
   neutralLimeCss.includes('background:transparent!important;') &&
   neutralLimeCss.includes('border-radius:0!important;') &&
   neutralLimeCss.includes('color:var(--bt-text)!important;'),
-  "The home address icon must be a solid theme-colored pin, without red tile or white centre");
+  "The home address icon must have a transparent cut-out centre, not a white dot or red tile");
 
 assert(html.includes('data-bali-theme="lime"') &&
   admin.includes('data-bali-theme="lime"') &&
