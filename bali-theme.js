@@ -42,6 +42,7 @@ function applyTheme(selection){
   root.style.setProperty("--bt-text",colors.text);
   root.style.setProperty("--bt-border",colors.border);
   root.style.setProperty("--bt-on-primary",contrastText(colors.primary));
+  root.style.setProperty("--bt-on-secondary",contrastText(colors.secondary));
   root.style.setProperty("--bt-tint",rgb(colors.primary,.17));
   root.style.setProperty("--bt-stroke",rgb(colors.border,.60));
   root.dataset.baliTheme=selection.theme;
