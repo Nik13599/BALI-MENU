@@ -26,6 +26,7 @@
     <link rel="stylesheet" href="bali-theme.css?v=20261017-60">
     <link rel="stylesheet" href="bali-lime-neutral.css?v=20261017-62">
     <link rel="stylesheet" href="bali-desktop-fullwidth.css?v=20261017-64">
+    <link rel="stylesheet" href="bali-bar-menu.css?v=20261017-65">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -137,6 +138,12 @@
         </div>
     </section>
 
+    <!-- Переключатель разделов меню. Бар — только информация, без заказа. -->
+    <div class="bali-menu-mode-switch" id="baliMenuModeSwitch" role="group" aria-label="Выберите раздел меню">
+      <button type="button" class="bali-menu-mode-btn is-active" data-bali-menu-mode="kitchen" aria-pressed="true">Меню кухни</button>
+      <button type="button" class="bali-menu-mode-btn" data-bali-menu-mode="bar" aria-pressed="false">Барная карта</button>
+    </div>
+    <div id="baliKitchenContent" class="bali-kitchen-content">
     <!-- Меню начинается с категорий: заказ в Профиле, корзина закреплена снизу. -->
     <section class="categories">
       <div class="container">
@@ -161,6 +168,19 @@
                 </div>
             </div>
         </div>
+    </section>
+    </div><!-- /baliKitchenContent -->
+
+    <section id="baliBarContent" class="bali-bar-content" aria-label="Барная карта BALI" hidden>
+      <div class="bali-bar-intro">
+        <div class="bali-bar-label">BALI NIGHT CLUB / БАР</div>
+        <h2>Барная карта</h2>
+        <p>Данное меню предоставлено исключительно для ознакомления с ассортиментом и ценами. Предзаказ алкогольной продукции недоступен. Заказать напитки можно непосредственно в заведении.</p>
+      </div>
+      <div id="baliBarCategoryFilter" class="bali-bar-category-filter" role="group" aria-label="Категории барной карты"></div>
+      <div id="baliBarList" class="bali-bar-list" aria-live="polite">
+        <p class="bali-bar-empty">Загружаем барную карту...</p>
+      </div>
     </section>
 
     </div><!-- /menuPage -->
@@ -415,9 +435,10 @@
     </div>
 
     <script src="firebase-config.js?v=20261017-10"></script>
-    <script src="app.js?v=20261017-61"></script>
+    <script src="app.js?v=20261017-65"></script>
     <script type="module" src="auth.js?v=20261017-16"></script>
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>
+    <script type="module" src="bali-bar-menu.js?v=20261017-65"></script>
     <script type="module" src="orders-firestore.js?v=20261017-28"></script>
     <script type="module" src="event-interests.js?v=20261017-26"></script>
     <script src="bali-icon-atelier.js?v=20261017-58" defer></script>
