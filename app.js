@@ -78,19 +78,8 @@ function initEventCarousel() {
     const track=document.getElementById("eventsGrid");
     if(!track)return;
     track.addEventListener("scroll",updateEventCarouselPosition,{passive:true});
-    track.addEventListener("wheel",event=>{
-        if(event.ctrlKey||Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
-        const direction=Math.sign(event.deltaY);
-        if(!direction)return;
-        const cards=carouselEventCards(track);
-        if(cards.length<2)return;
-        // Вертикальное колесо прокручивает карусель по одной карточке.
-        event.preventDefault();
-        const now=performance.now();
-        if(now-lastWheelSlideAt<420)return;
-        lastWheelSlideAt=now;
-        scrollEventCarousel(direction);
-    },{passive:false});
+    // Вертикальные жесты не перехватываются каруселью.
+    // Горизонтальный свайп обрабатывается нативным scroll-snap.
     track.addEventListener("keydown",event=>{
         if(event.key!=="ArrowRight"&&event.key!=="ArrowLeft")return;
         event.preventDefault();
@@ -819,14 +808,18 @@ function handleCategoryFilter(e) {
     displayMenuItems(menuItems);
     // После смены категории начало её списка появляется ниже двух
     // закреплённых панелей, даже если гость нажал кнопку внизу страницы.
-    const menuSection = document.querySelector('.menu-section');
-    const header = document.querySelector('.header');
-    const sticky = document.querySelector('.categories');
+    const menuSection = document.querySelector('#menuPage .menu-section');
     if (menuSection) {
-        const y = window.scrollY + menuSection.getBoundingClientRect().top
-            - (header?.getBoundingClientRect().height || 0)
-            - (sticky?.getBoundingClientRect().height || 0) - 8;
-        window.scrollTo({top: Math.max(0, y), behavior: 'smooth'});
+        if (window.matchMedia('(max-width: 767px)').matches) {
+            menuSection.scrollTo({top:0,behavior:'instant'});
+        } else {
+            const header=document.querySelector('.header');
+            const sticky=document.querySelector('.categories');
+            const y=window.scrollY+menuSection.getBoundingClientRect().top
+                -(header?.getBoundingClientRect().height||0)
+                -(sticky?.getBoundingClientRect().height||0)-8;
+            window.scrollTo({top:Math.max(0,y),behavior:'smooth'});
+        }
     }
 }
 
