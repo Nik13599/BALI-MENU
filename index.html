@@ -84,19 +84,19 @@
             <div class="bali-pc-hero-visual"><img id="baliPcHeroPoster" alt="" decoding="async"></div>
             <div class="bali-pc-hero-content">
               <span class="bali-pc-kicker">BALI NIGHT CLUB</span>
-              <h1>СОБЫТИЯ<br>ЭТОГО МЕСЯЦА</h1>
-              <p>Музыка · Атмосфера · Люди</p>
-              <button type="button" class="bali-pc-outline-button" data-bali-nav="events">Смотреть календарь <span aria-hidden="true">→</span></button>
+              <h1 id="baliPcOfferTitle">BALI PRIVILEGE</h1>
+              <p id="baliPcOfferDescription">Особые предложения клуба. Скоро здесь появятся новые возможности для гостей.</p>
+              <button type="button" class="bali-pc-outline-button" id="baliPcOfferAction" hidden>Подробнее <span aria-hidden="true">→</span></button>
             </div>
             <div class="bali-pc-hero-controls">
-              <span id="baliPcHeroCounter">01 / 01</span>
+              <span id="baliPcHeroCounter">— / —</span>
               <button type="button" data-bali-hero-step="-1" aria-label="Предыдущее событие">‹</button>
               <button type="button" data-bali-hero-step="1" aria-label="Следующее событие">›</button>
             </div>
           </div>
           <div class="bali-pc-events-title">
-            <h2>Ближайшие события</h2>
-            <button type="button" data-bali-nav="events">Смотреть все <span aria-hidden="true">→</span></button>
+            <h2>Календарь событий</h2>
+            <button type="button" data-bali-nav="events">Смотреть всё <span aria-hidden="true">→</span></button>
           </div>
           <div id="homeEventCarousel" class="bali-home-events" role="region" aria-label="Карусель мероприятий" tabindex="0">
             <p class="bali-home-event-empty">Загружаем афиши...</p>
@@ -489,6 +489,7 @@
     <script type="module" src="auth.js?v=20261017-67"></script>
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>
     <script type="module" src="bali-bar-menu.js?v=20261017-65"></script>
+    <script type="module" src="bali-pc-offers.js?v=20261017-67"></script>
     <script type="module" src="orders-firestore.js?v=20261017-28"></script>
     <script type="module" src="event-interests.js?v=20261017-26"></script>
     <script src="bali-icon-atelier.js?v=20261017-58" defer></script>
