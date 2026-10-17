@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-36"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-37"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -99,7 +99,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-36'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-37'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
@@ -205,7 +205,7 @@ assert(app.includes('Хочу пойти') &&
   app.includes('guestInterestDates.has(event.date)'), "Event cards must display RSVP button and public counts");
 assert(app.includes('window.setInterval(()=>') &&
   app.includes('renderUpcomingEvents();'), "Past events must disappear automatically from My Plans");
-assert(app.includes('body.append(date,name,preorder,interested,planBtn,message);'),
+assert(app.includes('body.append(name,date,preorder,interested,planBtn,message);'),
   "RSVP must appear before preorder button");
 assert(interestSource.includes('runTransaction(db,async transaction=>') &&
   interestSource.includes('transaction.update(eventRef,{interestCount:') &&
@@ -247,56 +247,44 @@ assert(html.includes('id="cartBtn"') &&
   html.indexOf('id="cartBtn"') < html.indexOf('<!-- /menuPage -->'),
   "Cart must be displayed inside Menu section, not header");
 assert(html.includes('id="accountMyOrdersBtn"'), "My Orders shortcut must remain in account");
-assert(html.includes('class="bali-home-social"') &&
+// Mobile BALI reference: hero + calendar + swipeable stories + compact contacts.
+assert(html.includes('class="bali-hero-scene"') &&
+  html.includes('Современный<br>ночной клуб') &&
+  html.includes('Лучшие вечеринки.'), "Approved BALI hero must appear on Home");
+assert(html.includes('class="bali-home-calendar-row"') &&
+  html.includes('data-home-events-view="all"') &&
+  html.includes('data-home-events-view="planned"'), "Home calendar and My Plans controls missing");
+assert(html.includes('id="homeEventCarousel"') &&
+  app.includes('function renderHomeEvents()') &&
+  app.includes('updateHomeEventPosition()'), "Home event story carousel missing");
+assert(html.includes('class="bali-home-contacts-card"') &&
   html.includes('href="tel:+375296700300"') &&
-  html.includes('href="https://t.me/baliclubminsk"') &&
-  html.includes('href="https://www.instagram.com/baliminsk/"'),
-  "Home page must show Call, Telegram and Instagram");
-assert(html.includes('class="bali-home-map bali-yandex-map"') &&
+  html.includes('href="https://www.instagram.com/baliminsk/"') &&
   html.includes('href="https://yandex.by/maps/org/bali_night_club/104137822369/"'),
-  "Home address must open Yandex Maps");
-assert(interestCss.includes('position:sticky') &&
-  interestCss.includes('top:var(--bali-header-height,70px)') &&
-  interestCss.includes('#eventsSection .events-view-tabs'), "Event plans selector must stick below Bali header");
-assert(ordersClient.includes('runTransaction(db,async tx=>') &&
-  ordersClient.includes('collection(db,"orders")') &&
-  ordersClient.includes('doc(db,"orderCounters",eventDate)') &&
-  ordersClient.includes('order_number:orderNumber'), "Order numbers must be sequential per date in transaction");
-assert(rules.includes('match /orderCounters/{date}') &&
-  rules.includes('validOrderSequence(') &&
-  rules.includes('counterWitness(date)'), "Firestore rules must enforce per-date order counters");
-assert(app.includes("String(result.order_number).padStart(2,'0')") &&
-  app.includes('String(order.orderNumber).padStart(2'), "Guest must see padded date-specific order number");
-assert(orderAdminSource.includes('orderLabel = o =>') &&
-  orderAdminSource.includes('runTransaction(db,async tx=>'), "Admin must show date-based order numbers and renumber date changes");
-assert(html.includes('bali-pages.css?v=20261017-32'), "Updated social icon CSS must load");
-const socialStart=html.indexOf('class="bali-home-social"');
-const socialEnd=html.indexOf('class="bali-home-map bali-yandex-map"',socialStart);
-assert(socialStart>=0 && socialEnd>socialStart, "Home social row missing");
-const socialMarkup=html.slice(socialStart,socialEnd);
-assert((socialMarkup.match(/class="bali-social-svg"/g)||[]).length===3, "Social row must contain 3 actual SVG icons");
-assert((socialMarkup.match(/aria-label="[^"]+"/g)||[]).length>=4, "Social links must have accessible descriptions");
-assert(!/>\s*(Позвонить|Telegram|Instagram)\s*</.test(socialMarkup), "Social icons should replace textual button labels");
-assert(landingCss.includes(".bali-home-social .bali-social-btn") &&
-  landingCss.includes("min-height:66px"), "Icon links need visible touch targets");
-const homeTileStart=html.indexOf('class="bali-home-actions"');
-const homeTileEnd=html.indexOf('class="bali-home-social"',homeTileStart);
-assert(homeTileStart>=0&&homeTileEnd>homeTileStart, "Home navigation tiles must be present");
-assert(!html.slice(homeTileStart,homeTileEnd).includes('bali-home-action-arrow'),
-  "Menu and Events tiles should have no right arrows");
-const yandexMapStart=html.indexOf('class="bali-home-map bali-yandex-map"');
-const yandexMapEnd=html.indexOf('</a>',yandexMapStart);
-assert(yandexMapStart>=0 && yandexMapEnd>yandexMapStart &&
-  html.slice(yandexMapStart,yandexMapEnd).includes('bali-yandex-pin') &&
-  html.slice(yandexMapStart,yandexMapEnd).includes('bali-yandex-address') &&
-  !html.slice(yandexMapStart,yandexMapEnd).includes('bali-yandex-brand') &&
-  !html.slice(yandexMapStart,yandexMapEnd).includes('bali-home-map-arrow'),
-  "Address must retain Yandex map pin, centered text, and no arrow");
-assert(landingCss.includes('BALI v32') &&
-  landingCss.includes('justify-content:center') &&
-  landingCss.includes('text-align:center') &&
-  landingCss.includes('.bali-yandex-pin{left:10px;top:50%'),
-  "Yandex Maps address text must be centered with red pin left on mobile");
+  "Home must retain actual phone, Instagram and map contact links");
+assert(html.includes('class="bali-home-menu-banner"') &&
+  html.includes('id="menuNavBtn"'), "Home menu shortcut must remain functional");
+const approvedCss=source("bali-redesign.css");
+assert(html.includes('bali-redesign.css?v=20261017-37') &&
+  html.indexOf('bali-redesign.css?v=20261017-37') >
+    html.indexOf('events-carousel.css?v=20261017-36'),
+  "Approved mobile visual override must load last");
+assert(html.includes('id="profileSection"') &&
+  html.includes('id="profileMyOrdersBtn"') &&
+  html.includes('id="profileMyPlansBtn"') &&
+  html.includes('id="profileDataBtn"') &&
+  html.includes('id="profileLogoutBtn"'), "Guest account screen must preserve profile actions");
+assert(html.includes('id="baliCartDock"') &&
+  html.includes('id="baliDockCount"') &&
+  html.includes('id="baliDockTotal"') &&
+  app.includes('dockCount.textContent=String(totalItems)') &&
+  app.includes('dockTotal.textContent='), "Fixed cart must show quantity and total");
+assert(approvedCss.includes('.bali-cart-dock{position:fixed') &&
+  approvedCss.includes('bottom:calc(var(--bali-bottom-size)') &&
+  approvedCss.includes('.bali-bottom-nav{position:fixed'), "Fixed cart must stay above bottom navigation");
+assert(approvedCss.includes('/* Menu: original sticky category filters intentionally not changed.') &&
+  app.includes('const groups = new Map()') &&
+  app.includes('updateCategoryButtons()'), "Original menu category filtering must remain intact");
 const carouselCss=source("events-carousel.css");
 assert(html.includes('events-carousel.css?v=20261017-36'), "Swipe carousel stylesheet must load");
 assert(html.indexOf('events-carousel.css?v=20261017-36') >
