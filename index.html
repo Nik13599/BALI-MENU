@@ -26,8 +26,8 @@
     <link rel="stylesheet" href="bali-theme.css?v=20261017-60">
     <link rel="stylesheet" href="bali-lime-neutral.css?v=20261017-62">
     <link rel="stylesheet" href="bali-desktop-fullwidth.css?v=20261017-64">
-    <link rel="stylesheet" href="bali-bar-menu.css?v=20261017-65">
-    <link rel="stylesheet" href="bali-pc-reference.css?v=20261017-70">
+    <link rel="stylesheet" href="bali-bar-menu.css?v=20261017-71">
+    <link rel="stylesheet" href="bali-pc-reference.css?v=20261017-71">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -73,13 +73,6 @@
       <div class="container bali-home-inner">
         <!-- Верхняя зона: календарь и горизонтальная карусель -->
         <section class="bali-home-events-panel" aria-label="Ближайшие мероприятия BALI">
-          <div class="bali-home-calendar-row">
-            <button type="button" id="eventsNavBtn" class="bali-home-calendar-btn" aria-controls="eventsSection">
-              <span aria-hidden="true">▦</span><strong>BALI календарь</strong><span aria-hidden="true">›</span>
-            </button>
-            <button type="button" class="bali-home-filter is-current" data-home-events-view="all">Все события</button>
-            <button type="button" class="bali-home-filter" data-home-events-view="planned">Мои планы</button>
-          </div>
           <div class="bali-pc-hero">
             <div class="bali-pc-hero-visual"><img id="baliPcHeroPoster" alt="" decoding="async"></div>
             <div class="bali-pc-hero-content">
@@ -190,6 +183,8 @@
     <div class="bali-menu-mode-switch" id="baliMenuModeSwitch" role="group" aria-label="Выберите раздел меню">
       <button type="button" class="bali-menu-mode-btn is-active" data-bali-menu-mode="kitchen" aria-pressed="true">Меню кухни</button>
       <button type="button" class="bali-menu-mode-btn" data-bali-menu-mode="bar" aria-pressed="false">Барная карта</button>
+      <button type="button" class="bali-menu-mode-btn" data-bali-menu-mode="hookah" aria-pressed="false">Кальянная карта</button>
+      <button type="button" class="bali-menu-mode-btn" data-bali-menu-mode="tea" aria-pressed="false">Чайная карта</button>
     </div>
     <div id="baliKitchenContent" class="bali-kitchen-content">
     <!-- Меню начинается с категорий: заказ в Профиле, корзина закреплена снизу. -->
@@ -228,6 +223,31 @@
       <div id="baliBarCategoryFilter" class="bali-bar-category-filter" role="group" aria-label="Категории барной карты"></div>
       <div id="baliBarList" class="bali-bar-list" aria-live="polite">
         <p class="bali-bar-empty">Загружаем барную карту...</p>
+      </div>
+    </section>
+
+    <!-- Ознакомительные карты из отдельных коллекций Firebase: без онлайн-предзаказа. -->
+    <section id="baliHookahContent" class="bali-bar-content" aria-label="Кальянная карта BALI" hidden>
+      <div class="bali-bar-intro">
+        <div class="bali-bar-label">BALI NIGHT CLUB / КАЛЬЯНЫ</div>
+        <h2>Кальянная карта</h2>
+        <p>Ознакомьтесь с ассортиментом и актуальными ценами. Заказ кальянов онлайн через кухонную корзину недоступен.</p>
+      </div>
+      <div id="baliHookahCategoryFilter" class="bali-bar-category-filter" role="group" aria-label="Категории кальянов"></div>
+      <div id="baliHookahList" class="bali-bar-list" aria-live="polite">
+        <p class="bali-bar-empty">Загружаем кальянную карту...</p>
+      </div>
+    </section>
+
+    <section id="baliTeaContent" class="bali-bar-content" aria-label="Чайная карта BALI" hidden>
+      <div class="bali-bar-intro">
+        <div class="bali-bar-label">BALI NIGHT CLUB / ЧАЙ</div>
+        <h2>Чайная карта</h2>
+        <p>Ассортимент чая, варианты подачи и цены. Этот раздел предназначен для ознакомления, без оформления онлайн-предзаказа.</p>
+      </div>
+      <div id="baliTeaCategoryFilter" class="bali-bar-category-filter" role="group" aria-label="Категории чая"></div>
+      <div id="baliTeaList" class="bali-bar-list" aria-live="polite">
+        <p class="bali-bar-empty">Загружаем чайную карту...</p>
       </div>
     </section>
 
@@ -483,11 +503,12 @@
     </div>
 
     <script src="firebase-config.js?v=20261017-10"></script>
-    <script src="app.js?v=20261017-67"></script>
+    <script src="app.js?v=20261017-71"></script>
     <script src="bali-pc-reference.js?v=20261017-67" defer></script>
     <script type="module" src="auth.js?v=20261017-67"></script>
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>
     <script type="module" src="bali-bar-menu.js?v=20261017-65"></script>
+    <script type="module" src="bali-extra-menus.js?v=20261017-71"></script>
     <script type="module" src="bali-pc-offers.js?v=20261017-67"></script>
     <script type="module" src="orders-firestore.js?v=20261017-28"></script>
     <script type="module" src="event-interests.js?v=20261017-26"></script>
