@@ -444,3 +444,83 @@ button { -webkit-tap-highlight-color: transparent; }
   .cart-footer{padding-left:10px;padding-right:10px}
   .cart-item-price{font-size:12px}
 }
+
+/* BALI Mobile v16: логотип на первой строке; ниже три кнопки в одном ряду. */
+html, body { touch-action: manipulation; } /* отключает double-tap zoom, но оставляет pinch-zoom */
+button, a, input, select, textarea, summary,
+.menu-item, .menu-purchase-controls, .category-btn {
+  touch-action: manipulation;
+}
+@media (max-width: 767px) {
+  .header-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 59px;
+    grid-template-areas:
+      "brand brand menu"
+      "account orders cart";
+    gap: 9px 7px;
+    padding: 9px 12px 10px;
+    align-items: center;
+  }
+  .header-content .logo {
+    grid-area: brand;
+    justify-self: start;
+    min-width: 0;
+  }
+  .header-content .nav { display: contents; }
+  .header-content .nav-link {
+    grid-area: menu;
+    justify-self: end;
+    font-size: 13px;
+    margin: 0;
+    white-space: nowrap;
+  }
+  #accountBtn {
+    grid-area: account;
+    justify-self: stretch;
+    width: 100%;
+    max-width: none;
+    height: 42px;
+    margin: 0;
+    padding: 8px 7px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    line-height: 1.2;
+    text-align: center;
+  }
+  #accountBtn::before, #accountBtn::after { display: none; content: none; }
+  #myOrdersBtn {
+    grid-area: orders;
+    justify-self: stretch;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    height: 42px;
+    padding: 8px 5px;
+    font-size: 12px;
+    line-height: 1.2;
+    text-align: center;
+  }
+  #cartBtn {
+    grid-area: cart;
+    justify-self: stretch;
+    width: 59px;
+    max-width: 59px;
+    height: 42px;
+    padding: 7px 4px;
+    gap: 3px;
+  }
+  .header { touch-action: manipulation; }
+}
+@media (max-width: 359px) {
+  .header-content {
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr) 52px;
+    padding: 8px 7px 9px;
+    gap: 7px 5px;
+  }
+  #accountBtn { width: 100%; max-width: none; height: 40px; padding: 6px 4px; font-size: 11px; }
+  #myOrdersBtn { width: 100%; max-width: none; height: 40px; font-size: 11px; padding: 6px 3px; }
+  #cartBtn { width: 52px; max-width: 52px; height: 40px; }
+}
