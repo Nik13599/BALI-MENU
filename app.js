@@ -288,7 +288,7 @@ function renderHomeEvents() {
         p.className="bali-home-event-empty";
         p.textContent=showOnlyPlannedEvents?"В ваших планах пока нет мероприятий.":"Афиши ближайших мероприятий пока не опубликованы.";
         track.append(p);
-        document.getElementById("homeEventPosition").textContent="";
+
         return;
     }
     for(const event of upcoming){
@@ -317,24 +317,6 @@ function renderHomeEvents() {
         track.append(card);
     }
     track.scrollLeft=0;
-    updateHomeEventPosition();
-}
-function updateHomeEventPosition(){
-    const track=document.getElementById("homeEventCarousel");
-    const indicator=document.getElementById("homeEventPosition");
-    if(!track||!indicator)return;
-    const cards=[...track.querySelectorAll(".bali-home-event-card")];
-    if(!cards.length){indicator.textContent="";return;}
-    // The home posters share one width + gap, so a single measured slide
-    // is enough: no per-poster layout reads during horizontal swiping.
-    const slideWidth=cards[0].getBoundingClientRect().width;
-    const gap=parseFloat(getComputedStyle(track).columnGap)||0;
-    const stride=slideWidth+gap;
-    const active=stride>0
-        ?Math.min(cards.length-1,Math.max(0,Math.round(track.scrollLeft/stride)))
-        :0;
-    const position=String(active+1).padStart(2,"0")+" / "+String(cards.length).padStart(2,"0");
-    if(indicator.textContent!==position)indicator.textContent=position;
 }
 
 function renderUpcomingEvents() {
@@ -614,16 +596,6 @@ function attachEventListeners() {
         baliMenuSearchText=String(event.target.value||"").trim().toLocaleLowerCase("ru-RU");
         displayMenuItems(menuItems);
     });
-    // Avoid running geometry measurements for every touchmove on low-end phones.
-    const homeTrack=document.getElementById("homeEventCarousel");
-    let homeScrollFrame=0;
-    homeTrack?.addEventListener("scroll",()=>{
-        if(homeScrollFrame)return;
-        homeScrollFrame=requestAnimationFrame(()=>{
-            homeScrollFrame=0;
-            updateHomeEventPosition();
-        });
-    },{passive:true});
     for(const button of document.querySelectorAll("[data-home-events-view]")){
         button.addEventListener("click",()=>{
             showOnlyPlannedEvents=button.dataset.homeEventsView==="planned";
