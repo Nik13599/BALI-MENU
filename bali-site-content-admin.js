@@ -131,6 +131,13 @@ if(host){
       try{const url=new URL(d[key]);if(url.protocol!=="https:")return "Для "+key+" нужна HTTPS-ссылка.";}
       catch{return "Неверная ссылка: "+key;}
     }
+    if(d.tiktokUrl){
+      try{
+        const profile=new URL(d.tiktokUrl);
+        if(!/^(www\.)?tiktok\.com$/i.test(profile.hostname))
+          return "Укажите ссылку на профиль tiktok.com, а не на другой сайт.";
+      }catch{return "Неверная ссылка TikTok.";}
+    }
     for(const name of iconNames)if(!safeIcon(d.icons[name]))return "Некорректная картинка значка: "+name;
     return "";
   }
