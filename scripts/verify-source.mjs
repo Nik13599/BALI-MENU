@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-51"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-52"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -99,7 +99,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-51'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-52'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
@@ -316,6 +316,32 @@ assert(app.includes('track.clientHeight-(mobile?185:195)') &&
   "Carousel must reserve vertical space for square image and event actions");
 
 const premiumCss=source("bali-home-premium.css");
+const homeStoriesCss=source("bali-home-stories.css");
+assert(html.includes('bali-home-stories.css?v=20261017-52') &&
+  html.indexOf('bali-home-stories.css?v=20261017-52') >
+  html.indexOf('bali-event-square.css?v=20261017-50'),
+  "Homepage square card overrides must load after event card styles");
+assert(homeStoriesCss.includes("aspect-ratio:1/1") &&
+  homeStoriesCss.includes(".bali-home-poster-wrap") &&
+  homeStoriesCss.includes(".bali-home-event-info") &&
+  homeStoriesCss.includes(".bali-home-heart.is-liked svg") &&
+  homeStoriesCss.includes("fill:#f02b50") &&
+  homeStoriesCss.includes("touch-action:pan-x pan-y"),
+  "Home events should show square artwork and a clear-to-red accessible heart while preserving horizontal swipes");
+assert(app.includes('const card=document.createElement("article");') &&
+  app.includes('heart.setAttribute("aria-pressed",String(liked))') &&
+  app.includes('window.BaliInterests.toggle(event.date)') &&
+  app.includes('click.stopPropagation()') &&
+  app.includes('syncHeart(guestInterestDates.has(event.date))') &&
+  app.includes('requestAnimationFrame(()=>{\n            track.scrollLeft='),
+  "Home RSVP hearts must persist through Firebase and not activate the event overlay or reset carousel scroll");
+assert(html.includes('id="homeInterestFeedback"') &&
+  app.includes('getElementById("homeInterestFeedback")') &&
+  app.includes('result?.loginRequired') &&
+  app.includes('heart.disabled=true') &&
+  app.includes('heart.disabled=false'),
+  "Home hearts need login, pending-operation and save-error feedback");
+
 assert(html.includes('<section class="bali-home-events-panel"') &&
   html.includes('id="homeEventCarousel"') &&
   html.includes('id="menuNavBtn"') &&
