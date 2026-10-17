@@ -34,7 +34,9 @@ function setup({prefix,collection:collectionName,title,all}){
   const list=document.getElementById(prefix+"List");
   const filters=document.getElementById(prefix+"CategoryFilter");
   if(!list||!filters)return;
-  const state={items:[],selected:"all"};
+  const state={items:[],selected:"all",term:""};
+  const search=document.getElementById("baliMenuSearch");
+  const mode=prefix==="baliHookah"?"hookah":"tea";
   function draw(){
     list.replaceChildren();filters.replaceChildren();
     const categories=[...new Set(state.items.map(item=>item.category))];
@@ -50,7 +52,15 @@ function setup({prefix,collection:collectionName,title,all}){
       list.append(node("p","bali-bar-empty",title+" готовится к публикации. Позиции и цены появятся здесь после добавления администратором."));
       return;
     }
-    const shown=state.selected==="all"?state.items:state.items.filter(x=>x.category===state.selected);
+    const shown=state.items.filter(x=>
+      (state.selected==="all"||x.category===state.selected)&&
+      (!state.term||[x.name,x.category,x.volume1,x.volume2].some(value=>
+        String(value||"").toLocaleLowerCase("ru-RU").includes(state.term)))
+    );
+    if(!shown.length&&state.items.length){
+      list.append(node("p","bali-bar-empty","По выбранной категории или запросу ничего не найдено."));
+      return;
+    }
     const grouped=new Map();
     for(const item of shown){
       if(!grouped.has(item.category))grouped.set(item.category,[]);
@@ -76,6 +86,17 @@ function setup({prefix,collection:collectionName,title,all}){
       group.append(table);list.append(group);
     }
   }
+  search?.addEventListener("input",()=>{
+    if(window.BaliActiveMenuMode!==mode)return;
+    state.term=search.value.trim().toLocaleLowerCase("ru-RU");
+    draw();
+  });
+  window.addEventListener("bali:menu-mode-changed",event=>{
+    if(event.detail?.mode===mode){
+      state.selected="all";state.term="";
+      draw();
+    }
+  });
   filters.addEventListener("click",event=>{
     const button=event.target.closest("button[data-extra-menu-category]");
     if(!button||!filters.contains(button))return;
