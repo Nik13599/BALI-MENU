@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="bali-pages.css?v=20261017-32">
     <link rel="stylesheet" href="events-carousel.css?v=20261017-36">
     <link rel="stylesheet" href="bali-redesign.css?v=20261017-46">
+    <link rel="stylesheet" href="bali-home-premium.css?v=20261017-49">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -25,8 +26,7 @@
 
 <body>
     <div class="bali-preview-banner" role="status">
-      ТЕСТОВЫЙ ЗАПУСК: предзаказы будут сохраняться в Firestore после публикации новых правил.
-      Заказы не оплачиваются онлайн и требуют подтверждения администратора.
+      Тестовый режим · Предзаказы работают после публикации правил Firestore. Оплата онлайн недоступна, заказ подтверждает администратор.
     </div>
     <!-- BALI: минимальная шапка с профилем -->
     <header class="header">
@@ -41,16 +41,19 @@
     <!-- Главная BALI: календарь, события, меню и контакты без рекламного блока -->
     <section class="bali-home" id="homeSection" aria-label="Главная страница BALI">
       <div class="container bali-home-inner">
-        <div class="bali-home-calendar-row">
-          <button type="button" id="eventsNavBtn" class="bali-home-calendar-btn" aria-controls="eventsSection">
-            <span aria-hidden="true">▦</span><strong>BALI календарь</strong><span aria-hidden="true">›</span>
-          </button>
-          <button type="button" class="bali-home-filter is-current" data-home-events-view="all">Все события</button>
-          <button type="button" class="bali-home-filter" data-home-events-view="planned">Мои планы</button>
-        </div>
-        <div id="homeEventCarousel" class="bali-home-events" role="region" aria-label="Карусель мероприятий" tabindex="0">
-          <p class="bali-home-event-empty">Загружаем афиши...</p>
-        </div>
+        <!-- Верхняя зона: календарь и горизонтальная карусель -->
+        <section class="bali-home-events-panel" aria-label="Ближайшие мероприятия BALI">
+          <div class="bali-home-calendar-row">
+            <button type="button" id="eventsNavBtn" class="bali-home-calendar-btn" aria-controls="eventsSection">
+              <span aria-hidden="true">▦</span><strong>BALI календарь</strong><span aria-hidden="true">›</span>
+            </button>
+            <button type="button" class="bali-home-filter is-current" data-home-events-view="all">Все события</button>
+            <button type="button" class="bali-home-filter" data-home-events-view="planned">Мои планы</button>
+          </div>
+          <div id="homeEventCarousel" class="bali-home-events" role="region" aria-label="Карусель мероприятий" tabindex="0">
+            <p class="bali-home-event-empty">Загружаем афиши...</p>
+          </div>
+        </section>
         <button type="button" id="menuNavBtn" class="bali-home-menu-banner" aria-controls="menuPage">
           <span class="bali-menu-banner-icon" aria-hidden="true">♜</span>
           <span><strong>Меню</strong><small>Барная карта и кухня</small></span>

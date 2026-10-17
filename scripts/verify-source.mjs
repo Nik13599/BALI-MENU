@@ -297,6 +297,33 @@ assert(app.includes("menuSection.scrollTop = 0") &&
   app.includes('if(window.matchMedia("(max-width:767px)").matches)return;'),
   "Mobile category change must scroll the product list without hijacking gestures");
 const approvedCss=source("bali-redesign.css");
+const premiumCss=source("bali-home-premium.css");
+assert(html.includes('<section class="bali-home-events-panel"') &&
+  html.includes('id="homeEventCarousel"') &&
+  html.includes('id="menuNavBtn"') &&
+  html.includes('class="bali-home-contacts-card"') &&
+  html.indexOf('bali-home-events-panel') < html.indexOf('id="menuNavBtn"') &&
+  html.indexOf('id="menuNavBtn"') < html.indexOf('class="bali-home-contacts-card"'),
+  "Home should be grouped in order: events, menu and contacts");
+assert(html.includes('bali-home-premium.css?v=20261017-49') &&
+  html.indexOf('bali-home-premium.css?v=20261017-49') >
+  html.indexOf('bali-redesign.css?v=20261017-46'),
+  "Premium home CSS must load after the existing phone, tablet and desktop CSS");
+assert(premiumCss.includes("/* BALI NIGHT CLUB · premium home zones, v49") &&
+  premiumCss.includes("grid-template-rows:minmax(0,1fr) auto auto!important") &&
+  premiumCss.includes("@media(max-width:767px)") &&
+  premiumCss.includes("@media(min-width:768px)") &&
+  premiumCss.includes(".bali-home-events-panel") &&
+  premiumCss.includes(".bali-home-menu-banner") &&
+  premiumCss.includes(".bali-home-contacts-card"),
+  "Premium home zones must fit the viewport on both small and large devices");
+assert(premiumCss.includes("overflow-x:auto!important") &&
+  premiumCss.includes("overflow-y:hidden!important") &&
+  premiumCss.includes("touch-action:pan-x pan-y") &&
+  html.includes('href="tel:+375296700300"') &&
+  html.includes('href="https://t.me/baliclubminsk"'),
+  "Home carousel must preserve native swipe, and existing contact links must remain");
+
 assert(approvedCss.includes("/* BALI v47: mobile viewport slots.") &&
   approvedCss.includes("body>.header{") &&
   approvedCss.includes("order:-3;") &&
