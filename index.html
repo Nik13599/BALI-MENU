@@ -26,7 +26,7 @@
     <link rel="stylesheet" href="bali-theme.css?v=20261017-60">
     <link rel="stylesheet" href="bali-lime-neutral.css?v=20261017-62">
     <link rel="stylesheet" href="bali-desktop-fullwidth.css?v=20261017-64">
-    <link rel="stylesheet" href="bali-bar-menu.css?v=20261017-83">
+    <link rel="stylesheet" href="bali-bar-menu.css?v=20261017-85">
     <link rel="stylesheet" href="bali-pc-reference.css?v=20261017-81">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -225,20 +225,24 @@
       </div>
     </div>
     <p id="baliMenuUnavailableNotice" class="bali-menu-unavailable" hidden>Все разделы меню временно скрыты администратором. Попробуйте зайти позже.</p>
-    <div id="baliKitchenContent" class="bali-kitchen-content">
-    <!-- Меню начинается с категорий: заказ в Профиле, корзина закреплена снизу. -->
-    <section class="categories">
-      <div class="container">
-        <div class="category-buttons" id="categoryFilter">
-          <button class="category-btn active" data-category="all">Всё меню</button>
+    <!-- Универсальная верхняя панель: одни и те же категории и поиск для всех карт. -->
+    <div id="baliSharedMenuControls" class="bali-shared-menu-controls">
+      <section class="categories bali-shared-categories" id="baliSharedCategories" aria-label="Категории выбранной карты">
+        <div class="container">
+          <div class="category-buttons bali-shared-category-filter" id="categoryFilter" data-menu-filter="kitchen">
+            <button class="category-btn active" data-category="all">Всё меню</button>
+          </div>
+          <div id="baliBarCategoryFilter" class="bali-bar-category-filter bali-shared-category-filter" data-menu-filter="bar" role="group" aria-label="Категории барной карты" hidden></div>
+          <div id="baliHookahCategoryFilter" class="bali-bar-category-filter bali-shared-category-filter" data-menu-filter="hookah" role="group" aria-label="Категории кальянов" hidden></div>
+          <div id="baliTeaCategoryFilter" class="bali-bar-category-filter bali-shared-category-filter" data-menu-filter="tea" role="group" aria-label="Категории чая" hidden></div>
         </div>
+      </section>
+      <div class="bali-menu-search container">
+        <label class="bali-menu-search-field"><span aria-hidden="true">⌕</span><input id="baliMenuSearch" type="search" placeholder="Поиск по меню..." autocomplete="off" aria-label="Поиск по меню"></label>
       </div>
-    </section>
-
-    <div class="bali-menu-search container">
-      <label class="bali-menu-search-field"><span aria-hidden="true">⌕</span><input id="baliMenuSearch" type="search" placeholder="Поиск по меню..." autocomplete="off" aria-label="Поиск по меню"></label>
     </div>
 
+    <div id="baliKitchenContent" class="bali-kitchen-content">
     <!-- Menu Items -->
     <section class="menu-section">
         <div class="container">
@@ -259,7 +263,6 @@
         <h2>Барная карта</h2>
         <p>Данное меню предоставлено исключительно для ознакомления с ассортиментом и ценами. Предзаказ алкогольной продукции недоступен. Заказать напитки можно непосредственно в заведении.</p>
       </div>
-      <div id="baliBarCategoryFilter" class="bali-bar-category-filter" role="group" aria-label="Категории барной карты"></div>
       <div id="baliBarList" class="bali-bar-list" aria-live="polite">
         <p class="bali-bar-empty">Загружаем барную карту...</p>
       </div>
@@ -272,7 +275,6 @@
         <h2>Кальянная карта</h2>
         <p>Ознакомьтесь с ассортиментом и актуальными ценами. Заказ кальянов онлайн через кухонную корзину недоступен.</p>
       </div>
-      <div id="baliHookahCategoryFilter" class="bali-bar-category-filter" role="group" aria-label="Категории кальянов"></div>
       <div id="baliHookahList" class="bali-bar-list" aria-live="polite">
         <p class="bali-bar-empty">Загружаем кальянную карту...</p>
       </div>
@@ -284,7 +286,6 @@
         <h2>Чайная карта</h2>
         <p>Ассортимент чая, варианты подачи и цены. Этот раздел предназначен для ознакомления, без оформления онлайн-предзаказа.</p>
       </div>
-      <div id="baliTeaCategoryFilter" class="bali-bar-category-filter" role="group" aria-label="Категории чая"></div>
       <div id="baliTeaList" class="bali-bar-list" aria-live="polite">
         <p class="bali-bar-empty">Загружаем чайную карту...</p>
       </div>
@@ -542,7 +543,7 @@
     </div>
 
     <script src="firebase-config.js?v=20261017-10"></script>
-    <script src="app.js?v=20261017-72"></script>
+    <script src="app.js?v=20261017-85"></script>
     <script src="bali-pc-reference.js?v=20261017-79" defer></script>
     <script type="module" src="auth.js?v=20261017-67"></script>
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>
