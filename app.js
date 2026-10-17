@@ -275,6 +275,10 @@ function updateHomeNextEvent() {
 function renderHomeEvents() {
     const track=document.getElementById("homeEventCarousel");
     if(!track)return;
+    const previousScroll=track.scrollLeft;
+    const view=showOnlyPlannedEvents?"planned":"all";
+    const preserveScroll=track.dataset.homeView===view;
+    track.dataset.homeView=view;
     const today=minskDateToday();
     const upcoming=availableEvents
         .filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date||"")&&e.date>=today)
@@ -291,25 +295,65 @@ function renderHomeEvents() {
         p.className="bali-home-event-empty";
         p.textContent=showOnlyPlannedEvents?"В ваших планах пока нет мероприятий.":"Афиши ближайших мероприятий пока не опубликованы.";
         track.append(p);
-
         return;
     }
     for(const event of upcoming){
-        const card=document.createElement("button");
-        card.type="button";
+        // The homepage visually matches the square-poster event cards, without
+        // the two CTA buttons. The heart uses the exact existing RSVP transaction.
+        const card=document.createElement("article");
         card.className="bali-home-event-card";
+        card.dataset.eventDate=event.date;
+        const posterWrap=document.createElement("div");
+        posterWrap.className="bali-home-poster-wrap";
         const img=document.createElement("img");
         img.src=safeImageUrl(event.poster_url);
         img.alt="Афиша "+event.title;
         img.loading="lazy";
-        const title=document.createElement("strong");
+        posterWrap.append(img);
+        const dateBadge=document.createElement("time");
+        dateBadge.className="bali-home-date-badge";
+        dateBadge.dateTime=event.date;
+        const dateParts=new Intl.DateTimeFormat("ru-RU",{
+            timeZone:"Europe/Minsk",day:"numeric",month:"short",weekday:"short"
+        }).formatToParts(new Date(event.date+"T12:00:00+03:00"));
+        const part=type=>dateParts.find(x=>x.type===type)?.value||"";
+        const badgeDay=document.createElement("strong");
+        badgeDay.textContent=part("day");
+        const badgeMonth=document.createElement("span");
+        badgeMonth.textContent=part("month").toUpperCase();
+        const badgeWeekday=document.createElement("small");
+        badgeWeekday.textContent=part("weekday").toUpperCase();
+        dateBadge.append(badgeDay,badgeMonth,badgeWeekday);
+        posterWrap.append(dateBadge);
+
+        const information=document.createElement("div");
+        information.className="bali-home-event-info";
+        const title=document.createElement("h3");
         title.textContent=event.title;
-        const date=document.createElement("time");
-        date.dateTime=event.date;
-        date.textContent=new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"short",timeZone:"Europe/Minsk"})
-            .format(new Date(event.date+"T12:00:00+03:00"));
-        card.append(img,date,title);
-        card.addEventListener("click",()=>{
+        const times=document.createElement("p");
+        times.className="bali-home-event-hours";
+        const validTime=/^([01]\d|2[0-3]):[0-5]\d$/;
+        const startTime=String(event.startTime||"");
+        const endTime=String(event.endTime||"");
+        times.textContent=validTime.test(startTime)&&validTime.test(endTime)
+            ?startTime+"–"+endTime:"Время уточняется";
+        const description=document.createElement("p");
+        description.className="bali-home-event-description";
+        description.textContent=typeof event.description==="string"
+            ?event.description.trim().slice(0,600):"";
+        description.hidden=!description.textContent;
+        const attending=document.createElement("p");
+        attending.className="bali-home-event-count";
+        const count=Number.isSafeInteger(event.interestCount)&&event.interestCount>=0
+            ?event.interestCount:0;
+        attending.textContent="Хочет пойти: "+count;
+        information.append(title,times,description,attending);
+
+        const openCard=document.createElement("button");
+        openCard.type="button";
+        openCard.className="bali-home-open-event";
+        openCard.setAttribute("aria-label","Открыть мероприятие "+event.title);
+        openCard.addEventListener("click",()=>{
             showOnlyPlannedEvents=false;
             navigateGuestPage("events");
             requestAnimationFrame(()=>{
@@ -317,9 +361,73 @@ function renderHomeEvents() {
                 if(target)centerEventCard(document.getElementById("eventsGrid"),target,true);
             });
         });
+
+        const heart=document.createElement("button");
+        heart.type="button";
+        heart.className="bali-home-heart";
+        const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+        svg.setAttribute("viewBox","0 0 24 24");
+        svg.setAttribute("fill","none");
+        svg.setAttribute("stroke","currentColor");
+        svg.setAttribute("stroke-width","1.9");
+        svg.setAttribute("stroke-linecap","round");
+        svg.setAttribute("stroke-linejoin","round");
+        svg.setAttribute("aria-hidden","true");
+        const path=document.createElementNS("http://www.w3.org/2000/svg","path");
+        path.setAttribute("d","M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z");
+        svg.append(path);
+        heart.append(svg);
+        const syncHeart=liked=>{
+            heart.classList.toggle("is-liked",liked);
+            heart.setAttribute("aria-pressed",String(liked));
+            heart.setAttribute("aria-label",liked
+                ?"Убрать «"+event.title+"» из моих планов"
+                :"Хочу пойти на «"+event.title+"»");
+            heart.title=liked?"Убрать из моих планов":"Хочу пойти";
+        };
+        syncHeart(guestInterestDates.has(event.date));
+        heart.addEventListener("click",async click=>{
+            click.preventDefault();
+            click.stopPropagation();
+            if(heart.disabled)return;
+            const feedback=document.getElementById("homeInterestFeedback");
+            heart.disabled=true;
+            heart.classList.add("is-saving");
+            try{
+                if(!window.BaliInterests)throw new Error("Подключение к Firebase ещё загружается.");
+                const result=await window.BaliInterests.toggle(event.date);
+                if(result?.loginRequired){
+                    if(feedback)feedback.textContent="Войдите в личный кабинет, чтобы добавить событие.";
+                    return;
+                }
+                if(result?.busy)return;
+                if(typeof result?.selected==="boolean"){
+                    if(result.selected)guestInterestDates.add(event.date);
+                    else guestInterestDates.delete(event.date);
+                    syncHeart(result.selected);
+                    if(feedback)feedback.textContent=result.selected
+                        ?"Событие добавлено в «Мои планы»."
+                        :"Событие удалено из «Моих планов».";
+                    if(showOnlyPlannedEvents&&!result.selected)renderHomeEvents();
+                    renderUpcomingEvents();
+                }
+            }catch(error){
+                if(feedback)feedback.textContent=error?.message||"Не удалось изменить планы.";
+            }finally{
+                heart.disabled=false;
+                heart.classList.remove("is-saving");
+            }
+        });
+        card.append(posterWrap,information,openCard,heart);
         track.append(card);
     }
-    track.scrollLeft=0;
+    if(preserveScroll&&previousScroll>0){
+        requestAnimationFrame(()=>{
+            track.scrollLeft=Math.min(previousScroll,Math.max(0,track.scrollWidth-track.clientWidth));
+        });
+    }else{
+        track.scrollLeft=0;
+    }
 }
 
 function renderUpcomingEvents() {
