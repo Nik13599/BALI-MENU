@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-25"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-26"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -99,7 +99,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-25'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-26'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
@@ -133,7 +133,7 @@ for (const id of ["adminClientsPanel","clientSearch","clientList","clientHistory
 }
 assert(admin.includes('admin-clients.js?v=20261017-20'), "Client CRM JS not loaded");
 assert(admin.includes('admin-orders.js?v=20261017-20'), "Staff order editor JS not loaded");
-assert(admin.includes('admin-firestore.js?v=20261017-24'), "Admin event fix must load without cache");
+assert(admin.includes('admin-firestore.js?v=20261017-26'), "Admin event fix must load without cache");
 assert(clientSource.includes('where("ownerUid","==",selected.uid)') && clientSource.includes('startAfter(lastOrder)'),
   "Client history needs owner-only paged retrieval");
 assert(orderAdminSource.includes('writeBatch(db)') && orderAdminSource.includes('archiveOrder') &&
@@ -194,4 +194,37 @@ assert(adminClient.includes('e.code==="permission-denied"') &&
   adminClient.includes("if(help)help.hidden=false"),
   "Permission denial during event poster save must provide rule deployment guidance");
 assert(app.includes('button.textContent="Сделать предзаказ";'), "Upcoming event CTA must read Сделать предзаказ");
+const interestSource = source("event-interests.js");
+const interestCss = source("event-interests.css");
+assert(html.includes('event-interests.js?v=20261017-26') &&
+  html.includes('event-interests.css?v=20261017-26'), "Guest interest module and styles must load");
+assert(html.includes('id="plannedEventsCount"') &&
+  html.includes('id="eventsViewTabs"'), "My Plans event filter missing");
+assert(app.includes('Хочу пойти') &&
+  app.includes('Хочет пойти: ') &&
+  app.includes('guestInterestDates.has(event.date)'), "Event cards must display RSVP button and public counts");
+assert(app.includes('window.setInterval(()=>') &&
+  app.includes('renderUpcomingEvents();'), "Past events must disappear automatically from My Plans");
+assert(app.includes('body.append(date,name,preorder,interested,planBtn,message);'),
+  "RSVP must appear before preorder button");
+assert(interestSource.includes('runTransaction(db,async transaction=>') &&
+  interestSource.includes('transaction.update(eventRef,{interestCount:') &&
+  interestSource.includes('transaction.delete(selectedRef)') &&
+  interestSource.includes('transaction.set(selectedRef,'), "Attendance and counts must update in one transaction");
+assert(interestSource.includes('collection(db,"users",watcherUid,"eventInterests")'),
+  "User event choices must be private");
+assert(rules.includes('match /users/{uid}/eventInterests/{eventDate}') &&
+  rules.includes('existsAfter(mine)') &&
+  rules.includes('getAfter(/databases/$(database)/documents/events/$(eventDate))'),
+  "Firestore Rules must enforce atomic RSVP document and count updates");
+assert(rules.includes('validInterestCountChange(eventId)') &&
+  rules.includes("hasOnly(['interestCount'])"), "Guests must only change public counters through their own RSVP");
+assert(adminClient.includes('" · Хочет пойти: "') &&
+  adminClient.includes('payload,{merge:true}'),
+  "Admin calendar must show counts and preserve them when editing events");
+assert(interestCss.includes('.event-want-to-go') &&
+  interestCss.includes('.event-interest-count'), "Mobile RSVP styling must exist");
+assert((rules.match(/match \/events\/\{eventId\}/g)||[]).length===1 &&
+  (rules.match(/match \/\{document=\*\*\}/g)||[]).length===1,
+  "Firestore Rules must contain one event match and one catchall");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
