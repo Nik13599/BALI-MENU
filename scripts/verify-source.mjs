@@ -153,4 +153,18 @@ assert(responsive.includes('grid-template-rows:auto 42px') &&
   responsive.includes('.header-content #menuNavBtn,') &&
   responsive.includes('.header-content #eventsNavBtn{') &&
   responsive.includes('height:42px'), "Mobile Menu and Events must align on one baseline");
+const modernHeader = source("header-modern.css");
+assert(html.includes('header-modern.css?v=20261017-22'), "Modern BALI navigation must load");
+assert(html.indexOf('header-modern.css?v=20261017-22') >
+  html.indexOf('responsive-menu.css?v=20261017-21'), "Header overrides must load after responsive CSS");
+assert(modernHeader.includes('grid-template-areas:"brand brand brand account" "menu events orders cart"'),
+  "Premium mobile header must keep profile above cart and all four controls in the same row");
+assert(modernHeader.includes('grid-template-rows:43px 42px') &&
+  modernHeader.includes('height:42px'), "Mobile navigation items must align");
+assert(modernHeader.includes('.header #menuNavBtn.active') &&
+  modernHeader.includes('.header #eventsNavBtn.active'), "Active navigation state must remain visible");
+assert(modernHeader.includes('prefers-reduced-motion:reduce') &&
+  modernHeader.includes('focus-visible'), "Header must support keyboard and reduced motion");
+assert((modernHeader.match(/\\{/g)||[]).length === (modernHeader.match(/\\}/g)||[]).length,
+  "Modern BALI header CSS has unbalanced braces");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
