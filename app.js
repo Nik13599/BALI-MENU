@@ -13,6 +13,7 @@ const BALI_API_CONFIGURED = /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/e
 let menuItems = [];
 let cart = [];
 let currentCategory = 'all';
+let baliActiveMenuMode = 'kitchen';
 let baliMenuSearchText = '';
 let availableEvents = [];
 let guestInterestDates=new Set();
@@ -252,7 +253,7 @@ function renderGuestPage(page,{scroll=true}={}) {
         else button.removeAttribute("aria-current");
     }
     const dock=document.getElementById("baliCartDock");
-    if(dock)dock.hidden=selected!=="menu";
+    if(dock)dock.hidden=selected!=="menu"||baliActiveMenuMode!=="kitchen";
     document.body.dataset.baliPage=selected;
     // Корзина не остаётся открытой при переходе из меню.
     if(selected!=="menu" && typeof closeCart==="function")closeCart();
@@ -260,6 +261,24 @@ function renderGuestPage(page,{scroll=true}={}) {
     if(selected==="home")renderHomeEvents();
     if(scroll)resetGuestVerticalPosition(selected);
 }
+function switchBaliMenuMode(nextMode) {
+    // This is a VIEW only: the bar has no cart, quantity controls or checkout.
+    const mode=nextMode==="bar"?"bar":"kitchen";
+    baliActiveMenuMode=mode;
+    const kitchen=document.getElementById("baliKitchenContent");
+    const bar=document.getElementById("baliBarContent");
+    if(kitchen)kitchen.hidden=mode!=="kitchen";
+    if(bar)bar.hidden=mode!=="bar";
+    document.querySelectorAll("#baliMenuModeSwitch [data-bali-menu-mode]").forEach(button=>{
+        const active=button.dataset.baliMenuMode===mode;
+        button.classList.toggle("is-active",active);
+        button.setAttribute("aria-pressed",String(active));
+    });
+    const dock=document.getElementById("baliCartDock");
+    if(dock)dock.hidden=document.body.dataset.baliPage!=="menu"||mode!=="kitchen";
+    if(mode==="bar"&&typeof closeCart==="function")closeCart();
+}
+
 function navigateGuestPage(page,{replace=false}={}) {
     const selected=BALI_GUEST_PAGES.has(page)?page:"home";
     const path=selected==="home"?
@@ -743,6 +762,12 @@ async function loadConfig() {
 }
 
 function attachEventListeners() {
+    document.getElementById("baliMenuModeSwitch")?.addEventListener("click",event=>{
+        const tab=event.target.closest("button[data-bali-menu-mode]");
+        if(!tab)return;
+        switchBaliMenuMode(tab.dataset.baliMenuMode);
+    });
+    switchBaliMenuMode("kitchen");
     for(const nav of document.querySelectorAll("[data-bali-nav]")){
         nav.addEventListener("click",()=>navigateGuestPage(nav.dataset.baliNav));
     }

@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="bali-obsidian-premium.css?v=20261017-57">
   <link rel="stylesheet" href="bali-theme.css?v=20261017-60">
   <link rel="stylesheet" href="bali-lime-neutral.css?v=20261017-62">
+  <link rel="stylesheet" href="bali-admin-bar.css?v=20261017-65">
 
 </head>
 <body class="bali-admin-theme">
@@ -177,6 +178,45 @@
           <p class="hint">Нажмите на название категории, чтобы свернуть или раскрыть список.</p>
           <div id="menuList" class="scroll-list category-catalog">Загрузка...</div>
         </section>
+
+        <details class="card bali-admin-bar-editor" id="baliAdminBarSection">
+          <summary><strong>Барная карта · ознакомление</strong><span class="hint">Напитки, категории, объёмы и цены · без предзаказа</span></summary>
+          <div class="bali-admin-bar-body">
+            <p class="hint">Добавляйте реальные цены барной карты. Каждая позиция может содержать одну или две порции — например, 50 мл и 750 мл. Категории группируются автоматически. Гостям показываются только строки с ценами; оформление предзаказа недоступно.</p>
+            <form id="baliAdminBarForm" class="bali-admin-bar-form">
+              <input type="hidden" id="baliAdminBarId">
+              <label>Название напитка
+                <input id="baliAdminBarName" type="text" maxlength="120" placeholder="Название по вашему прайсу" required>
+              </label>
+              <label>Категория
+                <input id="baliAdminBarCategory" type="text" maxlength="60" placeholder="Например, Виски" list="baliAdminBarCategories" required>
+                <datalist id="baliAdminBarCategories"></datalist>
+              </label>
+              <label>Порция №1
+                <input id="baliAdminBarVolume1" type="text" maxlength="30" placeholder="Например, 50 мл" required>
+              </label>
+              <label>Цена порции №1, BYN
+                <input id="baliAdminBarPrice1" type="number" min="0" max="20000" step="0.01" placeholder="0.00" required>
+              </label>
+              <label>Порция №2 (необязательно)
+                <input id="baliAdminBarVolume2" type="text" maxlength="30" placeholder="Например, 750 мл">
+              </label>
+              <label>Цена порции №2, BYN
+                <input id="baliAdminBarPrice2" type="number" min="0" max="20000" step="0.01" placeholder="0.00">
+              </label>
+              <label>Порядок сортировки
+                <input id="baliAdminBarSort" type="number" min="0" max="100000" step="1" value="100" required>
+              </label>
+              <div class="bali-admin-bar-buttons">
+                <button type="submit" id="baliAdminBarSave" class="primary">Сохранить позицию</button>
+                <button type="button" id="baliAdminBarClear">Очистить форму</button>
+              </div>
+            </form>
+            <p id="baliAdminBarStatus" class="status" role="status" aria-live="polite">Загружаем позиции...</p>
+            <div id="baliAdminBarItems" class="bali-admin-bar-items" aria-live="polite"></div>
+            <p class="hint">Если Firebase отклоняет сохранение с ошибкой permission-denied, необходимо опубликовать актуальный файл <a href="https://github.com/Nik13599/BALI-MENU/blob/main/firestore.rules" target="_blank" rel="noopener noreferrer">firestore.rules</a> в консоли Firebase. Блюда кухни при этом остаются отдельными.</p>
+          </div>
+        </details>
 
         <details class="card import-panel">
           <summary><span>Импорт меню с фотографии</span><span class="hint">18 позиций · 5 разделов</span></summary>
@@ -444,6 +484,7 @@
 
 <script src="firebase-config.js?v=20261017-8"></script>
 <script type="module" src="admin-firestore.js?v=20261017-46"></script>
+<script type="module" src="bali-admin-bar.js?v=20261017-65"></script>
 <script type="module" src="admin-orders.js?v=20261017-20"></script>
 <script type="module" src="admin-clients.js?v=20261017-20"></script>
 <script src="admin-dashboard.js?v=20261017-58" defer></script>
