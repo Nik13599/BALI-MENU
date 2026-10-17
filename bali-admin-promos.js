@@ -4,6 +4,7 @@ import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.
 import {getFirestore,collection,doc,getDoc,onSnapshot,setDoc,deleteDoc,serverTimestamp}
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {compressImage} from "./image-compressor.js";
+import {makeImageVariants} from "./bali-design-variants.js";
 
 const el=id=>document.getElementById(id);
 const form=el("baliPromoForm"),list=el("baliPromoList"),status=el("baliPromoStatus");
@@ -17,6 +18,7 @@ if(form&&list&&status){
   const preview=el("baliPromoImagePreview");
   const urlInput=el("baliPromoImage");
   const fileInput=el("baliPromoImageFile");
+  const variants=makeImageVariants("baliPromo","design-hero",message=>say(message));
   const validImage=value=>value===""||
     (value.startsWith("https://")&&value.length<=2048)||
     (value.startsWith("data:image/webp;base64,")&&value.length<=155000);
@@ -42,6 +44,7 @@ if(form&&list&&status){
     el("baliPromoSort").value="100";
     save.textContent="Сохранить предложение";
     showPreview("");
+    variants.set();
   }
   fileInput.addEventListener("change",async()=>{
     const file=fileInput.files?.[0];
@@ -75,6 +78,7 @@ if(form&&list&&status){
     selectedImage=item.imageUrl.startsWith("data:image/")?item.imageUrl:"";
     urlInput.value=item.imageUrl.startsWith("https://")?item.imageUrl:"";
     showPreview(item.imageUrl);
+    variants.set({tablet:item.imageTabletUrl,mobile:item.imageMobileUrl});
     el("baliPromoDestination").value=item.destination;
     el("baliPromoButton").value=item.buttonText;
     el("baliPromoSort").value=item.sort;
@@ -121,16 +125,17 @@ if(form&&list&&status){
   form.addEventListener("submit",async event=>{
     event.preventDefault();
     if(!canEdit){say("Необходимы активные права администратора.");return;}
-    if(processing){say("Подождите, изображение ещё обрабатывается.");return;}
+    if(processing||variants.busy()){say("Подождите, изображение ещё обрабатывается.");return;}
     const title=el("baliPromoTitle").value.trim();
     const description=el("baliPromoDescription").value.trim();
     const imageUrl=selectedImage||urlInput.value.trim();
+    const versions=variants.read();
     const destination=el("baliPromoDestination").value;
     const buttonText=el("baliPromoButton").value.trim();
     const sort=Number(el("baliPromoSort").value);
     const published=el("baliPromoPublished").checked;
     if(title.length<2||title.length>100||!description||description.length>260
-       ||!validImage(imageUrl)||!["none","events","menu","contacts"].includes(destination)
+       ||!validImage(imageUrl)||!variants.valid()||!["none","events","menu","contacts"].includes(destination)
        ||buttonText.length>35||!Number.isInteger(sort)||sort<0||sort>100000){
       say("Проверьте заголовок, описание, HTTPS-ссылку или картинку, кнопку и сортировку.");return;
     }
@@ -138,7 +143,8 @@ if(form&&list&&status){
     const ref=id?doc(db,"promotions",id):doc(collection(db,"promotions"));
     save.disabled=true;say("Сохраняем предложение...");
     try{
-      await setDoc(ref,{title,description,imageUrl,destination,buttonText,sort,published,updatedAt:serverTimestamp()});
+      await setDoc(ref,{title,description,imageUrl,imageTabletUrl:versions.tablet,
+        imageMobileUrl:versions.mobile,destination,buttonText,sort,published,updatedAt:serverTimestamp()});
       clear();say(published?"Предложение опубликовано.":"Черновик сохранён.");
     }catch(error){
       say(error.code==="permission-denied"
