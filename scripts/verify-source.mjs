@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-35"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-36"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -99,7 +99,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-35'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-36'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
@@ -298,8 +298,8 @@ assert(landingCss.includes('BALI v32') &&
   landingCss.includes('.bali-yandex-pin{left:10px;top:50%'),
   "Yandex Maps address text must be centered with red pin left on mobile");
 const carouselCss=source("events-carousel.css");
-assert(html.includes('events-carousel.css?v=20261017-35'), "Swipe carousel stylesheet must load");
-assert(html.indexOf('events-carousel.css?v=20261017-35') >
+assert(html.includes('events-carousel.css?v=20261017-36'), "Swipe carousel stylesheet must load");
+assert(html.indexOf('events-carousel.css?v=20261017-36') >
   html.indexOf('bali-pages.css?v=20261017-32'), "Carousel must override older event grid styles");
 assert(html.includes('id="eventsCarouselShell"') &&
   html.includes('id="eventsCarouselPosition"') &&
@@ -336,4 +336,29 @@ assert(app.includes('card.classList.toggle("is-active",focused)') &&
 assert(carouselCss.includes('font-size:16px') &&
   carouselCss.includes('min-height:41px') &&
   carouselCss.includes('.events-info-panel'), "Mobile detail labels, actions and info panel must be readable");
+assert(html.includes('class="events-topbar"') &&
+  html.includes('<h2 class="events-eyebrow" id="eventsHeadingGuest">BALI · КАЛЕНДАРЬ</h2>'),
+  "Bali Calendar must be the only visible title above Stories");
+assert(!html.includes('Ближайшие мероприятия по датам — от самого раннего к следующему.') &&
+  !html.includes('id="eventsHeadingGuest">События</h2>'),
+  "Remove redundant Events title and explanatory subtitle");
+const topbarStart=html.indexOf('class="events-topbar"');
+const topbarEnd=html.indexOf('id="eventsInterestStatus"',topbarStart);
+assert(topbarStart>=0 && topbarEnd>topbarStart &&
+  html.slice(topbarStart,topbarEnd).includes('id="eventsViewTabs"'),
+  "All Events/My Plans must share a row with Bali Calendar");
+assert(html.includes('Выбирай событие, добавляй в «Мои планы» или оформляй предзаказ.'),
+  "Small footer copy must be concise and fit two lines");
+assert(carouselCss.includes('BALI v36') &&
+  carouselCss.includes('aspect-ratio:9 / 16') &&
+  carouselCss.includes('grid-template-columns:none'),
+  "Mobile stories must use vertical 9:16 slides instead of split mini cards");
+assert(carouselCss.includes('line-clamp:2') &&
+  carouselCss.includes('.events-topbar') &&
+  carouselCss.includes('flex-wrap:nowrap'),
+  "Calendar topbar and footer must remain compact");
+assert(app.includes('const fitStorySlides=()=>') &&
+  app.includes('(track.clientHeight-14)*9/16') &&
+  app.includes('observer.observe(track)'),
+  "Stories must size from measured available height");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
