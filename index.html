@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="menu-categories.css?v=20261017-23">
     <link rel="stylesheet" href="event-interests.css?v=20261017-29">
     <link rel="stylesheet" href="bali-pages.css?v=20261017-32">
-    <link rel="stylesheet" href="events-carousel.css?v=20261017-35">
+    <link rel="stylesheet" href="events-carousel.css?v=20261017-36">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -159,16 +159,14 @@
     <!-- Ближайшие события: автоматически по возрастанию даты -->
     <section class="events-section" id="eventsSection" aria-labelledby="eventsHeadingGuest" hidden>
       <div class="container">
-        <div class="events-heading">
-          <div>
-            <span class="events-eyebrow">BALI · КАЛЕНДАРЬ</span>
-            <h2 class="section-title" id="eventsHeadingGuest">События</h2>
-            <p>Ближайшие мероприятия по датам — от самого раннего к следующему.</p>
+        <div class="events-topbar">
+          <div class="events-heading">
+            <h2 class="events-eyebrow" id="eventsHeadingGuest">BALI · КАЛЕНДАРЬ</h2>
           </div>
-        </div>
-        <div id="eventsViewTabs" class="events-view-tabs" role="group" aria-label="Показать мероприятия">
-          <button type="button" class="events-view-button active" data-events-view="all" aria-pressed="true">Все события</button>
-          <button type="button" class="events-view-button" data-events-view="planned" aria-pressed="false">Мои планы <span id="plannedEventsCount">0</span></button>
+          <div id="eventsViewTabs" class="events-view-tabs" role="group" aria-label="Показать мероприятия">
+            <button type="button" class="events-view-button active" data-events-view="all" aria-pressed="true">Все события</button>
+            <button type="button" class="events-view-button" data-events-view="planned" aria-pressed="false">Мои планы <span id="plannedEventsCount">0</span></button>
+          </div>
         </div>
         <p id="eventsInterestStatus" class="events-interest-status" role="status" aria-live="polite"></p>
         <div class="events-carousel-shell" id="eventsCarouselShell">
@@ -183,8 +181,7 @@
         <aside class="events-info-panel" aria-label="О мероприятиях BALI">
           <span class="events-info-icon" aria-hidden="true">✦</span>
           <div class="events-info-content">
-            <strong>Твой вечер начинается в BALI</strong>
-            <p>Выбирай событие, добавляй в «Мои планы» и оформляй предзаказ к своему вечеру.</p>
+            <p><strong>Твой вечер начинается в BALI.</strong> Выбирай событие, добавляй в «Мои планы» или оформляй предзаказ.</p>
           </div>
         </aside>
       </div>
@@ -377,7 +374,7 @@
     </div>
 
     <script src="firebase-config.js?v=20261017-10"></script>
-    <script src="app.js?v=20261017-35"></script>
+    <script src="app.js?v=20261017-36"></script>
     <script type="module" src="auth.js?v=20261017-16"></script>
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>
     <script type="module" src="orders-firestore.js?v=20261017-28"></script>
