@@ -69,8 +69,8 @@ assert(BALI_MENU_SEED.every(item => Number.isInteger(item.price) && item.price >
 assert(admin.includes('id="seedImportBtn"') && admin.includes('id="seedPreview"'), "Menu import controls missing");
 assert(adminClient.includes('runTransaction(db') && adminClient.includes('current[i].exists()'), "Menu import must skip existing documents in a transaction");
 const responsive = source("responsive-menu.css");
-assert(html.includes('responsive-menu.css?v=20261017-19'), "Responsive stylesheet must be loaded with current cache version");
-assert(html.indexOf('responsive-menu.css?v=20261017-19') > html.indexOf('href="auth.css"'), "Responsive stylesheet must load after auth.css");
+assert(html.includes('responsive-menu.css?v=20261017-21'), "Responsive stylesheet must be loaded with current cache version");
+assert(html.indexOf('responsive-menu.css?v=20261017-21') > html.indexOf('href="auth.css"'), "Responsive stylesheet must load after auth.css");
 assert(/grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/.test(responsive), "Desktop must use 5 columns");
 assert(/@media\s*\(min-width:\s*768px\)\s*and\s*\(max-width:\s*1199px\)/.test(responsive), "Tablet breakpoint missing");
 assert(/@media\s*\(max-width:\s*767px\)/.test(responsive), "Phone breakpoint missing");
@@ -98,7 +98,7 @@ assert(admin.includes('admin-dashboard.css?v=20261017-20') && admin.includes('ad
 assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes('.admin-sidebar'), "Mobile dashboard navigation CSS missing");
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
-assert(html.includes('responsive-menu.css?v=20261017-19'), "Guest mobile layout CSS cache version outdated");
+assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
 assert(html.includes('app.js?v=20261017-19'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
@@ -149,4 +149,8 @@ assert(adminClient.includes('compressImage(file,"product")') &&
 assert(html.includes('id="eventsNavBtn"') && html.includes('id="eventsSection"'), "Guest events tab missing");
 assert(app.includes('renderUpcomingEvents()') && app.includes('.sort((a,b)=>a.date.localeCompare(b.date))'),
   "Upcoming events must display nearest first");
+assert(responsive.includes('grid-template-rows:auto 42px') &&
+  responsive.includes('.header-content #menuNavBtn,') &&
+  responsive.includes('.header-content #eventsNavBtn{') &&
+  responsive.includes('height:42px'), "Mobile Menu and Events must align on one baseline");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
