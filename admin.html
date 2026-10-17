@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="bali-admin-cards.css?v=20261017-82">
   <link rel="stylesheet" href="bali-design-studio.css?v=20261017-84">
   <link rel="stylesheet" href="bali-home-placeholder-admin.css?v=20261018-93">
+  <link rel="stylesheet" href="bali-menu-details.css?v=20261018-97">
 
 </head>
 <body class="bali-admin-theme">
@@ -852,7 +853,10 @@
           <button type="button" id="newCategoryFromProduct">+ Новая</button>
         </div>
       </div>
-      <label>Описание и состав <textarea id="menuDescription" maxlength="800" placeholder="Состав, вес и дополнительные сведения"></textarea></label>
+      <label>Описание и состав <textarea id="menuDescription" maxlength="800" placeholder="Состав и основные сведения о блюде"></textarea></label>
+      <label>Граммовка / объём (необязательно)
+        <input id="menuWeight" type="text" maxlength="45" placeholder="Например, 250 г или 350 мл">
+      </label>
       <label>Ссылка на фотографию (HTTPS)<input id="menuImage" type="url" placeholder="https://..."></label>
       <div class="image-upload-area">
         <label for="menuImageFile">Или загрузить фотографию с устройства (квадрат 1:1)</label>
@@ -860,6 +864,28 @@
         <img id="menuImagePreview" class="image-preview square-preview" alt="Предпросмотр блюда" hidden>
         <p class="hint">Фото автоматически обрезается по центру до 1:1 и сжимается.</p>
       </div>
+      <section class="bali-admin-product-details" aria-label="Подробная информация о блюде">
+        <label class="check bali-product-details-toggle">
+          <input id="menuDetailsEnabled" type="checkbox">
+          <span>Добавить подробную информацию — показать кнопку «Подробнее»</span>
+        </label>
+        <div id="menuDetailsFields" class="bali-product-details-fields" hidden>
+          <p class="hint">Подробное описание обязательно, если включена кнопка. Название, цена, граммовка и состав подставляются автоматически.</p>
+          <label>Дополнительное подробное описание *
+            <textarea id="menuDetailsText" maxlength="2400" rows="6" placeholder="Приготовление, ингредиенты и особенности блюда"></textarea>
+          </label>
+          <label>Дополнительная фотография для окна «Подробнее» (HTTPS)
+            <input id="menuDetailsImage" type="url" maxlength="1000" placeholder="https://...">
+          </label>
+          <div class="image-upload-area">
+            <label for="menuDetailsImageFile">Или загрузить дополнительную фотографию с устройства (4:3)</label>
+            <input id="menuDetailsImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif">
+            <img id="menuDetailsImagePreview" class="image-preview" alt="Дополнительная фотография блюда" hidden>
+            <button id="menuDetailsClearImage" type="button">Убрать дополнительное фото</button>
+            <p class="hint">Если фото нет, в окне останется только текст — без пустого места.</p>
+          </div>
+        </div>
+      </section>
       <div class="double">
         <label>Порядок сортировки<input id="menuSort" type="number" min="0" max="100000" step="1" value="100" required></label>
         <label class="check availability-toggle"><input id="menuAvailable" type="checkbox" checked><span>В наличии</span></label>
@@ -902,7 +928,7 @@
 <script type="module" src="admin-clients.js?v=20261017-20"></script>
 <script src="admin-dashboard.js?v=20261017-84" defer></script>
 <script src="bali-design-studio.js?v=20261017-85" defer></script>
-<script type="module" src="bali-site-content-admin.js?v=20261018-96"></script>
+<script type="module" src="bali-site-content-admin.js?v=20261018-97"></script>
 <script src="bali-icon-atelier.js?v=20261017-58" defer></script>
 <script type="module" src="bali-theme.js?v=20261017-60"></script>
 </body>
