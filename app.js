@@ -368,9 +368,7 @@ function attachEventListeners() {
     document.getElementById("eventsNavBtn")?.addEventListener("click",()=>{
         showGuestSection("events");
     });
-    document.getElementById("contactsNavBtn")?.addEventListener("click",()=>{
-        showGuestSection("contacts");
-    });
+
     document.getElementById("homeFloatingBtn")?.addEventListener("click",()=>{
         showGuestSection("home");
     });
@@ -868,7 +866,9 @@ async function handleCheckout(e) {
 
     if (result.success) {
         // Show success modal
-        elements.displayOrderId.textContent = result.order_id;
+        elements.displayOrderId.textContent = result.order_number
+            ? String(result.order_number).padStart(2,'0')
+            : result.order_id;
 
         // Store order ID for tracking
         localStorage.setItem('last_order_id', result.order_id);
@@ -947,7 +947,9 @@ function renderMyOrders() {
         const card = document.createElement('article');
         card.className='bali-order-card';
         const head = document.createElement('h4');
-        head.textContent='№ '+order.id+' · '+(statusText[order.status]||order.status);
+        head.textContent='№ '+(Number.isInteger(order.orderNumber)
+            ? String(order.orderNumber).padStart(2,'0') : order.id)
+            +' · '+(statusText[order.status]||order.status);
         const meta = document.createElement('p');
         meta.textContent=order.eventDate+' · '+(order.tableNumber?'Столик '+order.tableNumber:'ID '+order.bookingId);
         const items = document.createElement('ul');
