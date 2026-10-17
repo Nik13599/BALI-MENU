@@ -69,8 +69,8 @@ assert(BALI_MENU_SEED.every(item => Number.isInteger(item.price) && item.price >
 assert(admin.includes('id="seedImportBtn"') && admin.includes('id="seedPreview"'), "Menu import controls missing");
 assert(adminClient.includes('runTransaction(db') && adminClient.includes('current[i].exists()'), "Menu import must skip existing documents in a transaction");
 const responsive = source("responsive-menu.css");
-assert(html.includes('responsive-menu.css?v=20261017-17'), "Responsive stylesheet must be loaded with current cache version");
-assert(html.indexOf('responsive-menu.css?v=20261017-17') > html.indexOf('href="auth.css"'), "Responsive stylesheet must load after auth.css");
+assert(html.includes('responsive-menu.css?v=20261017-19'), "Responsive stylesheet must be loaded with current cache version");
+assert(html.indexOf('responsive-menu.css?v=20261017-19') > html.indexOf('href="auth.css"'), "Responsive stylesheet must load after auth.css");
 assert(/grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/.test(responsive), "Desktop must use 5 columns");
 assert(/@media\s*\(min-width:\s*768px\)\s*and\s*\(max-width:\s*1199px\)/.test(responsive), "Tablet breakpoint missing");
 assert(/@media\s*\(max-width:\s*767px\)/.test(responsive), "Phone breakpoint missing");
@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-15"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-19"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -98,13 +98,13 @@ assert(admin.includes('admin-dashboard.css?v=20261017-20') && admin.includes('ad
 assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes('.admin-sidebar'), "Mobile dashboard navigation CSS missing");
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
-assert(html.includes('responsive-menu.css?v=20261017-17'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-15'), "Guest cart code cache version outdated");
+assert(html.includes('responsive-menu.css?v=20261017-19'), "Guest mobile layout CSS cache version outdated");
+assert(html.includes('app.js?v=20261017-19'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
-assert(responsive.includes('grid-template-areas:') && responsive.includes('"brand brand account"')
-  && responsive.includes('"menu orders cart"'), "Mobile header must show profile above cart and menu/orders/cart below");
+assert(responsive.includes('grid-template-areas:') && responsive.includes('"brand brand brand account"')
+  && responsive.includes('"menu events orders cart"'), "Mobile header must show avatar and Menu/Events/Orders/Cart");
 assert(responsive.includes('#accountBtn::before') && responsive.includes("data:image/svg+xml"), "Mobile account must show the person icon");
 assert(responsive.includes('touch-action: manipulation'), "Double-tap zoom must be disabled while pinch zoom stays available");
 assert(auth.includes('profile ? profile.name : "Профиль"'), "Mobile cabinet button must display signed-in name");
