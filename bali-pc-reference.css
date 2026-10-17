@@ -528,3 +528,48 @@
     padding-top:64px;
   }
 }
+
+/* v69: override the high-specificity LIME theme header background.
+   The previous transparent rule lost to
+   :root[data-bali-theme="lime"] body.bali-guest-theme .header !important. */
+@media (min-width:1180px){
+  :root[data-bali-theme] body.bali-guest-theme > header.header,
+  :root[data-bali-theme] body.bali-guest-theme[data-bali-page] > header.header,
+  :root[data-bali-theme="lime"] body.bali-guest-theme > header.header,
+  :root[data-bali-theme="lime"] body.bali-guest-theme[data-bali-page="home"] > header.header {
+    background:transparent!important;
+    background-color:transparent!important;
+    background-image:none!important;
+    border:0!important;
+    border-color:transparent!important;
+    outline:none!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    filter:none!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme > header.header::before,
+  :root[data-bali-theme] body.bali-guest-theme > header.header::after{
+    display:none!important;content:none!important;
+    background:transparent!important;box-shadow:none!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme > header.header .header-content,
+  :root[data-bali-theme] body.bali-guest-theme > header.header .bali-pc-account-wrap,
+  :root[data-bali-theme] body.bali-guest-theme > header.header #accountBtn{
+    background:transparent!important;
+    background-color:transparent!important;
+    background-image:none!important;
+    border-color:transparent!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme > header.header #accountBtn[data-pc-signed-in="true"]{
+    color:var(--bt-primary,#B9FF51)!important;
+    -webkit-text-fill-color:var(--bt-primary,#B9FF51)!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme > header.header #accountBtn[data-pc-signed-in="true"]::before{
+    background:var(--bt-primary,#B9FF51)!important;
+    background-color:var(--bt-primary,#B9FF51)!important;
+  }
+}
