@@ -332,3 +332,7 @@
     body.bali-guest-theme #homeSection .bali-home-events-panel{grid-template-rows:64px 265px 40px 230px!important}
   }
 }
+
+@media(min-width:1180px){
+  body.bali-guest-theme:not([data-bali-page="home"])>.bali-pc-sidebar{display:none!important}
+}
