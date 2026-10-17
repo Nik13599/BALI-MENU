@@ -252,7 +252,7 @@ assert(html.includes('class="bali-home-social"') &&
   html.includes('href="https://t.me/baliclubminsk"') &&
   html.includes('href="https://www.instagram.com/baliminsk/"'),
   "Home page must show Call, Telegram and Instagram");
-assert(html.includes('class="bali-home-map"') &&
+assert(html.includes('class="bali-home-map bali-yandex-map"') &&
   html.includes('href="https://yandex.by/maps/org/bali_night_club/104137822369/"'),
   "Home address must open Yandex Maps");
 assert(interestCss.includes('position:sticky') &&
