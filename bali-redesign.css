@@ -397,3 +397,157 @@ body[data-bali-page="events"]{overflow-y:hidden}
   .bali-home-events,.bali-home-event-card{touch-action:pan-x pan-y!important}
   .bali-profile-page[hidden],#menuPage[hidden],#eventsSection[hidden],#homeSection[hidden]{display:none!important}
 }
+
+/* BALI v40: home screen begins immediately with the calendar.
+   Make the menu call-to-action broader and slightly enlarge contact targets.
+   Keep the existing fixed-screen mobile layout and horizontal event carousel. */
+.bali-home-menu-banner{
+  width:calc(100% + 12px);
+  margin-left:-6px;
+  min-height:82px;
+}
+.bali-home-contacts-card .bali-home-social{
+  width:min(100%,340px);
+}
+.bali-home-contacts-card .bali-home-social .bali-social-btn{
+  min-height:70px;
+}
+.bali-home-contacts-card .bali-yandex-map{
+  min-height:65px;
+}
+@media(max-width:767px){
+  .bali-home .bali-home-inner{padding-top:3px!important}
+  .bali-home-calendar-row{margin:6px 0 7px}
+  .bali-home-events{min-height:0!important}
+  .bali-home-menu-banner{
+    flex:0 0 auto;
+    height:58px;
+    min-height:58px!important;
+    width:calc(100% + 14px);
+    margin-left:-7px;
+    padding:0 13px;
+    border-radius:12px;
+  }
+  .bali-menu-banner-icon{height:56px;flex-basis:53px;font-size:27px}
+  .bali-home-menu-banner strong{font-size:19px}
+  .bali-home-menu-banner small{font-size:11px}
+  .bali-home-contacts-card{padding:9px 11px 10px;margin-top:8px;border-radius:12px}
+  .bali-home-contacts-heading{margin-bottom:5px}
+  .bali-home-contacts-heading h2{font-size:16px}
+  .bali-home-contacts-card .bali-home-social{
+    width:min(100%,285px);
+    margin:5px auto 6px;
+    gap:9px;
+  }
+  .bali-home-contacts-card .bali-home-social .bali-social-btn{
+    height:40px;min-height:40px;border-radius:11px;padding:5px;
+  }
+  .bali-home-contacts-card .bali-social-btn .bali-social-svg{
+    height:23px;width:23px;flex-basis:23px;
+  }
+  .bali-home-contacts-card .bali-yandex-map{
+    height:39px;min-height:39px;
+    padding:5px 42px;border-radius:10px;
+  }
+  .bali-home-contacts-card .bali-yandex-pin{width:28px;height:28px;left:9px}
+  .bali-home-contacts-card .bali-yandex-pin svg{height:24px;width:22px}
+  .bali-home-contacts-card .bali-yandex-address{font-size:12px}
+}
+@media(max-width:767px) and (max-height:700px){
+  .bali-home-calendar-row{margin:4px 0 5px}
+  .bali-home-menu-banner{height:51px;min-height:51px!important}
+  .bali-menu-banner-icon{height:49px}
+  .bali-home-contacts-card{padding:6px 9px 7px;margin-top:5px}
+  .bali-home-contacts-card .bali-home-social{margin:4px auto 5px}
+  .bali-home-contacts-card .bali-home-social .bali-social-btn{
+    height:37px;min-height:37px;
+  }
+  .bali-home-contacts-card .bali-yandex-map{height:35px;min-height:35px}
+}
+
+/* BALI v41: compact event calendar above its tabs; shorter posters,
+   with all titles, RSVP details and preorder controls readable. */
+@media(max-width:767px){
+  #eventsSection .events-topbar{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    justify-content:flex-start;
+    gap:4px;
+    margin:0 2px 5px;
+  }
+  #eventsSection .events-topbar .events-heading{
+    display:flex!important;
+    align-items:center;
+    justify-content:flex-start;
+    flex:0 0 auto;
+    min-height:14px;
+    margin:0;
+  }
+  #eventsSection .events-topbar .events-eyebrow{
+    display:block;
+    font-size:11px;
+    line-height:1.2;
+    letter-spacing:.035em;
+    font-weight:750;
+    color:#edc98b;
+  }
+  #eventsSection .events-topbar .events-view-tabs{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    width:100%;
+    margin:0;
+    padding:0;
+    gap:7px;
+  }
+  #eventsSection .events-topbar .events-view-button{
+    min-height:33px;
+    font-size:11px;
+  }
+  #eventsSection #eventsGrid{
+    padding-top:4px;
+    padding-bottom:4px;
+    align-items:center;
+  }
+  #eventsSection #eventsGrid>.event-card{
+    height:calc(100% - 18px)!important;
+    max-height:calc(100% - 18px)!important;
+    flex-shrink:0;
+  }
+  #eventsSection #eventsGrid>.event-card>.event-card-body{
+    max-height:84%;
+    gap:4px;
+    padding:8px 11px 10px;
+    overflow-y:auto;
+    scrollbar-width:none;
+  }
+  #eventsSection #eventsGrid>.event-card>.event-card-body::-webkit-scrollbar{display:none}
+  #eventsSection .event-card-body h3{
+    font-size:clamp(12px,3.6vw,17px)!important;
+    line-height:1.13!important;
+  }
+  #eventsSection .event-card-date,
+  #eventsSection .event-preorder-state,
+  #eventsSection .event-interest-count{
+    font-size:10px!important;
+    line-height:1.2!important;
+    margin:0;
+  }
+  #eventsSection .event-interest-count{display:block!important}
+  #eventsSection .event-want-to-go,
+  #eventsSection .event-go-to-menu{
+    min-height:32px!important;
+    padding:6px 9px!important;
+    font-size:11px!important;
+    flex-shrink:0;
+  }
+}
+@media(max-width:767px) and (max-height:650px){
+  #eventsSection .events-topbar{gap:3px;margin-bottom:3px}
+  #eventsSection .events-topbar .events-view-button{min-height:30px}
+  #eventsSection #eventsGrid>.event-card{height:calc(100% - 14px)!important;max-height:calc(100% - 14px)!important}
+  #eventsSection #eventsGrid>.event-card>.event-card-body{gap:3px;padding:6px 8px 8px}
+  #eventsSection .event-card-date,
+  #eventsSection .event-preorder-state,
+  #eventsSection .event-interest-count{font-size:9px!important}
+}
