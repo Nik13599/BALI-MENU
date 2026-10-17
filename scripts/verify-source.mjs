@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-45"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-46"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -99,7 +99,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-45'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-46'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
@@ -291,6 +291,31 @@ assert(app.includes("menuSection.scrollTop = 0") &&
   app.includes('if(window.matchMedia("(max-width:767px)").matches)return;'),
   "Mobile category change must scroll the product list without hijacking gestures");
 const approvedCss=source("bali-redesign.css");
+assert(admin.includes('id="eventDescription"') &&
+  admin.includes('id="eventStartTime"') && admin.includes('id="eventEndTime"') &&
+  admin.includes('admin-firestore.js?v=20261017-46'),
+  "Event description, start and end time must be configurable in the admin form");
+assert(adminClient.includes('description, startTime, endTime, preorderEnabled:') &&
+  adminClient.includes('$("eventStartTime").value=event.startTime||""') &&
+  adminClient.includes('$("eventEndTime").value=event.endTime||""'),
+  "Event timing and description must persist and load when editing");
+assert(rules.includes("'description','startTime','endTime'") &&
+  rules.includes("data.description.size() <= 600") &&
+  rules.includes("data.startTime.matches") &&
+  rules.includes("data.endTime.matches") &&
+  rules.includes("validInterestCountChange(eventId)"),
+  "Firestore event validation must allow safe admin-written descriptions and event times");
+assert(app.includes('className="bali-event-hours"') &&
+  app.includes('className="bali-event-description"') &&
+  app.includes('startTime+"–"+endTime') &&
+  !app.includes('event.cutoff+"–"'),
+  "Public events must show configured times without substituting preorder cutoff");
+assert(approvedCss.includes("/* BALI v46: poster on top, event information and time beneath the image.") &&
+  approvedCss.includes("position:relative!important;") &&
+  approvedCss.includes(".bali-event-description{") &&
+  approvedCss.includes(".bali-event-hours{"),
+  "Descriptions and event times should render in a separate card area below the poster");
+
 assert(approvedCss.includes("/* BALI v45: home alignment and compact single-row menu purchase controls.") &&
   approvedCss.includes(".bali-home .bali-home-inner>.bali-home-menu-banner{") &&
   approvedCss.includes("align-self:stretch;") &&
@@ -338,8 +363,8 @@ assert(approvedCss.includes("/* BALI v41: compact event calendar above its tabs;
   approvedCss.includes("#eventsSection .events-topbar .events-heading{") &&
   approvedCss.includes("#eventsSection .event-interest-count{display:block!important"),
   "Events should show compact calendar, slightly shorter stories and all event details");
-assert(html.includes('bali-redesign.css?v=20261017-45') &&
-  html.indexOf('bali-redesign.css?v=20261017-45') >
+assert(html.includes('bali-redesign.css?v=20261017-46') &&
+  html.indexOf('bali-redesign.css?v=20261017-46') >
     html.indexOf('events-carousel.css?v=20261017-36'),
   "Approved mobile visual override must load last");
 assert(html.includes('id="profileSection"') &&
