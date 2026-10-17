@@ -367,3 +367,69 @@
     background:rgba(185,255,81,.14)!important;
   }
 }
+
+/* v83 · BALI МЕНЮ: desktop/tablet editorial heading, never on icon-only phone UI. */
+#menuPage .bali-menu-heading-row{display:flex;flex-direction:column;min-width:0;width:100%}
+#menuPage .bali-menu-heading{display:none}
+@media(min-width:768px){
+  #menuPage .bali-menu-heading-row{
+    flex:0 0 auto;
+    display:flex!important;
+    flex-flow:row nowrap!important;
+    gap:clamp(12px,1.5vw,24px)!important;
+    align-items:flex-start!important;
+    padding:clamp(12px,2.5vw,21px) clamp(16px,2vw,30px) 10px!important;
+    background:transparent;
+  }
+  #menuPage #baliMenuHeading{
+    display:block!important;
+    flex:0 0 auto;
+    margin:0!important;
+    padding:2px 0 0!important;
+    white-space:nowrap!important;
+    text-transform:uppercase!important;
+    color:#f2f5f1!important;
+    font:800 clamp(22px,2.1vw,33px)/1.13 Manrope,Inter,sans-serif!important;
+    letter-spacing:.012em;
+  }
+  #menuPage .bali-menu-heading-row #baliMenuModeSwitch{
+    flex:1 1 auto!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:clamp(5px,.7vw,12px)!important;
+    min-width:0!important;
+    width:auto!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+  }
+  #menuPage .bali-menu-heading-row .bali-menu-mode-btn:not([hidden]){
+    flex:1 1 0!important;
+    max-width:175px!important;
+    min-width:0!important;
+    min-height:43px!important;
+    padding:6px!important;
+    white-space:normal!important;
+  }
+}
+@media(min-width:1180px){
+  body.bali-guest-theme #menuPage .bali-menu-heading-row{
+    padding:0 clamp(16px,1.5vw,30px) 10px!important;
+    min-height:48px!important;
+    align-items:flex-start!important;
+  }
+  body.bali-guest-theme #menuPage .bali-menu-heading-row #baliMenuModeSwitch{
+    justify-content:flex-end!important;
+    padding:0!important;
+    border:0!important;
+  }
+  body.bali-guest-theme #menuPage .bali-menu-heading-row .bali-menu-mode-btn:not([hidden]){
+    flex:1 1 0!important;
+    max-width:170px!important;
+  }
+}
+@media(max-width:767px){
+  #menuPage .bali-menu-heading-row{padding:0!important}
+  #menuPage #baliMenuHeading{display:none!important}
+}
