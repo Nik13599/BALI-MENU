@@ -118,6 +118,7 @@ function menuRender() {
         $("menuSort").value = item.sort;
         $("menuImage").value = item.image_url;
         $("menuAvailable").checked = item.available;
+        window.dispatchEvent(new CustomEvent("bali:admin:edit-menu"));
         $("menuForm").scrollIntoView({behavior:"smooth",block:"center"});
       },
       async () => {
@@ -147,6 +148,7 @@ function eventRender() {
         $("eventTitle").value=event.title;
         $("eventCutoff").value=event.cutoff;
         $("eventOpen").checked=event.preorderEnabled;
+        window.dispatchEvent(new CustomEvent("bali:admin:edit-event"));
         $("eventForm").scrollIntoView({behavior:"smooth",block:"center"});
       },
       async () => {
@@ -270,11 +272,13 @@ async function checkAdminAccess(user) {
       menu.clear();
       for(const d of snap.docs){const x=d.data();if(typeof x.name==="string"&&Number.isFinite(x.price))menu.set(d.id,x);}
       menuRender();
+      window.dispatchEvent(new CustomEvent("bali:admin:menu",{detail:{count:menu.size}}));
     },error=>renderStatus("menuStatus","Не удалось прочитать каталог: "+(error.code||"unknown")));
     unsubEvents=onSnapshot(collection(db,"events"),snap=>{
       events.clear();
       for(const d of snap.docs)events.set(d.id,d.data());
       eventRender();
+      window.dispatchEvent(new CustomEvent("bali:admin:events",{detail:{count:events.size}}));
     },error=>renderStatus("eventStatus","Не удалось прочитать мероприятия: "+(error.code||"unknown")));
   } catch(error) {
     if(auth.currentUser?.uid!==user.uid) return;
