@@ -129,12 +129,12 @@ service cloud.firestore {
     function validHomeInterface(d) {
       return d.keys().hasAll([
           'brandTitle','brandSubtitle','navHomeText','navCalendarText','navMenuText',
-          'navCartText','calendarPreviewTitle','calendarPageTitle','menuBannerTitle',
+          'navCartText','calendarPreviewTitle','calendarPageTitle','menuPageTitle','menuBannerTitle',
           'menuBannerCta','contactHeading','phoneText','phoneHref','telegramUrl',
           'instagramUrl','findHeading','addressText','addressFloor','mapUrl','icons','updatedAt'])
         && d.keys().hasOnly([
           'brandTitle','brandSubtitle','navHomeText','navCalendarText','navMenuText',
-          'navCartText','calendarPreviewTitle','calendarPageTitle','menuBannerTitle',
+          'navCartText','calendarPreviewTitle','calendarPageTitle','menuPageTitle','menuBannerTitle',
           'menuBannerCta','contactHeading','phoneText','phoneHref','telegramUrl',
           'instagramUrl','findHeading','addressText','addressFloor','mapUrl','icons','updatedAt'])
         && d.brandTitle is string && d.brandTitle.size() >= 1 && d.brandTitle.size() <= 32
@@ -145,6 +145,7 @@ service cloud.firestore {
         && d.navCartText is string && d.navCartText.size() >= 1 && d.navCartText.size() <= 30
         && d.calendarPreviewTitle is string && d.calendarPreviewTitle.size() >= 1 && d.calendarPreviewTitle.size() <= 55
         && d.calendarPageTitle is string && d.calendarPageTitle.size() >= 1 && d.calendarPageTitle.size() <= 55
+        && d.menuPageTitle is string && d.menuPageTitle.size() >= 1 && d.menuPageTitle.size() <= 55
         && d.menuBannerTitle is string && d.menuBannerTitle.size() >= 1 && d.menuBannerTitle.size() <= 45
         && d.menuBannerCta is string && d.menuBannerCta.size() >= 1 && d.menuBannerCta.size() <= 65
         && d.contactHeading is string && d.contactHeading.size() >= 1 && d.contactHeading.size() <= 55
