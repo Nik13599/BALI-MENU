@@ -219,7 +219,7 @@
   body.bali-guest-theme #homeSection .bali-home-date-badge small{font-size:11px!important}
   #homeSection .bali-home-interest-feedback{position:absolute;bottom:-17px;z-index:1;font-size:10px}
   .bali-pc-right-rail{
-    display:grid!important;grid-column:2!important;grid-row:2/7!important;
+    display:grid!important;grid-column:2!important;grid-row:1/7!important;
     grid-template-rows: minmax(220px,1.8fr) 84px 84px minmax(195px,1.4fr)!important;
     gap:var(--bali-pc-gap);min-width:0;min-height:0
   }
@@ -484,4 +484,47 @@
 @media(max-width:1179px){
   .bali-pc-account-wrap{display:contents}
   .bali-pc-profile-menu{display:none!important}
+}
+
+/* v68 — transparent fixed account, BALI green name/icon; top-aligned About card. */
+@media(min-width:1180px){
+  /* The user control never moves when changing pages or scrolling the content. */
+  body.bali-guest-theme .header,
+  body.bali-guest-theme[data-bali-page] .header{
+    position:fixed!important;
+    top:calc(var(--bali-banner-height,0px) + 14px)!important;
+    right:clamp(20px,2.4vw,45px)!important;
+    background:transparent!important;
+    background-image:none!important;
+    border:0!important;box-shadow:none!important;
+    filter:none!important;backdrop-filter:none!important;
+  }
+  body.bali-guest-theme .header .header-content,
+  body.bali-guest-theme .header .bali-pc-account-wrap,
+  body.bali-guest-theme .header #accountBtn,
+  body.bali-guest-theme[data-bali-page="home"] .header #accountBtn{
+    background:transparent!important;
+    background-image:none!important;
+    border:0!important;
+    box-shadow:none!important;
+    filter:none!important;
+    backdrop-filter:none!important;
+  }
+  body.bali-guest-theme .header #accountBtn[data-pc-signed-in="true"],
+  body.bali-guest-theme[data-bali-page="home"] .header #accountBtn[data-pc-signed-in="true"],
+  body.bali-guest-theme .header #accountBtn[data-pc-signed-in="true"]:hover{
+    color:var(--bt-primary,#B9FF51)!important;
+    -webkit-text-fill-color:var(--bt-primary,#B9FF51)!important;
+  }
+  body.bali-guest-theme .header #accountBtn[data-pc-signed-in="true"]::before{
+    background:var(--bt-primary,#B9FF51)!important;
+  }
+  /* Align the card's upper edge with the BALI calendar row.
+     The fixed account control remains above the card, without a backing tile. */
+  body.bali-guest-theme #homeSection .bali-pc-right-rail{
+    grid-row:1/7!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary{
+    padding-top:64px;
+  }
 }
