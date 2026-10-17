@@ -229,7 +229,7 @@ assert((rules.match(/match \/events\/\{eventId\}/g)||[]).length===1 &&
   "Firestore Rules must contain one event match and one catchall");
 const landingCss = source("bali-pages.css");
 assert(html.includes('<title>Bali</title>') &&
-  html.includes('bali-pages.css?v=20261017-28'), "Bali landing brand and CSS missing");
+  html.includes('bali-pages.css?v=20261017-30'), "Bali landing brand and CSS missing");
 assert(html.includes('id="homeSection"') &&
   html.includes('id="menuPage"') &&
   html.includes('id="contactsSection"') &&
