@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#10121a">
   <title>BALI — Панель управления</title>
   <link rel="stylesheet" href="admin-catalog.css?v=3">
-  <link rel="stylesheet" href="admin-dashboard.css?v=20261017-15">
+  <link rel="stylesheet" href="admin-dashboard.css?v=20261017-18">
 </head>
 <body>
 <header class="topbar">
@@ -114,46 +114,31 @@
             <h2 id="menuHeading">Меню и цены</h2>
             <p>Добавляйте блюда и обновляйте стоимость — изменения видны гостям.</p>
           </div>
-          <button type="button" id="addMenuBtn" class="primary">+ Добавить позицию</button>
+          <button type="button" id="addMenuBtn" class="primary">+ Добавить блюдо</button>
         </div>
 
-        <div class="editor-layout">
-          <section class="card catalog-form-card" id="menuEditorCard">
-            <div class="card-heading">
-              <h3>Карточка товара</h3>
-              <span class="tag">BYN</span>
-            </div>
-            <form id="menuForm">
-              <div class="double">
-                <label>ID товара <input id="menuId" type="number" min="1" step="1" placeholder="101" required></label>
-                <label>Цена, BYN <input id="menuPrice" type="number" min="0" max="20000" step="0.01" placeholder="0.00" required></label>
-              </div>
-              <label>Название блюда <input id="menuName" minlength="2" maxlength="120" placeholder="Например, Салат Цезарь" required></label>
-              <label>Категория <input id="menuCategory" minlength="2" maxlength="60" placeholder="Например, Салаты" required></label>
-              <label>Описание <textarea id="menuDescription" maxlength="800" placeholder="Состав, вес и подробности..."></textarea></label>
-              <label>Ссылка на фотографию <input id="menuImage" type="url" placeholder="https://..."></label>
-              <div class="double compact-fields">
-                <label>Сортировка <input id="menuSort" type="number" min="0" max="100000" step="1" value="100" required></label>
-                <label class="check availability-toggle"><input id="menuAvailable" type="checkbox" checked><span>В наличии</span></label>
-              </div>
-              <div class="actions">
-                <button type="submit" class="primary">Сохранить товар</button>
-                <button id="clearMenu" type="button">Сбросить</button>
-              </div>
-              <p id="menuStatus" class="status" role="status" aria-live="polite"></p>
-            </form>
-          </section>
-
-          <section class="card catalog-list-card">
-            <div class="card-heading">
-              <h3>Каталог</h3>
-              <span class="tag"><span id="menuResultCount">0</span> позиций</span>
-            </div>
-            <label class="search-label" for="menuSearch">Поиск по меню</label>
-            <input id="menuSearch" type="search" placeholder="Название, категория, ID..." autocomplete="off">
-            <div id="menuList" class="scroll-list">Загрузка...</div>
-          </section>
+        <div class="menu-actions-bar">
+          <button type="button" id="addCategoryBtn" class="category-add-btn">+ Новая категория</button>
+          <span class="hint">Сначала создайте категорию, затем выберите её при добавлении блюда.</span>
         </div>
+        <section class="card category-manager">
+          <div class="card-heading">
+            <h3>Категории меню</h3>
+            <span class="tag"><span id="categoryCount">0</span> разделов</span>
+          </div>
+          <div id="categoryList" class="category-pills" aria-live="polite">Загружаем категории...</div>
+          <p id="categoryStatus" class="status" role="status" aria-live="polite"></p>
+        </section>
+        <section class="card grouped-catalog">
+          <div class="card-heading">
+            <h3>Каталог по категориям</h3>
+            <span class="tag"><span id="menuResultCount">0</span> позиций</span>
+          </div>
+          <label class="search-label" for="menuSearch">Поиск по названию, категории или ID</label>
+          <input id="menuSearch" type="search" placeholder="Найти блюдо..." autocomplete="off">
+          <p class="hint">Нажмите на название категории, чтобы свернуть или раскрыть список.</p>
+          <div id="menuList" class="scroll-list category-catalog">Загрузка...</div>
+        </section>
 
         <details class="card import-panel">
           <summary><span>Импорт меню с фотографии</span><span class="hint">18 позиций · 5 разделов</span></summary>
@@ -202,11 +187,60 @@
     </div>
     <section id="orderPrintSheet" hidden aria-hidden="true"></section>
   </section>
+
+  <dialog id="menuDialog" class="admin-form-dialog" aria-labelledby="menuDialogHeading">
+    <div class="dialog-header">
+      <div><span class="eyebrow">КАРТОЧКА ТОВАРА</span><h2 id="menuDialogHeading">Добавить блюдо</h2></div>
+      <button id="closeMenuDialog" type="button" class="dialog-close" aria-label="Закрыть карточку">✕</button>
+    </div>
+    <form id="menuForm" class="dialog-form">
+      <input id="menuId" type="hidden">
+      <div class="double">
+        <label>Название блюда *<input id="menuName" minlength="2" maxlength="120" placeholder="Например, салат Цезарь" required></label>
+        <label>Цена, BYN *<input id="menuPrice" type="number" min="0" max="20000" step="0.01" placeholder="25.00" required></label>
+      </div>
+      <div class="category-field">
+        <label for="menuCategory">Категория *</label>
+        <div class="category-select-row">
+          <select id="menuCategory" required><option value="">Выберите категорию</option></select>
+          <button type="button" id="newCategoryFromProduct">+ Новая</button>
+        </div>
+      </div>
+      <label>Описание и состав <textarea id="menuDescription" maxlength="800" placeholder="Состав, вес и дополнительные сведения"></textarea></label>
+      <label>Ссылка на фотографию (HTTPS)<input id="menuImage" type="url" placeholder="https://..."></label>
+      <div class="double">
+        <label>Порядок сортировки<input id="menuSort" type="number" min="0" max="100000" step="1" value="100" required></label>
+        <label class="check availability-toggle"><input id="menuAvailable" type="checkbox" checked><span>В наличии</span></label>
+      </div>
+      <p id="menuStatus" class="status" role="status" aria-live="polite"></p>
+      <div class="dialog-actions">
+        <button id="clearMenu" type="button">Отмена</button>
+        <button type="submit" class="primary">Сохранить товар</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="categoryDialog" class="admin-form-dialog admin-category-dialog" aria-labelledby="categoryDialogHeading">
+    <div class="dialog-header">
+      <div><span class="eyebrow">НАСТРОЙКА КАТАЛОГА</span><h2 id="categoryDialogHeading">Новая категория</h2></div>
+      <button id="closeCategoryDialog" type="button" class="dialog-close" aria-label="Закрыть добавление категории">✕</button>
+    </div>
+    <form id="categoryForm" class="dialog-form">
+      <label>Название категории *<input id="categoryName" type="text" minlength="2" maxlength="60" placeholder="Например, Коктейли" required></label>
+      <label>Порядок отображения<input id="categorySort" type="number" min="0" max="100000" step="1" value="100" required></label>
+      <p class="hint">Категория будет доступна при добавлении и редактировании товаров.</p>
+      <p id="categoryDialogStatus" class="status" role="status" aria-live="polite"></p>
+      <div class="dialog-actions">
+        <button type="button" id="cancelCategoryDialog">Отмена</button>
+        <button type="submit" class="primary">Сохранить категорию</button>
+      </div>
+    </form>
+  </dialog>
 </main>
 
 <script src="firebase-config.js?v=20261017-8"></script>
-<script type="module" src="admin-firestore.js?v=20261017-15"></script>
+<script type="module" src="admin-firestore.js?v=20261017-18"></script>
 <script type="module" src="admin-orders.js?v=20261017-15"></script>
-<script src="admin-dashboard.js?v=20261017-15" defer></script>
+<script src="admin-dashboard.js?v=20261017-18" defer></script>
 </body>
 </html>
