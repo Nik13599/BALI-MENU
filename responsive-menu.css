@@ -545,3 +545,58 @@ button, a, input, select, textarea, summary,
   #myOrdersBtn { width: 100%; max-width: none; height: 40px; font-size: 11px; padding: 6px 3px; }
   #cartBtn { width: 52px; max-width: 52px; height: 40px; }
 }
+
+/* Guest menu/event switch and automatic chronological event cards. */
+[hidden]{display:none!important}
+.events-nav-btn{
+  background:transparent;border:0;color:var(--text-secondary);
+  font:inherit;font-size:14px;cursor:pointer;min-height:40px;padding:8px 11px;
+  border-radius:9px;white-space:nowrap
+}
+.events-nav-btn.active{color:#e8c58b;background:rgba(232,197,139,.12)}
+.events-section{min-height:50vh;padding:35px 0 65px}
+.events-heading{margin-bottom:24px}
+.events-heading .section-title{margin-bottom:5px}
+.events-heading p{font-size:14px;color:var(--text-secondary);line-height:1.5}
+.events-eyebrow{color:#e8c58b;font-size:11px;font-weight:800;letter-spacing:.14em}
+.events-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.event-card{min-width:0;overflow:hidden;display:flex;flex-direction:column;background:#202640;border:1px solid #414b65;border-radius:16px}
+.event-poster{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;background:#323853}
+.event-card-body{display:flex;flex-direction:column;align-items:flex-start;flex:1;padding:15px;gap:10px;min-width:0}
+.event-card-date{font-size:12px;color:#e8c58b;text-transform:capitalize;font-weight:700}
+.event-card h3{font-size:17px;line-height:1.35;overflow-wrap:anywhere}
+.event-preorder-state{font-size:12px;color:#aebad1;line-height:1.35;margin-top:auto}
+.event-go-to-menu{width:100%;min-height:40px;border-radius:9px;padding:9px 12px;border:0;background:#e4be81;color:#231d18;font-size:12px;font-weight:700}
+.events-empty{grid-column:1/-1;text-align:center;padding:40px 15px;background:#1b2236;border:1px dashed #515a72;border-radius:16px;color:#bec8d8}
+@media(max-width:1199px){
+  .events-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:767px){
+  .header-content{
+    grid-template-columns:minmax(0,.8fr) minmax(0,.9fr) minmax(0,1.16fr) 59px;
+    grid-template-areas:"brand brand brand account" "menu events orders cart";
+    gap:7px 5px
+  }
+  .header-content .nav-link{grid-area:menu;justify-self:center;padding:7px 4px;font-size:12px;min-height:38px}
+  .header-content .events-nav-btn{
+    grid-area:events;display:block;justify-self:stretch;text-align:center;
+    font-size:12px;padding:7px 3px;min-height:38px;
+  }
+  #myOrdersBtn{grid-area:orders;min-height:40px;font-size:11px;padding:6px 3px}
+  #cartBtn{grid-area:cart}
+  .events-section{padding:24px 0 48px}
+  .events-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .event-card{border-radius:12px}
+  .event-card-body{padding:11px 9px;gap:7px}
+  .event-card h3{font-size:13px}
+  .event-card-date{font-size:10px}
+  .event-preorder-state{font-size:10px}
+  .event-go-to-menu{font-size:10px;min-height:35px;padding:7px}
+}
+@media(max-width:359px){
+  .header-content{
+    grid-template-columns:minmax(0,.8fr) minmax(0,.9fr) minmax(0,1.16fr) 52px;
+    padding:8px 7px 9px;gap:5px 3px
+  }
+  #myOrdersBtn,.header-content .events-nav-btn,.header-content .nav-link{font-size:10px}
+}
