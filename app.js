@@ -148,6 +148,7 @@ function updateCategoryButtons() {
         button.type = 'button';
         button.className = 'category-btn' + (currentCategory === category ? ' active' : '');
         button.dataset.category = category;
+        button.setAttribute('aria-pressed', String(currentCategory === category));
         button.textContent = category === 'all' ? 'Всё меню' : category;
         elements.categoryFilter.append(button);
     }
@@ -213,7 +214,24 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCart();
     initializeApp();
     attachEventListeners();
+    initStickyCategories();
 });
+
+// Высота шапки меняется при переходе между телефоном/планшетом/ПК.
+// Категории остаются закреплены ровно ПОД шапкой без перекрытия кнопок.
+function initStickyCategories() {
+    const header = document.querySelector('.header');
+    if (!header) return;
+    const syncHeight = () => {
+        document.documentElement.style.setProperty('--bali-header-height', header.getBoundingClientRect().height + 'px');
+    };
+    syncHeight();
+    if (typeof ResizeObserver === 'function') {
+        const observer = new ResizeObserver(syncHeight);
+        observer.observe(header);
+    }
+    window.addEventListener('resize', syncHeight, {passive: true});
+}
 
 function initializeApp() {
     fetchMenuItems();
@@ -314,24 +332,37 @@ async function placeOrder(orderData) {
 
 function displayMenuItems(items) {
     if (!items || items.length === 0) {
-        elements.menuGrid.innerHTML = `
-            <div class="loading-state">
-                <p>Меню ещё не заполнено администратором.</p>
-            </div>
-        `;
+        elements.menuGrid.classList.remove('menu-categories-layout');
+        elements.menuGrid.innerHTML = '<div class="loading-state"><p>Меню ещё не заполнено администратором.</p></div>';
         return;
     }
-
-    // Filter by category
+    // Даже при «Всё меню» карточки организованы внутри своих категорий.
+    // Порядок категорий следует порядку первого появления в каталоге,
+    // порядок блюд внутри каждой категории сохраняется из Firestore.
     const filteredItems = currentCategory === 'all'
         ? items
         : items.filter(item => item.category === currentCategory);
-
-    elements.menuGrid.innerHTML = filteredItems
-        .map(item => createMenuItemHTML(item))
-        .join('');
-
-    // Кнопки обрабатываются централизованно через handleMenuGridClick.
+    const groups = new Map();
+    for (const item of filteredItems) {
+        const name = String(item.category || 'Другие блюда').trim() || 'Другие блюда';
+        if (!groups.has(name)) groups.set(name, []);
+        groups.get(name).push(item);
+    }
+    elements.menuGrid.classList.add('menu-categories-layout');
+    elements.menuGrid.innerHTML = [...groups.entries()]
+        .map(([category, products]) => `
+            <section class="menu-category-block" aria-label="${escapeHTML(category)}">
+                <div class="menu-category-heading">
+                    <h3 class="menu-category-title">${escapeHTML(category)}</h3>
+                    <span class="menu-category-count">${products.length} ${products.length === 1 ? 'позиция' : (products.length % 10 >= 2 && products.length % 10 <= 4 && (products.length % 100 < 12 || products.length % 100 > 14) ? 'позиции' : 'позиций')}</span>
+                </div>
+                <div class="menu-grid menu-category-products">
+                    ${products.map(item => createMenuItemHTML(item)).join('')}
+                </div>
+            </section>
+        `).join('') || '<div class="loading-state"><p>В этой категории пока нет блюд.</p></div>';
+    // Обработчик кнопок +/- и корзины привязан к внешнему #menuGrid
+    // и работает с вложенными карточками без повторной подписки.
 }
 
 function createMenuItemHTML(item) {
@@ -388,16 +419,25 @@ function showError(message) {
 // ============================================
 
 function handleCategoryFilter(e) {
-    if (e.target.classList.contains('category-btn')) {
-        // Update active button
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        e.target.classList.add('active');
-
-        // Update category and redisplay
-        currentCategory = e.target.dataset.category;
-        displayMenuItems(menuItems);
+    const button = e.target.closest('.category-btn');
+    if (!button || !elements.categoryFilter.contains(button)) return;
+    currentCategory = button.dataset.category;
+    for (const item of elements.categoryFilter.querySelectorAll('.category-btn')) {
+        const selected = item === button;
+        item.classList.toggle('active', selected);
+        item.setAttribute('aria-pressed', String(selected));
+    }
+    displayMenuItems(menuItems);
+    // После смены категории начало её списка появляется ниже двух
+    // закреплённых панелей, даже если гость нажал кнопку внизу страницы.
+    const menuSection = document.querySelector('.menu-section');
+    const header = document.querySelector('.header');
+    const sticky = document.querySelector('.categories');
+    if (menuSection) {
+        const y = window.scrollY + menuSection.getBoundingClientRect().top
+            - (header?.getBoundingClientRect().height || 0)
+            - (sticky?.getBoundingClientRect().height || 0) - 8;
+        window.scrollTo({top: Math.max(0, y), behavior: 'smooth'});
     }
 }
 
