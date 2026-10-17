@@ -445,3 +445,43 @@ body.bali-admin-theme{
   .bali-theme-color-grid{grid-template-columns:1fr}
   .bali-theme-sample{padding:14px}
 }
+
+/* Firebase rules publication is a separate protected backend action. */
+.bali-theme-rules-help{
+  margin-top:15px;
+  padding:16px;
+  border-radius:12px;
+  border:1px solid rgba(240,192,117,.35);
+  background:#242633;
+  color:#eceaf0;
+}
+.bali-theme-rules-help>strong{
+  font-size:13px;
+  font-weight:750;
+  color:#f3d4a0;
+}
+.bali-theme-rules-help>p{
+  margin:8px 0 12px;
+  font-size:12px;
+  line-height:1.6;
+  color:#c8cfdf;
+}
+.bali-theme-rules-help .actions{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.bali-theme-rules-help .actions>a{
+  font-size:12px;
+  font-weight:630;
+  color:var(--bt-text);
+  text-underline-offset:3px;
+}
+.bali-theme-rules-help .actions>button{
+  min-height:41px;
+  border:1px solid var(--bt-stroke);
+  color:var(--bt-text);
+  background:#2d3442;
+}
+.bali-theme-rules-help[hidden]{display:none!important}
