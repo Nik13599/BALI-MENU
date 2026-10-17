@@ -363,3 +363,7 @@
   #homeSection[hidden]{display:none!important}
 }
 @media(max-width:1179px){.bali-pc-search{display:none!important}}
+
+@media(min-width:1180px){
+  body.bali-guest-theme:not([data-bali-page="home"]) .header .bali-pc-search{display:none!important}
+}
