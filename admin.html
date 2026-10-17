@@ -101,6 +101,7 @@
             <p>Подтверждайте заявки, меняйте статусы и отправляйте на печать.</p>
           </div>
           <div class="filter-stack">
+            <label class="check admin-archive-toggle"><input id="showArchivedOrders" type="checkbox"> Показать архив</label>
             <label for="ordersDateFilter">Дата мероприятия</label>
             <select id="ordersDateFilter"><option value="">Все даты</option></select>
           </div>
@@ -238,6 +239,10 @@
             <option value="cancelled">Отменён</option>
           </select>
         </label>
+      </div>
+      <div class="double">
+        <label>Имя гостя<input id="editOrderName" minlength="2" maxlength="100" required></label>
+        <label>Контактный телефон<input id="editOrderPhone" type="tel" placeholder="+375291234567" required></label>
       </div>
       <div class="double">
         <label>Столик<input id="editOrderTable" maxlength="20" placeholder="Например, 12"></label>
