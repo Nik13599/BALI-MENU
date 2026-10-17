@@ -88,3 +88,40 @@ body{min-height:100svh;background:linear-gradient(135deg,#0b1020,#191c32 55%,#0b
 @media(max-width:767px){
   .bali-floating-home{left:12px;right:auto}
 }
+
+/* Быстрые контакты на главной — три кнопки в одной строке. */
+.bali-home-social{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+  width:min(100%,500px);margin:18px auto 0;
+}
+.bali-social-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-width:0;min-height:45px;padding:9px 6px;
+  border-radius:11px;border:1px solid rgba(231,196,143,.38);
+  background:rgba(233,197,143,.07);
+  color:#f2d7a9;text-decoration:none;font-size:12px;font-weight:700;
+  touch-action:manipulation;
+}
+.bali-social-btn:hover{background:rgba(233,197,143,.18);border-color:rgba(231,196,143,.75)}
+.bali-social-icon{font-size:17px;line-height:1}
+.bali-home-map{
+  display:flex;justify-content:center;align-items:center;gap:9px;
+  width:min(100%,500px);min-height:47px;
+  margin:10px auto 0;padding:10px 12px;
+  border:1px solid rgba(221,225,241,.2);border-radius:11px;
+  background:rgba(255,255,255,.04);
+  color:#e4e7f0;text-decoration:none;font-size:13px;font-weight:650;
+  touch-action:manipulation;
+}
+.bali-home-map:hover{border-color:rgba(231,196,143,.6);background:rgba(233,197,143,.10)}
+.bali-home-map-arrow{color:#edcb91;font-size:17px}
+.bali-home-footnote{margin-top:16px}
+@media(max-width:767px){
+  .bali-home-social{gap:6px;margin-top:13px}
+  .bali-social-btn{font-size:11px;padding:8px 3px;min-height:43px;gap:4px}
+  .bali-social-icon{font-size:14px}
+  .bali-home-map{font-size:12px;min-height:44px}
+}
+/* Возврат на главную всегда снизу слева. */
+.bali-floating-home{left:clamp(12px,4vw,30px);right:auto}
+@media(max-width:767px){.bali-floating-home{left:12px;right:auto}}
