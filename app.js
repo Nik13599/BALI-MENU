@@ -14,6 +14,8 @@ let menuItems = [];
 let cart = [];
 let currentCategory = 'all';
 let baliActiveMenuMode = 'kitchen';
+const baliMenuSectionKeys=["kitchen","bar","hookah","tea"];
+let baliVisibleMenuSections=Object.fromEntries(baliMenuSectionKeys.map(key=>[key,true]));
 let baliMenuSearchText = '';
 let availableEvents = [];
 let guestInterestDates=new Set();
@@ -262,8 +264,9 @@ function renderGuestPage(page,{scroll=true}={}) {
     if(scroll)resetGuestVerticalPosition(selected);
 }
 function switchBaliMenuMode(nextMode) {
-    // Only the kitchen offers online preorders. All other maps are informational.
-    const mode=["kitchen","bar","hookah","tea"].includes(nextMode)?nextMode:"kitchen";
+    // The administrator controls visibility, not product existence.
+    const available=baliMenuSectionKeys.filter(key=>baliVisibleMenuSections[key]);
+    const mode=available.includes(nextMode)?nextMode:(available[0]||null);
     baliActiveMenuMode=mode;
     const panels={
         kitchen:"baliKitchenContent",
@@ -276,10 +279,16 @@ function switchBaliMenuMode(nextMode) {
         if(node)node.hidden=mode!==section;
     }
     document.querySelectorAll("#baliMenuModeSwitch [data-bali-menu-mode]").forEach(button=>{
-        const active=button.dataset.baliMenuMode===mode;
+        const section=button.dataset.baliMenuMode;
+        const visible=baliVisibleMenuSections[section]===true;
+        button.hidden=!visible;
+        button.disabled=!visible;
+        const active=visible&&section===mode;
         button.classList.toggle("is-active",active);
         button.setAttribute("aria-pressed",String(active));
     });
+    const notice=document.getElementById("baliMenuUnavailableNotice");
+    if(notice)notice.hidden=available.length>0;
     const dock=document.getElementById("baliCartDock");
     if(dock)dock.hidden=document.body.dataset.baliPage!=="menu"||mode!=="kitchen";
     if(mode!=="kitchen"&&typeof closeCart==="function")closeCart();
@@ -774,6 +783,22 @@ function attachEventListeners() {
         switchBaliMenuMode(tab.dataset.baliMenuMode);
     });
     switchBaliMenuMode("kitchen");
+    window.addEventListener("bali:menu-visibility",event=>{
+        const incoming=event.detail||{};
+        for(const key of baliMenuSectionKeys){
+            if(typeof incoming[key]==="boolean")baliVisibleMenuSections[key]=incoming[key];
+        }
+        // Preserve the current mode if still published; otherwise select another.
+        switchBaliMenuMode(baliActiveMenuMode);
+    });
+    // The Firestore module might finish loading before this listener is attached.
+    if(window.BaliMenuVisibility){
+        const incoming=window.BaliMenuVisibility;
+        for(const key of baliMenuSectionKeys){
+            if(typeof incoming[key]==="boolean")baliVisibleMenuSections[key]=incoming[key];
+        }
+        switchBaliMenuMode(baliActiveMenuMode);
+    }
     for(const nav of document.querySelectorAll("[data-bali-nav]")){
         nav.addEventListener("click",()=>navigateGuestPage(nav.dataset.baliNav));
     }
