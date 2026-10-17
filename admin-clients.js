@@ -56,7 +56,7 @@ async function loadClients(){
 }
 function orderCard(o){
   const card=el("article","","client-history-order");
-  card.append(el("h4","№ "+o.id+" · "+(o.status==="cancelled"?"Отменён":o.status==="pending"?"Ожидает":o.status==="confirmed"?"Подтверждён":"Выполнен")));
+  card.append(el("h4","№ "+(Number.isInteger(o.orderNumber)?String(o.orderNumber).padStart(2,"0"):o.id)+" · "+(o.status==="cancelled"?"Отменён":o.status==="pending"?"Ожидает":o.status==="confirmed"?"Подтверждён":"Выполнен")));
   card.append(el("p",o.eventDate+" · "+(o.tableNumber?"Столик "+o.tableNumber:"Бронь "+o.bookingId)));
   card.append(el("p","Состав: "+o.items.map(x=>x.name+" × "+x.quantity).join(", ")));
   card.append(el("strong",currency(o.total)));
