@@ -72,8 +72,7 @@ function validProfile(docData, authUser) {
 function render() {
   // На мобильном вместо фиксированной подписи "Кабинет" отображаем настоящее имя.
   // До авторизации остаётся короткая кнопка "Кабинет".
-  const accountLabel = !isConfigured ? "Вход не настроен" :
-    !user ? "Войти в личный кабинет" :
+  const accountLabel = !user ? "Войти в личный кабинет" :
     profile ? profile.name : "Профиль";
   els.button.textContent = accountLabel;
   els.button.title = !user ? "Войти или зарегистрироваться" : accountLabel;
