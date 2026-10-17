@@ -367,10 +367,10 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-65'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-67'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
-assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
+assert(html.includes('auth.js?v=20261017-67'), "Guest profile label code should load without old cache");
 assert(html.includes('id="homeSection"') && html.includes('id="menuPage"') &&
   html.includes('id="eventsSection"'), "Guest app must provide separate Home, Menu and Events pages");
 assert(responsive.includes('#accountBtn::before') && responsive.includes("data:image/svg+xml"), "Mobile account must show the person icon");
