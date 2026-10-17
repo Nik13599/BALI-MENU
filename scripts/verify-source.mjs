@@ -99,6 +99,55 @@ assert(html.includes('bali-pc-reference.css?v=20261017-81') &&
   source("bali-pc-reference.css").includes('scroll-behavior:smooth!important') &&
   source("bali-pc-reference.css").includes('(prefers-reduced-motion:reduce)'),
   "PC menu/category grid and calendar heading, profile clearance and fade animation must be preserved");
+// Kitchen, Bar, Hookah, Tea now share ONE permanent category/search toolbar
+// on desktop, tablet and phone, with live Firebase categories per collection.
+assert(html.includes('id="baliSharedMenuControls"') &&
+  html.includes('id="baliSharedCategories"') &&
+  ["categoryFilter","baliBarCategoryFilter","baliHookahCategoryFilter","baliTeaCategoryFilter"]
+    .every(id=>html.includes('id="'+id+'"')) &&
+  html.includes('id="baliMenuSearch"') &&
+  html.indexOf('id="baliSharedMenuControls"') < html.indexOf('id="baliKitchenContent"') &&
+  html.indexOf('id="baliSharedMenuControls"') < html.indexOf('id="baliBarContent"') &&
+  html.includes('id="baliMenuHeading"') &&
+  html.includes('BALI МЕНЮ') &&
+  barCss.includes('v85 — ONE shared category strip and search') &&
+  barCss.includes('#menuPage .bali-shared-menu-controls') &&
+  barCss.includes('#menuPage #baliSharedCategories .bali-shared-category-filter[hidden]') &&
+  barCss.includes('@media(max-width:767px)') &&
+  app.includes('window.BaliActiveMenuMode=mode') &&
+  app.includes('bali:menu-mode-changed') &&
+  barPublic.includes('search?.addEventListener("input"') &&
+  barPublic.includes('current.term') &&
+  extraMenus.includes('search?.addEventListener("input"') &&
+  extraMenus.includes('state.term') &&
+  !barPublic.includes('addToCart(') &&
+  !extraMenus.includes('addToCart('),
+  "Every device and all four menu maps must share identical category/search layout without food preorders in other maps");
+const liveStudio=source("bali-design-studio.js");
+const studioCss=source("bali-design-studio.css");
+const siteAdmin=source("bali-site-content-admin.js");
+const sitePublic=source("bali-site-content.js");
+assert(admin.includes('bali-design-studio.css?v=20261017-84') &&
+  admin.includes('bali-design-studio.js?v=20261017-84') &&
+  admin.includes('bali-site-content-admin.js?v=20261017-85') &&
+  admin.includes('id="baliDesignLiveFrame"') &&
+  admin.includes('id="baliDesignCanvas"') &&
+  admin.includes('data-studio-device="desktop"') &&
+  admin.includes('data-studio-device="tablet"') &&
+  admin.includes('data-studio-device="phone"') &&
+  admin.includes('data-site-field="menuPageTitle"') &&
+  html.includes('bali-site-content.js?v=20261017-85') &&
+  liveStudio.includes('frame.contentDocument') &&
+  liveStudio.includes('selectionFrom(target)') &&
+  liveStudio.includes('fit()') &&
+  studioCss.includes('body[data-bali-admin-section="design"] .admin-stats{display:none!important}') &&
+  siteAdmin.includes('doc(db,"settings","homeInterface")') &&
+  siteAdmin.includes('menuPageTitle:"BALI МЕНЮ"') &&
+  sitePublic.includes('label("#baliMenuHeading",data.menuPageTitle)') &&
+  rules.includes('function validHomeInterface(d)') &&
+  rules.includes("settingId == 'homeInterface' && validHomeInterface(request.resource.data)") &&
+  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface']"),
+  "Live admin design studio must preview all 3 real device layouts, permit block editing and protect the site settings in Firestore");
 const barAdmin=source("bali-admin-bar.js");
 const barAdminCss=source("bali-admin-bar.css");
 assert(html.includes('id="baliMenuModeSwitch"') &&
@@ -110,8 +159,8 @@ assert(html.includes('id="baliMenuModeSwitch"') &&
   html.includes('id="baliBarCategoryFilter"') &&
   html.includes('Предзаказ алкогольной продукции недоступен') &&
   html.indexOf('id="baliMenuModeSwitch"') < html.indexOf('id="categoryFilter"') &&
-  html.includes('bali-bar-menu.css?v=20261017-80') &&
-  html.includes('bali-bar-menu.js?v=20261017-65'),
+  html.includes('bali-bar-menu.css?v=20261017-85') &&
+  html.includes('bali-bar-menu.js?v=20261017-85'),
   "Menu must open on Kitchen and place a read-only Bar tab above Kitchen categories");
 assert(app.includes("let baliActiveMenuMode = 'kitchen'") &&
   app.includes('function switchBaliMenuMode(nextMode)') &&
@@ -137,7 +186,7 @@ assert(["kitchen","bar","hookah","tea"].every(name=>html.includes('data-bali-men
   html.includes('id="baliHookahContent"') && html.includes('id="baliTeaContent"') &&
   html.includes('id="baliHookahCategoryFilter"') && html.includes('id="baliTeaCategoryFilter"') &&
   html.includes('id="baliHookahList"') && html.includes('id="baliTeaList"') &&
-  html.includes('bali-extra-menus.js?v=20261017-71') &&
+  html.includes('bali-extra-menus.js?v=20261017-85') &&
   app.includes('hookah:"baliHookahContent"') && app.includes('tea:"baliTeaContent"') &&
   app.includes('mode!==section') &&
   extraMenus.includes('collection:"hookah_menu"') && extraMenus.includes('collection:"tea_menu"') &&
@@ -398,7 +447,7 @@ assert(themeCss.includes("/* BALI v58") &&
   !themeClient.includes('setProperty("--bg-'),
   "Theme may change interactive accents only, leaving fixed background color unchanged");
 assert(rules.includes('match /settings/{settingId}') &&
-  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign']") &&
+  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface']") &&
   rules.includes('allow list: if false') &&
   rules.includes("settingId == 'appearance' && validAppearance(request.resource.data)") &&
   rules.includes("data.colors.keys().hasOnly(['primary','secondary','text','border'])") &&
@@ -491,19 +540,19 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-72"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-85"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
 const dashboardJs = source("admin-dashboard.js");
 assert(admin.includes('id="adminOrdersPanel"') && admin.includes('id="adminMenuPanel"') && admin.includes('id="adminEventsPanel"'), "Admin must have separate Orders, Menu and Events workspaces");
 assert(admin.includes('data-admin-tab="orders"') && admin.includes('data-admin-tab="menu"') && admin.includes('data-admin-tab="events"'), "Admin navigation tabs missing");
-assert(admin.includes('admin-dashboard.css?v=20261017-20') && admin.includes('admin-dashboard.js?v=20261017-79'), "Updated dashboard files must be loaded");
+assert(admin.includes('admin-dashboard.css?v=20261017-20') && admin.includes('admin-dashboard.js?v=20261017-84'), "Updated dashboard files must be loaded");
 assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes('.admin-sidebar'), "Mobile dashboard navigation CSS missing");
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-72'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-85'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-67'), "Guest profile label code should load without old cache");
