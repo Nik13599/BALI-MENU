@@ -148,6 +148,29 @@ assert(admin.includes('bali-design-studio.css?v=20261017-84') &&
   rules.includes("settingId == 'homeInterface' && validHomeInterface(request.resource.data)") &&
   rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface']"),
   "Live admin design studio must preview all 3 real device layouts, permit block editing and protect the site settings in Firestore");
+// v87 PC viewport is a fixed full-width, full-height 3-column dashboard.
+// Other desktop pages must not scroll down; only product lists scroll.
+const viewportCss=source("bali-pc-viewport.css");
+assert(html.includes('bali-pc-viewport.css?v=20261017-87') &&
+  viewportCss.includes('@media (min-width:1180px)') &&
+  viewportCss.includes('--bali-pc-side:clamp(195px,15vw,640px)') &&
+  viewportCss.includes('--bali-pc-gap:clamp(11px,1vw,42px)') &&
+  viewportCss.includes('--bali-pc-right:clamp(275px,20.7vw,900px)') &&
+  viewportCss.includes('grid-template-columns:minmax(0,1fr) var(--bali-pc-right)!important') &&
+  viewportCss.includes('grid-template-rows:minmax(0,2.75fr) minmax(0,1fr)!important') &&
+  viewportCss.includes('height:100dvh!important') &&
+  viewportCss.includes('body.bali-guest-theme #homeSection .bali-home-inner') &&
+  viewportCss.includes('body.bali-guest-theme #homeSection .bali-home-events-panel') &&
+  viewportCss.includes('body.bali-guest-theme #homeSection .bali-home-menu-banner') &&
+  viewportCss.includes('body.bali-guest-theme #homeSection .bali-pc-right-rail') &&
+  viewportCss.includes('body.bali-guest-theme #eventsSection #eventsGrid') &&
+  viewportCss.includes('overflow-x:auto!important') &&
+  viewportCss.includes('body.bali-guest-theme #menuPage #baliKitchenContent .menu-section') &&
+  viewportCss.includes('overflow-y:auto!important') &&
+  viewportCss.includes('body.bali-guest-theme #eventsSection,') &&
+  viewportCss.includes('body.bali-guest-theme #profileSection,') &&
+  viewportCss.includes('body.bali-guest-theme #contactsSection,'),
+  "Desktop approved dashboard must fit the full viewport and preserve only catalog/horizontal event scrolling");
 const barAdmin=source("bali-admin-bar.js");
 const barAdminCss=source("bali-admin-bar.css");
 assert(html.includes('id="baliMenuModeSwitch"') &&
