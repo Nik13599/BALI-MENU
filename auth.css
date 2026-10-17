@@ -38,3 +38,12 @@
   overflow-wrap: anywhere;
 }
 .auth-save-message.error { color: #ff9d9d; }
+
+/* Личные предзаказы */
+.bali-orders-content { padding:1.2rem;max-height:65vh;overflow-y:auto; }
+.bali-order-card { border:1px solid #3f4a69;background:#252c49;border-radius:14px;padding:1.2rem;margin:0 0 1rem; }
+.bali-order-card h4 {margin:0 0 .6rem;color:#e4c58d;overflow-wrap:anywhere}
+.bali-order-card p { color:#cbd3e5;margin:.5rem 0; }
+.bali-order-card ul {padding-left:1.3rem;line-height:1.7;color:#e7ecf8}
+.bali-order-actions {display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem}
+.my-orders-status { color:#e3ba80; }
