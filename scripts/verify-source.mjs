@@ -243,6 +243,32 @@ assert(admin.includes('id="baliEventPlaceholderEditor"') &&
   rules.includes("settingId == 'homeEventPlaceholder' && validHomeEventPlaceholder(request.resource.data)") &&
   !app.slice(app.indexOf('function renderUpcomingEvents()')).includes('BaliHomePlaceholder'),
   "Shared SECRET poster must be editable in admin Events, default consistently, and never appear on full calendar.");
+// v96: PC contact actions and socials are independent sets of 3; cart is
+// fluorescent whenever nonempty; image-less menu cards reserve no photo.
+const contactsCss=source("bali-contact-channels.css");
+assert(html.includes('bali-contact-channels.css?v=20261018-96') &&
+  html.includes('bali-site-content.js?v=20261018-95') &&
+  admin.includes('bali-site-content-admin.js?v=20261018-96') &&
+  html.includes('data-bali-contact="telegram-chat"') &&
+  html.includes('href="https://t.me/BALI_MINSK"') &&
+  html.includes('data-bali-contact="whatsapp"') &&
+  html.includes('data-bali-contact="viber"') &&
+  html.includes('data-bali-contact="telegram-channel"') &&
+  html.includes('data-bali-contact="instagram"') &&
+  html.includes('data-bali-contact="tiktok"') &&
+  contactsCss.includes('grid-template-columns:repeat(3,minmax(0,1fr))') &&
+  contactsCss.includes('button#baliPcCartBtn:not([hidden])') &&
+  contactsCss.includes('background:#b9ff51!important') &&
+  contactsCss.includes('#menuPage .menu-item--no-image') &&
+  app.includes("menu-item--no-image") &&
+  app.includes("const withImage=Boolean(imageSource") &&
+  app.includes("image.remove();") &&
+  source("bali-site-content.js").includes('wa.href="https://wa.me/"+digits') &&
+  source("bali-site-content.js").includes('viber.href="viber://chat?number=%2B"+digits') &&
+  source("bali-site-content-admin.js").includes('telegramChatUrl:"https://t.me/BALI_MINSK"') &&
+  rules.includes('d.telegramChatUrl is string') &&
+  rules.includes('d.tiktokUrl is string'),
+  "PC contact rows, glowing nonempty cart, and no-image dish cards must render correctly.");
 const barAdmin=source("bali-admin-bar.js");
 const barAdminCss=source("bali-admin-bar.css");
 assert(html.includes('id="baliMenuModeSwitch"') &&
