@@ -273,7 +273,7 @@ assert(html.includes('bali-contact-channels.css?v=20261018-96') &&
 const ageGate=source("bali-age-gate.js");
 const ageCss=source("bali-age-gate.css");
 assert(html.includes('id="baliAgeGate"') &&
-  html.includes('bali-age-gate.js?v=20261018-97') &&
+  html.includes('bali-age-gate.js?v=20261018-98') &&
   html.includes('bali-age-gate.css?v=20261018-98') &&
   app.includes('if(mode==="bar"||mode==="hookah")') &&
   app.includes('switchBaliMenuMode("kitchen")') &&
@@ -289,6 +289,34 @@ assert(html.includes('id="baliAgeGate"') &&
   source('bali-bar-menu.css').includes('#menuPage #baliHookahContent .bali-bar-intro') &&
   rules.includes('match /users/{uid}/ageConfirmations/{consentId}'),
   "Bar and hookah require 18+ account-based confirmation; tea and hookah read-only notices display.");
+// v99: admin opt-in product "Подробнее" must never be published
+// without nonempty text; optional detail photo/grams may be absent.
+const moreCss=source("bali-menu-details.css");
+assert(html.includes('id="baliMenuDetailsDialog"') &&
+  html.includes('id="baliMenuDetailsTitle"') &&
+  html.includes('bali-menu-details.css?v=20261018-97') &&
+  admin.includes('bali-menu-details.css?v=20261018-97') &&
+  admin.includes('id="menuDetailsEnabled"') &&
+  admin.includes('id="menuDetailsText"') &&
+  admin.includes('id="menuDetailsImageFile"') &&
+  admin.includes('id="menuDetailsImagePreview"') &&
+  admin.includes('id="menuWeight"') &&
+  adminClient.includes('detailsEnabled&&!detailsText') &&
+  adminClient.includes('compressImage(file,"menu-detail")') &&
+  adminClient.includes('detailImageCleared') &&
+  adminClient.includes('detailEnabled:detailsEnabled') &&
+  app.includes('item.detailEnabled===true && String(item.detailText||"").trim()') &&
+  app.includes('data-menu-action="details"') &&
+  app.includes('function openBaliMenuDetails(product)') &&
+  app.includes('if(src&&src!=="https://placehold.co/400x200?text=BALI")') &&
+  app.includes('product.detailText') &&
+  moreCss.includes('.bali-menu-details-dialog') &&
+  moreCss.includes('.menu-details-btn') &&
+  source("image-compressor.js").includes('"menu-detail":{ratio:4/3,maxChars:95000') &&
+  rules.includes("'detailEnabled','detailText','detailImageUrl'") &&
+  rules.includes("data.get('detailEnabled',false) == false") &&
+  rules.includes("data.detailText.size() >= 1"),
+  "Menu detail button requires admin opt-in, text, optional WebP, weight and Firestore admin validation.");
 const barAdmin=source("bali-admin-bar.js");
 const barAdminCss=source("bali-admin-bar.css");
 assert(html.includes('id="baliMenuModeSwitch"') &&
@@ -681,7 +709,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261018-96"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261018-99"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -693,7 +721,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261018-96'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261018-99'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-67'), "Guest profile label code should load without old cache");
@@ -727,7 +755,7 @@ for (const id of ["adminClientsPanel","clientSearch","clientList","clientHistory
 }
 assert(admin.includes('admin-clients.js?v=20261017-20'), "Client CRM JS not loaded");
 assert(admin.includes('admin-orders.js?v=20261017-20'), "Staff order editor JS not loaded");
-assert(admin.includes('admin-firestore.js?v=20261017-46'), "Admin event fix must load without cache");
+assert(admin.includes('admin-firestore.js?v=20261018-99'), "Admin event fix must load without cache");
 assert(clientSource.includes('where("ownerUid","==",selected.uid)') && clientSource.includes('startAfter(lastOrder)'),
   "Client history needs owner-only paged retrieval");
 assert(orderAdminSource.includes('writeBatch(db)') && orderAdminSource.includes('archiveOrder') &&
@@ -977,7 +1005,7 @@ assert(approvedCss.includes("/* BALI v47: mobile viewport slots.") &&
 
 assert(admin.includes('id="eventDescription"') &&
   admin.includes('id="eventStartTime"') && admin.includes('id="eventEndTime"') &&
-  admin.includes('admin-firestore.js?v=20261017-46'),
+  admin.includes('admin-firestore.js?v=20261018-99'),
   "Event description, start and end time must be configurable in the admin form");
 assert(adminClient.includes('payload.description=description') &&
   adminClient.includes('payload.startTime=startTime') &&
