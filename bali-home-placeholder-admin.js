@@ -13,13 +13,12 @@ if(form){
   const db=getFirestore(app),auth=getAuth(app);
   const ref=doc(db,"settings","homeEventPlaceholder");
   const defaults={
-    posterTitle:"SECRET", kicker:"BALI NIGHT CLUB",
+    posterTitle:"SECRET", kicker:"SECRET",
     footerTitle:"СКОРО В BALI",footerSubtitle:"Совсем скоро узнаете",
     imageUrl:"",accentColor:"#b9ff51",backgroundColor:"#12171c"
   };
   const keys={
     posterTitle:"baliPlaceholderPosterTitle",
-    kicker:"baliPlaceholderKicker",
     footerTitle:"baliPlaceholderFooterTitle",
     footerSubtitle:"baliPlaceholderFooterSubtitle",
     accentColor:"baliPlaceholderAccentColor",
@@ -36,21 +35,24 @@ if(form){
   function read(){
     const data={};
     for(const [key,id] of Object.entries(keys))data[key]=$(id).value.trim();
+    // Keep the legacy Firestore key for existing published rules; it is no
+    // longer displayed as a separate overline on the card.
+    data.kicker="SECRET";
     data.imageUrl=localImage||url.value.trim();
     return data;
   }
   function preview(){
     const data=read();
     $("baliPlaceholderPreviewTitle").textContent=data.posterTitle||defaults.posterTitle;
-    $("baliPlaceholderPreviewKicker").textContent=data.kicker||defaults.kicker;
     $("baliPlaceholderPreviewFooterTitle").textContent=data.footerTitle||defaults.footerTitle;
     $("baliPlaceholderPreviewFooterSubtitle").textContent=data.footerSubtitle||defaults.footerSubtitle;
-    image.src=safeImage(data.imageUrl)&&data.imageUrl
-      ?data.imageUrl:"assets/bali-secret-placeholder.svg";
+    const customPicture=safeImage(data.imageUrl)&&data.imageUrl?data.imageUrl:"";
+    image.hidden=!customPicture;
+    if(customPicture)image.src=customPicture;
+    else image.removeAttribute("src");
     $("baliPlaceholderPreviewArt").style.setProperty("--bali-secret-accent",data.accentColor);
     $("baliPlaceholderPreviewFooter").style.backgroundColor=data.backgroundColor;
     $("baliPlaceholderPreviewFooterSubtitle").style.color=data.accentColor;
-    $("baliPlaceholderPreviewKicker").style.color=data.accentColor;
   }
   function populate(value){
     const data={...defaults,...value};
@@ -100,7 +102,7 @@ if(form){
   });
   $("baliPlaceholderResetImage").addEventListener("click",()=>{
     fileSerial++;localImage="";file.value="";url.value="";dirty=true;
-    preview();say("Исходная картинка SECRET выбрана. Сохраните изменения.");
+    preview();say("Чёрный фон SECRET выбран. Сохраните изменения.");
   });
   $("baliPlaceholderRestoreDefaults").addEventListener("click",()=>{
     populate(defaults);dirty=true;access();
