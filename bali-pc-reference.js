@@ -88,7 +88,7 @@
     if(!desktop.matches||!sidebar||!contacts||!homeMenu||homeMenu.getClientRects().length===0)return;
     const sidebarBottom=sidebar.getBoundingClientRect().bottom;
     const menuBottom=homeMenu.getBoundingClientRect().bottom+(homepage?.scrollTop||0);
-    const inset=Math.max(0,Math.round(sidebarBottom-menuBottom));
+    const inset=Math.max(0,Math.round(sidebarBottom-menuBottom-10));
     sidebar.style.setProperty("--bali-contact-menu-alignment",inset+"px");
   }
   function requestContactAlignment(){
