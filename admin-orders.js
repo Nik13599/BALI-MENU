@@ -1,141 +1,284 @@
-/** BALI — заказы для персонала. Доступ контролирует Firestore Rules. */
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {
-  getFirestore, collection, doc, getDoc, getDocs, onSnapshot,
-  updateDoc, serverTimestamp, query, limit
-} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+/** BALI admin order queue, staff item amendments and soft deletion.
+ * All edits use atomic Firestore batches. Security enforced by firestore.rules.
+ */
+import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBatch,
+  serverTimestamp,query,limit,orderBy} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
-const auth=getAuth(app), db=getFirestore(app);
-const $=id=>document.getElementById(id);
-let unsubscribe=null, generation=0, orders=[];
-const statuses={pending:"Ожидает подтверждения",confirmed:"Подтверждён",completed:"Завершён",cancelled:"Отменён"};
+const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
+let unsubOrders=null,unsubMenu=null,generation=0,authorized=false,orders=[],catalog=[];
+let editOrder=null,editLines=[],originalIds=new Set();
+const statuses={pending:"Ожидает подтверждения",confirmed:"Подтверждён",completed:"Выполнен",cancelled:"Отменён"};
 const fmt=n=>Number(n||0).toFixed(2)+" BYN";
 const setStatus=text=>{$("ordersAdminStatus").textContent=text;};
-
-function appendText(el,tag,text,className="") {
-  const child=document.createElement(tag);
-  child.textContent=text;
-  if(className)child.className=className;
-  el.append(child);
-  return child;
+function node(tag,text="",cls=""){
+  const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e;
 }
-function makeButton(label,action) {
-  const button=document.createElement("button");
-  button.type="button"; button.textContent=label;
-  button.addEventListener("click",action);
-  return button;
+function button(title,onClick,cls=""){
+  const b=node("button",title,cls);b.type="button";b.addEventListener("click",onClick);return b;
 }
-function showPrint(order) {
-  const print=$("orderPrintSheet");
-  print.replaceChildren();
-  appendText(print,"h1","BALI — ПРЕДЗАКАЗ");
-  appendText(print,"h2","Заказ № "+order.id);
-  appendText(print,"p","Статус: "+(statuses[order.status]||order.status));
-  appendText(print,"p","Мероприятие: "+order.eventDate);
-  appendText(print,"p","Столик: "+(order.tableNumber||"—")+"; ID брони: "+(order.bookingId||"—"));
-  appendText(print,"p","Гость: "+order.customerName);
-  appendText(print,"p","Телефон: "+order.customerPhone);
-  appendText(print,"p","Email: "+order.email);
-  const table=document.createElement("table"),header=document.createElement("tr");
-  ["Позиция","Кол-во","Цена","Сумма"].forEach(h=>appendText(header,"th",h));
-  table.append(header);
-  for(const item of order.items) {
-    const row=document.createElement("tr");
-    [item.name,String(item.quantity),fmt(item.unitPrice),fmt(item.unitPrice*item.quantity)].forEach(x=>appendText(row,"td",x));
+function ensureAdmin(){if(!authorized||!auth.currentUser)throw new Error("Доступ только для администратора.");}
+function total(items){return items.reduce((sum,x)=>sum+Number(x.unitPrice||0)*Number(x.quantity||0),0);}
+async function fetchComplete(id) {
+  ensureAdmin();
+  const ref=doc(db,"orders",id),snapshot=await getDoc(ref);
+  if(!snapshot.exists())throw new Error("Заказ не найден.");
+  const lines=await getDocs(collection(ref,"items"));
+  return {id:snapshot.id,...snapshot.data(),items:lines.docs.map(d=>d.data())};
+}
+function printOrder(o){
+  const area=$("orderPrintSheet");
+  area.replaceChildren();
+  for(const [tag,line] of [
+    ["h1","BALI — ПРЕДЗАКАЗ"],["h2","№ "+o.id],
+    ["p","Дата: "+o.eventDate+" · Статус: "+(statuses[o.status]||o.status)],
+    ["p","Столик: "+(o.tableNumber||"—")+" · Бронь: "+(o.bookingId||"—")],
+    ["p","Гость: "+o.customerName+" · "+o.customerPhone],["p",o.email]
+  ])area.append(node(tag,line));
+  const table=node("table"),head=node("tr");
+  ["Позиция","Кол-во","Цена","Сумма"].forEach(x=>head.append(node("th",x)));
+  table.append(head);
+  for(const line of o.items){
+    const row=node("tr");
+    [line.name,String(line.quantity),fmt(line.unitPrice),fmt(line.unitPrice*line.quantity)]
+      .forEach(x=>row.append(node("td",x)));
     table.append(row);
   }
-  print.append(table);
-  appendText(print,"h2","ИТОГО: "+fmt(order.total));
-  if(order.notes)appendText(print,"p","Пожелания: "+order.notes);
-  appendText(print,"p","Распечатано: "+new Date().toLocaleString("ru-RU"));
-  print.hidden=false;
+  area.append(table,node("h2","Итого: "+fmt(total(o.items))));
+  if(o.notes)area.append(node("p","Пожелания: "+o.notes));
+  if(o.archived)area.append(node("p","АРХИВ"));
+  area.hidden=false;
   window.print();
 }
-window.addEventListener("afterprint",()=>{
-  const print=$("orderPrintSheet");
-  print.hidden=true;
-  print.replaceChildren();
-});
-
-async function changeStatus(order, status) {
-  const name=statuses[status]||status;
-  if (!confirm("Изменить статус заказа "+order.id+" на «"+name+"»?"))return;
+window.addEventListener("afterprint",()=>{$("orderPrintSheet").hidden=true;});
+async function setOrderStatus(o,status) {
+  ensureAdmin();
+  if(!confirm("Изменить статус заказа № "+o.id+" на «"+statuses[status]+"»?"))return;
   setStatus("Сохраняем статус...");
   try {
-    await updateDoc(doc(db,"orders",order.id),{status,updatedAt:serverTimestamp()});
-    setStatus("Статус сохранён: "+name+".");
-  } catch(error) {
-    setStatus("Ошибка изменения статуса: "+(error.code||"unknown"));
-  }
+    await updateDoc(doc(db,"orders",o.id),{status,updatedAt:serverTimestamp()});
+    setStatus("Статус изменён.");
+  }catch(e){setStatus("Не удалось изменить статус: "+(e.code||e.message));}
 }
-function renderOrders() {
-  const container=$("ordersAdminList"), filter=$("ordersDateFilter").value;
+async function archiveOrder(o,archive=true) {
+  ensureAdmin();
+  if(!confirm(archive
+    ?"Убрать заказ № "+o.id+" в архив? Заказ отменится, но история гостя сохранится."
+    :"Вернуть заказ № "+o.id+" из архива? Его статус останется «Отменён»."))return;
+  try {
+    await updateDoc(doc(db,"orders",o.id),
+      archive?{archived:true,status:"cancelled",updatedAt:serverTimestamp()}
+        :{archived:false,updatedAt:serverTimestamp()});
+    setStatus(archive?"Заказ отправлен в архив.":"Заказ восстановлен из архива.");
+  }catch(e){setStatus("Ошибка архива: "+(e.code||e.message));}
+}
+function renderOrders(){
+  const container=$("ordersAdminList"),date=$("ordersDateFilter").value;
+  const showArchive=$("showArchivedOrders")?.checked===true;
   container.replaceChildren();
-  const listed=orders.filter(o=>!filter || o.eventDate===filter);
-  if(!listed.length){appendText(container,"p","По выбранной дате предзаказов нет.");return;}
-  for(const order of listed){
-    const el=document.createElement("article");el.className="admin-order-card";
-    appendText(el,"h3","№ "+order.id+" · "+(statuses[order.status]||order.status));
-    appendText(el,"p",order.eventDate+" · "+(order.tableNumber?"Столик "+order.tableNumber:"ID брони "+order.bookingId));
-    appendText(el,"p",order.customerName+" · "+order.customerPhone+" · "+order.email);
-    for(const item of order.items) {
-      appendText(el,"p",item.name+" × "+item.quantity+" = "+fmt(item.unitPrice*item.quantity),"admin-line-item");
+  const shown=orders.filter(o=>(!date||o.eventDate===date)&&(showArchive||!o.archived));
+  if(!shown.length){
+    container.append(node("p","По этим условиям заказов пока нет."));return;
+  }
+  for(const o of shown){
+    const card=node("article","","admin-order-card");
+    card.append(node("h3","№ "+o.id+" · "+statuses[o.status]+(o.archived?" · Архив":"")));
+    card.append(node("p",o.eventDate+" · "+(o.tableNumber?"Столик "+o.tableNumber:"Бронь "+o.bookingId)));
+    card.append(node("p",o.customerName+" · "+o.customerPhone+" · "+o.email));
+    for(const line of o.items)card.append(node("p",line.name+" × "+line.quantity+" — "+fmt(line.unitPrice*line.quantity),"admin-line-item"));
+    card.append(node("strong","Итого: "+fmt(o.total)));
+    if(o.notes)card.append(node("p","Пожелания: "+o.notes));
+    const actions=node("div","","row-actions");
+    if(!o.archived) {
+      actions.append(button("Редактировать",()=>void openEditor(o.id)));
+      if(o.status==="pending"){
+        actions.append(button("Подтвердить",()=>void setOrderStatus(o,"confirmed")));
+        actions.append(button("Отменить",()=>void setOrderStatus(o,"cancelled")));
+      }else if(o.status==="confirmed") {
+        actions.append(button("Завершить",()=>void setOrderStatus(o,"completed")));
+        actions.append(button("Отменить",()=>void setOrderStatus(o,"cancelled")));
+      }
+      actions.append(button("Удалить",()=>void archiveOrder(o,true),"danger-action"));
+    }else{
+      actions.append(button("Восстановить",()=>void archiveOrder(o,false)));
     }
-    appendText(el,"strong","Итого: "+fmt(order.total));
-    if(order.notes)appendText(el,"p","Пожелания: "+order.notes);
-    const controls=document.createElement("div");controls.className="row-actions";
-    if(order.status==="pending"){
-      controls.append(makeButton("Подтвердить",()=>changeStatus(order,"confirmed")));
-      controls.append(makeButton("Отменить",()=>changeStatus(order,"cancelled")));
-    }else if(order.status==="confirmed"){
-      controls.append(makeButton("Завершить",()=>changeStatus(order,"completed")));
-      controls.append(makeButton("Отменить",()=>changeStatus(order,"cancelled")));
-    }
-    controls.append(makeButton("Печать",()=>showPrint(order)));
-    el.append(controls);
-    container.append(el);
+    actions.append(button("Печать",()=>printOrder(o)));
+    card.append(actions);
+    container.append(card);
   }
 }
-$("ordersDateFilter").addEventListener("change",renderOrders);
 function renderDates(){
-  const el=$("ordersDateFilter"), old=el.value;
+  const el=$("ordersDateFilter"),old=el.value;
   el.replaceChildren(new Option("Все даты",""));
-  for(const date of [...new Set(orders.map(x=>x.eventDate))].sort()){
-    el.add(new Option(date,date));
-  }
+  for(const date of [...new Set(orders.map(x=>x.eventDate))].sort())el.add(new Option(date,date));
   if([...el.options].some(x=>x.value===old))el.value=old;
 }
-async function subscribe(user){
-  if(unsubscribe){unsubscribe();unsubscribe=null;}
-  const gen=++generation;
-  orders=[];
-  $("ordersAdminList").textContent="Проверяем доступ...";
+$("ordersDateFilter").addEventListener("change",renderOrders);
+$("showArchivedOrders")?.addEventListener("change",renderOrders);
+function menuSelect() {
+  const select=$("editOrderAddProduct"),value=select.value;
+  select.replaceChildren(new Option("Выберите блюдо",""));
+  for(const item of catalog.filter(x=>x.available).sort((a,b)=>a.name.localeCompare(b.name,"ru")))
+    select.add(new Option(item.name+" · "+fmt(item.price),String(item.id)));
+  select.value=value;
+}
+function editTotal(){ $("editOrderTotal").textContent=fmt(total(editLines)); }
+function renderEditLines(){
+  const root=$("editOrderLines");root.replaceChildren();
+  for(const item of editLines){
+    const row=node("div","","order-edit-line");
+    const details=node("div","","order-edit-product");
+    details.append(node("strong",item.name),node("small",fmt(item.unitPrice)+" / шт."));
+    const step=node("input");
+    step.type="number";step.min="1";step.max="50";step.step="1";
+    step.value=String(item.quantity);step.setAttribute("aria-label","Количество "+item.name);
+    step.addEventListener("change",()=>{
+      const qty=Number(step.value);
+      if(!Number.isInteger(qty)||qty<1||qty>50) {
+        step.value=String(item.quantity);return;
+      }
+      item.quantity=qty;
+      editTotal();
+    });
+    row.append(details,step,button("Убрать",()=>{
+      editLines=editLines.filter(x=>x.id!==item.id);
+      renderEditLines();
+    },"danger-action"));
+    root.append(row);
+  }
+  if(!editLines.length)root.append(node("p","Нет блюд. Добавьте хотя бы одну позицию."));
+  editTotal();
+}
+function addLine(){
+  const id=Number($("editOrderAddProduct").value);
+  const item=catalog.find(x=>x.id===id&&x.available);
+  if(!item)return;
+  const existing=editLines.find(x=>x.id===id);
+  if(existing) {
+    if(existing.quantity>=50)return;
+    existing.quantity++;
+    existing.name=item.name;existing.unitPrice=item.price;
+  }else{
+    if(editLines.length>=12){$("orderEditStatus").textContent="Не более 12 разных блюд в заказе.";return;}
+    editLines.push({id,name:item.name,unitPrice:item.price,quantity:1});
+  }
+  renderEditLines();
+}
+$("editOrderAddBtn").addEventListener("click",addLine);
+$("closeOrderEdit").addEventListener("click",()=>$("orderEditDialog").close());
+$("cancelOrderEdit").addEventListener("click",()=>$("orderEditDialog").close());
+async function openEditor(id){
+  ensureAdmin();
+  $("orderEditStatus").textContent="Загружаем заказ...";
+  try{
+    const o=await fetchComplete(id);
+    if(o.archived)throw new Error("Сначала восстановите заказ из архива.");
+    editOrder=o;
+    editLines=o.items.map(x=>({...x}));
+    originalIds=new Set(o.items.map(x=>String(x.id)));
+    $("orderEditTitle").textContent="Заказ № "+o.id;
+    $("editOrderDate").value=o.eventDate;
+    $("editOrderStatus").value=o.status;
+    $("editOrderTable").value=o.tableNumber;
+    $("editOrderBooking").value=o.bookingId;
+    $("editOrderNotes").value=o.notes;
+    $("orderEditStatus").textContent="";
+    menuSelect();renderEditLines();
+    $("orderEditDialog").showModal();
+  }catch(e){setStatus("Не удалось открыть заказ: "+(e.code||e.message||"unknown"));}
+}
+window.addEventListener("bali:admin:open-order",({detail})=>{
+  window.dispatchEvent(new CustomEvent("bali:admin:navigate",{detail:{section:"orders"}}));
+  void openEditor(detail.id);
+});
+$("orderEditForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  if(!editOrder||!authorized)return;
+  const status=$("editOrderStatus").value;
+  const eventDate=$("editOrderDate").value;
+  const tableNumber=$("editOrderTable").value.trim();
+  const bookingId=$("editOrderBooking").value.trim();
+  const notes=$("editOrderNotes").value.trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)
+      ||(!tableNumber&&!bookingId)||tableNumber.length>20||bookingId.length>60
+      ||notes.length>500||!Object.keys(statuses).includes(status)
+      ||!editLines.length||editLines.length>12) {
+    $("orderEditStatus").textContent="Заполните дату, столик или бронь, оставьте от 1 до 12 разных блюд.";return;
+  }
+  const submit=event.currentTarget.querySelector('[type="submit"]');
+  submit.disabled=true;
+  $("orderEditStatus").textContent="Сохраняем изменения...";
+  try{
+    // Ensure the order hasn't changed in another admin session.
+    const ref=doc(db,"orders",editOrder.id);
+    const fresh=await getDoc(ref);
+    if(!fresh.exists()||fresh.data().archived)throw new Error("Заказ удалён либо перемещён в архив.");
+    const oldTimestamp=editOrder.updatedAt?.toMillis?.();
+    if(oldTimestamp&&fresh.data().updatedAt?.toMillis?.()!==oldTimestamp)
+      throw new Error("Заказ был изменён в другой вкладке. Закройте окно и откройте его заново.");
+    const original=new Map(editOrder.items.map(x=>[String(x.id),x]));
+    const touched=editLines.filter(x=>{
+      const old=original.get(String(x.id));
+      return !old||x.quantity!==old.quantity||x.unitPrice!==old.unitPrice||x.name!==old.name;
+    });
+    // Revalidate edited and new lines against the current catalog.
+    for(const line of touched){
+      const record=await getDoc(doc(db,"menu",String(line.id)));
+      const data=record.data();
+      if(!record.exists()||!data.available)throw new Error("Блюдо больше недоступно: "+line.name);
+      line.name=data.name;
+      line.unitPrice=data.price;
+    }
+    const batch=writeBatch(db);
+    batch.update(ref,{eventDate,tableNumber,bookingId,notes,status,updatedAt:serverTimestamp()});
+    const present=new Set(editLines.map(x=>String(x.id)));
+    for(const id of originalIds)if(!present.has(id))batch.delete(doc(ref,"items",id));
+    for(const line of touched)batch.set(doc(ref,"items",String(line.id)),{
+      id:line.id,name:line.name,unitPrice:line.unitPrice,quantity:line.quantity
+    });
+    await batch.commit();
+    $("orderEditDialog").close();
+    setStatus("Изменения заказа № "+editOrder.id+" сохранены. Итого: "+fmt(total(editLines)));
+  }catch(e){
+    $("orderEditStatus").textContent=e.code==="permission-denied"
+      ?"Firebase запретил изменение. Опубликуйте последние правила Firestore."
+      :"Не удалось сохранить заказ: "+(e.message||e.code||"unknown");
+  }finally{submit.disabled=false;}
+});
+async function subscribe(user) {
+  if(unsubOrders){unsubOrders();unsubOrders=null;}
+  if(unsubMenu){unsubMenu();unsubMenu=null;}
+  const current=++generation;
+  orders=[];catalog=[];authorized=false;
+  $("ordersAdminList").textContent="Проверяем права...";
   if(!user||!user.emailVerified)return;
   try{
     const role=await getDoc(doc(db,"admins",user.uid));
-    if(gen!==generation||!role.exists()||role.data().active!==true){
-      $("ordersAdminList").textContent="Нет прав администратора.";
-      return;
+    if(current!==generation||!role.exists()||role.data().active!==true) {
+      $("ordersAdminList").textContent="Нет прав администратора.";return;
     }
-    unsubscribe=onSnapshot(query(collection(db,"orders"),limit(100)),async snapshots=>{
+    authorized=true;
+    unsubMenu=onSnapshot(collection(db,"menu"),snap=>{
+      catalog=snap.docs.map(x=>x.data()).filter(x=>Number.isSafeInteger(x.id)&&Number.isFinite(x.price));
+      menuSelect();
+    },e=>setStatus("Ошибка каталога для редактирования: "+(e.code||"unknown")));
+    unsubOrders=onSnapshot(query(collection(db,"orders"),orderBy("createdAt","desc"),limit(100)),async snap=>{
       try{
-        const mapped=await Promise.all(snapshots.docs.map(async order=>{
-          const snapshot=await getDocs(collection(order.ref,"items"));
-          const items=snapshot.docs.map(x=>x.data());
-          return {id:order.id,...order.data(),items,
-            total:items.reduce((sum,x)=>sum+x.unitPrice*x.quantity,0)};
+        const prepared=await Promise.all(snap.docs.map(async row=>{
+          const lines=await getDocs(collection(row.ref,"items"));
+          const items=lines.docs.map(x=>x.data());
+          return {id:row.id,...row.data(),items,total:total(items)};
         }));
-        if(gen!==generation)return;
-        orders=mapped.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+        if(current!==generation)return;
+        orders=prepared;
         renderDates();renderOrders();
         window.dispatchEvent(new CustomEvent("bali:admin:orders",{detail:{
-          count:orders.length, pending:orders.filter(x=>x.status==="pending").length
+          count:orders.length,pending:orders.filter(x=>x.status==="pending"&&!x.archived).length
         }}));
-        setStatus("Загружено предзаказов: "+orders.length+
-          " (последние 100; более старые пока не отображаются).");
-      }catch(error){if(gen===generation)setStatus("Не удалось загрузить состав заказов: "+(error.code||"unknown"));}
-    },error=>{if(gen===generation)setStatus("Ошибка списка заказов: "+(error.code||"unknown"))});
-  }catch(error){if(gen===generation)setStatus("Ошибка проверки прав: "+(error.code||"unknown"));}
+        setStatus("Последние "+orders.length+" заказов. Для полной истории по гостю откройте «Клиенты».");
+      }catch(e){if(current===generation)setStatus("Ошибка состава заказов: "+(e.code||e.message));}
+    },e=>{if(current===generation)setStatus("Не удалось загрузить заказы: "+(e.code||"unknown"));});
+  }catch(e){if(current===generation)setStatus("Ошибка проверки роли: "+(e.code||"unknown"));}
 }
 onAuthStateChanged(auth,user=>{void subscribe(user);});
