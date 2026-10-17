@@ -18,8 +18,8 @@
 
 <body>
     <div class="bali-preview-banner" role="status">
-      ТЕСТОВАЯ ВЕРСИЯ: доступна регистрация через Google после включения домена.
-      Каталог подключается к Firestore; реальные предзаказы пока не принимаются.
+      ТЕСТОВЫЙ ЗАПУСК: предзаказы будут сохраняться в Firestore после публикации новых правил.
+      Заказы не оплачиваются онлайн и требуют подтверждения администратора.
     </div>
     <!-- Header -->
     <header class="header">
@@ -30,7 +30,7 @@
             </div>
             <nav class="nav">
                 <a href="index.html" class="nav-link active">Меню</a>
-                <span class="nav-link" title="Отслеживание заказов пока не подключено">Мои заказы (скоро)</span>
+                <button type="button" class="account-btn" id="myOrdersBtn">Мои заказы</button>
                 <button type="button" class="account-btn" id="accountBtn">Войти / Регистрация</button>
                 <button class="cart-btn" id="cartBtn">
                     <span class="cart-icon">🛒</span>
@@ -125,7 +125,7 @@
         <div class="account-panel">
           <p class="auth-help">Для регистрации войдите через Google. Почтовый адрес подтверждается вашим Google-аккаунтом и используется для последующих входов. Имя и телефон обязательны.</p>
           <p class="auth-status" id="authMessage" role="status" aria-live="polite"></p>
-          <p class="auth-help" id="authBuild">Версия авторизации: 17.10.2026-7</p>
+          <p class="auth-help" id="authBuild">Версия авторизации: 17.10.2026-10</p>
           <div class="auth-actions">
             <button class="auth-btn" type="button" id="authGoogleBtn">Войти через Google</button>
             <button class="auth-outline-btn" type="button" id="authSignOutBtn" hidden>Выйти из аккаунта</button>
@@ -199,7 +199,7 @@
                     <h4>Состав предзаказа</h4>
                     <div id="checkoutItems"></div>
                     <div class="summary-total">
-                        <span>Total:</span>
+                        <span>Итого:</span>
                         <span id="checkoutTotal">$0.00</span>
                     </div>
                 </div>
@@ -212,28 +212,43 @@
         </div>
     </div>
 
+    <!-- Личные предзаказы -->
+    <div class="modal" id="myOrdersModal" role="dialog" aria-modal="true" aria-labelledby="ordersModalHeading" aria-hidden="true">
+      <div class="modal-content" style="max-width:800px">
+        <div class="modal-header">
+          <h3 id="ordersModalHeading">Мои предзаказы BALI</h3>
+          <button type="button" class="close-modal" id="closeMyOrders" aria-label="Закрыть">✕</button>
+        </div>
+        <div class="bali-orders-content">
+          <p class="auth-help">Изменить или отменить заказ можно до подтверждения администратором.</p>
+          <div id="myOrdersList" role="status" aria-live="polite">Загружаем предзаказы...</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Success Modal -->
     <div class="modal" id="successModal">
         <div class="modal-content success-content">
             <div class="success-icon">✓</div>
             <h3>Предзаказ отправлен</h3>
-            <p>Your order has been received and is being prepared.</p>
+            <p>Предзаказ отправлен администратору. Ожидайте подтверждения.</p>
             <div class="order-id-box">
-                <span>Order ID:</span>
+                <span>Номер предзаказа:</span>
                 <strong id="displayOrderId">ORD123456</strong>
             </div>
-            <p class="success-note">Save this ID to track your order</p>
+            <p class="success-note">Сохраните номер и следите за статусом во вкладке «Мои заказы».</p>
             <div class="success-actions">
-                <a href="track.html" class="track-order-btn">Track Order</a>
-                <button class="close-success-btn" id="closeSuccess">Continue Shopping</button>
+                <button type="button" class="track-order-btn" id="successMyOrders">Мои заказы</button>
+                <button class="close-success-btn" id="closeSuccess">Продолжить</button>
             </div>
         </div>
     </div>
 
-    <script src="firebase-config.js?v=20261017-7"></script>
-    <script src="app.js?v=20261017-6"></script>
-    <script type="module" src="auth.js?v=20261017-6"></script>
-    <script type="module" src="menu-firestore.js?v=20261017-7"></script>
+    <script src="firebase-config.js?v=20261017-10"></script>
+    <script src="app.js?v=20261017-10"></script>
+    <script type="module" src="auth.js?v=20261017-10"></script>
+    <script type="module" src="menu-firestore.js?v=20261017-10"></script>
+    <script type="module" src="orders-firestore.js?v=20261017-10"></script>
 </body>
 
 </html>
