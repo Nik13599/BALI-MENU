@@ -13,6 +13,7 @@ export async function compressImage(file,kind="product") {
   const designPresets={
     "design-icon":{ratio:1,maxChars:24000,widths:[160,128,96,80,64]},
     "design-placeholder":{ratio:3/4,maxChars:120000,widths:[720,600,520,440,360]},
+    "menu-detail":{ratio:4/3,maxChars:95000,widths:[720,600,480,380,300]},
     "design-hero":{ratio:8/3,maxChars:155000,widths:[1280,1120,960,800,640]},
     "design-hero-tablet":{ratio:16/9,maxChars:155000,widths:[1050,900,760,640,520]},
     "design-hero-mobile":{ratio:3/4,maxChars:155000,widths:[600,520,440,360,300]},
