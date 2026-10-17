@@ -686,3 +686,84 @@
   #homeSection .bali-pc-events-title{padding:4px 12px 0}
   #homeSection .bali-pc-events-title h2 button{font-size:19px!important}
 }
+
+/* v72: homepage contacts move into the persistent PC sidebar.
+   Tablet/phone retain the existing homepage contact actions. */
+@media(min-width:1180px){
+  body.bali-guest-theme>.bali-pc-sidebar{
+    gap:clamp(12px,2.8vh,30px)!important;
+    padding-bottom:clamp(8px,1.4vh,16px)!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-sidebar-foot{display:none!important}
+  body.bali-guest-theme #homeSection .bali-home-contacts-card{display:none!important}
+  body.bali-guest-theme #homeSection .bali-home-inner{
+    grid-template-rows:
+      clamp(270px,33.5vh,345px)
+      40px
+      clamp(240px,26vh,278px)
+      93px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-menu-banner{
+    grid-row:4!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-right-rail{
+    grid-row:1/5!important;
+  }
+  @media(max-height:710px){
+    body.bali-guest-theme #homeSection .bali-home-inner{
+      grid-template-rows:265px 40px 230px 93px!important;
+    }
+    body.bali-guest-theme>.bali-pc-sidebar{
+      overflow-y:auto!important;
+      gap:11px!important;
+    }
+  }
+  .bali-pc-sidebar-contacts{
+    display:flex!important;flex-direction:column;gap:10px;
+    margin-top:auto!important;padding:13px 3px 0;
+    width:100%;box-sizing:border-box;
+    border-top:1px solid rgba(255,255,255,.15);
+  }
+  .bali-pc-contact-phone,
+  .bali-pc-contact-socials a,
+  .bali-pc-contact-location a{
+    display:flex;align-items:center;gap:8px;min-width:0;
+    padding:10px 9px;text-decoration:none;
+    border:1px solid rgba(255,255,255,.13);
+    border-radius:10px;background:rgba(255,255,255,.035);
+    color:#ecf0ec;font:650 11px/1.35 Manrope,Inter,sans-serif;
+    transition:background .15s,border-color .15s;
+  }
+  .bali-pc-contact-phone:hover,
+  .bali-pc-contact-socials a:hover,
+  .bali-pc-contact-location a:hover{
+    background:rgba(185,255,81,.09);
+    border-color:var(--bt-border,#b2ef5f);
+  }
+  .bali-pc-sidebar-contacts svg{
+    display:block;width:19px;height:19px;flex:0 0 19px;
+    color:var(--bt-primary,#b9ff51);
+  }
+  .bali-pc-contact-phone{white-space:nowrap;font-size:clamp(10px,.9vw,12px)}
+  .bali-pc-contact-socials{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .bali-pc-contact-socials a{
+    min-width:0;justify-content:center;flex-direction:column;
+    gap:5px;padding:9px 3px;font-size:10px
+  }
+  .bali-pc-contact-location{display:flex;flex-direction:column;gap:6px}
+  .bali-pc-contact-location>strong{
+    color:#ecefed;font:680 12px/1.4 Manrope,Inter,sans-serif;
+  }
+  .bali-pc-contact-location a{
+    align-items:flex-start;gap:6px;padding:9px 8px;
+    overflow-wrap:anywhere;
+  }
+  .bali-pc-contact-location a svg{width:19px;height:25px;flex:0 0 19px}
+  .bali-pc-contact-location a>span{min-width:0}
+  .bali-pc-contact-location a small{
+    display:block;margin-top:4px;color:#9da5a3;font:500 10px/1.35 Manrope,sans-serif;
+  }
+}
+@media(max-width:1179px){
+  .bali-pc-sidebar-contacts{display:none!important}
+}
