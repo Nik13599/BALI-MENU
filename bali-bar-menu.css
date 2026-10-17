@@ -1,9 +1,9 @@
-/* BALI v65 — Kitchen / Bar dual menu.
+/* BALI v71 — Kitchen / Bar / Hookah / Tea four-section menu.
    Same monochrome + LIME SHADOW visual language; bar prices are rows, NOT
    sale cards. The disclaimer, portions and prices are informational only. */
 #menuPage .bali-menu-mode-switch{
   display:grid;
-  grid-template-columns:repeat(2,minmax(0,190px));
+  grid-template-columns:repeat(4,minmax(0,190px));
   justify-content:center;
   gap:8px;
   flex:0 0 auto;
@@ -48,7 +48,9 @@
   overflow:hidden;
 }
 #menuPage #baliKitchenContent[hidden],
-#menuPage #baliBarContent[hidden]{display:none!important}
+#menuPage #baliBarContent[hidden],
+#menuPage #baliHookahContent[hidden],
+#menuPage #baliTeaContent[hidden]{display:none!important}
 #menuPage .bali-bar-content{
   flex:1 1 0;
   width:100%;
@@ -202,7 +204,7 @@
 }
 @media(min-width:768px){
   #menuPage .bali-menu-mode-switch{
-    grid-template-columns:repeat(2,192px);
+    grid-template-columns:repeat(4,minmax(0,190px));
     padding-top:14px;
     padding-bottom:14px;
     border-bottom:1px solid rgba(255,255,255,.095);
@@ -251,4 +253,25 @@
 @media(max-width:355px){
   #menuPage .bali-bar-row{grid-template-columns:minmax(0,1fr) minmax(144px,53%)}
   #menuPage .bali-bar-price{font-size:10px}
+}
+
+/* The single desktop row holds four equal-width menu category buttons. */
+@media(min-width:768px){
+  #menuPage .bali-menu-mode-switch{
+    grid-template-columns:repeat(4,minmax(0,190px));
+    gap:clamp(7px,1vw,13px);
+    padding-inline:clamp(14px,2vw,32px);
+    width:100%;
+  }
+}
+@media(max-width:767px){
+  /* Four touch targets: two tidy rows instead of cramped labels. */
+  #menuPage .bali-menu-mode-switch{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  #menuPage .bali-menu-mode-btn{
+    white-space:normal;
+    line-height:1.2;
+    font-size:clamp(11px,3.5vw,13px);
+  }
 }
