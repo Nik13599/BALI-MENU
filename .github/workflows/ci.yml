@@ -42,6 +42,8 @@ jobs:
           node --input-type=module --check < bali-bar-menu.js
           node --input-type=module --check < bali-site-content-admin.js
           node --input-type=module --check < bali-site-content.js
+          node --input-type=module --check < bali-home-placeholder.js
+          node --input-type=module --check < bali-home-placeholder-admin.js
           node --check bali-design-studio.js
           node --check admin.js
           node --check track.js
