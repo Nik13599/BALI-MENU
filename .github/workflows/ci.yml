@@ -30,6 +30,8 @@ jobs:
           node --input-type=module --check < image-compressor.js
           node --input-type=module --check < event-interests.js
           node --check admin-dashboard.js
+          node --check bali-pc-reference.js
+          node --input-type=module --check < bali-admin-cards.js
           node --check admin.js
           node --check track.js
           node --check firebase-config.js
