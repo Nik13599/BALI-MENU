@@ -309,11 +309,23 @@ service cloud.firestore {
 
     function validMenu(data) {
       return data.keys().hasAll(['id','name','category','description','price','image_url','available','sort','updatedAt'])
-        && data.keys().hasOnly(['id','name','category','description','price','image_url','available','sort','updatedAt'])
+        && data.keys().hasOnly(['id','name','category','description','price','image_url','available','sort','updatedAt',
+          'weight','detailEnabled','detailText','detailImageUrl'])
         && data.id is int && data.id > 0
         && data.name is string && data.name.size() >= 2 && data.name.size() <= 120
         && data.category is string && data.category.size() >= 2 && data.category.size() <= 60
         && data.description is string && data.description.size() <= 800
+        && (!('weight' in data) || (data.weight is string && data.weight.size() <= 45))
+        && (!('detailEnabled' in data) || data.detailEnabled is bool)
+        && (!('detailText' in data) || (data.detailText is string && data.detailText.size() <= 2400))
+        && (!('detailImageUrl' in data) || (data.detailImageUrl is string
+          && data.detailImageUrl.size() <= 95000
+          && (data.detailImageUrl == ''
+             || (data.detailImageUrl.size() <= 1000 && data.detailImageUrl.matches('^https://[^ ]+$'))
+             || data.detailImageUrl.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+$'))))
+        && (data.get('detailEnabled',false) == false
+            || ('detailText' in data && data.detailText is string
+                && data.detailText.size() >= 1 && data.detailText.matches('.*[^ ].*')))
         && data.price is number && data.price >= 0 && data.price <= 20000
         && data.image_url is string && data.image_url.size() <= 95000
         && (data.image_url == ''
