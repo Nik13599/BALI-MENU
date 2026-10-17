@@ -26,22 +26,42 @@ function carouselEventCards(track) {
 }
 function carouselEventIndex(track, cards=carouselEventCards(track)) {
     if(!cards.length)return 0;
-    const first=cards[0].offsetLeft;
-    const left=track.scrollLeft;
+    // Активной считается АФИША В ЦЕНТРЕ экрана, а не у левого края.
+    const viewport=track.getBoundingClientRect();
+    const middle=viewport.left+viewport.width/2;
     let selected=0,best=Infinity;
     cards.forEach((card,i)=>{
-        const diff=Math.abs(card.offsetLeft-first-left);
+        const rect=card.getBoundingClientRect();
+        const diff=Math.abs(rect.left+rect.width/2-middle);
         if(diff<best){best=diff;selected=i;}
     });
     return selected;
+}
+function centerEventCard(track,card,animated=false) {
+    if(!card)return;
+    const viewport=track.getBoundingClientRect();
+    const rect=card.getBoundingClientRect();
+    const left=track.scrollLeft+rect.left+rect.width/2-viewport.left-viewport.width/2;
+    track.scrollTo({
+        left:Math.max(0,left),
+        behavior:animated&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches?"smooth":"instant"
+    });
 }
 function updateEventCarouselPosition() {
     const track=document.getElementById("eventsGrid");
     const counter=document.getElementById("eventsCarouselPosition");
     if(!track||!counter)return;
     const cards=carouselEventCards(track);
+    const active=carouselEventIndex(track,cards);
+    for(const [index,card] of cards.entries()) {
+        const focused=index===active;
+        card.classList.toggle("is-active",focused);
+        card.classList.toggle("is-neighbor",Math.abs(index-active)===1);
+        if(focused)card.setAttribute("aria-current","true");
+        else card.removeAttribute("aria-current");
+    }
     counter.textContent=cards.length
-        ? String(carouselEventIndex(track,cards)+1).padStart(2,"0")+" / "+String(cards.length).padStart(2,"0")
+        ? String(active+1).padStart(2,"0")+" / "+String(cards.length).padStart(2,"0")
         : "Нет мероприятий";
 }
 function scrollEventCarousel(direction) {
@@ -51,8 +71,7 @@ function scrollEventCarousel(direction) {
     if(cards.length<2)return;
     const current=carouselEventIndex(track,cards);
     const target=Math.max(0,Math.min(cards.length-1,current+direction));
-    const distance=cards[target].offsetLeft-cards[0].offsetLeft;
-    track.scrollTo({left:distance,behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
+    centerEventCard(track,cards[target],true);
 }
 function initEventCarousel() {
     const track=document.getElementById("eventsGrid");
@@ -304,7 +323,7 @@ function renderUpcomingEvents() {
     const restore=()=>{
         const cards=carouselEventCards(grid);
         if(!cards.length)return;
-        grid.scrollLeft=Math.max(0,cards[restoreIndex].offsetLeft-cards[0].offsetLeft);
+        centerEventCard(grid,cards[restoreIndex],false);
         updateEventCarouselPosition();
     };
     grid.scrollLeft=0;
