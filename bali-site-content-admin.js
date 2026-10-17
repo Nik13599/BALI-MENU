@@ -12,7 +12,7 @@ if(host){
     brandTitle:"B A L I",brandSubtitle:"NIGHT CLUB",
     navHomeText:"ГЛАВНАЯ",navCalendarText:"КАЛЕНДАРЬ",navMenuText:"МЕНЮ",navCartText:"КОРЗИНА",
     calendarPreviewTitle:"BALI календарь",calendarPageTitle:"BALI КАЛЕНДАРЬ",
-    menuBannerTitle:"Меню",menuBannerCta:"Посмотреть меню",
+    menuPageTitle:"BALI МЕНЮ",menuBannerTitle:"Меню",menuBannerCta:"Посмотреть меню",
     contactHeading:"Контактная информация",phoneText:"+375 29 670-03-00",
     phoneHref:"tel:+375296700300",telegramUrl:"https://t.me/baliclubminsk",
     instagramUrl:"https://www.instagram.com/baliminsk/",
@@ -32,7 +32,7 @@ if(host){
   const maxLengths={
     brandTitle:32,brandSubtitle:35,navHomeText:30,navCalendarText:30,
     navMenuText:30,navCartText:30,calendarPreviewTitle:55,calendarPageTitle:55,
-    menuBannerTitle:45,menuBannerCta:65,contactHeading:55,phoneText:32,
+    menuPageTitle:55,menuBannerTitle:45,menuBannerCta:65,contactHeading:55,phoneText:32,
     phoneHref:48,telegramUrl:250,instagramUrl:250,findHeading:50,
     addressText:110,addressFloor:80,mapUrl:300
   };
