@@ -407,7 +407,7 @@ function updateCartUI() {
 
     // Update total
     const total = calculateTotal();
-    elements.totalAmount.textContent = `${CONFIG.CURRENCY_SYMBOL}${total.toFixed(2)}`;
+    elements.totalAmount.textContent = `${total.toFixed(2)} BYN`;
 }
 
 function createCartItemHTML(item) {
@@ -423,7 +423,7 @@ function createCartItemHTML(item) {
                     <span class="qty-value">${item.quantity}</span>
                     <button class="qty-btn qty-plus" data-id="${item.id}">+</button>
                 </div>
-                <span class="cart-item-price">${CONFIG.CURRENCY_SYMBOL}${(item.price * item.quantity).toFixed(2)}</span>
+                <span class="cart-item-price">${(item.price * item.quantity).toFixed(2)} BYN</span>
             </div>
         </div>
     `;
@@ -529,12 +529,12 @@ async function openCheckout() {
         .map(item => `
             <div class="summary-item">
                 <span>${escapeHTML(item.name)} × ${item.quantity}</span>
-                <span>${CONFIG.CURRENCY_SYMBOL}${(item.price * item.quantity).toFixed(2)}</span>
+                <span>${(item.price * item.quantity).toFixed(2)} BYN</span>
             </div>
         `)
         .join('');
 
-    elements.checkoutTotal.textContent = `${CONFIG.CURRENCY_SYMBOL}${calculateTotal().toFixed(2)}`;
+    elements.checkoutTotal.textContent = `${calculateTotal().toFixed(2)} BYN`;
 
     elements.checkoutModal.classList.add('active');
     elements.overlay.classList.add('active');
