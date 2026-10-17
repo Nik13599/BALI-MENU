@@ -97,7 +97,7 @@
         <!-- Верхняя зона: календарь и горизонтальная карусель -->
         <section class="bali-home-events-panel" aria-label="Ближайшие мероприятия BALI">
           <div class="bali-pc-hero">
-            <div class="bali-pc-hero-visual"><img id="baliPcHeroPoster" alt="" decoding="async"></div>
+            <div class="bali-pc-hero-visual"><picture><source id="baliPcHeroMobileSource" media="(max-width:767px)"><source id="baliPcHeroTabletSource" media="(min-width:768px) and (max-width:1179px)"><img id="baliPcHeroPoster" alt="" decoding="async"></picture></div>
             <div class="bali-pc-hero-content">
               <span class="bali-pc-kicker">BALI NIGHT CLUB</span>
               <h1 id="baliPcOfferTitle">BALI PRIVILEGE</h1>
@@ -120,14 +120,12 @@
         </section>
         <aside class="bali-pc-right-rail" aria-label="Больше о клубе">
           <details class="bali-pc-about">
-            <summary><img id="baliPcAboutImage" class="bali-pc-about-image" alt="" hidden><span class="bali-pc-about-logo">BALI</span><strong id="baliPcAboutTitle">О клубе</strong><small id="baliPcAboutSubtitle">Атмосфера, музыка, люди</small><span class="bali-pc-round-arrow" aria-hidden="true">›</span></summary>
+            <summary><picture class="bali-pc-about-picture"><source id="baliPcAboutMobileSource" media="(max-width:767px)"><source id="baliPcAboutTabletSource" media="(min-width:768px) and (max-width:1179px)"><img id="baliPcAboutImage" class="bali-pc-about-image" alt="" hidden></picture><span class="bali-pc-about-logo">BALI</span><strong id="baliPcAboutTitle">О клубе</strong><small id="baliPcAboutSubtitle">Атмосфера, музыка, люди</small><span class="bali-pc-round-arrow" aria-hidden="true">›</span></summary>
             <p id="baliPcAboutDescription">Ночной клуб BALI в Минске. Музыка, события и встречи в одной атмосфере.</p>
             <button type="button" data-bali-nav="contacts">Контакты клуба →</button>
           </details>
-          <a class="bali-pc-rail-link" href="tel:+375296700300"><span aria-hidden="true">▦</span><span><strong>Забронировать стол</strong><small>Связаться с клубом</small></span><i aria-hidden="true">›</i></a>
-          <a class="bali-pc-rail-link" href="https://www.instagram.com/baliminsk/" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">▧</span><span><strong>Фотогалерея</strong><small>Фотографии в Instagram</small></span><i aria-hidden="true">›</i></a>
           <div class="bali-pc-merch" aria-label="BALI MERCH">
-            <img id="baliPcMerchImage" class="bali-pc-merch-photo" alt="" hidden>
+            <picture class="bali-pc-merch-picture"><source id="baliPcMerchMobileSource" media="(max-width:767px)"><source id="baliPcMerchTabletSource" media="(min-width:768px) and (max-width:1179px)"><img id="baliPcMerchImage" class="bali-pc-merch-photo" alt="" hidden></picture>
             <span class="bali-pc-merch-mark" aria-hidden="true">BALI</span>
             <div class="bali-pc-merch-info">
               <span class="bali-pc-merch-kicker">BALI MERCH</span>
@@ -548,8 +546,8 @@
     <script type="module" src="bali-bar-menu.js?v=20261017-65"></script>
     <script type="module" src="bali-extra-menus.js?v=20261017-71"></script>
     <script type="module" src="bali-menu-visibility.js?v=20261017-72"></script>
-    <script type="module" src="bali-home-design.js?v=20261017-73"></script>
-    <script type="module" src="bali-pc-offers.js?v=20261017-73"></script>
+    <script type="module" src="bali-home-design.js?v=20261017-75"></script>
+    <script type="module" src="bali-pc-offers.js?v=20261017-75"></script>
     <script type="module" src="orders-firestore.js?v=20261017-28"></script>
     <script type="module" src="event-interests.js?v=20261017-26"></script>
     <script src="bali-icon-atelier.js?v=20261017-58" defer></script>
