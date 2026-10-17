@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="bali-theme.css?v=20261017-60">
   <link rel="stylesheet" href="bali-lime-neutral.css?v=20261017-62">
   <link rel="stylesheet" href="bali-admin-bar.css?v=20261017-65">
-  <link rel="stylesheet" href="bali-admin-cards.css?v=20261017-79">
+  <link rel="stylesheet" href="bali-admin-cards.css?v=20261017-82">
 
 </head>
 <body class="bali-admin-theme">
@@ -345,12 +345,45 @@
           </div>
           <a href="index.html" target="_blank" rel="noopener noreferrer" class="bali-design-view-site">Открыть сайт ↗</a>
         </div>
-        <div class="bali-design-overview">
-          <div><strong>BALI PRIVILEGE</strong><span>1600 × 600 px · 8:3</span></div>
-          <div><strong>О клубе BALI</strong><span>ПК: 900 × 1400 px · 9:14</span></div>
-          <div><strong>BALI MERCH</strong><span>ПК: 1200 × 800 px · 3:2</span></div>
-        </div>
-        <section class="card bali-design-about-editor">
+        <div class="bali-design-studio">
+          <section class="bali-design-canvas-panel" aria-label="Живая схема сайта BALI">
+            <div class="bali-design-studio-toolbar">
+              <div class="bali-studio-device-list" role="group" aria-label="Предпросмотр для устройства">
+                <button type="button" class="bali-studio-device active" data-studio-device="desktop" aria-pressed="true" title="Компьютер, 1440 × 900">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 22h8M12 18v4"/></svg><span>ПК</span>
+                </button>
+                <button type="button" class="bali-studio-device" data-studio-device="tablet" aria-pressed="false" title="Планшет, 820 × 1180">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="1" width="16" height="22" rx="2"/><path d="M10 20h4"/></svg><span>Планшет</span>
+                </button>
+                <button type="button" class="bali-studio-device" data-studio-device="phone" aria-pressed="false" title="Телефон, 390 × 844">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="1" width="10" height="22" rx="2"/><path d="M11 20h2"/></svg><span>Телефон</span>
+                </button>
+              </div>
+              <div class="bali-studio-size" id="baliStudioViewportLabel">1440 × 900 px</div>
+            </div>
+            <div class="bali-studio-page-tabs" role="group" aria-label="Раздел внутри схемы">
+              <button type="button" data-studio-page="home" class="active" aria-pressed="true">Главная</button>
+              <button type="button" data-studio-page="events" aria-pressed="false">Календарь</button>
+              <button type="button" data-studio-page="menu" aria-pressed="false">Меню</button>
+            </div>
+            <p class="bali-studio-hint">Это действующая версия сайта с данными Firebase. Нажмите на область схемы, чтобы редактировать её справа. Свайпы и прокрутка доступны для просмотра.</p>
+            <div class="bali-design-preview-canvas" id="baliDesignCanvas">
+              <div id="baliDesignScaledFrame" class="bali-design-scaled-frame">
+                <iframe id="baliDesignLiveFrame" title="Живой предварительный просмотр сайта BALI"
+                  src="index.html?bali-admin-design-preview=1" loading="lazy" referrerpolicy="same-origin"></iframe>
+              </div>
+            </div>
+            <div class="bali-studio-bottomline"><span class="online-dot"></span><span>Актуальные мероприятия, карты меню, BALI PRIVILEGE и MERCH из Firebase</span></div>
+            <p id="baliStudioLoadStatus" class="status" role="status" aria-live="polite">Загружаем живую схему сайта…</p>
+          </section>
+          <aside class="bali-design-inspector" aria-labelledby="baliStudioInspectorTitle">
+            <div class="bali-design-inspector-top">
+              <div class="eyebrow">РЕДАКТОР ВЫБРАННОГО БЛОКА</div>
+              <h3 id="baliStudioInspectorTitle">BALI PRIVILEGE</h3>
+              <p id="baliStudioInspectorHint">Выберите любой блок на схеме для его настройки.</p>
+            </div>
+            <div class="bali-design-inspector-pages">
+        <section class="card bali-design-about-editor" data-design-editor="about" hidden>
           <div class="card-heading"><h3>О клубе BALI</h3><span class="tag">Правая колонка ПК</span></div>
           <div class="bali-design-spec">
             <div class="bali-design-spec-art bali-design-spec-art-square"><span>900 × 1400</span></div>
@@ -387,7 +420,7 @@
             <p class="status" id="baliHomeAboutStatus" role="status" aria-live="polite">Проверяем доступ…</p>
           </form>
         </section>
-        <section class="card bali-design-merch-editor">
+        <section class="card bali-design-merch-editor" data-design-editor="merch" hidden>
           <div class="card-heading"><h3>BALI MERCH · Витрина</h3><span class="tag">Несколько товаров</span></div>
           <p class="hint">Добавляйте любое количество карточек мерча, загружайте фотографии, указывайте наличие и цену. На главной карточки показываются по очереди. Черновики гостям не видны.</p>
           <div class="bali-design-spec">
@@ -442,7 +475,7 @@
           </form>
           <div class="bali-design-merch-list" id="baliHomeMerchList" aria-live="polite"></div>
         </section>
-        <section class="card bali-promo-editor" id="baliPromoEditor">
+        <section class="card bali-promo-editor" id="baliPromoEditor" data-design-editor="privilege" hidden>
           <div class="card-heading"><h3>BALI PRIVILEGE · Спецпредложения</h3><span class="tag">Главная страница ПК</span></div>
           <p class="hint">Каждое опубликованное предложение — отдельный слайд BALI PRIVILEGE. Переключаются автоматически; на сайте остаются ваши заголовки, описания и изображения.</p>
           <div class="bali-design-spec bali-design-spec-wide">
@@ -499,6 +532,86 @@
           </form>
           <div id="baliPromoList" class="bali-promo-list" aria-live="polite"></div>
         </section>
+        <section class="card bali-site-content-editor" data-design-editor="navigation" hidden>
+          <h3>Логотип и навигация</h3>
+          <p class="hint">Названия пунктов и собственные значки применяются к пользовательской версии сайта.</p>
+          <form class="bali-site-copy-form" data-studio-copy-form="navigation">
+            <label>Надпись логотипа<input type="text" data-site-field="brandTitle" maxlength="32" value="B A L I"></label>
+            <label>Подпись логотипа<input type="text" data-site-field="brandSubtitle" maxlength="35" value="NIGHT CLUB"></label>
+            <div class="bali-design-form-grid">
+              <label>Главная<input type="text" data-site-field="navHomeText" maxlength="30" value="ГЛАВНАЯ"></label>
+              <label>Календарь<input type="text" data-site-field="navCalendarText" maxlength="30" value="КАЛЕНДАРЬ"></label>
+              <label>Меню<input type="text" data-site-field="navMenuText" maxlength="30" value="МЕНЮ"></label>
+              <label>Корзина<input type="text" data-site-field="navCartText" maxlength="30" value="КОРЗИНА"></label>
+            </div>
+            <div data-studio-icons="navigation"></div>
+            <button class="primary" type="submit">Сохранить навигацию</button>
+            <p class="status" role="status" data-studio-save-status></p>
+          </form>
+        </section>
+        <section class="card bali-site-content-editor" data-design-editor="calendar" hidden>
+          <h3>Календарь событий</h3>
+          <p class="hint">Тексты календаря на главной и на отдельной странице. Афиши и даты меняются в разделе «Мероприятия».</p>
+          <form class="bali-site-copy-form" data-studio-copy-form="calendar">
+            <label>Заголовок на главной<input type="text" data-site-field="calendarPreviewTitle" maxlength="55" value="BALI календарь"></label>
+            <label>Заголовок полного календаря<input type="text" data-site-field="calendarPageTitle" maxlength="55" value="BALI КАЛЕНДАРЬ"></label>
+            <div data-studio-icons="calendar"></div>
+            <button class="primary" type="submit">Сохранить заголовки</button>
+            <button type="button" class="bali-design-admin-route" data-design-admin-route="events">Редактировать даты и афиши ↗</button>
+            <p class="status" role="status" data-studio-save-status></p>
+          </form>
+        </section>
+        <section class="card bali-site-content-editor" data-design-editor="menuBanner" hidden>
+          <h3>Большая кнопка «Меню»</h3>
+          <p class="hint">Текст и значок большой кнопки перехода на кухонное и барное меню.</p>
+          <form class="bali-site-copy-form" data-studio-copy-form="menuBanner">
+            <label>Заголовок кнопки<input type="text" data-site-field="menuBannerTitle" maxlength="45" value="Меню"></label>
+            <label>Текст перехода<input type="text" data-site-field="menuBannerCta" maxlength="65" value="Посмотреть меню"></label>
+            <div data-studio-icons="menuBanner"></div>
+            <button class="primary" type="submit">Сохранить кнопку</button>
+            <button type="button" class="bali-design-admin-route" data-design-admin-route="menu">Редактировать блюда и цены ↗</button>
+            <p class="status" role="status" data-studio-save-status></p>
+          </form>
+        </section>
+        <section class="card bali-site-content-editor" data-design-editor="contacts" hidden>
+          <h3>Контакты и Яндекс Карты</h3>
+          <p class="hint">Информация в боковой панели ПК и на мобильной странице контактов.</p>
+          <form class="bali-site-copy-form" data-studio-copy-form="contacts">
+            <label>Заголовок контактов<input type="text" data-site-field="contactHeading" maxlength="55" value="Контактная информация"></label>
+            <div class="bali-design-form-grid">
+              <label>Номер телефона<input type="text" data-site-field="phoneText" maxlength="32" value="+375 29 670-03-00"></label>
+              <label>Телефонная ссылка<input type="text" data-site-field="phoneHref" maxlength="48" value="tel:+375296700300"></label>
+            </div>
+            <label>Telegram — URL<input type="url" data-site-field="telegramUrl" maxlength="250" value="https://t.me/baliclubminsk"></label>
+            <label>Instagram — URL<input type="url" data-site-field="instagramUrl" maxlength="250" value="https://www.instagram.com/baliminsk/"></label>
+            <label>Заголовок адреса<input type="text" data-site-field="findHeading" maxlength="50" value="Как нас найти"></label>
+            <label>Адрес<input type="text" data-site-field="addressText" maxlength="110" value="Минск, ул. Кирова, 13"></label>
+            <label>Этаж и подпись<input type="text" data-site-field="addressFloor" maxlength="80" value="3-й этаж · Яндекс Карты ↗"></label>
+            <label>Ссылка Яндекс Карт<input type="url" data-site-field="mapUrl" maxlength="300" value="https://yandex.by/maps/org/bali_night_club/104137822369/"></label>
+            <div data-studio-icons="contacts"></div>
+            <button class="primary" type="submit">Сохранить контакты</button>
+            <p class="status" role="status" data-studio-save-status></p>
+          </form>
+        </section>
+        <section class="card bali-site-content-editor" data-design-editor="catalog" hidden>
+          <h3>Каталог меню</h3>
+          <p>На схеме отображается действующий каталог с актуальными позициями, ценами и категориями из Firebase.</p>
+          <p class="hint">Изменения блюд, категорий, барной, чайной и кальянной карт находятся в специализированном редакторе «Меню и цены».</p>
+          <button type="button" class="primary bali-design-admin-route" data-design-admin-route="menu">Открыть редактор меню →</button>
+        </section>
+        <section class="card bali-site-content-editor" data-design-editor="events" hidden>
+          <h3>Мероприятия и афиши</h3>
+          <p>На схеме — все действующие мероприятия и их актуальные данные из Firebase.</p>
+          <button type="button" class="primary bali-design-admin-route" data-design-admin-route="events">Редактировать мероприятия →</button>
+        </section>
+        <section class="card bali-site-content-editor" data-design-editor="profile" hidden>
+          <h3>Профиль гостя</h3>
+          <p class="hint">Имя, данные профиля и история заказов подгружаются из учётной записи гостя. Эти личные данные не редактируются через дизайн сайта.</p>
+          <button type="button" class="bali-design-admin-route" data-design-admin-route="appearance">Настроить цветовую тему →</button>
+        </section>
+            </div>
+          </aside>
+        </div>
       </section>
 
       <section class="admin-panel" id="adminAppearancePanel" data-admin-panel="appearance" aria-labelledby="appearanceHeading" hidden>
@@ -710,7 +823,9 @@
 <script type="module" src="bali-home-design-admin.js?v=20261017-79"></script>
 <script type="module" src="admin-orders.js?v=20261017-20"></script>
 <script type="module" src="admin-clients.js?v=20261017-20"></script>
-<script src="admin-dashboard.js?v=20261017-79" defer></script>
+<script src="admin-dashboard.js?v=20261017-82" defer></script>
+<script src="bali-design-studio.js?v=20261017-82" defer></script>
+<script type="module" src="bali-site-content-admin.js?v=20261017-82"></script>
 <script src="bali-icon-atelier.js?v=20261017-58" defer></script>
 <script type="module" src="bali-theme.js?v=20261017-60"></script>
 </body>
