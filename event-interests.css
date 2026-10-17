@@ -1,0 +1,91 @@
+/* BALI MENU · Кто хочет посетить событие, версия 26 */
+.events-view-tabs {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:9px;
+  margin:0 0 20px;
+}
+.events-view-button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:42px;
+  border:1px solid rgba(220,225,240,.19);
+  border-radius:11px;
+  padding:10px 15px;
+  background:#222940;
+  color:#d7dce9;
+  font-weight:700;
+  font-size:13px;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.events-view-button.active{
+  background:rgba(231,197,139,.18);
+  border-color:rgba(231,197,139,.55);
+  color:#f2d4a2;
+}
+#plannedEventsCount{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:23px;height:23px;padding:0 5px;
+  border-radius:13px;background:#353d53;
+  color:#f5dcad;font-size:11px;
+  font-variant-numeric:tabular-nums;
+}
+.events-interest-status{color:#f2b4a8;font-size:12px;line-height:1.4;margin:0}
+.events-interest-status:empty{display:none}
+.event-interest-count{
+  margin:0;
+  font-size:12px;
+  line-height:1.3;
+  color:#e5ceaa;
+  font-weight:700;
+  font-variant-numeric:tabular-nums;
+}
+.event-want-to-go{
+  display:block;width:100%;
+  min-height:42px;
+  padding:9px 10px;
+  border:1px solid #d9be89;
+  border-radius:9px;
+  background:rgba(225,191,137,.10);
+  color:#ffe0ae;
+  font-size:12px;
+  font-weight:760;
+  line-height:1.25;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.event-want-to-go.selected{
+  background:#354a3e;
+  color:#c9f5d5;
+  border-color:#83b799;
+}
+.event-want-to-go:hover:not(:disabled){
+  background:rgba(233,196,135,.21);
+}
+.event-want-to-go.selected:hover:not(:disabled){background:#3d5a47}
+.event-want-to-go:disabled{opacity:.65;cursor:wait}
+.event-interest-message{
+  font-size:11px;
+  line-height:1.35;
+  color:#f0aead;
+  margin:0;
+  overflow-wrap:anywhere;
+}
+.event-interest-message:empty{display:none}
+.event-go-to-menu {margin-top:0}
+@media (max-width:767px){
+  .events-view-tabs{gap:7px;margin-bottom:15px}
+  .events-view-button{font-size:11px;min-height:39px;padding:8px 11px}
+  .event-interest-count{font-size:10px}
+  .event-want-to-go{min-height:36px;font-size:10px;padding:8px 6px}
+  .event-interest-message{font-size:10px}
+  .event-card-body{gap:7px}
+}
+@media(max-width:359px){
+  .events-view-button{font-size:10px;padding:8px 9px}
+  .event-want-to-go{font-size:9px}
+}
