@@ -44,5 +44,9 @@
   }
   const bodyObserver=new MutationObserver(refreshNavigation);
   bodyObserver.observe(document.body,{attributes:true,attributeFilter:["data-bali-page"]});
+  document.querySelector(".bali-pc-navigation [data-bali-plans-link]")?.addEventListener("click",()=>{
+    document.querySelector("#homeSection [data-home-events-view='planned']")?.click();
+    document.getElementById("homeEventCarousel")?.scrollTo({left:0,behavior:"smooth"});
+  });
   refreshNavigation();
 })();
