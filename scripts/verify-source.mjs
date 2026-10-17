@@ -247,10 +247,12 @@ assert(html.includes('id="cartBtn"') &&
   html.indexOf('id="cartBtn"') < html.indexOf('<!-- /menuPage -->'),
   "Cart must be displayed inside Menu section, not header");
 assert(html.includes('id="accountMyOrdersBtn"'), "My Orders shortcut must remain in account");
-// Mobile BALI reference: hero + calendar + swipeable stories + compact contacts.
-assert(html.includes('class="bali-hero-scene"') &&
-  html.includes('Современный<br>ночной клуб') &&
-  html.includes('Лучшие вечеринки.'), "Approved BALI hero must appear on Home");
+// Home starts with the calendar: advertising hero intentionally removed.
+assert(!html.includes('class="bali-hero-scene"') &&
+  !html.includes('Современный<br>ночной клуб') &&
+  !html.includes('Лучшие вечеринки.') &&
+  html.includes('class="bali-home-calendar-row"'),
+  "Home should start at calendar without redundant club advertising hero");
 assert(html.includes('class="bali-home-calendar-row"') &&
   html.includes('data-home-events-view="all"') &&
   html.includes('data-home-events-view="planned"'), "Home calendar and My Plans controls missing");
@@ -271,6 +273,10 @@ assert(html.includes('class="bali-home-contacts-card"') &&
   "Home must retain original Call, Telegram, Instagram SVG buttons and Yandex Maps button");
 assert(html.includes('class="bali-home-menu-banner"') &&
   html.includes('id="menuNavBtn"'), "Home menu shortcut must remain functional");
+assert(html.includes('class="bali-home-contacts-card"') &&
+  html.includes('class="bali-home-social"') &&
+  html.includes('class="bali-home-map bali-yandex-map"'),
+  "Original BALI contact actions must remain present");
 const mobileLayoutCss=source("bali-redesign.css");
 assert(mobileLayoutCss.includes("/* BALI v38: self-contained viewport layout on phones.") &&
   mobileLayoutCss.includes("#menuPage .menu-section{") &&
@@ -281,8 +287,13 @@ assert(app.includes("menuSection.scrollTop = 0") &&
   app.includes('if(window.matchMedia("(max-width:767px)").matches)return;'),
   "Mobile category change must scroll the product list without hijacking gestures");
 const approvedCss=source("bali-redesign.css");
-assert(html.includes('bali-redesign.css?v=20261017-39') &&
-  html.indexOf('bali-redesign.css?v=20261017-39') >
+assert(approvedCss.includes("/* BALI v40: home screen begins immediately with the calendar.") &&
+  approvedCss.includes("width:calc(100% + 14px)") &&
+  approvedCss.includes("height:40px;min-height:40px") &&
+  approvedCss.includes("height:39px;min-height:39px"),
+  "Home must have wider menu and moderately larger contact controls");
+assert(html.includes('bali-redesign.css?v=20261017-40') &&
+  html.indexOf('bali-redesign.css?v=20261017-40') >
     html.indexOf('events-carousel.css?v=20261017-36'),
   "Approved mobile visual override must load last");
 assert(html.includes('id="profileSection"') &&
