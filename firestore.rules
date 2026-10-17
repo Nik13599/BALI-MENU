@@ -21,8 +21,9 @@ service cloud.firestore {
     }
 
     match /users/{uid} {
-      allow get: if signedInAs(uid);
-      allow list: if false;
+      // Персональные данные видны только владельцу профиля и администраторам.
+      allow get: if signedInAs(uid) || isAdmin();
+      allow list: if isAdmin();
       allow create: if signedInAs(uid)
         && validProfile(request.resource.data, uid)
         && request.resource.data.createdAt == request.time
@@ -79,8 +80,1462 @@ service cloud.firestore {
         && data.category is string && data.category.size() >= 2 && data.category.size() <= 60
         && data.description is string && data.description.size() <= 800
         && data.price is number && data.price >= 0 && data.price <= 20000
-        && data.image_url is string && data.image_url.size() <= 1000
-        && (data.image_url == '' || data.image_url.matches('^https://[^ ]+$'))
+        && data.image_url is string && data.image_url.size() <= 95000
+        && (data.image_url == ''
+          || (data.image_url.size() <= 1000 && data.image_url.matches('^https://[^ ]+
+        && data.available is bool
+        && data.sort is int && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /menu/{itemId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && validMenu(request.resource.data)
+        && itemId == string(request.resource.data.id);
+      allow delete: if isAdmin();
+    }
+
+    function validEvent(data, eventId) {
+      return data.keys().hasAll(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','poster_url','updatedAt'])
+        && (!('poster_url' in data) || (
+          data.poster_url is string
+          && data.poster_url.size() <= 150000
+          && (data.poster_url == ''
+            || (data.poster_url.size() <= 1000 && data.poster_url.matches('^https://[^ ]+
+        && data.date is string
+        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
+        && data.preorderEnabled is bool
+        && data.closesAt is timestamp
+        && data.cutoff is string
+        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
+        && data.updatedAt == request.time;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validEvent(request.resource.data, eventId);
+      allow delete: if isAdmin();
+    }
+
+    // БЕСПЛАТНЫЕ ПРЕДЗАКАЗЫ — без доверия к стоимости и UID из браузера.
+    // Строки хранятся отдельно в orders/{id}/items/{menuId}.
+    // Цена, название и наличие каждой позиции проверяются по /menu/{menuId}.
+    function hasProfile() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function canOrderFor(date) {
+      return exists(/databases/$(database)/documents/events/$(date))
+        && get(/databases/$(database)/documents/events/$(date)).data.preorderEnabled == true
+        && get(/databases/$(database)/documents/events/$(date)).data.closesAt is timestamp
+        && request.time < get(/databases/$(database)/documents/events/$(date)).data.closesAt;
+    }
+
+    function orderShape(data) {
+      return data.keys().hasAll([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','archived','createdAt','updatedAt'
+        ])
+        && (!('archived' in data) || data.archived is bool)
+        && data.ownerUid is string
+        && data.email is string
+        && data.customerName is string
+        && data.customerName.size() >= 2 && data.customerName.size() <= 100
+        && data.customerPhone is string
+        && data.customerPhone.matches('^\\+[1-9][0-9]{7,14}$')
+        && data.eventDate is string
+        && data.eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.tableNumber is string && data.tableNumber.size() <= 20
+        && data.bookingId is string && data.bookingId.size() <= 60
+        && (data.tableNumber.size() > 0 || data.bookingId.size() > 0)
+        && data.notes is string && data.notes.size() <= 500
+        && data.status in ['pending','confirmed','completed','cancelled']
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    function ownerOfOrder(data) {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && data.ownerUid == request.auth.uid;
+    }
+
+    match /orders/{orderId} {
+      allow get, list: if isAdmin() || (
+        request.auth != null && request.auth.token.email_verified == true
+        && resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if hasProfile()
+        && orderShape(request.resource.data)
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.customerName ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+        && request.resource.data.customerPhone ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone
+        && request.resource.data.status == 'pending'
+        && (!('archived' in request.resource.data) || request.resource.data.archived == false)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && canOrderFor(request.resource.data.eventDate);
+
+      allow update: if orderShape(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.customerName == resource.data.customerName
+        && request.resource.data.customerPhone == resource.data.customerPhone
+        && request.resource.data.updatedAt == request.time
+        && (
+          // Посетитель редактирует данные только до подтверждения администратором.
+          (
+            ownerOfOrder(resource.data)
+            && resource.data.status == 'pending'
+            && (!('archived' in resource.data) || resource.data.archived == false)
+            && (
+              (
+                request.resource.data.status == 'pending'
+                && canOrderFor(request.resource.data.eventDate)
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['eventDate','tableNumber','bookingId','notes','updatedAt'])
+              )
+              || (
+                request.resource.data.status == 'cancelled'
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['status','updatedAt'])
+              )
+            )
+          )
+          ||
+          // Администратор может изменять дату, столик, статус, пожелания
+          // и архивировать заказ. Контакт гостя/владелец неизменны.
+          (
+            isAdmin()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly([
+                  'eventDate','tableNumber','bookingId','notes',
+                  'status','archived','updatedAt'
+                ])
+            && (
+              !('archived' in request.resource.data)
+              || request.resource.data.archived == false
+              || request.resource.data.status == 'cancelled'
+            )
+          )
+        );
+
+      allow delete: if false;
+
+      match /items/{menuId} {
+        function parentPath() {
+          return /databases/$(database)/documents/orders/$(orderId);
+        }
+        function ownEditableOrder() {
+          return request.auth != null
+            && request.auth.token.email_verified == true
+            && getAfter(parentPath()).data.ownerUid == request.auth.uid
+            && getAfter(parentPath()).data.status == 'pending'
+            && canOrderFor(getAfter(parentPath()).data.eventDate);
+        }
+        function validItem(data) {
+          return data.keys().hasAll(['id','name','unitPrice','quantity'])
+            && data.keys().hasOnly(['id','name','unitPrice','quantity'])
+            && data.id is int && data.id > 0
+            && menuId == string(data.id)
+            && data.quantity is int
+            && data.quantity >= 1 && data.quantity <= 50
+            && exists(/databases/$(database)/documents/menu/$(menuId))
+            && get(/databases/$(database)/documents/menu/$(menuId)).data.available == true
+            && data.name == get(/databases/$(database)/documents/menu/$(menuId)).data.name
+            && data.unitPrice == get(/databases/$(database)/documents/menu/$(menuId)).data.price;
+        }
+        allow get, list: if isAdmin() || (
+          request.auth != null && request.auth.token.email_verified == true
+          && get(parentPath()).data.ownerUid == request.auth.uid
+        );
+        // Администратор вправе изменять состав заказа при обращении клиента.
+        // Цена/название новых и изменённых позиций сверяются с актуальным меню.
+        allow create, update: if (ownEditableOrder() || isAdmin())
+          && validItem(request.resource.data);
+        allow delete: if ownEditableOrder() || isAdmin();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+))
+          || data.image_url.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+
+        && data.available is bool
+        && data.sort is int && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /menu/{itemId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && validMenu(request.resource.data)
+        && itemId == string(request.resource.data.id);
+      allow delete: if isAdmin();
+    }
+
+    function validEvent(data, eventId) {
+      return data.keys().hasAll(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.date == eventId
+        && data.date is string
+        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
+        && data.preorderEnabled is bool
+        && data.closesAt is timestamp
+        && data.cutoff is string
+        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
+        && data.updatedAt == request.time;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validEvent(request.resource.data, eventId);
+      allow delete: if isAdmin();
+    }
+
+    // БЕСПЛАТНЫЕ ПРЕДЗАКАЗЫ — без доверия к стоимости и UID из браузера.
+    // Строки хранятся отдельно в orders/{id}/items/{menuId}.
+    // Цена, название и наличие каждой позиции проверяются по /menu/{menuId}.
+    function hasProfile() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function canOrderFor(date) {
+      return exists(/databases/$(database)/documents/events/$(date))
+        && get(/databases/$(database)/documents/events/$(date)).data.preorderEnabled == true
+        && get(/databases/$(database)/documents/events/$(date)).data.closesAt is timestamp
+        && request.time < get(/databases/$(database)/documents/events/$(date)).data.closesAt;
+    }
+
+    function orderShape(data) {
+      return data.keys().hasAll([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.ownerUid is string
+        && data.email is string
+        && data.customerName is string
+        && data.customerName.size() >= 2 && data.customerName.size() <= 100
+        && data.customerPhone is string
+        && data.customerPhone.matches('^\\+[1-9][0-9]{7,14}$')
+        && data.eventDate is string
+        && data.eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.tableNumber is string && data.tableNumber.size() <= 20
+        && data.bookingId is string && data.bookingId.size() <= 60
+        && (data.tableNumber.size() > 0 || data.bookingId.size() > 0)
+        && data.notes is string && data.notes.size() <= 500
+        && data.status in ['pending','confirmed','completed','cancelled']
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    function ownerOfOrder(data) {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && data.ownerUid == request.auth.uid;
+    }
+
+    match /orders/{orderId} {
+      allow get, list: if isAdmin() || (
+        request.auth != null && request.auth.token.email_verified == true
+        && resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if hasProfile()
+        && orderShape(request.resource.data)
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.customerName ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+        && request.resource.data.customerPhone ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && canOrderFor(request.resource.data.eventDate);
+
+      allow update: if orderShape(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.customerName == resource.data.customerName
+        && request.resource.data.customerPhone == resource.data.customerPhone
+        && request.resource.data.updatedAt == request.time
+        && (
+          // Посетитель редактирует данные только до подтверждения администратором.
+          (
+            ownerOfOrder(resource.data)
+            && resource.data.status == 'pending'
+            && (
+              (
+                request.resource.data.status == 'pending'
+                && canOrderFor(request.resource.data.eventDate)
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['eventDate','tableNumber','bookingId','notes','updatedAt'])
+              )
+              || (
+                request.resource.data.status == 'cancelled'
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['status','updatedAt'])
+              )
+            )
+          )
+          ||
+          // Администратор меняет только статус и временную отметку.
+          (
+            isAdmin()
+            && request.resource.data.eventDate == resource.data.eventDate
+            && request.resource.data.tableNumber == resource.data.tableNumber
+            && request.resource.data.bookingId == resource.data.bookingId
+            && request.resource.data.notes == resource.data.notes
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['status','updatedAt'])
+            && (
+              (resource.data.status == 'pending'
+                && request.resource.data.status in ['confirmed','cancelled'])
+              || (resource.data.status == 'confirmed'
+                && request.resource.data.status in ['completed','cancelled'])
+            )
+          )
+        );
+
+      allow delete: if false;
+
+      match /items/{menuId} {
+        function parentPath() {
+          return /databases/$(database)/documents/orders/$(orderId);
+        }
+        function ownEditableOrder() {
+          return request.auth != null
+            && request.auth.token.email_verified == true
+            && getAfter(parentPath()).data.ownerUid == request.auth.uid
+            && getAfter(parentPath()).data.status == 'pending'
+            && canOrderFor(getAfter(parentPath()).data.eventDate);
+        }
+        function validItem(data) {
+          return data.keys().hasAll(['id','name','unitPrice','quantity'])
+            && data.keys().hasOnly(['id','name','unitPrice','quantity'])
+            && data.id is int && data.id > 0
+            && menuId == string(data.id)
+            && data.quantity is int
+            && data.quantity >= 1 && data.quantity <= 50
+            && exists(/databases/$(database)/documents/menu/$(menuId))
+            && get(/databases/$(database)/documents/menu/$(menuId)).data.available == true
+            && data.name == get(/databases/$(database)/documents/menu/$(menuId)).data.name
+            && data.unitPrice == get(/databases/$(database)/documents/menu/$(menuId)).data.price;
+        }
+        allow get, list: if isAdmin() || (
+          request.auth != null && request.auth.token.email_verified == true
+          && get(parentPath()).data.ownerUid == request.auth.uid
+        );
+        allow create, update: if ownEditableOrder() && validItem(request.resource.data);
+        allow delete: if ownEditableOrder();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+))
+        && data.available is bool
+        && data.sort is int && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /menu/{itemId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && validMenu(request.resource.data)
+        && itemId == string(request.resource.data.id);
+      allow delete: if isAdmin();
+    }
+
+    function validEvent(data, eventId) {
+      return data.keys().hasAll(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.date == eventId
+        && data.date is string
+        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
+        && data.preorderEnabled is bool
+        && data.closesAt is timestamp
+        && data.cutoff is string
+        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
+        && data.updatedAt == request.time;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validEvent(request.resource.data, eventId);
+      allow delete: if isAdmin();
+    }
+
+    // БЕСПЛАТНЫЕ ПРЕДЗАКАЗЫ — без доверия к стоимости и UID из браузера.
+    // Строки хранятся отдельно в orders/{id}/items/{menuId}.
+    // Цена, название и наличие каждой позиции проверяются по /menu/{menuId}.
+    function hasProfile() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function canOrderFor(date) {
+      return exists(/databases/$(database)/documents/events/$(date))
+        && get(/databases/$(database)/documents/events/$(date)).data.preorderEnabled == true
+        && get(/databases/$(database)/documents/events/$(date)).data.closesAt is timestamp
+        && request.time < get(/databases/$(database)/documents/events/$(date)).data.closesAt;
+    }
+
+    function orderShape(data) {
+      return data.keys().hasAll([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.ownerUid is string
+        && data.email is string
+        && data.customerName is string
+        && data.customerName.size() >= 2 && data.customerName.size() <= 100
+        && data.customerPhone is string
+        && data.customerPhone.matches('^\\+[1-9][0-9]{7,14}$')
+        && data.eventDate is string
+        && data.eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.tableNumber is string && data.tableNumber.size() <= 20
+        && data.bookingId is string && data.bookingId.size() <= 60
+        && (data.tableNumber.size() > 0 || data.bookingId.size() > 0)
+        && data.notes is string && data.notes.size() <= 500
+        && data.status in ['pending','confirmed','completed','cancelled']
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    function ownerOfOrder(data) {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && data.ownerUid == request.auth.uid;
+    }
+
+    match /orders/{orderId} {
+      allow get, list: if isAdmin() || (
+        request.auth != null && request.auth.token.email_verified == true
+        && resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if hasProfile()
+        && orderShape(request.resource.data)
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.customerName ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+        && request.resource.data.customerPhone ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && canOrderFor(request.resource.data.eventDate);
+
+      allow update: if orderShape(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.customerName == resource.data.customerName
+        && request.resource.data.customerPhone == resource.data.customerPhone
+        && request.resource.data.updatedAt == request.time
+        && (
+          // Посетитель редактирует данные только до подтверждения администратором.
+          (
+            ownerOfOrder(resource.data)
+            && resource.data.status == 'pending'
+            && (
+              (
+                request.resource.data.status == 'pending'
+                && canOrderFor(request.resource.data.eventDate)
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['eventDate','tableNumber','bookingId','notes','updatedAt'])
+              )
+              || (
+                request.resource.data.status == 'cancelled'
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['status','updatedAt'])
+              )
+            )
+          )
+          ||
+          // Администратор меняет только статус и временную отметку.
+          (
+            isAdmin()
+            && request.resource.data.eventDate == resource.data.eventDate
+            && request.resource.data.tableNumber == resource.data.tableNumber
+            && request.resource.data.bookingId == resource.data.bookingId
+            && request.resource.data.notes == resource.data.notes
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['status','updatedAt'])
+            && (
+              (resource.data.status == 'pending'
+                && request.resource.data.status in ['confirmed','cancelled'])
+              || (resource.data.status == 'confirmed'
+                && request.resource.data.status in ['completed','cancelled'])
+            )
+          )
+        );
+
+      allow delete: if false;
+
+      match /items/{menuId} {
+        function parentPath() {
+          return /databases/$(database)/documents/orders/$(orderId);
+        }
+        function ownEditableOrder() {
+          return request.auth != null
+            && request.auth.token.email_verified == true
+            && getAfter(parentPath()).data.ownerUid == request.auth.uid
+            && getAfter(parentPath()).data.status == 'pending'
+            && canOrderFor(getAfter(parentPath()).data.eventDate);
+        }
+        function validItem(data) {
+          return data.keys().hasAll(['id','name','unitPrice','quantity'])
+            && data.keys().hasOnly(['id','name','unitPrice','quantity'])
+            && data.id is int && data.id > 0
+            && menuId == string(data.id)
+            && data.quantity is int
+            && data.quantity >= 1 && data.quantity <= 50
+            && exists(/databases/$(database)/documents/menu/$(menuId))
+            && get(/databases/$(database)/documents/menu/$(menuId)).data.available == true
+            && data.name == get(/databases/$(database)/documents/menu/$(menuId)).data.name
+            && data.unitPrice == get(/databases/$(database)/documents/menu/$(menuId)).data.price;
+        }
+        allow get, list: if isAdmin() || (
+          request.auth != null && request.auth.token.email_verified == true
+          && get(parentPath()).data.ownerUid == request.auth.uid
+        );
+        allow create, update: if ownEditableOrder() && validItem(request.resource.data);
+        allow delete: if ownEditableOrder();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+))
+            || data.poster_url.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+
+        && data.date is string
+        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
+        && data.preorderEnabled is bool
+        && data.closesAt is timestamp
+        && data.cutoff is string
+        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
+        && data.updatedAt == request.time;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validEvent(request.resource.data, eventId);
+      allow delete: if isAdmin();
+    }
+
+    // БЕСПЛАТНЫЕ ПРЕДЗАКАЗЫ — без доверия к стоимости и UID из браузера.
+    // Строки хранятся отдельно в orders/{id}/items/{menuId}.
+    // Цена, название и наличие каждой позиции проверяются по /menu/{menuId}.
+    function hasProfile() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function canOrderFor(date) {
+      return exists(/databases/$(database)/documents/events/$(date))
+        && get(/databases/$(database)/documents/events/$(date)).data.preorderEnabled == true
+        && get(/databases/$(database)/documents/events/$(date)).data.closesAt is timestamp
+        && request.time < get(/databases/$(database)/documents/events/$(date)).data.closesAt;
+    }
+
+    function orderShape(data) {
+      return data.keys().hasAll([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.ownerUid is string
+        && data.email is string
+        && data.customerName is string
+        && data.customerName.size() >= 2 && data.customerName.size() <= 100
+        && data.customerPhone is string
+        && data.customerPhone.matches('^\\+[1-9][0-9]{7,14}$')
+        && data.eventDate is string
+        && data.eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.tableNumber is string && data.tableNumber.size() <= 20
+        && data.bookingId is string && data.bookingId.size() <= 60
+        && (data.tableNumber.size() > 0 || data.bookingId.size() > 0)
+        && data.notes is string && data.notes.size() <= 500
+        && data.status in ['pending','confirmed','completed','cancelled']
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    function ownerOfOrder(data) {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && data.ownerUid == request.auth.uid;
+    }
+
+    match /orders/{orderId} {
+      allow get, list: if isAdmin() || (
+        request.auth != null && request.auth.token.email_verified == true
+        && resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if hasProfile()
+        && orderShape(request.resource.data)
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.customerName ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+        && request.resource.data.customerPhone ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && canOrderFor(request.resource.data.eventDate);
+
+      allow update: if orderShape(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.customerName == resource.data.customerName
+        && request.resource.data.customerPhone == resource.data.customerPhone
+        && request.resource.data.updatedAt == request.time
+        && (
+          // Посетитель редактирует данные только до подтверждения администратором.
+          (
+            ownerOfOrder(resource.data)
+            && resource.data.status == 'pending'
+            && (
+              (
+                request.resource.data.status == 'pending'
+                && canOrderFor(request.resource.data.eventDate)
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['eventDate','tableNumber','bookingId','notes','updatedAt'])
+              )
+              || (
+                request.resource.data.status == 'cancelled'
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['status','updatedAt'])
+              )
+            )
+          )
+          ||
+          // Администратор меняет только статус и временную отметку.
+          (
+            isAdmin()
+            && request.resource.data.eventDate == resource.data.eventDate
+            && request.resource.data.tableNumber == resource.data.tableNumber
+            && request.resource.data.bookingId == resource.data.bookingId
+            && request.resource.data.notes == resource.data.notes
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['status','updatedAt'])
+            && (
+              (resource.data.status == 'pending'
+                && request.resource.data.status in ['confirmed','cancelled'])
+              || (resource.data.status == 'confirmed'
+                && request.resource.data.status in ['completed','cancelled'])
+            )
+          )
+        );
+
+      allow delete: if false;
+
+      match /items/{menuId} {
+        function parentPath() {
+          return /databases/$(database)/documents/orders/$(orderId);
+        }
+        function ownEditableOrder() {
+          return request.auth != null
+            && request.auth.token.email_verified == true
+            && getAfter(parentPath()).data.ownerUid == request.auth.uid
+            && getAfter(parentPath()).data.status == 'pending'
+            && canOrderFor(getAfter(parentPath()).data.eventDate);
+        }
+        function validItem(data) {
+          return data.keys().hasAll(['id','name','unitPrice','quantity'])
+            && data.keys().hasOnly(['id','name','unitPrice','quantity'])
+            && data.id is int && data.id > 0
+            && menuId == string(data.id)
+            && data.quantity is int
+            && data.quantity >= 1 && data.quantity <= 50
+            && exists(/databases/$(database)/documents/menu/$(menuId))
+            && get(/databases/$(database)/documents/menu/$(menuId)).data.available == true
+            && data.name == get(/databases/$(database)/documents/menu/$(menuId)).data.name
+            && data.unitPrice == get(/databases/$(database)/documents/menu/$(menuId)).data.price;
+        }
+        allow get, list: if isAdmin() || (
+          request.auth != null && request.auth.token.email_verified == true
+          && get(parentPath()).data.ownerUid == request.auth.uid
+        );
+        allow create, update: if ownEditableOrder() && validItem(request.resource.data);
+        allow delete: if ownEditableOrder();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+))
+          || data.image_url.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+
+        && data.available is bool
+        && data.sort is int && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /menu/{itemId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && validMenu(request.resource.data)
+        && itemId == string(request.resource.data.id);
+      allow delete: if isAdmin();
+    }
+
+    function validEvent(data, eventId) {
+      return data.keys().hasAll(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.date == eventId
+        && data.date is string
+        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
+        && data.preorderEnabled is bool
+        && data.closesAt is timestamp
+        && data.cutoff is string
+        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
+        && data.updatedAt == request.time;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validEvent(request.resource.data, eventId);
+      allow delete: if isAdmin();
+    }
+
+    // БЕСПЛАТНЫЕ ПРЕДЗАКАЗЫ — без доверия к стоимости и UID из браузера.
+    // Строки хранятся отдельно в orders/{id}/items/{menuId}.
+    // Цена, название и наличие каждой позиции проверяются по /menu/{menuId}.
+    function hasProfile() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function canOrderFor(date) {
+      return exists(/databases/$(database)/documents/events/$(date))
+        && get(/databases/$(database)/documents/events/$(date)).data.preorderEnabled == true
+        && get(/databases/$(database)/documents/events/$(date)).data.closesAt is timestamp
+        && request.time < get(/databases/$(database)/documents/events/$(date)).data.closesAt;
+    }
+
+    function orderShape(data) {
+      return data.keys().hasAll([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.ownerUid is string
+        && data.email is string
+        && data.customerName is string
+        && data.customerName.size() >= 2 && data.customerName.size() <= 100
+        && data.customerPhone is string
+        && data.customerPhone.matches('^\\+[1-9][0-9]{7,14}$')
+        && data.eventDate is string
+        && data.eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.tableNumber is string && data.tableNumber.size() <= 20
+        && data.bookingId is string && data.bookingId.size() <= 60
+        && (data.tableNumber.size() > 0 || data.bookingId.size() > 0)
+        && data.notes is string && data.notes.size() <= 500
+        && data.status in ['pending','confirmed','completed','cancelled']
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    function ownerOfOrder(data) {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && data.ownerUid == request.auth.uid;
+    }
+
+    match /orders/{orderId} {
+      allow get, list: if isAdmin() || (
+        request.auth != null && request.auth.token.email_verified == true
+        && resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if hasProfile()
+        && orderShape(request.resource.data)
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.customerName ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+        && request.resource.data.customerPhone ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && canOrderFor(request.resource.data.eventDate);
+
+      allow update: if orderShape(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.customerName == resource.data.customerName
+        && request.resource.data.customerPhone == resource.data.customerPhone
+        && request.resource.data.updatedAt == request.time
+        && (
+          // Посетитель редактирует данные только до подтверждения администратором.
+          (
+            ownerOfOrder(resource.data)
+            && resource.data.status == 'pending'
+            && (
+              (
+                request.resource.data.status == 'pending'
+                && canOrderFor(request.resource.data.eventDate)
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['eventDate','tableNumber','bookingId','notes','updatedAt'])
+              )
+              || (
+                request.resource.data.status == 'cancelled'
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['status','updatedAt'])
+              )
+            )
+          )
+          ||
+          // Администратор меняет только статус и временную отметку.
+          (
+            isAdmin()
+            && request.resource.data.eventDate == resource.data.eventDate
+            && request.resource.data.tableNumber == resource.data.tableNumber
+            && request.resource.data.bookingId == resource.data.bookingId
+            && request.resource.data.notes == resource.data.notes
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['status','updatedAt'])
+            && (
+              (resource.data.status == 'pending'
+                && request.resource.data.status in ['confirmed','cancelled'])
+              || (resource.data.status == 'confirmed'
+                && request.resource.data.status in ['completed','cancelled'])
+            )
+          )
+        );
+
+      allow delete: if false;
+
+      match /items/{menuId} {
+        function parentPath() {
+          return /databases/$(database)/documents/orders/$(orderId);
+        }
+        function ownEditableOrder() {
+          return request.auth != null
+            && request.auth.token.email_verified == true
+            && getAfter(parentPath()).data.ownerUid == request.auth.uid
+            && getAfter(parentPath()).data.status == 'pending'
+            && canOrderFor(getAfter(parentPath()).data.eventDate);
+        }
+        function validItem(data) {
+          return data.keys().hasAll(['id','name','unitPrice','quantity'])
+            && data.keys().hasOnly(['id','name','unitPrice','quantity'])
+            && data.id is int && data.id > 0
+            && menuId == string(data.id)
+            && data.quantity is int
+            && data.quantity >= 1 && data.quantity <= 50
+            && exists(/databases/$(database)/documents/menu/$(menuId))
+            && get(/databases/$(database)/documents/menu/$(menuId)).data.available == true
+            && data.name == get(/databases/$(database)/documents/menu/$(menuId)).data.name
+            && data.unitPrice == get(/databases/$(database)/documents/menu/$(menuId)).data.price;
+        }
+        allow get, list: if isAdmin() || (
+          request.auth != null && request.auth.token.email_verified == true
+          && get(parentPath()).data.ownerUid == request.auth.uid
+        );
+        allow create, update: if ownEditableOrder() && validItem(request.resource.data);
+        allow delete: if ownEditableOrder();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+))
+        && data.available is bool
+        && data.sort is int && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /menu/{itemId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && validMenu(request.resource.data)
+        && itemId == string(request.resource.data.id);
+      allow delete: if isAdmin();
+    }
+
+    function validEvent(data, eventId) {
+      return data.keys().hasAll(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.date == eventId
+        && data.date is string
+        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
+        && data.preorderEnabled is bool
+        && data.closesAt is timestamp
+        && data.cutoff is string
+        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
+        && data.updatedAt == request.time;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validEvent(request.resource.data, eventId);
+      allow delete: if isAdmin();
+    }
+
+    // БЕСПЛАТНЫЕ ПРЕДЗАКАЗЫ — без доверия к стоимости и UID из браузера.
+    // Строки хранятся отдельно в orders/{id}/items/{menuId}.
+    // Цена, название и наличие каждой позиции проверяются по /menu/{menuId}.
+    function hasProfile() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function canOrderFor(date) {
+      return exists(/databases/$(database)/documents/events/$(date))
+        && get(/databases/$(database)/documents/events/$(date)).data.preorderEnabled == true
+        && get(/databases/$(database)/documents/events/$(date)).data.closesAt is timestamp
+        && request.time < get(/databases/$(database)/documents/events/$(date)).data.closesAt;
+    }
+
+    function orderShape(data) {
+      return data.keys().hasAll([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.ownerUid is string
+        && data.email is string
+        && data.customerName is string
+        && data.customerName.size() >= 2 && data.customerName.size() <= 100
+        && data.customerPhone is string
+        && data.customerPhone.matches('^\\+[1-9][0-9]{7,14}$')
+        && data.eventDate is string
+        && data.eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.tableNumber is string && data.tableNumber.size() <= 20
+        && data.bookingId is string && data.bookingId.size() <= 60
+        && (data.tableNumber.size() > 0 || data.bookingId.size() > 0)
+        && data.notes is string && data.notes.size() <= 500
+        && data.status in ['pending','confirmed','completed','cancelled']
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    function ownerOfOrder(data) {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && data.ownerUid == request.auth.uid;
+    }
+
+    match /orders/{orderId} {
+      allow get, list: if isAdmin() || (
+        request.auth != null && request.auth.token.email_verified == true
+        && resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if hasProfile()
+        && orderShape(request.resource.data)
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.customerName ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+        && request.resource.data.customerPhone ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && canOrderFor(request.resource.data.eventDate);
+
+      allow update: if orderShape(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.customerName == resource.data.customerName
+        && request.resource.data.customerPhone == resource.data.customerPhone
+        && request.resource.data.updatedAt == request.time
+        && (
+          // Посетитель редактирует данные только до подтверждения администратором.
+          (
+            ownerOfOrder(resource.data)
+            && resource.data.status == 'pending'
+            && (
+              (
+                request.resource.data.status == 'pending'
+                && canOrderFor(request.resource.data.eventDate)
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['eventDate','tableNumber','bookingId','notes','updatedAt'])
+              )
+              || (
+                request.resource.data.status == 'cancelled'
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['status','updatedAt'])
+              )
+            )
+          )
+          ||
+          // Администратор меняет только статус и временную отметку.
+          (
+            isAdmin()
+            && request.resource.data.eventDate == resource.data.eventDate
+            && request.resource.data.tableNumber == resource.data.tableNumber
+            && request.resource.data.bookingId == resource.data.bookingId
+            && request.resource.data.notes == resource.data.notes
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['status','updatedAt'])
+            && (
+              (resource.data.status == 'pending'
+                && request.resource.data.status in ['confirmed','cancelled'])
+              || (resource.data.status == 'confirmed'
+                && request.resource.data.status in ['completed','cancelled'])
+            )
+          )
+        );
+
+      allow delete: if false;
+
+      match /items/{menuId} {
+        function parentPath() {
+          return /databases/$(database)/documents/orders/$(orderId);
+        }
+        function ownEditableOrder() {
+          return request.auth != null
+            && request.auth.token.email_verified == true
+            && getAfter(parentPath()).data.ownerUid == request.auth.uid
+            && getAfter(parentPath()).data.status == 'pending'
+            && canOrderFor(getAfter(parentPath()).data.eventDate);
+        }
+        function validItem(data) {
+          return data.keys().hasAll(['id','name','unitPrice','quantity'])
+            && data.keys().hasOnly(['id','name','unitPrice','quantity'])
+            && data.id is int && data.id > 0
+            && menuId == string(data.id)
+            && data.quantity is int
+            && data.quantity >= 1 && data.quantity <= 50
+            && exists(/databases/$(database)/documents/menu/$(menuId))
+            && get(/databases/$(database)/documents/menu/$(menuId)).data.available == true
+            && data.name == get(/databases/$(database)/documents/menu/$(menuId)).data.name
+            && data.unitPrice == get(/databases/$(database)/documents/menu/$(menuId)).data.price;
+        }
+        allow get, list: if isAdmin() || (
+          request.auth != null && request.auth.token.email_verified == true
+          && get(parentPath()).data.ownerUid == request.auth.uid
+        );
+        allow create, update: if ownEditableOrder() && validItem(request.resource.data);
+        allow delete: if ownEditableOrder();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+))
+        ))
+        && data.date == eventId
+        && data.date is string
+        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
+        && data.preorderEnabled is bool
+        && data.closesAt is timestamp
+        && data.cutoff is string
+        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
+        && data.updatedAt == request.time;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validEvent(request.resource.data, eventId);
+      allow delete: if isAdmin();
+    }
+
+    // БЕСПЛАТНЫЕ ПРЕДЗАКАЗЫ — без доверия к стоимости и UID из браузера.
+    // Строки хранятся отдельно в orders/{id}/items/{menuId}.
+    // Цена, название и наличие каждой позиции проверяются по /menu/{menuId}.
+    function hasProfile() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function canOrderFor(date) {
+      return exists(/databases/$(database)/documents/events/$(date))
+        && get(/databases/$(database)/documents/events/$(date)).data.preorderEnabled == true
+        && get(/databases/$(database)/documents/events/$(date)).data.closesAt is timestamp
+        && request.time < get(/databases/$(database)/documents/events/$(date)).data.closesAt;
+    }
+
+    function orderShape(data) {
+      return data.keys().hasAll([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.ownerUid is string
+        && data.email is string
+        && data.customerName is string
+        && data.customerName.size() >= 2 && data.customerName.size() <= 100
+        && data.customerPhone is string
+        && data.customerPhone.matches('^\\+[1-9][0-9]{7,14}$')
+        && data.eventDate is string
+        && data.eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.tableNumber is string && data.tableNumber.size() <= 20
+        && data.bookingId is string && data.bookingId.size() <= 60
+        && (data.tableNumber.size() > 0 || data.bookingId.size() > 0)
+        && data.notes is string && data.notes.size() <= 500
+        && data.status in ['pending','confirmed','completed','cancelled']
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    function ownerOfOrder(data) {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && data.ownerUid == request.auth.uid;
+    }
+
+    match /orders/{orderId} {
+      allow get, list: if isAdmin() || (
+        request.auth != null && request.auth.token.email_verified == true
+        && resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if hasProfile()
+        && orderShape(request.resource.data)
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.customerName ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+        && request.resource.data.customerPhone ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && canOrderFor(request.resource.data.eventDate);
+
+      allow update: if orderShape(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.customerName == resource.data.customerName
+        && request.resource.data.customerPhone == resource.data.customerPhone
+        && request.resource.data.updatedAt == request.time
+        && (
+          // Посетитель редактирует данные только до подтверждения администратором.
+          (
+            ownerOfOrder(resource.data)
+            && resource.data.status == 'pending'
+            && (
+              (
+                request.resource.data.status == 'pending'
+                && canOrderFor(request.resource.data.eventDate)
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['eventDate','tableNumber','bookingId','notes','updatedAt'])
+              )
+              || (
+                request.resource.data.status == 'cancelled'
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['status','updatedAt'])
+              )
+            )
+          )
+          ||
+          // Администратор меняет только статус и временную отметку.
+          (
+            isAdmin()
+            && request.resource.data.eventDate == resource.data.eventDate
+            && request.resource.data.tableNumber == resource.data.tableNumber
+            && request.resource.data.bookingId == resource.data.bookingId
+            && request.resource.data.notes == resource.data.notes
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['status','updatedAt'])
+            && (
+              (resource.data.status == 'pending'
+                && request.resource.data.status in ['confirmed','cancelled'])
+              || (resource.data.status == 'confirmed'
+                && request.resource.data.status in ['completed','cancelled'])
+            )
+          )
+        );
+
+      allow delete: if false;
+
+      match /items/{menuId} {
+        function parentPath() {
+          return /databases/$(database)/documents/orders/$(orderId);
+        }
+        function ownEditableOrder() {
+          return request.auth != null
+            && request.auth.token.email_verified == true
+            && getAfter(parentPath()).data.ownerUid == request.auth.uid
+            && getAfter(parentPath()).data.status == 'pending'
+            && canOrderFor(getAfter(parentPath()).data.eventDate);
+        }
+        function validItem(data) {
+          return data.keys().hasAll(['id','name','unitPrice','quantity'])
+            && data.keys().hasOnly(['id','name','unitPrice','quantity'])
+            && data.id is int && data.id > 0
+            && menuId == string(data.id)
+            && data.quantity is int
+            && data.quantity >= 1 && data.quantity <= 50
+            && exists(/databases/$(database)/documents/menu/$(menuId))
+            && get(/databases/$(database)/documents/menu/$(menuId)).data.available == true
+            && data.name == get(/databases/$(database)/documents/menu/$(menuId)).data.name
+            && data.unitPrice == get(/databases/$(database)/documents/menu/$(menuId)).data.price;
+        }
+        allow get, list: if isAdmin() || (
+          request.auth != null && request.auth.token.email_verified == true
+          && get(parentPath()).data.ownerUid == request.auth.uid
+        );
+        allow create, update: if ownEditableOrder() && validItem(request.resource.data);
+        allow delete: if ownEditableOrder();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+))
+          || data.image_url.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+
+        && data.available is bool
+        && data.sort is int && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /menu/{itemId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && validMenu(request.resource.data)
+        && itemId == string(request.resource.data.id);
+      allow delete: if isAdmin();
+    }
+
+    function validEvent(data, eventId) {
+      return data.keys().hasAll(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.date == eventId
+        && data.date is string
+        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
+        && data.preorderEnabled is bool
+        && data.closesAt is timestamp
+        && data.cutoff is string
+        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
+        && data.updatedAt == request.time;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validEvent(request.resource.data, eventId);
+      allow delete: if isAdmin();
+    }
+
+    // БЕСПЛАТНЫЕ ПРЕДЗАКАЗЫ — без доверия к стоимости и UID из браузера.
+    // Строки хранятся отдельно в orders/{id}/items/{menuId}.
+    // Цена, название и наличие каждой позиции проверяются по /menu/{menuId}.
+    function hasProfile() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function canOrderFor(date) {
+      return exists(/databases/$(database)/documents/events/$(date))
+        && get(/databases/$(database)/documents/events/$(date)).data.preorderEnabled == true
+        && get(/databases/$(database)/documents/events/$(date)).data.closesAt is timestamp
+        && request.time < get(/databases/$(database)/documents/events/$(date)).data.closesAt;
+    }
+
+    function orderShape(data) {
+      return data.keys().hasAll([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.ownerUid is string
+        && data.email is string
+        && data.customerName is string
+        && data.customerName.size() >= 2 && data.customerName.size() <= 100
+        && data.customerPhone is string
+        && data.customerPhone.matches('^\\+[1-9][0-9]{7,14}$')
+        && data.eventDate is string
+        && data.eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.tableNumber is string && data.tableNumber.size() <= 20
+        && data.bookingId is string && data.bookingId.size() <= 60
+        && (data.tableNumber.size() > 0 || data.bookingId.size() > 0)
+        && data.notes is string && data.notes.size() <= 500
+        && data.status in ['pending','confirmed','completed','cancelled']
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    function ownerOfOrder(data) {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && data.ownerUid == request.auth.uid;
+    }
+
+    match /orders/{orderId} {
+      allow get, list: if isAdmin() || (
+        request.auth != null && request.auth.token.email_verified == true
+        && resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if hasProfile()
+        && orderShape(request.resource.data)
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.customerName ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+        && request.resource.data.customerPhone ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && canOrderFor(request.resource.data.eventDate);
+
+      allow update: if orderShape(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.customerName == resource.data.customerName
+        && request.resource.data.customerPhone == resource.data.customerPhone
+        && request.resource.data.updatedAt == request.time
+        && (
+          // Посетитель редактирует данные только до подтверждения администратором.
+          (
+            ownerOfOrder(resource.data)
+            && resource.data.status == 'pending'
+            && (
+              (
+                request.resource.data.status == 'pending'
+                && canOrderFor(request.resource.data.eventDate)
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['eventDate','tableNumber','bookingId','notes','updatedAt'])
+              )
+              || (
+                request.resource.data.status == 'cancelled'
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['status','updatedAt'])
+              )
+            )
+          )
+          ||
+          // Администратор меняет только статус и временную отметку.
+          (
+            isAdmin()
+            && request.resource.data.eventDate == resource.data.eventDate
+            && request.resource.data.tableNumber == resource.data.tableNumber
+            && request.resource.data.bookingId == resource.data.bookingId
+            && request.resource.data.notes == resource.data.notes
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['status','updatedAt'])
+            && (
+              (resource.data.status == 'pending'
+                && request.resource.data.status in ['confirmed','cancelled'])
+              || (resource.data.status == 'confirmed'
+                && request.resource.data.status in ['completed','cancelled'])
+            )
+          )
+        );
+
+      allow delete: if false;
+
+      match /items/{menuId} {
+        function parentPath() {
+          return /databases/$(database)/documents/orders/$(orderId);
+        }
+        function ownEditableOrder() {
+          return request.auth != null
+            && request.auth.token.email_verified == true
+            && getAfter(parentPath()).data.ownerUid == request.auth.uid
+            && getAfter(parentPath()).data.status == 'pending'
+            && canOrderFor(getAfter(parentPath()).data.eventDate);
+        }
+        function validItem(data) {
+          return data.keys().hasAll(['id','name','unitPrice','quantity'])
+            && data.keys().hasOnly(['id','name','unitPrice','quantity'])
+            && data.id is int && data.id > 0
+            && menuId == string(data.id)
+            && data.quantity is int
+            && data.quantity >= 1 && data.quantity <= 50
+            && exists(/databases/$(database)/documents/menu/$(menuId))
+            && get(/databases/$(database)/documents/menu/$(menuId)).data.available == true
+            && data.name == get(/databases/$(database)/documents/menu/$(menuId)).data.name
+            && data.unitPrice == get(/databases/$(database)/documents/menu/$(menuId)).data.price;
+        }
+        allow get, list: if isAdmin() || (
+          request.auth != null && request.auth.token.email_verified == true
+          && get(parentPath()).data.ownerUid == request.auth.uid
+        );
+        allow create, update: if ownEditableOrder() && validItem(request.resource.data);
+        allow delete: if ownEditableOrder();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+))
         && data.available is bool
         && data.sort is int && data.sort >= 0 && data.sort <= 100000
         && data.updatedAt == request.time;
