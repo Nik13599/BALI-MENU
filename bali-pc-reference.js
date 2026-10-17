@@ -73,4 +73,34 @@
   const bodyObserver=new MutationObserver(refreshNavigation);
   bodyObserver.observe(document.body,{attributes:true,attributeFilter:["data-bali-page"]});
   refreshNavigation();
+
+  // Align the bottom edge of the Yandex Maps button with the bottom of the
+  // large homepage Menu call-to-action, not with the bottom of the viewport.
+  // The offset is measured at the homepage's unscrolled position, so the
+  // fixed PC sidebar does not jump while visitors scroll its contents.
+  const sidebar=document.querySelector(".bali-pc-sidebar");
+  const contacts=sidebar?.querySelector(".bali-pc-sidebar-contacts");
+  const homepage=document.getElementById("homeSection");
+  const homeMenu=document.getElementById("menuNavBtn");
+  let alignmentFrame=0;
+  function alignContactsWithMenu(){
+    alignmentFrame=0;
+    if(!desktop.matches||!sidebar||!contacts||!homeMenu||homeMenu.getClientRects().length===0)return;
+    const sidebarBottom=sidebar.getBoundingClientRect().bottom;
+    const menuBottom=homeMenu.getBoundingClientRect().bottom+(homepage?.scrollTop||0);
+    const inset=Math.max(0,Math.round(sidebarBottom-menuBottom));
+    sidebar.style.setProperty("--bali-contact-menu-alignment",inset+"px");
+  }
+  function requestContactAlignment(){
+    if(alignmentFrame)cancelAnimationFrame(alignmentFrame);
+    alignmentFrame=requestAnimationFrame(alignContactsWithMenu);
+  }
+  window.addEventListener("resize",requestContactAlignment,{passive:true});
+  desktop.addEventListener?.("change",requestContactAlignment);
+  if(typeof ResizeObserver!=="undefined"&&homeMenu){
+    const sizeObserver=new ResizeObserver(requestContactAlignment);
+    sizeObserver.observe(homeMenu);
+  }
+  requestContactAlignment();
+  window.addEventListener("load",requestContactAlignment,{once:true});
 })();
