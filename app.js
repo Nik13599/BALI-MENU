@@ -394,11 +394,7 @@ function renderUpcomingEvents() {
         description.textContent=typeof event.description==="string"
             ?event.description.trim().slice(0,600):"";
         description.hidden=!description.textContent;
-        const preorder=document.createElement("span");
-        preorder.className="event-preorder-state";
         const open=event.preorderEnabled===true&&event.closesAt?.toDate?.()>new Date();
-        preorder.textContent=open?"Предзаказ открыт":"Предзаказ пока закрыт";
-        preorder.classList.toggle("is-open",open);
         if(open){
             const openBadge=document.createElement("span");
             openBadge.className="bali-event-preorder-badge";
@@ -441,7 +437,7 @@ function renderUpcomingEvents() {
         // at the absolute bottom of the visible event card.
         const details=document.createElement("div");
         details.className="bali-event-info";
-        details.append(name,times,description,preorder,interested,message);
+        details.append(name,times,description,interested,message);
         const actions=document.createElement("div");
         actions.className="bali-event-actions";
         actions.append(planBtn);
