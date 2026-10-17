@@ -52,6 +52,1347 @@ service cloud.firestore {
       allow list, create, update, delete: if false;
     }
 
+    // Публичная только одна настройка палитры. Никто, кроме проверенного
+    // администратора, не может изменять цвета. Фон в настройке не хранится.
+    function validAppearance(data) {
+      return data.keys().hasAll(['theme','colors','updatedAt'])
+        && data.keys().hasOnly(['theme','colors','updatedAt'])
+        && data.theme in ['cobalt','lime','white','custom']
+        && data.colors is map
+        && data.colors.keys().hasAll(['primary','secondary','text','border'])
+        && data.colors.keys().hasOnly(['primary','secondary','text','border'])
+        && data.colors.primary is string
+        && data.colors.primary.matches('^#[0-9A-Fa-f]{6}
+
+    // Самостоятельные категории доступны для чтения/редактирования
+    // только аккаунтам с вручную назначенной ролью администратора.
+    function validCategory(data) {
+      return data.keys().hasAll(['name','sort','updatedAt'])
+        && data.keys().hasOnly(['name','sort','updatedAt'])
+        && data.name is string
+        && data.name.size() >= 2 && data.name.size() <= 60
+        && data.sort is int
+        && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /categories/{categoryId} {
+      allow get, list: if isAdmin();
+      allow create, update: if isAdmin()
+        && validCategory(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    function validMenu(data) {
+      return data.keys().hasAll(['id','name','category','description','price','image_url','available','sort','updatedAt'])
+        && data.keys().hasOnly(['id','name','category','description','price','image_url','available','sort','updatedAt'])
+        && data.id is int && data.id > 0
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 120
+        && data.category is string && data.category.size() >= 2 && data.category.size() <= 60
+        && data.description is string && data.description.size() <= 800
+        && data.price is number && data.price >= 0 && data.price <= 20000
+        && data.image_url is string && data.image_url.size() <= 95000
+        && (data.image_url == ''
+          || (data.image_url.size() <= 1000 && data.image_url.matches('^https://[^ ]+$'))
+          || data.image_url.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+$'))
+        && data.available is bool
+        && data.sort is int && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /menu/{itemId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && validMenu(request.resource.data)
+        && itemId == string(request.resource.data.id);
+      allow delete: if isAdmin();
+    }
+
+    function validInterestCountChange(date) {
+      let previous = resource.data.get('interestCount', 0);
+      let next = request.resource.data.get('interestCount', 0);
+      let mine = /databases/$(database)/documents/users/$(request.auth.uid)/eventInterests/$(date);
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && previous is int && previous >= 0
+        && next is int && next >= 0 && next <= 1000000
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['interestCount'])
+        && (
+          (!exists(mine) && existsAfter(mine) && next == previous + 1)
+          || (exists(mine) && !existsAfter(mine) && next == previous - 1)
+        );
+    }
+
+    match /users/{uid}/eventInterests/{eventDate} {
+      allow get, list: if signedInAs(uid) || isAdmin();
+      allow create: if signedInAs(uid)
+        && exists(/databases/$(database)/documents/events/$(eventDate))
+        && exists(/databases/$(database)/documents/users/$(uid))
+        && request.resource.data.keys().hasOnly(['uid', 'eventDate', 'createdAt'])
+        && request.resource.data.keys().hasAll(['uid', 'eventDate', 'createdAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.eventDate == eventDate
+        && eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0)
+          == get(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0) + 1;
+      allow update: if false;
+      allow delete: if signedInAs(uid)
+        && exists(/databases/$(database)/documents/events/$(eventDate))
+        && getAfter(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0)
+          == get(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0) - 1;
+    }
+
+    function validEvent(data, eventId) {
+      return data.keys().hasAll(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','poster_url','interestCount','updatedAt','description','startTime','endTime'])
+        && (!('interestCount' in data) || (
+          data.interestCount is int
+          && data.interestCount >= 0 && data.interestCount <= 1000000
+        ))
+        && (!('poster_url' in data) || (
+          data.poster_url is string
+          && data.poster_url.size() <= 150000
+          && (data.poster_url == ''
+            || (data.poster_url.size() <= 1000 && data.poster_url.matches('^https://[^ ]+$'))
+            || data.poster_url.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+$'))
+        ))
+        && data.date == eventId
+        && data.date is string
+        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
+        && (!('description' in data) || (data.description is string && data.description.size() <= 600))
+        && (!('startTime' in data) || (data.startTime is string &&
+          (data.startTime == '' || data.startTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'))))
+        && (!('endTime' in data) || (data.endTime is string &&
+          (data.endTime == '' || data.endTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'))))
+        && (('startTime' in data) == ('endTime' in data))
+        && (!('startTime' in data) || (data.startTime == '' && data.endTime == '') ||
+            (data.startTime != '' && data.endTime != ''))
+        && data.preorderEnabled is bool
+        && data.closesAt is timestamp
+        && data.cutoff is string
+        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
+        && data.updatedAt == request.time;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if isAdmin() && validEvent(request.resource.data, eventId);
+      allow update: if (isAdmin() && validEvent(request.resource.data, eventId))
+        || validInterestCountChange(eventId);
+      allow delete: if isAdmin();
+    }
+
+    // БЕСПЛАТНЫЕ ПРЕДЗАКАЗЫ — без доверия к стоимости и UID из браузера.
+    // Строки хранятся отдельно в orders/{id}/items/{menuId}.
+    // Цена, название и наличие каждой позиции проверяются по /menu/{menuId}.
+    function hasProfile() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function canOrderFor(date) {
+      return exists(/databases/$(database)/documents/events/$(date))
+        && get(/databases/$(database)/documents/events/$(date)).data.preorderEnabled == true
+        && get(/databases/$(database)/documents/events/$(date)).data.closesAt is timestamp
+        && request.time < get(/databases/$(database)/documents/events/$(date)).data.closesAt;
+    }
+
+    // Порядковый номер уникален в пределах даты и выдаётся транзакцией.
+    function counterPath(date) {
+      return /databases/$(database)/documents/orderCounters/$(date);
+    }
+    function validOrderSequence(date, number, orderId) {
+      return number is int && number >= 1 && number <= 999999
+        && getAfter(counterPath(date)).data.count == number
+        && getAfter(counterPath(date)).data.lastOrderId == orderId;
+    }
+    function validCounter(date) {
+      return request.resource.data.keys().hasAll(['date','count','lastOrderId','updatedAt'])
+        && request.resource.data.keys().hasOnly(['date','count','lastOrderId','updatedAt'])
+        && request.resource.data.date == date
+        && date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.count is int
+        && request.resource.data.count >= 1 && request.resource.data.count <= 999999
+        && request.resource.data.lastOrderId is string
+        && request.resource.data.lastOrderId.size() >= 10
+        && request.resource.data.lastOrderId.size() <= 120
+        && request.resource.data.updatedAt == request.time;
+    }
+    function counterWitness(date) {
+      let order = /databases/$(database)/documents/orders/$(request.resource.data.lastOrderId);
+      return getAfter(order).data.eventDate == date
+        && getAfter(order).data.orderNumber == request.resource.data.count
+        && (getAfter(order).data.ownerUid == request.auth.uid || isAdmin())
+        && (
+          (!exists(order) && getAfter(order).data.createdAt == request.time)
+          || (exists(order) && get(order).data.eventDate != date
+              && getAfter(order).data.updatedAt == request.time)
+        );
+    }
+    match /orderCounters/{date} {
+      allow get: if request.auth != null && request.auth.token.email_verified == true;
+      allow list, delete: if false;
+      allow create: if request.auth != null && request.auth.token.email_verified == true
+        && validCounter(date) && request.resource.data.count == 1
+        && counterWitness(date);
+      allow update: if request.auth != null && request.auth.token.email_verified == true
+        && validCounter(date)
+        && request.resource.data.count == resource.data.count + 1
+        && request.resource.data.lastOrderId != resource.data.lastOrderId
+        && counterWitness(date);
+    }
+
+    function orderShape(data) {
+      return data.keys().hasAll([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','archived','orderNumber','createdAt','updatedAt'
+        ])
+        && (!('archived' in data) || data.archived is bool)
+        && (!('orderNumber' in data) || (data.orderNumber is int
+          && data.orderNumber >= 1 && data.orderNumber <= 999999))
+        && data.ownerUid is string
+        && data.email is string
+        && data.customerName is string
+        && data.customerName.size() >= 2 && data.customerName.size() <= 100
+        && data.customerPhone is string
+        && data.customerPhone.matches('^\\+[1-9][0-9]{7,14}$')
+        && data.eventDate is string
+        && data.eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.tableNumber is string && data.tableNumber.size() <= 20
+        && data.bookingId is string && data.bookingId.size() <= 60
+        && (data.tableNumber.size() > 0 || data.bookingId.size() > 0)
+        && data.notes is string && data.notes.size() <= 500
+        && data.status in ['pending','confirmed','completed','cancelled']
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    function ownerOfOrder(data) {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && data.ownerUid == request.auth.uid;
+    }
+
+    match /orders/{orderId} {
+      allow get, list: if isAdmin() || (
+        request.auth != null && request.auth.token.email_verified == true
+        && resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if hasProfile()
+        && orderShape(request.resource.data)
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.customerName ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+        && request.resource.data.customerPhone ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone
+        && request.resource.data.status == 'pending'
+        && validOrderSequence(request.resource.data.eventDate,request.resource.data.orderNumber,orderId)
+        && (!('archived' in request.resource.data) || request.resource.data.archived == false)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && canOrderFor(request.resource.data.eventDate);
+
+      allow update: if orderShape(request.resource.data)
+        && (
+          (request.resource.data.eventDate == resource.data.eventDate
+            && request.resource.data.get('orderNumber',0) == resource.data.get('orderNumber',0))
+          || (request.resource.data.eventDate != resource.data.eventDate
+            && validOrderSequence(request.resource.data.eventDate,request.resource.data.orderNumber,orderId))
+        )
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.email == resource.data.email
+        && (request.resource.data.customerName == resource.data.customerName || isAdmin())
+        && (request.resource.data.customerPhone == resource.data.customerPhone || isAdmin())
+        && request.resource.data.updatedAt == request.time
+        && (
+          // Посетитель редактирует данные только до подтверждения администратором.
+          (
+            ownerOfOrder(resource.data)
+            && resource.data.status == 'pending'
+            && (!('archived' in resource.data) || resource.data.archived == false)
+            && (
+              (
+                request.resource.data.status == 'pending'
+                && canOrderFor(request.resource.data.eventDate)
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['eventDate','orderNumber','tableNumber','bookingId','notes','updatedAt'])
+              )
+              || (
+                request.resource.data.status == 'cancelled'
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['status','updatedAt'])
+              )
+            )
+          )
+          ||
+          // Администратор редактирует заказ без права менять владельца и email.
+          (
+            isAdmin()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly([
+                  'customerName','customerPhone','eventDate','orderNumber','tableNumber','bookingId',
+                  'notes','status','archived','updatedAt'
+                ])
+            && (
+              !('archived' in request.resource.data)
+              || request.resource.data.archived == false
+              || request.resource.data.status == 'cancelled'
+            )
+          )
+        );
+
+      allow delete: if false;
+
+      match /items/{menuId} {
+        function parentPath() {
+          return /databases/$(database)/documents/orders/$(orderId);
+        }
+        function ownEditableOrder() {
+          return request.auth != null
+            && request.auth.token.email_verified == true
+            && getAfter(parentPath()).data.ownerUid == request.auth.uid
+            && getAfter(parentPath()).data.status == 'pending'
+            && canOrderFor(getAfter(parentPath()).data.eventDate);
+        }
+        function validItem(data) {
+          return data.keys().hasAll(['id','name','unitPrice','quantity'])
+            && data.keys().hasOnly(['id','name','unitPrice','quantity'])
+            && data.id is int && data.id > 0
+            && menuId == string(data.id)
+            && data.quantity is int
+            && data.quantity >= 1 && data.quantity <= 50
+            && exists(/databases/$(database)/documents/menu/$(menuId))
+            && get(/databases/$(database)/documents/menu/$(menuId)).data.available == true
+            && data.name == get(/databases/$(database)/documents/menu/$(menuId)).data.name
+            && data.unitPrice == get(/databases/$(database)/documents/menu/$(menuId)).data.price;
+        }
+        allow get, list: if isAdmin() || (
+          request.auth != null && request.auth.token.email_verified == true
+          && get(parentPath()).data.ownerUid == request.auth.uid
+        );
+        allow create, update: if (ownEditableOrder() || isAdmin())
+          && validItem(request.resource.data);
+        allow delete: if ownEditableOrder() || isAdmin();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+)
+        && data.colors.secondary is string
+        && data.colors.secondary.matches('^#[0-9A-Fa-f]{6}
+
+    // Самостоятельные категории доступны для чтения/редактирования
+    // только аккаунтам с вручную назначенной ролью администратора.
+    function validCategory(data) {
+      return data.keys().hasAll(['name','sort','updatedAt'])
+        && data.keys().hasOnly(['name','sort','updatedAt'])
+        && data.name is string
+        && data.name.size() >= 2 && data.name.size() <= 60
+        && data.sort is int
+        && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /categories/{categoryId} {
+      allow get, list: if isAdmin();
+      allow create, update: if isAdmin()
+        && validCategory(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    function validMenu(data) {
+      return data.keys().hasAll(['id','name','category','description','price','image_url','available','sort','updatedAt'])
+        && data.keys().hasOnly(['id','name','category','description','price','image_url','available','sort','updatedAt'])
+        && data.id is int && data.id > 0
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 120
+        && data.category is string && data.category.size() >= 2 && data.category.size() <= 60
+        && data.description is string && data.description.size() <= 800
+        && data.price is number && data.price >= 0 && data.price <= 20000
+        && data.image_url is string && data.image_url.size() <= 95000
+        && (data.image_url == ''
+          || (data.image_url.size() <= 1000 && data.image_url.matches('^https://[^ ]+$'))
+          || data.image_url.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+$'))
+        && data.available is bool
+        && data.sort is int && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /menu/{itemId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && validMenu(request.resource.data)
+        && itemId == string(request.resource.data.id);
+      allow delete: if isAdmin();
+    }
+
+    function validInterestCountChange(date) {
+      let previous = resource.data.get('interestCount', 0);
+      let next = request.resource.data.get('interestCount', 0);
+      let mine = /databases/$(database)/documents/users/$(request.auth.uid)/eventInterests/$(date);
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && previous is int && previous >= 0
+        && next is int && next >= 0 && next <= 1000000
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['interestCount'])
+        && (
+          (!exists(mine) && existsAfter(mine) && next == previous + 1)
+          || (exists(mine) && !existsAfter(mine) && next == previous - 1)
+        );
+    }
+
+    match /users/{uid}/eventInterests/{eventDate} {
+      allow get, list: if signedInAs(uid) || isAdmin();
+      allow create: if signedInAs(uid)
+        && exists(/databases/$(database)/documents/events/$(eventDate))
+        && exists(/databases/$(database)/documents/users/$(uid))
+        && request.resource.data.keys().hasOnly(['uid', 'eventDate', 'createdAt'])
+        && request.resource.data.keys().hasAll(['uid', 'eventDate', 'createdAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.eventDate == eventDate
+        && eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0)
+          == get(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0) + 1;
+      allow update: if false;
+      allow delete: if signedInAs(uid)
+        && exists(/databases/$(database)/documents/events/$(eventDate))
+        && getAfter(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0)
+          == get(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0) - 1;
+    }
+
+    function validEvent(data, eventId) {
+      return data.keys().hasAll(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','poster_url','interestCount','updatedAt','description','startTime','endTime'])
+        && (!('interestCount' in data) || (
+          data.interestCount is int
+          && data.interestCount >= 0 && data.interestCount <= 1000000
+        ))
+        && (!('poster_url' in data) || (
+          data.poster_url is string
+          && data.poster_url.size() <= 150000
+          && (data.poster_url == ''
+            || (data.poster_url.size() <= 1000 && data.poster_url.matches('^https://[^ ]+$'))
+            || data.poster_url.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+$'))
+        ))
+        && data.date == eventId
+        && data.date is string
+        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
+        && (!('description' in data) || (data.description is string && data.description.size() <= 600))
+        && (!('startTime' in data) || (data.startTime is string &&
+          (data.startTime == '' || data.startTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'))))
+        && (!('endTime' in data) || (data.endTime is string &&
+          (data.endTime == '' || data.endTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'))))
+        && (('startTime' in data) == ('endTime' in data))
+        && (!('startTime' in data) || (data.startTime == '' && data.endTime == '') ||
+            (data.startTime != '' && data.endTime != ''))
+        && data.preorderEnabled is bool
+        && data.closesAt is timestamp
+        && data.cutoff is string
+        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
+        && data.updatedAt == request.time;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if isAdmin() && validEvent(request.resource.data, eventId);
+      allow update: if (isAdmin() && validEvent(request.resource.data, eventId))
+        || validInterestCountChange(eventId);
+      allow delete: if isAdmin();
+    }
+
+    // БЕСПЛАТНЫЕ ПРЕДЗАКАЗЫ — без доверия к стоимости и UID из браузера.
+    // Строки хранятся отдельно в orders/{id}/items/{menuId}.
+    // Цена, название и наличие каждой позиции проверяются по /menu/{menuId}.
+    function hasProfile() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function canOrderFor(date) {
+      return exists(/databases/$(database)/documents/events/$(date))
+        && get(/databases/$(database)/documents/events/$(date)).data.preorderEnabled == true
+        && get(/databases/$(database)/documents/events/$(date)).data.closesAt is timestamp
+        && request.time < get(/databases/$(database)/documents/events/$(date)).data.closesAt;
+    }
+
+    // Порядковый номер уникален в пределах даты и выдаётся транзакцией.
+    function counterPath(date) {
+      return /databases/$(database)/documents/orderCounters/$(date);
+    }
+    function validOrderSequence(date, number, orderId) {
+      return number is int && number >= 1 && number <= 999999
+        && getAfter(counterPath(date)).data.count == number
+        && getAfter(counterPath(date)).data.lastOrderId == orderId;
+    }
+    function validCounter(date) {
+      return request.resource.data.keys().hasAll(['date','count','lastOrderId','updatedAt'])
+        && request.resource.data.keys().hasOnly(['date','count','lastOrderId','updatedAt'])
+        && request.resource.data.date == date
+        && date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.count is int
+        && request.resource.data.count >= 1 && request.resource.data.count <= 999999
+        && request.resource.data.lastOrderId is string
+        && request.resource.data.lastOrderId.size() >= 10
+        && request.resource.data.lastOrderId.size() <= 120
+        && request.resource.data.updatedAt == request.time;
+    }
+    function counterWitness(date) {
+      let order = /databases/$(database)/documents/orders/$(request.resource.data.lastOrderId);
+      return getAfter(order).data.eventDate == date
+        && getAfter(order).data.orderNumber == request.resource.data.count
+        && (getAfter(order).data.ownerUid == request.auth.uid || isAdmin())
+        && (
+          (!exists(order) && getAfter(order).data.createdAt == request.time)
+          || (exists(order) && get(order).data.eventDate != date
+              && getAfter(order).data.updatedAt == request.time)
+        );
+    }
+    match /orderCounters/{date} {
+      allow get: if request.auth != null && request.auth.token.email_verified == true;
+      allow list, delete: if false;
+      allow create: if request.auth != null && request.auth.token.email_verified == true
+        && validCounter(date) && request.resource.data.count == 1
+        && counterWitness(date);
+      allow update: if request.auth != null && request.auth.token.email_verified == true
+        && validCounter(date)
+        && request.resource.data.count == resource.data.count + 1
+        && request.resource.data.lastOrderId != resource.data.lastOrderId
+        && counterWitness(date);
+    }
+
+    function orderShape(data) {
+      return data.keys().hasAll([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','archived','orderNumber','createdAt','updatedAt'
+        ])
+        && (!('archived' in data) || data.archived is bool)
+        && (!('orderNumber' in data) || (data.orderNumber is int
+          && data.orderNumber >= 1 && data.orderNumber <= 999999))
+        && data.ownerUid is string
+        && data.email is string
+        && data.customerName is string
+        && data.customerName.size() >= 2 && data.customerName.size() <= 100
+        && data.customerPhone is string
+        && data.customerPhone.matches('^\\+[1-9][0-9]{7,14}$')
+        && data.eventDate is string
+        && data.eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.tableNumber is string && data.tableNumber.size() <= 20
+        && data.bookingId is string && data.bookingId.size() <= 60
+        && (data.tableNumber.size() > 0 || data.bookingId.size() > 0)
+        && data.notes is string && data.notes.size() <= 500
+        && data.status in ['pending','confirmed','completed','cancelled']
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    function ownerOfOrder(data) {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && data.ownerUid == request.auth.uid;
+    }
+
+    match /orders/{orderId} {
+      allow get, list: if isAdmin() || (
+        request.auth != null && request.auth.token.email_verified == true
+        && resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if hasProfile()
+        && orderShape(request.resource.data)
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.customerName ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+        && request.resource.data.customerPhone ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone
+        && request.resource.data.status == 'pending'
+        && validOrderSequence(request.resource.data.eventDate,request.resource.data.orderNumber,orderId)
+        && (!('archived' in request.resource.data) || request.resource.data.archived == false)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && canOrderFor(request.resource.data.eventDate);
+
+      allow update: if orderShape(request.resource.data)
+        && (
+          (request.resource.data.eventDate == resource.data.eventDate
+            && request.resource.data.get('orderNumber',0) == resource.data.get('orderNumber',0))
+          || (request.resource.data.eventDate != resource.data.eventDate
+            && validOrderSequence(request.resource.data.eventDate,request.resource.data.orderNumber,orderId))
+        )
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.email == resource.data.email
+        && (request.resource.data.customerName == resource.data.customerName || isAdmin())
+        && (request.resource.data.customerPhone == resource.data.customerPhone || isAdmin())
+        && request.resource.data.updatedAt == request.time
+        && (
+          // Посетитель редактирует данные только до подтверждения администратором.
+          (
+            ownerOfOrder(resource.data)
+            && resource.data.status == 'pending'
+            && (!('archived' in resource.data) || resource.data.archived == false)
+            && (
+              (
+                request.resource.data.status == 'pending'
+                && canOrderFor(request.resource.data.eventDate)
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['eventDate','orderNumber','tableNumber','bookingId','notes','updatedAt'])
+              )
+              || (
+                request.resource.data.status == 'cancelled'
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['status','updatedAt'])
+              )
+            )
+          )
+          ||
+          // Администратор редактирует заказ без права менять владельца и email.
+          (
+            isAdmin()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly([
+                  'customerName','customerPhone','eventDate','orderNumber','tableNumber','bookingId',
+                  'notes','status','archived','updatedAt'
+                ])
+            && (
+              !('archived' in request.resource.data)
+              || request.resource.data.archived == false
+              || request.resource.data.status == 'cancelled'
+            )
+          )
+        );
+
+      allow delete: if false;
+
+      match /items/{menuId} {
+        function parentPath() {
+          return /databases/$(database)/documents/orders/$(orderId);
+        }
+        function ownEditableOrder() {
+          return request.auth != null
+            && request.auth.token.email_verified == true
+            && getAfter(parentPath()).data.ownerUid == request.auth.uid
+            && getAfter(parentPath()).data.status == 'pending'
+            && canOrderFor(getAfter(parentPath()).data.eventDate);
+        }
+        function validItem(data) {
+          return data.keys().hasAll(['id','name','unitPrice','quantity'])
+            && data.keys().hasOnly(['id','name','unitPrice','quantity'])
+            && data.id is int && data.id > 0
+            && menuId == string(data.id)
+            && data.quantity is int
+            && data.quantity >= 1 && data.quantity <= 50
+            && exists(/databases/$(database)/documents/menu/$(menuId))
+            && get(/databases/$(database)/documents/menu/$(menuId)).data.available == true
+            && data.name == get(/databases/$(database)/documents/menu/$(menuId)).data.name
+            && data.unitPrice == get(/databases/$(database)/documents/menu/$(menuId)).data.price;
+        }
+        allow get, list: if isAdmin() || (
+          request.auth != null && request.auth.token.email_verified == true
+          && get(parentPath()).data.ownerUid == request.auth.uid
+        );
+        allow create, update: if (ownEditableOrder() || isAdmin())
+          && validItem(request.resource.data);
+        allow delete: if ownEditableOrder() || isAdmin();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+)
+        && data.colors.text is string
+        && data.colors.text.matches('^#[0-9A-Fa-f]{6}
+
+    // Самостоятельные категории доступны для чтения/редактирования
+    // только аккаунтам с вручную назначенной ролью администратора.
+    function validCategory(data) {
+      return data.keys().hasAll(['name','sort','updatedAt'])
+        && data.keys().hasOnly(['name','sort','updatedAt'])
+        && data.name is string
+        && data.name.size() >= 2 && data.name.size() <= 60
+        && data.sort is int
+        && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /categories/{categoryId} {
+      allow get, list: if isAdmin();
+      allow create, update: if isAdmin()
+        && validCategory(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    function validMenu(data) {
+      return data.keys().hasAll(['id','name','category','description','price','image_url','available','sort','updatedAt'])
+        && data.keys().hasOnly(['id','name','category','description','price','image_url','available','sort','updatedAt'])
+        && data.id is int && data.id > 0
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 120
+        && data.category is string && data.category.size() >= 2 && data.category.size() <= 60
+        && data.description is string && data.description.size() <= 800
+        && data.price is number && data.price >= 0 && data.price <= 20000
+        && data.image_url is string && data.image_url.size() <= 95000
+        && (data.image_url == ''
+          || (data.image_url.size() <= 1000 && data.image_url.matches('^https://[^ ]+$'))
+          || data.image_url.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+$'))
+        && data.available is bool
+        && data.sort is int && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /menu/{itemId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && validMenu(request.resource.data)
+        && itemId == string(request.resource.data.id);
+      allow delete: if isAdmin();
+    }
+
+    function validInterestCountChange(date) {
+      let previous = resource.data.get('interestCount', 0);
+      let next = request.resource.data.get('interestCount', 0);
+      let mine = /databases/$(database)/documents/users/$(request.auth.uid)/eventInterests/$(date);
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && previous is int && previous >= 0
+        && next is int && next >= 0 && next <= 1000000
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['interestCount'])
+        && (
+          (!exists(mine) && existsAfter(mine) && next == previous + 1)
+          || (exists(mine) && !existsAfter(mine) && next == previous - 1)
+        );
+    }
+
+    match /users/{uid}/eventInterests/{eventDate} {
+      allow get, list: if signedInAs(uid) || isAdmin();
+      allow create: if signedInAs(uid)
+        && exists(/databases/$(database)/documents/events/$(eventDate))
+        && exists(/databases/$(database)/documents/users/$(uid))
+        && request.resource.data.keys().hasOnly(['uid', 'eventDate', 'createdAt'])
+        && request.resource.data.keys().hasAll(['uid', 'eventDate', 'createdAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.eventDate == eventDate
+        && eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0)
+          == get(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0) + 1;
+      allow update: if false;
+      allow delete: if signedInAs(uid)
+        && exists(/databases/$(database)/documents/events/$(eventDate))
+        && getAfter(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0)
+          == get(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0) - 1;
+    }
+
+    function validEvent(data, eventId) {
+      return data.keys().hasAll(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','poster_url','interestCount','updatedAt','description','startTime','endTime'])
+        && (!('interestCount' in data) || (
+          data.interestCount is int
+          && data.interestCount >= 0 && data.interestCount <= 1000000
+        ))
+        && (!('poster_url' in data) || (
+          data.poster_url is string
+          && data.poster_url.size() <= 150000
+          && (data.poster_url == ''
+            || (data.poster_url.size() <= 1000 && data.poster_url.matches('^https://[^ ]+$'))
+            || data.poster_url.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+$'))
+        ))
+        && data.date == eventId
+        && data.date is string
+        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
+        && (!('description' in data) || (data.description is string && data.description.size() <= 600))
+        && (!('startTime' in data) || (data.startTime is string &&
+          (data.startTime == '' || data.startTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'))))
+        && (!('endTime' in data) || (data.endTime is string &&
+          (data.endTime == '' || data.endTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'))))
+        && (('startTime' in data) == ('endTime' in data))
+        && (!('startTime' in data) || (data.startTime == '' && data.endTime == '') ||
+            (data.startTime != '' && data.endTime != ''))
+        && data.preorderEnabled is bool
+        && data.closesAt is timestamp
+        && data.cutoff is string
+        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
+        && data.updatedAt == request.time;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if isAdmin() && validEvent(request.resource.data, eventId);
+      allow update: if (isAdmin() && validEvent(request.resource.data, eventId))
+        || validInterestCountChange(eventId);
+      allow delete: if isAdmin();
+    }
+
+    // БЕСПЛАТНЫЕ ПРЕДЗАКАЗЫ — без доверия к стоимости и UID из браузера.
+    // Строки хранятся отдельно в orders/{id}/items/{menuId}.
+    // Цена, название и наличие каждой позиции проверяются по /menu/{menuId}.
+    function hasProfile() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function canOrderFor(date) {
+      return exists(/databases/$(database)/documents/events/$(date))
+        && get(/databases/$(database)/documents/events/$(date)).data.preorderEnabled == true
+        && get(/databases/$(database)/documents/events/$(date)).data.closesAt is timestamp
+        && request.time < get(/databases/$(database)/documents/events/$(date)).data.closesAt;
+    }
+
+    // Порядковый номер уникален в пределах даты и выдаётся транзакцией.
+    function counterPath(date) {
+      return /databases/$(database)/documents/orderCounters/$(date);
+    }
+    function validOrderSequence(date, number, orderId) {
+      return number is int && number >= 1 && number <= 999999
+        && getAfter(counterPath(date)).data.count == number
+        && getAfter(counterPath(date)).data.lastOrderId == orderId;
+    }
+    function validCounter(date) {
+      return request.resource.data.keys().hasAll(['date','count','lastOrderId','updatedAt'])
+        && request.resource.data.keys().hasOnly(['date','count','lastOrderId','updatedAt'])
+        && request.resource.data.date == date
+        && date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.count is int
+        && request.resource.data.count >= 1 && request.resource.data.count <= 999999
+        && request.resource.data.lastOrderId is string
+        && request.resource.data.lastOrderId.size() >= 10
+        && request.resource.data.lastOrderId.size() <= 120
+        && request.resource.data.updatedAt == request.time;
+    }
+    function counterWitness(date) {
+      let order = /databases/$(database)/documents/orders/$(request.resource.data.lastOrderId);
+      return getAfter(order).data.eventDate == date
+        && getAfter(order).data.orderNumber == request.resource.data.count
+        && (getAfter(order).data.ownerUid == request.auth.uid || isAdmin())
+        && (
+          (!exists(order) && getAfter(order).data.createdAt == request.time)
+          || (exists(order) && get(order).data.eventDate != date
+              && getAfter(order).data.updatedAt == request.time)
+        );
+    }
+    match /orderCounters/{date} {
+      allow get: if request.auth != null && request.auth.token.email_verified == true;
+      allow list, delete: if false;
+      allow create: if request.auth != null && request.auth.token.email_verified == true
+        && validCounter(date) && request.resource.data.count == 1
+        && counterWitness(date);
+      allow update: if request.auth != null && request.auth.token.email_verified == true
+        && validCounter(date)
+        && request.resource.data.count == resource.data.count + 1
+        && request.resource.data.lastOrderId != resource.data.lastOrderId
+        && counterWitness(date);
+    }
+
+    function orderShape(data) {
+      return data.keys().hasAll([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','archived','orderNumber','createdAt','updatedAt'
+        ])
+        && (!('archived' in data) || data.archived is bool)
+        && (!('orderNumber' in data) || (data.orderNumber is int
+          && data.orderNumber >= 1 && data.orderNumber <= 999999))
+        && data.ownerUid is string
+        && data.email is string
+        && data.customerName is string
+        && data.customerName.size() >= 2 && data.customerName.size() <= 100
+        && data.customerPhone is string
+        && data.customerPhone.matches('^\\+[1-9][0-9]{7,14}$')
+        && data.eventDate is string
+        && data.eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.tableNumber is string && data.tableNumber.size() <= 20
+        && data.bookingId is string && data.bookingId.size() <= 60
+        && (data.tableNumber.size() > 0 || data.bookingId.size() > 0)
+        && data.notes is string && data.notes.size() <= 500
+        && data.status in ['pending','confirmed','completed','cancelled']
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    function ownerOfOrder(data) {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && data.ownerUid == request.auth.uid;
+    }
+
+    match /orders/{orderId} {
+      allow get, list: if isAdmin() || (
+        request.auth != null && request.auth.token.email_verified == true
+        && resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if hasProfile()
+        && orderShape(request.resource.data)
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.customerName ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+        && request.resource.data.customerPhone ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone
+        && request.resource.data.status == 'pending'
+        && validOrderSequence(request.resource.data.eventDate,request.resource.data.orderNumber,orderId)
+        && (!('archived' in request.resource.data) || request.resource.data.archived == false)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && canOrderFor(request.resource.data.eventDate);
+
+      allow update: if orderShape(request.resource.data)
+        && (
+          (request.resource.data.eventDate == resource.data.eventDate
+            && request.resource.data.get('orderNumber',0) == resource.data.get('orderNumber',0))
+          || (request.resource.data.eventDate != resource.data.eventDate
+            && validOrderSequence(request.resource.data.eventDate,request.resource.data.orderNumber,orderId))
+        )
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.email == resource.data.email
+        && (request.resource.data.customerName == resource.data.customerName || isAdmin())
+        && (request.resource.data.customerPhone == resource.data.customerPhone || isAdmin())
+        && request.resource.data.updatedAt == request.time
+        && (
+          // Посетитель редактирует данные только до подтверждения администратором.
+          (
+            ownerOfOrder(resource.data)
+            && resource.data.status == 'pending'
+            && (!('archived' in resource.data) || resource.data.archived == false)
+            && (
+              (
+                request.resource.data.status == 'pending'
+                && canOrderFor(request.resource.data.eventDate)
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['eventDate','orderNumber','tableNumber','bookingId','notes','updatedAt'])
+              )
+              || (
+                request.resource.data.status == 'cancelled'
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['status','updatedAt'])
+              )
+            )
+          )
+          ||
+          // Администратор редактирует заказ без права менять владельца и email.
+          (
+            isAdmin()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly([
+                  'customerName','customerPhone','eventDate','orderNumber','tableNumber','bookingId',
+                  'notes','status','archived','updatedAt'
+                ])
+            && (
+              !('archived' in request.resource.data)
+              || request.resource.data.archived == false
+              || request.resource.data.status == 'cancelled'
+            )
+          )
+        );
+
+      allow delete: if false;
+
+      match /items/{menuId} {
+        function parentPath() {
+          return /databases/$(database)/documents/orders/$(orderId);
+        }
+        function ownEditableOrder() {
+          return request.auth != null
+            && request.auth.token.email_verified == true
+            && getAfter(parentPath()).data.ownerUid == request.auth.uid
+            && getAfter(parentPath()).data.status == 'pending'
+            && canOrderFor(getAfter(parentPath()).data.eventDate);
+        }
+        function validItem(data) {
+          return data.keys().hasAll(['id','name','unitPrice','quantity'])
+            && data.keys().hasOnly(['id','name','unitPrice','quantity'])
+            && data.id is int && data.id > 0
+            && menuId == string(data.id)
+            && data.quantity is int
+            && data.quantity >= 1 && data.quantity <= 50
+            && exists(/databases/$(database)/documents/menu/$(menuId))
+            && get(/databases/$(database)/documents/menu/$(menuId)).data.available == true
+            && data.name == get(/databases/$(database)/documents/menu/$(menuId)).data.name
+            && data.unitPrice == get(/databases/$(database)/documents/menu/$(menuId)).data.price;
+        }
+        allow get, list: if isAdmin() || (
+          request.auth != null && request.auth.token.email_verified == true
+          && get(parentPath()).data.ownerUid == request.auth.uid
+        );
+        allow create, update: if (ownEditableOrder() || isAdmin())
+          && validItem(request.resource.data);
+        allow delete: if ownEditableOrder() || isAdmin();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+)
+        && data.colors.border is string
+        && data.colors.border.matches('^#[0-9A-Fa-f]{6}
+
+    // Самостоятельные категории доступны для чтения/редактирования
+    // только аккаунтам с вручную назначенной ролью администратора.
+    function validCategory(data) {
+      return data.keys().hasAll(['name','sort','updatedAt'])
+        && data.keys().hasOnly(['name','sort','updatedAt'])
+        && data.name is string
+        && data.name.size() >= 2 && data.name.size() <= 60
+        && data.sort is int
+        && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /categories/{categoryId} {
+      allow get, list: if isAdmin();
+      allow create, update: if isAdmin()
+        && validCategory(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    function validMenu(data) {
+      return data.keys().hasAll(['id','name','category','description','price','image_url','available','sort','updatedAt'])
+        && data.keys().hasOnly(['id','name','category','description','price','image_url','available','sort','updatedAt'])
+        && data.id is int && data.id > 0
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 120
+        && data.category is string && data.category.size() >= 2 && data.category.size() <= 60
+        && data.description is string && data.description.size() <= 800
+        && data.price is number && data.price >= 0 && data.price <= 20000
+        && data.image_url is string && data.image_url.size() <= 95000
+        && (data.image_url == ''
+          || (data.image_url.size() <= 1000 && data.image_url.matches('^https://[^ ]+$'))
+          || data.image_url.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+$'))
+        && data.available is bool
+        && data.sort is int && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /menu/{itemId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && validMenu(request.resource.data)
+        && itemId == string(request.resource.data.id);
+      allow delete: if isAdmin();
+    }
+
+    function validInterestCountChange(date) {
+      let previous = resource.data.get('interestCount', 0);
+      let next = request.resource.data.get('interestCount', 0);
+      let mine = /databases/$(database)/documents/users/$(request.auth.uid)/eventInterests/$(date);
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && previous is int && previous >= 0
+        && next is int && next >= 0 && next <= 1000000
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['interestCount'])
+        && (
+          (!exists(mine) && existsAfter(mine) && next == previous + 1)
+          || (exists(mine) && !existsAfter(mine) && next == previous - 1)
+        );
+    }
+
+    match /users/{uid}/eventInterests/{eventDate} {
+      allow get, list: if signedInAs(uid) || isAdmin();
+      allow create: if signedInAs(uid)
+        && exists(/databases/$(database)/documents/events/$(eventDate))
+        && exists(/databases/$(database)/documents/users/$(uid))
+        && request.resource.data.keys().hasOnly(['uid', 'eventDate', 'createdAt'])
+        && request.resource.data.keys().hasAll(['uid', 'eventDate', 'createdAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.eventDate == eventDate
+        && eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0)
+          == get(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0) + 1;
+      allow update: if false;
+      allow delete: if signedInAs(uid)
+        && exists(/databases/$(database)/documents/events/$(eventDate))
+        && getAfter(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0)
+          == get(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0) - 1;
+    }
+
+    function validEvent(data, eventId) {
+      return data.keys().hasAll(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
+        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','poster_url','interestCount','updatedAt','description','startTime','endTime'])
+        && (!('interestCount' in data) || (
+          data.interestCount is int
+          && data.interestCount >= 0 && data.interestCount <= 1000000
+        ))
+        && (!('poster_url' in data) || (
+          data.poster_url is string
+          && data.poster_url.size() <= 150000
+          && (data.poster_url == ''
+            || (data.poster_url.size() <= 1000 && data.poster_url.matches('^https://[^ ]+$'))
+            || data.poster_url.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+$'))
+        ))
+        && data.date == eventId
+        && data.date is string
+        && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
+        && (!('description' in data) || (data.description is string && data.description.size() <= 600))
+        && (!('startTime' in data) || (data.startTime is string &&
+          (data.startTime == '' || data.startTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'))))
+        && (!('endTime' in data) || (data.endTime is string &&
+          (data.endTime == '' || data.endTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'))))
+        && (('startTime' in data) == ('endTime' in data))
+        && (!('startTime' in data) || (data.startTime == '' && data.endTime == '') ||
+            (data.startTime != '' && data.endTime != ''))
+        && data.preorderEnabled is bool
+        && data.closesAt is timestamp
+        && data.cutoff is string
+        && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
+        && data.updatedAt == request.time;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if isAdmin() && validEvent(request.resource.data, eventId);
+      allow update: if (isAdmin() && validEvent(request.resource.data, eventId))
+        || validInterestCountChange(eventId);
+      allow delete: if isAdmin();
+    }
+
+    // БЕСПЛАТНЫЕ ПРЕДЗАКАЗЫ — без доверия к стоимости и UID из браузера.
+    // Строки хранятся отдельно в orders/{id}/items/{menuId}.
+    // Цена, название и наличие каждой позиции проверяются по /menu/{menuId}.
+    function hasProfile() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function canOrderFor(date) {
+      return exists(/databases/$(database)/documents/events/$(date))
+        && get(/databases/$(database)/documents/events/$(date)).data.preorderEnabled == true
+        && get(/databases/$(database)/documents/events/$(date)).data.closesAt is timestamp
+        && request.time < get(/databases/$(database)/documents/events/$(date)).data.closesAt;
+    }
+
+    // Порядковый номер уникален в пределах даты и выдаётся транзакцией.
+    function counterPath(date) {
+      return /databases/$(database)/documents/orderCounters/$(date);
+    }
+    function validOrderSequence(date, number, orderId) {
+      return number is int && number >= 1 && number <= 999999
+        && getAfter(counterPath(date)).data.count == number
+        && getAfter(counterPath(date)).data.lastOrderId == orderId;
+    }
+    function validCounter(date) {
+      return request.resource.data.keys().hasAll(['date','count','lastOrderId','updatedAt'])
+        && request.resource.data.keys().hasOnly(['date','count','lastOrderId','updatedAt'])
+        && request.resource.data.date == date
+        && date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.count is int
+        && request.resource.data.count >= 1 && request.resource.data.count <= 999999
+        && request.resource.data.lastOrderId is string
+        && request.resource.data.lastOrderId.size() >= 10
+        && request.resource.data.lastOrderId.size() <= 120
+        && request.resource.data.updatedAt == request.time;
+    }
+    function counterWitness(date) {
+      let order = /databases/$(database)/documents/orders/$(request.resource.data.lastOrderId);
+      return getAfter(order).data.eventDate == date
+        && getAfter(order).data.orderNumber == request.resource.data.count
+        && (getAfter(order).data.ownerUid == request.auth.uid || isAdmin())
+        && (
+          (!exists(order) && getAfter(order).data.createdAt == request.time)
+          || (exists(order) && get(order).data.eventDate != date
+              && getAfter(order).data.updatedAt == request.time)
+        );
+    }
+    match /orderCounters/{date} {
+      allow get: if request.auth != null && request.auth.token.email_verified == true;
+      allow list, delete: if false;
+      allow create: if request.auth != null && request.auth.token.email_verified == true
+        && validCounter(date) && request.resource.data.count == 1
+        && counterWitness(date);
+      allow update: if request.auth != null && request.auth.token.email_verified == true
+        && validCounter(date)
+        && request.resource.data.count == resource.data.count + 1
+        && request.resource.data.lastOrderId != resource.data.lastOrderId
+        && counterWitness(date);
+    }
+
+    function orderShape(data) {
+      return data.keys().hasAll([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','createdAt','updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerUid','email','customerName','customerPhone','eventDate',
+          'tableNumber','bookingId','notes','status','archived','orderNumber','createdAt','updatedAt'
+        ])
+        && (!('archived' in data) || data.archived is bool)
+        && (!('orderNumber' in data) || (data.orderNumber is int
+          && data.orderNumber >= 1 && data.orderNumber <= 999999))
+        && data.ownerUid is string
+        && data.email is string
+        && data.customerName is string
+        && data.customerName.size() >= 2 && data.customerName.size() <= 100
+        && data.customerPhone is string
+        && data.customerPhone.matches('^\\+[1-9][0-9]{7,14}$')
+        && data.eventDate is string
+        && data.eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.tableNumber is string && data.tableNumber.size() <= 20
+        && data.bookingId is string && data.bookingId.size() <= 60
+        && (data.tableNumber.size() > 0 || data.bookingId.size() > 0)
+        && data.notes is string && data.notes.size() <= 500
+        && data.status in ['pending','confirmed','completed','cancelled']
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    function ownerOfOrder(data) {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && data.ownerUid == request.auth.uid;
+    }
+
+    match /orders/{orderId} {
+      allow get, list: if isAdmin() || (
+        request.auth != null && request.auth.token.email_verified == true
+        && resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if hasProfile()
+        && orderShape(request.resource.data)
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.customerName ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+        && request.resource.data.customerPhone ==
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone
+        && request.resource.data.status == 'pending'
+        && validOrderSequence(request.resource.data.eventDate,request.resource.data.orderNumber,orderId)
+        && (!('archived' in request.resource.data) || request.resource.data.archived == false)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && canOrderFor(request.resource.data.eventDate);
+
+      allow update: if orderShape(request.resource.data)
+        && (
+          (request.resource.data.eventDate == resource.data.eventDate
+            && request.resource.data.get('orderNumber',0) == resource.data.get('orderNumber',0))
+          || (request.resource.data.eventDate != resource.data.eventDate
+            && validOrderSequence(request.resource.data.eventDate,request.resource.data.orderNumber,orderId))
+        )
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.email == resource.data.email
+        && (request.resource.data.customerName == resource.data.customerName || isAdmin())
+        && (request.resource.data.customerPhone == resource.data.customerPhone || isAdmin())
+        && request.resource.data.updatedAt == request.time
+        && (
+          // Посетитель редактирует данные только до подтверждения администратором.
+          (
+            ownerOfOrder(resource.data)
+            && resource.data.status == 'pending'
+            && (!('archived' in resource.data) || resource.data.archived == false)
+            && (
+              (
+                request.resource.data.status == 'pending'
+                && canOrderFor(request.resource.data.eventDate)
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['eventDate','orderNumber','tableNumber','bookingId','notes','updatedAt'])
+              )
+              || (
+                request.resource.data.status == 'cancelled'
+                && request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['status','updatedAt'])
+              )
+            )
+          )
+          ||
+          // Администратор редактирует заказ без права менять владельца и email.
+          (
+            isAdmin()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly([
+                  'customerName','customerPhone','eventDate','orderNumber','tableNumber','bookingId',
+                  'notes','status','archived','updatedAt'
+                ])
+            && (
+              !('archived' in request.resource.data)
+              || request.resource.data.archived == false
+              || request.resource.data.status == 'cancelled'
+            )
+          )
+        );
+
+      allow delete: if false;
+
+      match /items/{menuId} {
+        function parentPath() {
+          return /databases/$(database)/documents/orders/$(orderId);
+        }
+        function ownEditableOrder() {
+          return request.auth != null
+            && request.auth.token.email_verified == true
+            && getAfter(parentPath()).data.ownerUid == request.auth.uid
+            && getAfter(parentPath()).data.status == 'pending'
+            && canOrderFor(getAfter(parentPath()).data.eventDate);
+        }
+        function validItem(data) {
+          return data.keys().hasAll(['id','name','unitPrice','quantity'])
+            && data.keys().hasOnly(['id','name','unitPrice','quantity'])
+            && data.id is int && data.id > 0
+            && menuId == string(data.id)
+            && data.quantity is int
+            && data.quantity >= 1 && data.quantity <= 50
+            && exists(/databases/$(database)/documents/menu/$(menuId))
+            && get(/databases/$(database)/documents/menu/$(menuId)).data.available == true
+            && data.name == get(/databases/$(database)/documents/menu/$(menuId)).data.name
+            && data.unitPrice == get(/databases/$(database)/documents/menu/$(menuId)).data.price;
+        }
+        allow get, list: if isAdmin() || (
+          request.auth != null && request.auth.token.email_verified == true
+          && get(parentPath()).data.ownerUid == request.auth.uid
+        );
+        allow create, update: if (ownEditableOrder() || isAdmin())
+          && validItem(request.resource.data);
+        allow delete: if ownEditableOrder() || isAdmin();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+)
+        && data.updatedAt == request.time;
+    }
+
+    match /settings/{settingId} {
+      allow get: if settingId == 'appearance';
+      allow list: if false;
+      allow create, update: if settingId == 'appearance'
+        && isAdmin() && validAppearance(request.resource.data);
+      allow delete: if false;
+    }
+
+
     // Самостоятельные категории доступны для чтения/редактирования
     // только аккаунтам с вручную назначенной ролью администратора.
     function validCategory(data) {
