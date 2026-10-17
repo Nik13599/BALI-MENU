@@ -229,7 +229,7 @@ assert((rules.match(/match \/events\/\{eventId\}/g)||[]).length===1 &&
   "Firestore Rules must contain one event match and one catchall");
 const landingCss = source("bali-pages.css");
 assert(html.includes('<title>Bali</title>') &&
-  html.includes('bali-pages.css?v=20261017-31'), "Bali landing brand and CSS missing");
+  html.includes('bali-pages.css?v=20261017-32'), "Bali landing brand and CSS missing");
 assert(html.includes('id="homeSection"') &&
   html.includes('id="menuPage"') &&
   html.includes('id="contactsSection"') &&
@@ -288,11 +288,13 @@ const yandexMapStart=html.indexOf('class="bali-home-map bali-yandex-map"');
 const yandexMapEnd=html.indexOf('</a>',yandexMapStart);
 assert(yandexMapStart>=0 && yandexMapEnd>yandexMapStart &&
   html.slice(yandexMapStart,yandexMapEnd).includes('bali-yandex-pin') &&
-  html.slice(yandexMapStart,yandexMapEnd).includes('Яндекс <strong>Карты</strong>') &&
+  html.slice(yandexMapStart,yandexMapEnd).includes('bali-yandex-address') &&
+  !html.slice(yandexMapStart,yandexMapEnd).includes('bali-yandex-brand') &&
   !html.slice(yandexMapStart,yandexMapEnd).includes('bali-home-map-arrow'),
-  "Address must show Yandex Maps branding and no arrow");
-assert(landingCss.includes('.bali-yandex-brand') &&
-  landingCss.includes('.bali-yandex-pin') &&
-  landingCss.includes('grid-template-columns:34px minmax(0,1fr)'),
-  "Yandex Maps address card must work on narrow mobile screens");
+  "Address must retain Yandex map pin, centered text, and no arrow");
+assert(landingCss.includes('BALI v32') &&
+  landingCss.includes('justify-content:center') &&
+  landingCss.includes('text-align:center') &&
+  landingCss.includes('.bali-yandex-pin{left:10px;top:50%'),
+  "Yandex Maps address text must be centered with red pin left on mobile");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
