@@ -1,0 +1,83 @@
+/* BALI v94 — two deliberate, compact rows under the PC contact phone:
+   message BALI and follow BALI. No page scroll on desktop. */
+@media (min-width:1180px) {
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-write,
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials {
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:clamp(4px,.4vw,8px)!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-write a,
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials a,
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-social-pending {
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:clamp(2px,.3dvh,5px)!important;
+    box-sizing:border-box!important;
+    min-width:0!important;
+    min-height:clamp(40px,5.3dvh,54px)!important;
+    padding:clamp(4px,.55dvh,8px) 2px!important;
+    border:1px solid rgba(255,255,255,.13)!important;
+    border-radius:9px!important;
+    background:rgba(255,255,255,.035)!important;
+    color:#f0f2ef!important;
+    text-decoration:none!important;
+    text-align:center!important;
+    font:700 clamp(8px,.61vw,11px)/1.17 Manrope,Inter,sans-serif!important;
+    overflow-wrap:anywhere!important;
+    transition:background .15s,border-color .15s;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-write a:hover,
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials a:hover {
+    background:rgba(185,255,81,.1)!important;
+    border-color:var(--bt-border,#b2ef5f)!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-write svg,
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials svg,
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-social-pending svg {
+    display:block!important;
+    width:clamp(15px,1.18vw,20px)!important;
+    height:clamp(15px,1.18vw,20px)!important;
+    flex:0 0 auto!important;
+    color:var(--bt-primary,#b9ff51)!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-write span,
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials span {
+    display:block;
+    min-width:0;
+    max-width:100%;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-social-pending {
+    cursor:default!important;
+    opacity:.48;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials a[hidden],
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-social-pending[hidden] {
+    display:none!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-social-heading {
+    margin:clamp(2px,.45dvh,5px) 0 0!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-sidebar-contacts {
+    gap:clamp(4px,.65dvh,8px)!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location {
+    margin-top:clamp(2px,.45dvh,6px)!important;
+  }
+}
+@media (min-width:1180px) and (max-height:740px) {
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-write a,
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials a,
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-social-pending {
+    min-height:37px!important;
+    padding:3px 2px!important;
+    gap:2px!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-sidebar-contacts {
+    gap:3px!important;
+  }
+}
