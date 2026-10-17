@@ -581,7 +581,7 @@
     border-color:rgba(255,255,255,.28)!important;
   }
 }
-@media (prefers-reduced-motion:reduce){
+@media (min-width:768px) and (prefers-reduced-motion:reduce){
   body.bali-guest-theme #homeSection .bali-home-events > .bali-home-event-card{
     transition:none!important;
   }
