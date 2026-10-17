@@ -1,6 +1,6 @@
 // BALI MENU: администратор через Google Auth + вручную назначенный admins/{uid}.
 import { BALI_MENU_SEED } from "./menu-seed.js?v=20261017-9";
-import { compressImage } from "./image-compressor.js?v=20261017-20";
+import { compressImage } from "./image-compressor.js?v=20261018-99";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
@@ -16,7 +16,7 @@ const $ = (id) => document.getElementById(id);
 const menu = new Map(), events = new Map(), categories = new Map();
 const renderStatus = (id, text) => { $(id).textContent = text; };
 let unsubMenu = null, unsubEvents = null, unsubCategories = null, authorized = false;
-let pendingProductImage = "", pendingEventPoster = "", pendingDetailImage = "", processingDetailImage = false;
+let pendingProductImage = "", pendingEventPoster = "", pendingDetailImage = "", processingDetailImage = false, detailImageCleared = false;
 function imagePreview(id,src){
   const img=$(id);
   if(!img)return;
@@ -57,6 +57,7 @@ $("menuDetailsImageFile").addEventListener("change",async event=>{
   try{
     const result=await compressImage(file,"menu-detail");
     pendingDetailImage=result;
+    detailImageCleared=false;
     $("menuDetailsImage").value="";
     imagePreview("menuDetailsImagePreview",result);
     renderStatus("menuStatus","Дополнительное фото подготовлено. Нажмите «Сохранить товар».");
@@ -67,10 +68,12 @@ $("menuDetailsImageFile").addEventListener("change",async event=>{
 });
 $("menuDetailsImage").addEventListener("input",()=>{
   pendingDetailImage="";
+  detailImageCleared=!$("menuDetailsImage").value.trim();
   imagePreview("menuDetailsImagePreview",$("menuDetailsImage").value.trim());
 });
 $("menuDetailsClearImage").addEventListener("click",()=>{
   pendingDetailImage="";
+  detailImageCleared=true;
   $("menuDetailsImage").value="";
   $("menuDetailsImageFile").value="";
   imagePreview("menuDetailsImagePreview","");
@@ -230,6 +233,7 @@ function openProductDialog(item=null){
   $("menuDetailsEnabled").checked=item?.detailEnabled===true;
   $("menuDetailsText").value=item?.detailText||"";
   pendingDetailImage="";
+  detailImageCleared=false;
   processingDetailImage=false;
   $("menuDetailsImageFile").value="";
   const oldDetailImage=item?.detailImageUrl||"";
@@ -424,6 +428,7 @@ function eventRender() {
 function clearMenu() {
   pendingProductImage="";
   pendingDetailImage="";
+  detailImageCleared=false;
   processingDetailImage=false;
   imagePreview("menuImagePreview","");
   imagePreview("menuDetailsImagePreview","");
@@ -466,7 +471,7 @@ $("menuForm").addEventListener("submit",async event=>{
   }
   const detailImage=detailsEnabled?(pendingDetailImage ||
     $("menuDetailsImage").value.trim() ||
-    (activeMenuEdit!==null && isImageDataUri(menu.get(String(activeMenuEdit))?.detailImageUrl)
+    (activeMenuEdit!==null && !detailImageCleared && isImageDataUri(menu.get(String(activeMenuEdit))?.detailImageUrl)
       ? menu.get(String(activeMenuEdit)).detailImageUrl : "")):"";
   if(detailImage&&!/^https:\/\/[^ ]+$/.test(detailImage)&&!isImageDataUri(detailImage)){
     renderStatus("menuStatus","Дополнительная фотография должна иметь HTTPS-ссылку.");
