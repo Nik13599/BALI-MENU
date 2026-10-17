@@ -12,8 +12,14 @@ export async function compressImage(file,kind="product") {
   const poster=kind==="poster";
   const designPresets={
     "design-hero":{ratio:8/3,maxChars:155000,widths:[1280,1120,960,800,640]},
-    "design-about":{ratio:1,maxChars:125000,widths:[850,720,600,480,400]},
-    "design-merch":{ratio:3/2,maxChars:125000,widths:[1000,850,720,600,480]}
+    "design-hero-tablet":{ratio:16/9,maxChars:155000,widths:[1050,900,760,640,520]},
+    "design-hero-mobile":{ratio:3/4,maxChars:155000,widths:[600,520,440,360,300]},
+    "design-about":{ratio:9/14,maxChars:125000,widths:[630,550,470,390,320]},
+    "design-about-tablet":{ratio:4/3,maxChars:125000,widths:[850,720,600,480,400]},
+    "design-about-mobile":{ratio:3/4,maxChars:125000,widths:[600,520,440,360,300]},
+    "design-merch":{ratio:3/2,maxChars:125000,widths:[1000,850,720,600,480]},
+    "design-merch-tablet":{ratio:1,maxChars:125000,widths:[780,650,550,450,350]},
+    "design-merch-mobile":{ratio:4/5,maxChars:125000,widths:[560,480,400,340,280]}
   };
   const design=designPresets[kind];
   const maxChars=design?.maxChars||(poster?145000:90000);
