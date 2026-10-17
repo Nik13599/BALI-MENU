@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-26"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-28"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -99,12 +99,12 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-26'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-28'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
-assert(responsive.includes('grid-template-areas:') && responsive.includes('"brand brand brand account"')
-  && responsive.includes('"menu events orders cart"'), "Mobile header must show avatar and Menu/Events/Orders/Cart");
+assert(html.includes('id="homeSection"') && html.includes('id="menuPage"') &&
+  html.includes('id="eventsSection"'), "Guest app must provide separate Home, Menu and Events pages");
 assert(responsive.includes('#accountBtn::before') && responsive.includes("data:image/svg+xml"), "Mobile account must show the person icon");
 assert(responsive.includes('touch-action: manipulation'), "Double-tap zoom must be disabled while pinch zoom stays available");
 assert(auth.includes('profile ? profile.name : "Профиль"'), "Mobile cabinet button must display signed-in name");
@@ -197,7 +197,7 @@ assert(app.includes('button.textContent="Сделать предзаказ";'), 
 const interestSource = source("event-interests.js");
 const interestCss = source("event-interests.css");
 assert(html.includes('event-interests.js?v=20261017-26') &&
-  html.includes('event-interests.css?v=20261017-26'), "Guest interest module and styles must load");
+  html.includes('event-interests.css?v=20261017-29'), "Guest interest module and styles must load");
 assert(html.includes('id="plannedEventsCount"') &&
   html.includes('id="eventsViewTabs"'), "My Plans event filter missing");
 assert(app.includes('Хочу пойти') &&
@@ -227,4 +227,46 @@ assert(interestCss.includes('.event-want-to-go') &&
 assert((rules.match(/match \/events\/\{eventId\}/g)||[]).length===1 &&
   (rules.match(/match \/\{document=\*\*\}/g)||[]).length===1,
   "Firestore Rules must contain one event match and one catchall");
+const landingCss = source("bali-pages.css");
+assert(html.includes('<title>Bali</title>') &&
+  html.includes('bali-pages.css?v=20261017-28'), "Bali landing brand and CSS missing");
+assert(html.includes('id="homeSection"') &&
+  html.includes('id="menuPage"') &&
+  html.includes('id="contactsSection"') &&
+  html.includes('id="homeFloatingBtn"'), "Separate guest page sections missing");
+assert(html.includes('id="homeBrandBtn"') &&
+  html.includes('id="menuNavBtn"') &&
+  html.includes('id="eventsNavBtn"'), "Home page navigation missing");
+assert(app.includes('renderGuestPage(routeFromLocation()') &&
+  app.includes('addEventListener("popstate"') &&
+  app.includes('navigateGuestPage(page'), "Guest app must support browser Back navigation");
+assert(landingCss.includes('.bali-floating-home{left:') &&
+  landingCss.includes('right:auto'), "Floating home navigation must be bottom-left");
+assert(html.includes('id="cartBtn"') &&
+  html.indexOf('id="cartBtn"') > html.indexOf('id="menuPage"') &&
+  html.indexOf('id="cartBtn"') < html.indexOf('<!-- /menuPage -->'),
+  "Cart must be displayed inside Menu section, not header");
+assert(html.includes('id="accountMyOrdersBtn"'), "My Orders shortcut must remain in account");
+assert(html.includes('class="bali-home-social"') &&
+  html.includes('href="tel:+375296700300"') &&
+  html.includes('href="https://t.me/baliclubminsk"') &&
+  html.includes('href="https://www.instagram.com/baliminsk/"'),
+  "Home page must show Call, Telegram and Instagram");
+assert(html.includes('class="bali-home-map"') &&
+  html.includes('href="https://yandex.by/maps/org/bali_night_club/104137822369/"'),
+  "Home address must open Yandex Maps");
+assert(interestCss.includes('position:sticky') &&
+  interestCss.includes('top:var(--bali-header-height,70px)') &&
+  interestCss.includes('#eventsSection .events-view-tabs'), "Event plans selector must stick below Bali header");
+assert(ordersClient.includes('runTransaction(db,async tx=>') &&
+  ordersClient.includes('collection(db,"orders")') &&
+  ordersClient.includes('doc(db,"orderCounters",eventDate)') &&
+  ordersClient.includes('order_number:orderNumber'), "Order numbers must be sequential per date in transaction");
+assert(rules.includes('match /orderCounters/{date}') &&
+  rules.includes('validOrderSequence(') &&
+  rules.includes('counterWitness(date)'), "Firestore rules must enforce per-date order counters");
+assert(app.includes("String(result.order_number).padStart(2,'0')") &&
+  app.includes('String(order.orderNumber).padStart(2'), "Guest must see padded date-specific order number");
+assert(orderAdminSource.includes('orderLabel = o =>') &&
+  orderAdminSource.includes('runTransaction(db,async tx=>'), "Admin must show date-based order numbers and renumber date changes");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
