@@ -14,7 +14,8 @@ if(host){
     calendarPreviewTitle:"BALI календарь",calendarPageTitle:"BALI КАЛЕНДАРЬ",
     menuPageTitle:"BALI МЕНЮ",menuBannerTitle:"Меню",menuBannerCta:"Посмотреть меню",
     contactHeading:"Контактная информация",phoneText:"+375 29 670-03-00",
-    phoneHref:"tel:+375296700300",telegramUrl:"https://t.me/baliclubminsk",
+    phoneHref:"tel:+375296700300",telegramChatUrl:"https://t.me/ilya_cv",
+    telegramUrl:"https://t.me/baliclubminsk",tiktokUrl:"",
     instagramUrl:"https://www.instagram.com/baliminsk/",
     findHeading:"Как нас найти",addressText:"Минск, ул. Кирова, 13",
     addressFloor:"3-й этаж · Яндекс Карты ↗",
@@ -33,7 +34,7 @@ if(host){
     brandTitle:32,brandSubtitle:35,navHomeText:30,navCalendarText:30,
     navMenuText:30,navCartText:30,calendarPreviewTitle:55,calendarPageTitle:55,
     menuPageTitle:55,menuBannerTitle:45,menuBannerCta:65,contactHeading:55,phoneText:32,
-    phoneHref:48,telegramUrl:250,instagramUrl:250,findHeading:50,
+    phoneHref:48,telegramChatUrl:250,telegramUrl:250,instagramUrl:250,tiktokUrl:250,findHeading:50,
     addressText:110,addressFloor:80,mapUrl:300
   };
   const copyInputs=[...host.querySelectorAll("[data-site-field]")];
@@ -119,13 +120,14 @@ if(host){
   }
   function validate(d){
     for(const [key,max] of Object.entries(maxLengths)){
-      if(typeof d[key]!=="string"||d[key].length<1||d[key].length>max){
+      if(typeof d[key]!=="string"||(key!=="tiktokUrl"&&d[key].length<1)||d[key].length>max){
         return "Проверьте поле: "+key+" (от 1 до "+max+" символов).";
       }
     }
     if(!/^tel:\+?[0-9]{5,22}$/.test(d.phoneHref))
       return "Телефонная ссылка должна иметь вид tel:+375296700300.";
-    for(const key of ["telegramUrl","instagramUrl","mapUrl"]){
+    for(const key of ["telegramChatUrl","telegramUrl","instagramUrl","mapUrl","tiktokUrl"]){
+      if(key==="tiktokUrl"&&!d[key])continue;
       try{const url=new URL(d[key]);if(url.protocol!=="https:")return "Для "+key+" нужна HTTPS-ссылка.";}
       catch{return "Неверная ссылка: "+key;}
     }
