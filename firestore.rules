@@ -196,8 +196,8 @@ service cloud.firestore {
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.ownerUid == resource.data.ownerUid
         && request.resource.data.email == resource.data.email
-        && request.resource.data.customerName == resource.data.customerName
-        && request.resource.data.customerPhone == resource.data.customerPhone
+        && (request.resource.data.customerName == resource.data.customerName || isAdmin())
+        && (request.resource.data.customerPhone == resource.data.customerPhone || isAdmin())
         && request.resource.data.updatedAt == request.time
         && (
           // Посетитель редактирует данные только до подтверждения администратором.
@@ -226,7 +226,7 @@ service cloud.firestore {
             isAdmin()
             && request.resource.data.diff(resource.data).affectedKeys()
                 .hasOnly([
-                  'eventDate','tableNumber','bookingId','notes',
+                  'customerName','customerPhone','eventDate','tableNumber','bookingId','notes',
                   'status','archived','updatedAt'
                 ])
             && (
