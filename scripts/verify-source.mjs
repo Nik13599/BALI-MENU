@@ -133,7 +133,7 @@ for (const id of ["adminClientsPanel","clientSearch","clientList","clientHistory
 }
 assert(admin.includes('admin-clients.js?v=20261017-20'), "Client CRM JS not loaded");
 assert(admin.includes('admin-orders.js?v=20261017-20'), "Staff order editor JS not loaded");
-assert(admin.includes('admin-firestore.js?v=20261017-26'), "Admin event fix must load without cache");
+assert(admin.includes('admin-firestore.js?v=20261017-46'), "Admin event fix must load without cache");
 assert(clientSource.includes('where("ownerUid","==",selected.uid)') && clientSource.includes('startAfter(lastOrder)'),
   "Client history needs owner-only paged retrieval");
 assert(orderAdminSource.includes('writeBatch(db)') && orderAdminSource.includes('archiveOrder') &&
@@ -291,6 +291,16 @@ assert(app.includes("menuSection.scrollTop = 0") &&
   app.includes('if(window.matchMedia("(max-width:767px)").matches)return;'),
   "Mobile category change must scroll the product list without hijacking gestures");
 const approvedCss=source("bali-redesign.css");
+assert(approvedCss.includes("/* BALI v47: mobile viewport slots.") &&
+  approvedCss.includes("body>.header{") &&
+  approvedCss.includes("order:-3;") &&
+  approvedCss.includes("body>.bali-bottom-nav{") &&
+  approvedCss.includes("inset:auto 0 0 0!important") &&
+  approvedCss.includes("grid-template-rows:auto minmax(0,1fr) auto auto") &&
+  approvedCss.includes("#menuPage .menu-section{") &&
+  approvedCss.includes("overflow-y:auto!important"),
+  "Mobile header must stay at top, bottom navigation at bottom and only menu list scroll");
+
 assert(admin.includes('id="eventDescription"') &&
   admin.includes('id="eventStartTime"') && admin.includes('id="eventEndTime"') &&
   admin.includes('admin-firestore.js?v=20261017-46'),
