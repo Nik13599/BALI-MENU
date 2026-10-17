@@ -386,7 +386,7 @@ function renderUpcomingEvents() {
         // The preorder cutoff is intentionally NOT used as an event end time.
         const times=document.createElement("p");
         times.className="bali-event-hours";
-        const validTime=/^([01]\\d|2[0-3]):[0-5]\\d$/;
+        const validTime=/^([01]\d|2[0-3]):[0-5]\d$/;
         const startTime=String(event.startTime||"");
         const endTime=String(event.endTime||"");
         times.textContent=validTime.test(startTime)&&validTime.test(endTime)
