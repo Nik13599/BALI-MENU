@@ -3,6 +3,8 @@ import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/1
 import {getFirestore,collection,query,where,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const image=document.getElementById("baliPcHeroPoster");
+const tabletSource=document.getElementById("baliPcHeroTabletSource");
+const mobileSource=document.getElementById("baliPcHeroMobileSource");
 const title=document.getElementById("baliPcOfferTitle");
 const description=document.getElementById("baliPcOfferDescription");
 const counter=document.getElementById("baliPcHeroCounter");
@@ -15,6 +17,25 @@ if(image&&title&&description&&counter&&action&&hero){
   const collator=new Intl.Collator("ru",{numeric:true,sensitivity:"base"});
   let offers=[],index=0,pause=false;
   const fallbackText="Особые предложения клуба. Скоро здесь появятся новые возможности для гостей.";
+  const validImage=value=>typeof value==="string"&&
+    ((value.startsWith("https://")&&value.length<=2048)||
+     (value.startsWith("data:image/webp;base64,")&&value.length<=155000));
+  function setPoster(offer){
+    const primary=validImage(offer?.imageUrl)?offer.imageUrl:"";
+    const tablet=validImage(offer?.imageTabletUrl)?offer.imageTabletUrl:primary;
+    const mobile=validImage(offer?.imageMobileUrl)?offer.imageMobileUrl:primary;
+    if(primary){
+      image.src=primary;image.alt="Иллюстрация к предложению «"+offer.title+"»";
+    }else{image.removeAttribute("src");image.alt="";}
+    if(tabletSource){
+      if(tablet)tabletSource.srcset=tablet;
+      else tabletSource.removeAttribute("srcset");
+    }
+    if(mobileSource){
+      if(mobile)mobileSource.srcset=mobile;
+      else mobileSource.removeAttribute("srcset");
+    }
+  }
   function validOffer(v){
     return typeof v?.title==="string"&&v.title.trim().length>=2&&
       typeof v.description==="string"&&typeof v.imageUrl==="string"&&
@@ -24,17 +45,13 @@ if(image&&title&&description&&counter&&action&&hero){
   function show(){
     const offer=offers[index];
     if(!offer){
-      image.removeAttribute("src");
-      image.alt="";
+      setPoster(null);
       title.textContent="BALI PRIVILEGE";
       description.textContent=fallbackText;
       counter.textContent="— / —";
       action.hidden=true;
     }else{
-      if(offer.imageUrl.startsWith("https://")){
-        image.src=offer.imageUrl;
-        image.alt="Иллюстрация к предложению «"+offer.title+"»";
-      }else{image.removeAttribute("src");image.alt="";}
+      setPoster(offer);
       title.textContent=offer.title;
       description.textContent=offer.description;
       counter.textContent=String(index+1).padStart(2,"0")+" / "+String(offers.length).padStart(2,"0");
