@@ -197,6 +197,14 @@
             <form id="eventForm">
               <label>Дата мероприятия <input type="date" id="eventDateAdmin" required></label>
               <label>Название мероприятия <input id="eventTitle" minlength="2" maxlength="150" placeholder="Например, BALI ICE NIGHT" required></label>
+              <label>Описание мероприятия
+                <textarea id="eventDescription" maxlength="600" rows="3" placeholder="Кратко расскажите о программе, артистах или атмосфере"></textarea>
+              </label>
+              <div class="double">
+                <label>Начало мероприятия (Минск) <input id="eventStartTime" type="time"></label>
+                <label>Окончание мероприятия (Минск) <input id="eventEndTime" type="time"></label>
+              </div>
+              <p class="hint">Время события отображается под афишей, например 20:00–23:00. Время закрытия предзаказов настраивается отдельно.</p>
               <label>Закрыть предзаказы в (по Минску) <input id="eventCutoff" type="time"></label>
               <div class="image-upload-area">
                 <label for="eventPosterFile">Афиша мероприятия (загрузить JPG/PNG/WebP)</label>
@@ -326,7 +334,7 @@
 </main>
 
 <script src="firebase-config.js?v=20261017-8"></script>
-<script type="module" src="admin-firestore.js?v=20261017-26"></script>
+<script type="module" src="admin-firestore.js?v=20261017-46"></script>
 <script type="module" src="admin-orders.js?v=20261017-20"></script>
 <script type="module" src="admin-clients.js?v=20261017-20"></script>
 <script src="admin-dashboard.js?v=20261017-20" defer></script>
