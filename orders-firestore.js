@@ -7,7 +7,7 @@
 import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
-  getFirestore, collection, doc, getDoc, getDocs, writeBatch,
+  getFirestore, collection, doc, getDoc, getDocs, writeBatch, runTransaction,
   updateDoc, onSnapshot, query, where, limit, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
@@ -84,38 +84,64 @@ async function save(payload, editId = null) {
     throw new Error("Приём предзаказов на эту дату закрыт. Выберите другое мероприятие.");
   }
   const priced = await menuSnapshot(lines);
-  const batch = writeBatch(db);
   let orderRef;
+  let orderNumber;
   if (editId) {
-    orderRef = doc(db, "orders", editId);
+    orderRef=doc(db,"orders",editId);
     const old = await getDoc(orderRef);
     if (!old.exists() || old.data().ownerUid !== user.uid || old.data().status !== "pending") {
       throw new Error("Этот заказ уже подтверждён либо недоступен для редактирования.");
     }
-    const oldItems = await getDocs(collection(orderRef,"items"));
-    const retained = new Set(priced.map(line=>String(line.id)));
-    oldItems.docs.forEach(snapshot => {
-      if (!retained.has(snapshot.id)) batch.delete(snapshot.ref);
-    });
-    batch.update(orderRef, {
-      eventDate, tableNumber, bookingId, notes, updatedAt: serverTimestamp()
-    });
+    const oldItems=await getDocs(collection(orderRef,"items"));
+    const retained=new Set(priced.map(line=>String(line.id)));
+    const dateChanged=old.data().eventDate!==eventDate;
+    if (dateChanged) {
+      // При переносе заказа на другую дату выдаём ему новый номер этой даты.
+      const counterRef=doc(db,"orderCounters",eventDate);
+      orderNumber=await runTransaction(db,async tx=>{
+        const latest=await tx.get(orderRef);
+        const counter=await tx.get(counterRef);
+        if(!latest.exists() || latest.data().ownerUid!==user.uid ||
+           latest.data().status!=="pending" || latest.data().eventDate===eventDate)
+          throw new Error("Данные заказа изменились. Откройте его повторно.");
+        const next=(counter.exists()?counter.data().count:0)+1;
+        if(!Number.isSafeInteger(next)||next>999999)throw new Error("Счётчик заказов переполнен.");
+        tx.set(counterRef,{date:eventDate,count:next,lastOrderId:orderRef.id,updatedAt:serverTimestamp()});
+        tx.update(orderRef,{eventDate,orderNumber:next,tableNumber,bookingId,notes,updatedAt:serverTimestamp()});
+        oldItems.docs.forEach(row=>{if(!retained.has(row.id))tx.delete(row.ref);});
+        priced.forEach(line=>tx.set(doc(orderRef,"items",String(line.id)),line));
+        return next;
+      });
+    } else {
+      orderNumber=old.data().orderNumber||null;
+      const batch=writeBatch(db);
+      oldItems.docs.forEach(row=>{if(!retained.has(row.id))batch.delete(row.ref);});
+      batch.update(orderRef,{tableNumber,bookingId,notes,updatedAt:serverTimestamp()});
+      priced.forEach(line=>batch.set(doc(orderRef,"items",String(line.id)),line));
+      await batch.commit();
+    }
   } else {
-    orderRef = doc(collection(db,"orders"));
-    batch.set(orderRef, {
-      ownerUid: user.uid,
-      email: user.email,
-      customerName: profile.name,
-      customerPhone: profile.phone,
-      eventDate, tableNumber, bookingId, notes,
-      status: "pending",
-      createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+    orderRef=doc(collection(db,"orders"));
+    const counterRef=doc(db,"orderCounters",eventDate);
+    // Транзакция автоматически повторяется при одновременной покупке
+    // и выдаёт единственный порядковый номер для выбранной даты.
+    orderNumber=await runTransaction(db,async tx=>{
+      const previous=await tx.get(counterRef);
+      const next=(previous.exists()?previous.data().count:0)+1;
+      if(!Number.isSafeInteger(next)||next>999999)throw new Error("Счётчик заказов переполнен.");
+      tx.set(counterRef,{date:eventDate,count:next,lastOrderId:orderRef.id,updatedAt:serverTimestamp()});
+      tx.set(orderRef,{
+        ownerUid:user.uid,email:user.email,
+        customerName:profile.name,customerPhone:profile.phone,
+        eventDate,orderNumber:next,tableNumber,bookingId,notes,
+        status:"pending",createdAt:serverTimestamp(),updatedAt:serverTimestamp()
+      });
+      priced.forEach(line=>tx.set(doc(orderRef,"items",String(line.id)),line));
+      return next;
     });
   }
-  priced.forEach(line=>batch.set(doc(orderRef,"items",String(line.id)),line));
-  // Либо всё сохраняется одним атомарным пакетом, либо ни один документ.
-  await batch.commit();
-  return {success: true, order_id:orderRef.id, total: priced.reduce((s,x)=>s+x.unitPrice*x.quantity,0)};
+  return {success:true,order_id:orderRef.id,order_number:orderNumber,
+    total:priced.reduce((sum,x)=>sum+x.unitPrice*x.quantity,0)};
 }
 async function getOrderWithItems(id) {
   const user = signedUser();
