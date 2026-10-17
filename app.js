@@ -519,7 +519,6 @@ const elements = {
     menuGrid: document.getElementById('menuGrid'),
     cartSidebar: document.getElementById('cartSidebar'),
     cartItems: document.getElementById('cartItems'),
-    cartCount: document.getElementById('cartCount'),
     totalAmount: document.getElementById('totalAmount'),
     overlay: document.getElementById('overlay'),
     checkoutModal: document.getElementById('checkoutModal'),
@@ -672,7 +671,6 @@ function attachEventListeners() {
     elements.menuGrid.addEventListener('click', handleMenuGridClick);
 
     // Cart controls
-    document.getElementById('cartBtn').addEventListener('click', openCart);
     document.getElementById('closeCart').addEventListener('click', closeCart);
     document.getElementById('checkoutBtn').addEventListener('click', openCheckout);
 
@@ -687,7 +685,6 @@ function attachEventListeners() {
     // Category filter
     elements.categoryFilter.addEventListener('click', handleCategoryFilter);
 
-    document.getElementById('myOrdersBtn').addEventListener('click', openMyOrders);
     document.getElementById('closeMyOrders').addEventListener('click', closeMyOrders);
     document.getElementById('successMyOrders').addEventListener('click', async () => {
         closeSuccess();
@@ -903,7 +900,6 @@ function updateQuantity(itemId, delta) {
 function updateCartUI() {
     // Update cart count
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    elements.cartCount.textContent = totalItems;
 
     // Update cart items display
     if (cart.length === 0) {
