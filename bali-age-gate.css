@@ -46,3 +46,21 @@
     max-height:calc(100dvh - 32px)!important;
   }
 }
+
+
+/* On phones, center the 18+ confirmation in both viewport axes.
+   The dialog remains in the browser top layer and still scrolls on short screens. */
+@media (max-width: 767px) {
+  .bali-age-dialog:modal {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    width: min(440px, calc(100vw - 32px)) !important;
+    max-width: calc(100vw - 32px) !important;
+    max-height: calc(100dvh - 32px) !important;
+  }
+}
