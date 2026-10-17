@@ -70,7 +70,7 @@ assert(html.includes('id="baliMenuModeSwitch"') &&
   html.includes('id="baliBarCategoryFilter"') &&
   html.includes('Предзаказ алкогольной продукции недоступен') &&
   html.indexOf('id="baliMenuModeSwitch"') < html.indexOf('id="categoryFilter"') &&
-  html.includes('bali-bar-menu.css?v=20261017-71') &&
+  html.includes('bali-bar-menu.css?v=20261017-72') &&
   html.includes('bali-bar-menu.js?v=20261017-65'),
   "Menu must open on Kitchen and place a read-only Bar tab above Kitchen categories");
 assert(app.includes("let baliActiveMenuMode = 'kitchen'") &&
@@ -112,6 +112,45 @@ assert(rules.includes('match /hookah_menu/{hookahId}') &&
   /match \/tea_menu\/\{teaId\}\s*\{\s*allow get, list: if true;/.test(rules) &&
   rules.includes('validBarMenuItem(request.resource.data)'),
   "Guest price lists are public but only verified administrators can edit their content");
+// Administrators can toggle all four public menu tabs without deleting catalog records.
+const visibilitySource=source("bali-menu-visibility.js");
+const adminVisibilityCss=source("bali-admin-cards.css");
+const pcReferenceCss=source("bali-pc-reference.css");
+assert(["kitchen","bar","hookah","tea"].every(key=>
+    admin.includes('data-bali-visibility-toggle="'+key+'"') &&
+    admin.includes('data-bali-visibility-state="'+key+'"')) &&
+  admin.includes('id="baliCatalogVisibilityTitle"') &&
+  admin.includes('id="baliVisibilityStatus"') &&
+  admin.includes('bali-menu-visibility.js?v=20261017-72') &&
+  html.includes('bali-menu-visibility.js?v=20261017-72') &&
+  visibilitySource.includes('doc(db,"settings","menuVisibility")') &&
+  visibilitySource.includes('onSnapshot(configRef') &&
+  visibilitySource.includes('onAuthStateChanged(auth') &&
+  visibilitySource.includes('role.data()?.active!==true') &&
+  visibilitySource.includes('serverTimestamp()') &&
+  visibilitySource.includes('window.dispatchEvent(new CustomEvent("bali:menu-visibility"') &&
+  rules.includes("data.sections.keys().hasOnly(['kitchen','bar','hookah','tea'])") &&
+  rules.includes("settingId == 'menuVisibility' && validMenuVisibility(request.resource.data)") &&
+  app.includes('window.addEventListener("bali:menu-visibility"') &&
+  app.includes('button.hidden=!visible') &&
+  app.includes('switchBaliMenuMode(baliActiveMenuMode)') &&
+  barCss.includes('.bali-menu-mode-btn[hidden]{display:none!important}') &&
+  html.includes('id="baliMenuUnavailableNotice"') &&
+  adminVisibilityCss.includes('.bali-visibility-track'),
+  "Four independent menu visibility switches must be secure, persisted and reflected live for guests");
+assert(html.includes('class="bali-pc-sidebar-contacts"') &&
+  html.includes('class="bali-pc-contact-phone"') &&
+  html.includes('class="bali-pc-contact-socials"') &&
+  html.includes('class="bali-pc-contact-location"') &&
+  html.includes('3-й этаж · Яндекс Карты') &&
+  html.includes('href="https://t.me/baliclubminsk"') &&
+  html.includes('href="https://www.instagram.com/baliminsk/"') &&
+  html.includes('href="tel:+375296700300"') &&
+  html.includes('class="bali-home-contacts-card"') &&
+  pcReferenceCss.includes('.bali-pc-sidebar-contacts') &&
+  pcReferenceCss.includes('body.bali-guest-theme #homeSection .bali-home-contacts-card{display:none!important}') &&
+  !html.includes('Барная карта и кухня'),
+  "PC contacts belong in persistent left sidebar, mobile contacts remain available, menu banner no subtitle");
 assert(barCss.includes('grid-template-columns:repeat(4,minmax(0,190px))') &&
   barCss.includes('background:var(--bt-primary)') &&
   barCss.includes('bali-bar-row') &&
@@ -282,9 +321,9 @@ assert(themeCss.includes("/* BALI v58") &&
   !themeClient.includes('setProperty("--bg-'),
   "Theme may change interactive accents only, leaving fixed background color unchanged");
 assert(rules.includes('match /settings/{settingId}') &&
-  rules.includes("allow get: if settingId == 'appearance'") &&
+  rules.includes("allow get: if settingId in ['appearance','menuVisibility']") &&
   rules.includes('allow list: if false') &&
-  rules.includes('isAdmin() && validAppearance(request.resource.data)') &&
+  rules.includes("settingId == 'appearance' && validAppearance(request.resource.data)") &&
   rules.includes("data.colors.keys().hasOnly(['primary','secondary','text','border'])") &&
   rules.includes("data.theme in ['cobalt','lime','white','custom']") &&
   rules.includes("data.updatedAt == request.time") &&
@@ -375,7 +414,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-71"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-72"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -387,7 +426,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-71'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-72'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-67'), "Guest profile label code should load without old cache");
