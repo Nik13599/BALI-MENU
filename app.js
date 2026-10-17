@@ -127,7 +127,7 @@ function renderUpcomingEvents() {
             const button=document.createElement("button");
             button.type="button";
             button.className="event-go-to-menu";
-            button.textContent="Выбрать блюда →";
+            button.textContent="Сделать предзаказ";
             button.addEventListener("click",()=>{
                 showGuestSection("menu");
                 const menu=document.querySelector(".menu-section");
