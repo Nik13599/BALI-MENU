@@ -570,16 +570,22 @@ body[data-bali-page="events"]{overflow-y:hidden}
     scroll-snap-align:start;
   }
 
-  /* Take the full useful phone width without enlarging the whole page. */
+  /* Original card-style width, but a taller, easier-to-tap menu button. */
   .bali-home-menu-banner{
+    align-self:center;
     position:relative;
-    left:50%;
-    transform:translateX(-50%);
-    width:calc(100vw - 8px);
-    max-width:none;
+    left:auto;
+    transform:none;
+    width:94%;
+    max-width:100%;
     margin-left:0;
-    padding-inline:15px;
+    flex:0 0 76px;
+    height:76px;
+    min-height:76px!important;
+    padding-inline:13px;
   }
+  .bali-menu-banner-icon{height:72px;flex-basis:58px;font-size:30px}
+  .bali-home-menu-banner strong{font-size:20px}
 
   /* Larger, easier-to-tap calendar and plans buttons. */
   .bali-home-calendar-row{margin:5px 0 6px;gap:6px}
@@ -612,8 +618,8 @@ body[data-bali-page="events"]{overflow-y:hidden}
 @media (max-width:767px) and (max-height:700px){
   .bali-home-calendar-row{margin:3px 0 4px}
   .bali-home-calendar-row button{min-height:38px;padding:5px 4px}
-  .bali-home-menu-banner{height:54px;min-height:54px!important}
-  .bali-menu-banner-icon{height:52px}
+  .bali-home-menu-banner{flex-basis:66px;height:66px;min-height:66px!important}
+  .bali-menu-banner-icon{height:62px}
   .bali-home-contacts-card .bali-home-social .bali-social-btn{
     min-height:42px;height:42px;
   }
