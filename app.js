@@ -465,6 +465,11 @@ function renderHomeEvents() {
     }
 }
 
+// Switch between three phone posters and five tablet/desktop posters
+// when the browser crosses the responsive breakpoint.
+window.matchMedia("(max-width:767px)").addEventListener("change",()=>{
+    if(document.body.dataset.baliPage==="home")renderHomeEvents();
+});
 function renderUpcomingEvents() {
     const grid=document.getElementById("eventsGrid");
     if(!grid)return;
