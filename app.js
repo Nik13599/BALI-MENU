@@ -78,23 +78,60 @@ window.addEventListener('bali:events', ({ detail }) => {
     availableEvents = detail.events;
     populateEvents();
     renderUpcomingEvents();
+    updateHomeNextEvent();
 });
 window.addEventListener('bali:events-error', () => {
     const select = document.getElementById('eventSelect');
     if (select) select.innerHTML = '<option value="">Не удалось загрузить мероприятия</option>';
 });
-function showGuestSection(section) {
-    const events = section === "events";
-    for (const selector of [".hero",".categories",".menu-section"]) {
-        const el = document.querySelector(selector);
-        if (el) el.hidden = events;
+// Клиентские разделы BALI: URL/история браузера работают без перезагрузки.
+const BALI_GUEST_PAGES = new Set(["home","menu","events","contacts"]);
+function routeFromLocation() {
+    const hash=window.location.hash.slice(1).toLowerCase();
+    return BALI_GUEST_PAGES.has(hash)?hash:"home";
+}
+function renderGuestPage(page,{scroll=true}={}) {
+    const selected=BALI_GUEST_PAGES.has(page)?page:"home";
+    const sections={
+        home:"homeSection", menu:"menuPage",
+        events:"eventsSection", contacts:"contactsSection"
+    };
+    for(const [name,id] of Object.entries(sections)) {
+        const section=document.getElementById(id);
+        if(section)section.hidden=name!==selected;
     }
-    const eventsSection = document.getElementById("eventsSection");
-    if (eventsSection) eventsSection.hidden = !events;
-    document.getElementById("eventsNavBtn")?.setAttribute("aria-pressed",String(events));
-    document.getElementById("eventsNavBtn")?.classList.toggle("active",events);
-    document.getElementById("menuNavBtn")?.classList.toggle("active",!events);
-    window.scrollTo({top:0,behavior:"instant"});
+    const back=document.getElementById("homeFloatingBtn");
+    if(back)back.hidden=selected==="home";
+    document.body.dataset.baliPage=selected;
+    // Корзина не остаётся открытой при переходе из меню.
+    if(selected!=="menu" && typeof closeCart==="function")closeCart();
+    if(selected==="events")renderUpcomingEvents();
+    if(scroll)window.scrollTo({top:0,behavior:"instant"});
+}
+function navigateGuestPage(page,{replace=false}={}) {
+    const selected=BALI_GUEST_PAGES.has(page)?page:"home";
+    const path=selected==="home"?
+        window.location.pathname+window.location.search:
+        "#"+selected;
+    if(routeFromLocation()!==selected) {
+        if(replace)history.replaceState({baliPage:selected},"",path);
+        else history.pushState({baliPage:selected},"",path);
+    }
+    renderGuestPage(selected);
+}
+function showGuestSection(section) {
+    navigateGuestPage(section);
+}
+function updateHomeNextEvent() {
+    const text=document.getElementById("homeNextEvent");
+    if(!text)return;
+    const next=availableEvents
+      .filter(e=>typeof e?.date==="string"&&e.date>=minskDateToday())
+      .sort((a,b)=>a.date.localeCompare(b.date))[0];
+    text.textContent=next
+        ? new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"long",timeZone:"Europe/Minsk"})
+            .format(new Date(next.date+"T12:00:00+03:00"))+" · "+next.title
+        : "Афиши и календарь вечеринок";
 }
 function renderUpcomingEvents() {
     const grid=document.getElementById("eventsGrid");
@@ -268,6 +305,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
     attachEventListeners();
     initStickyCategories();
+    renderGuestPage(routeFromLocation(),{scroll:false});
+    // Возврат смартфона/браузера переключает разделы приложения.
+    window.addEventListener("popstate",()=>renderGuestPage(routeFromLocation()));
+    window.addEventListener("hashchange",()=>renderGuestPage(routeFromLocation()));
     // При наступлении следующего дня по Минску прошедшие события
     // исчезают из «Моих планов» даже без перезагрузки страницы.
     let shownDay=minskDateToday();
@@ -307,8 +348,8 @@ async function loadConfig() {
         const data = await response.json();
         if (data.success && data.config) {
             if (data.config.restaurant_name) {
-                document.querySelector('.logo-text').textContent = data.config.restaurant_name;
-                document.title = `${data.config.restaurant_name} - Order Food Online`;
+                // Бренд и название приложения фиксированы: Bali.
+                document.title = 'Bali';
             }
             if (data.config.currency_symbol) {
                 CONFIG.CURRENCY_SYMBOL = data.config.currency_symbol;
@@ -325,7 +366,20 @@ function attachEventListeners() {
         event.preventDefault();showGuestSection("menu");
     });
     document.getElementById("eventsNavBtn")?.addEventListener("click",()=>{
-        showGuestSection("events");renderUpcomingEvents();
+        showGuestSection("events");
+    });
+    document.getElementById("contactsNavBtn")?.addEventListener("click",()=>{
+        showGuestSection("contacts");
+    });
+    document.getElementById("homeFloatingBtn")?.addEventListener("click",()=>{
+        showGuestSection("home");
+    });
+    document.getElementById("homeBrandBtn")?.addEventListener("click",event=>{
+        event.preventDefault();showGuestSection("home");
+    });
+    document.getElementById("accountMyOrdersBtn")?.addEventListener("click",()=>{
+        document.getElementById("closeAuth")?.click();
+        void openMyOrders();
     });
     document.getElementById("eventsViewTabs")?.addEventListener("click",event=>{
         const button=event.target.closest("button[data-events-view]");
