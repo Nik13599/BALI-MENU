@@ -468,7 +468,7 @@ $("menuForm").addEventListener("submit",async event=>{
     $("menuDetailsImage").value.trim() ||
     (activeMenuEdit!==null && isImageDataUri(menu.get(String(activeMenuEdit))?.detailImageUrl)
       ? menu.get(String(activeMenuEdit)).detailImageUrl : "")):"";
-  if(detailImage&&!/^https:\\/\\/[^ ]+$/.test(detailImage)&&!isImageDataUri(detailImage)){
+  if(detailImage&&!/^https:\/\/[^ ]+$/.test(detailImage)&&!isImageDataUri(detailImage)){
     renderStatus("menuStatus","Дополнительная фотография должна иметь HTTPS-ссылку.");
     return;
   }
