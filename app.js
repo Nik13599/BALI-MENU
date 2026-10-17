@@ -116,7 +116,9 @@ function initEventCarousel() {
             track.clientWidth*(mobile?.82:.40),
             (track.clientHeight-14)*9/16
         );
-        const rounded=Math.max(155,Math.floor(width));
+        // On low-height phones and rotated tablets, the slide must fit inside
+        // the available carousel height rather than imposing a fixed 155px width.
+        const rounded=Math.max(96,Math.floor(width));
         const previous=track.style.getPropertyValue("--bali-event-slide-width");
         if(previous===rounded+"px")return;
         const active=carouselEventCards(track).find(card=>card.classList.contains("is-active"));
