@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-50"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-51"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -99,7 +99,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-50'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-51'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
@@ -205,7 +205,7 @@ assert(app.includes('Хочу пойти') &&
   app.includes('guestInterestDates.has(event.date)'), "Event cards must display RSVP button and public counts");
 assert(app.includes('window.setInterval(()=>') &&
   app.includes('renderUpcomingEvents();'), "Past events must disappear automatically from My Plans");
-assert(app.includes('details.append(name,times,description,preorder,interested,message);') &&
+assert(app.includes('details.append(name,times,description,interested,message);') &&
   app.includes('actions.append(planBtn);') &&
   app.includes('actions.append(button);') &&
   app.includes('body.append(details,actions);') &&
@@ -368,6 +368,10 @@ assert(rules.includes("'description','startTime','endTime'") &&
   rules.includes("data.endTime.matches") &&
   rules.includes("validInterestCountChange(eventId)"),
   "Firestore event validation must allow safe admin-written descriptions and event times");
+assert(!app.includes('className="event-preorder-state"') &&
+  app.includes('openBadge.textContent="● Предзаказ открыт"') &&
+  app.includes('if(open){'),
+  "Preorder status should be visible only in poster badge, not duplicated in details");
 assert(app.includes('className="bali-event-hours"') &&
   app.includes('className="bali-event-description"') &&
   app.includes('startTime+"–"+endTime') &&
