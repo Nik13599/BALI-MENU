@@ -79,6 +79,8 @@ function initEventCarousel() {
     if(!track)return;
     track.addEventListener("scroll",updateEventCarouselPosition,{passive:true});
     track.addEventListener("wheel",event=>{
+        // Don't hijack vertical gestures on mobile devices.
+        if(window.matchMedia("(max-width:767px)").matches)return;
         if(event.ctrlKey||Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
         const direction=Math.sign(event.deltaY);
         if(!direction)return;
@@ -817,16 +819,17 @@ function handleCategoryFilter(e) {
         item.setAttribute('aria-pressed', String(selected));
     }
     displayMenuItems(menuItems);
-    // После смены категории начало её списка появляется ниже двух
-    // закреплённых панелей, даже если гость нажал кнопку внизу страницы.
+    // On phones only the list itself scrolls, never the whole page.
     const menuSection = document.querySelector('.menu-section');
-    const header = document.querySelector('.header');
-    const sticky = document.querySelector('.categories');
-    if (menuSection) {
+    if (menuSection && window.matchMedia('(max-width:767px)').matches) {
+        menuSection.scrollTop = 0;
+    } else if (menuSection) {
+        const header = document.querySelector('.header');
+        const sticky = document.querySelector('.categories');
         const y = window.scrollY + menuSection.getBoundingClientRect().top
             - (header?.getBoundingClientRect().height || 0)
             - (sticky?.getBoundingClientRect().height || 0) - 8;
-        window.scrollTo({top: Math.max(0, y), behavior: 'smooth'});
+        window.scrollTo({top: Math.max(0,y),behavior:'smooth'});
     }
 }
 
