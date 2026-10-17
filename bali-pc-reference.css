@@ -813,3 +813,26 @@
     margin-bottom:var(--bali-contact-menu-alignment,0px)!important;
   }
 }
+
+/* v75: Matching, centered headings for sidebar phone and Yandex buttons. */
+@media(min-width:1180px){
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contacts-heading,
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location>.bali-pc-contacts-heading{
+    display:block!important;
+    margin:0 0 4px!important;
+    width:100%!important;
+    color:#f6f6f3!important;
+    font:800 clamp(12px,.94vw,16px)/1.3 Manrope,Inter,sans-serif!important;
+    letter-spacing:.005em!important;
+    text-align:center!important;
+    text-transform:uppercase!important;
+    overflow-wrap:anywhere;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location>.bali-pc-contacts-heading{margin:5px 0 3px!important}
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-phone{
+    justify-content:center!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location>a{
+    justify-content:center!important;
+  }
+}
