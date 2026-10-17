@@ -445,19 +445,39 @@ $("eventForm").addEventListener("submit",async (event)=>{
   if (!Number.isFinite(closesAt.getTime()) || closesAt <= new Date()) {
     renderStatus("eventStatus","Время окончания приёма должно быть в будущем (по Минску)."); return;
   }
+  const poster = pendingEventPoster || events.get(date)?.poster_url || "";
+  if (poster && (poster.length > 150000 ||
+      (!/^https:\/\/[^ ]+$/.test(poster) && !isImageDataUri(poster)))) {
+    renderStatus("eventStatus","Афиша не прошла проверку формата или размера. Выберите другое изображение.");
+    return;
+  }
   const btn=event.currentTarget.querySelector('[type="submit"]');
+  const help=$("eventRulesHelp");
+  if(help)help.hidden=true;
   btn.disabled=true;
   renderStatus("eventStatus","Сохраняем мероприятие...");
   try{
-    await setDoc(doc(db,"events",date),{
+    const payload={
       date, title, cutoff, preorderEnabled:$("eventOpen").checked,
       closesAt: Timestamp.fromDate(closesAt),
-      poster_url: pendingEventPoster || events.get(date)?.poster_url || "",
       updatedAt:serverTimestamp()
-    });
-    clearEvent();renderStatus("eventStatus","Мероприятие сохранено.");
-  }catch(e){renderStatus("eventStatus","Ошибка: "+(e.code||"unknown"));}
-  finally{btn.disabled=false;}
+    };
+    // Старые документы без афиши не должны записывать лишнее пустое поле.
+    // Для настоящих афиш необходимы опубликованные Firebase Rules с poster_url.
+    if(poster)payload.poster_url=poster;
+    await setDoc(doc(db,"events",date),payload);
+    clearEvent();
+    renderStatus("eventStatus","Мероприятие сохранено.");
+  }catch(e){
+    if(e.code==="permission-denied"){
+      renderStatus("eventStatus",poster
+        ?"Firebase отклонил сохранение афиши (permission-denied). Опубликуйте последние Firestore Rules: в них должно быть разрешено поле poster_url. Затем повторите сохранение."
+        :"Firebase отклонил сохранение мероприятия (permission-denied). Проверьте, что роль администратора активна, а актуальные Firestore Rules опубликованы.");
+      if(help)help.hidden=false;
+    }else{
+      renderStatus("eventStatus","Не удалось сохранить мероприятие: "+(e.message||e.code||"unknown"));
+    }
+  }finally{btn.disabled=false;}
 });
 
 // Диагностика входа: показываем только email и UID текущего вошедшего пользователя.
