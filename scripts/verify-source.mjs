@@ -49,82 +49,39 @@ assert(firebaseJson.firestore.rules === "firestore.rules", "Missing Firestore ru
 assert(firebaseJson.hosting.public === ".", "Unexpected Firebase Hosting public directory");
 const admin = source("admin.html");
 const customIconJs=source("bali-icon-atelier.js");
-const premiumAtelierCss=source("bali-atelier-theme.css");
-
-const velvetCss=source("bali-velvet-night.css");
-const minimalCss=source("bali-editorial-minimal.css");
-assert(html.includes('bali-editorial-minimal.css?v=20261017-56') &&
-  admin.includes('bali-editorial-minimal.css?v=20261017-56') &&
-  html.indexOf('bali-editorial-minimal.css?v=20261017-56') >
-  html.indexOf('bali-velvet-night.css?v=20261017-55') &&
-  admin.indexOf('bali-editorial-minimal.css?v=20261017-56') >
-  admin.indexOf('bali-velvet-night.css?v=20261017-55'),
-  "Contemporary editorial minimal CSS must override older themes in guests and admin");
-assert(minimalCss.includes("/* BALI STUDIO / v56") &&
-  minimalCss.includes("--bali-min-black:#0b0d11") &&
-  minimalCss.includes("--bali-min-pink:#fb477c") &&
-  minimalCss.includes("body.bali-guest-theme #homeSection .bali-home-menu-banner") &&
-  minimalCss.includes("body.bali-guest-theme #homeSection .bali-home-heart.is-liked") &&
-  minimalCss.includes("body.bali-guest-theme #eventsSection #eventsGrid>.event-card") &&
-  minimalCss.includes("body.bali-guest-theme #menuPage .category-btn.active") &&
-  minimalCss.includes("body.bali-guest-theme .bali-profile-card") &&
-  minimalCss.includes(".bali-admin-theme .admin-tab.active") &&
-  minimalCss.includes(".bali-admin-theme button.primary") &&
-  minimalCss.includes("background:#f2f2f4!important") &&
-  minimalCss.includes("box-shadow:none!important"),
-  "Editorial minimal system must replace glowing gold fills on every page");
-assert(html.includes('content="#0b0d11"') &&
-  admin.includes('content="#0b0d11"') &&
-  html.includes('bali-icon-atelier.js?v=20261017-53'),
-  "Browser colors should match ink theme and the custom open-book Menu icon must remain");
-
-assert(html.includes('bali-velvet-night.css?v=20261017-55') &&
-  admin.includes('bali-velvet-night.css?v=20261017-55') &&
-  html.indexOf('bali-velvet-night.css?v=20261017-55') >
-  html.indexOf('bali-atelier-theme.css?v=20261017-54') &&
-  admin.indexOf('bali-velvet-night.css?v=20261017-55') >
-  admin.indexOf('bali-atelier-theme.css?v=20261017-54'),
-  "Vibrant BALI palette must override old bamboo colors on guests and admin");
-assert(velvetCss.includes("/* BALI v55") &&
-  velvetCss.includes("--bali-v55-pink:#ff4ba5") &&
-  velvetCss.includes("--bali-v55-gold:#f0bf66") &&
-  velvetCss.includes("body.bali-guest-theme #homeSection .bali-home-menu-banner") &&
-  velvetCss.includes("body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active") &&
-  velvetCss.includes("body.bali-guest-theme #menuPage .category-btn.active") &&
-  velvetCss.includes("body.bali-guest-theme .bali-profile-action") &&
-  velvetCss.includes(".bali-admin-theme .admin-tab.active") &&
-  velvetCss.includes(".bali-admin-theme button.primary"),
-  "High-contrast premium fuchsia, champagne and black must cover all pages");
-assert(html.includes('content="#0b0d11"') && admin.includes('content="#0b0d11"') &&
+const obsidianCss=source("bali-obsidian-premium.css");
+assert(html.includes('bali-obsidian-premium.css?v=20261017-57') &&
+  admin.includes('bali-obsidian-premium.css?v=20261017-57') &&
+  html.indexOf('bali-obsidian-premium.css?v=20261017-57') >
+  html.indexOf('bali-home-stories.css?v=20261017-52') &&
+  admin.indexOf('bali-obsidian-premium.css?v=20261017-57') >
+  admin.indexOf('admin-dashboard.css?v=20261017-20'),
+  "One current premium theme must load last on the guest and admin sites");
+assert(['bali-atelier-theme.css','bali-velvet-night.css','bali-editorial-minimal.css']
+  .every(name=>!html.includes('href="'+name)&&!admin.includes('href="'+name)),
+  "Superseded palettes must not cascade on the live site or dashboard");
+assert(html.includes('class="bali-guest-theme"') &&
+  admin.includes('class="bali-admin-theme"') &&
+  html.includes('content="#080b11"') &&
+  admin.includes('content="#080b11"') &&
+  html.includes('family=Manrope') && admin.includes('family=Manrope'),
+  "Premium layout classes, display theme and consistent contemporary typography required");
+assert(obsidianCss.includes("/* BALI / OBSIDIAN v57") &&
+  obsidianCss.includes("--bali-obsidian:#080b11") &&
+  obsidianCss.includes("--bali-cobalt:#7585ff") &&
+  obsidianCss.includes("--bali-ice:#f5f7ff") &&
+  obsidianCss.includes("body.bali-guest-theme #homeSection .bali-home-menu-banner") &&
+  obsidianCss.includes("body.bali-guest-theme #homeSection .bali-home-heart.is-liked") &&
+  obsidianCss.includes("body.bali-guest-theme #eventsSection #eventsGrid>.event-card") &&
+  obsidianCss.includes("body.bali-guest-theme #menuPage .category-btn.active") &&
+  obsidianCss.includes("body.bali-guest-theme .bali-profile-card") &&
+  obsidianCss.includes(".bali-admin-theme .admin-tab.active") &&
+  obsidianCss.includes(".bali-admin-theme button.primary"),
+  "Unified obsidian cobalt premium palette must cover all website and admin surfaces");
+assert(obsidianCss.includes(".bali-icon-slot .bali-custom-icon") &&
   html.includes('bali-icon-atelier.js?v=20261017-53') &&
   admin.includes('bali-icon-atelier.js?v=20261017-53'),
-  "System theme color and custom menu-book icons must remain consistent");
-
-const guestClass='class="bali-guest-theme"';
-const adminClass='class="bali-admin-theme"';
-assert(html.includes(guestClass) &&
-  admin.includes(adminClass) &&
-  html.includes('bali-atelier-theme.css?v=20261017-54') &&
-  admin.includes('bali-atelier-theme.css?v=20261017-54') &&
-  html.includes('bali-icon-atelier.js?v=20261017-53') &&
-  admin.includes('bali-icon-atelier.js?v=20261017-53'),
-  "BALI low-glare design and custom icons must load on public site and admin");
-assert(premiumAtelierCss.includes("--bali-luxe-night:#0c0d11") &&
-  premiumAtelierCss.includes("--bali-luxe-champagne:#c8ae86") &&
-  premiumAtelierCss.includes("--bali-luxe-wine:#372630") &&
-  premiumAtelierCss.includes(".bali-bottom-nav") &&
-  premiumAtelierCss.includes(".bali-home-event-card") &&
-  premiumAtelierCss.includes("#menuPage") &&
-  premiumAtelierCss.includes(".bali-admin-theme"),
-  "All app sections and admin should use the same muted premium color system");
-assert(premiumAtelierCss.includes("/* BALI v54 • BASALT / BAMBOO / VOLCANO") &&
-  premiumAtelierCss.includes("body.bali-guest-theme #menuPage .category-btn.active") &&
-  premiumAtelierCss.includes(".bali-admin-theme .admin-tab.active") &&
-  velvetCss.includes("body.bali-guest-theme #menuPage .category-btn.active") &&
-  velvetCss.includes(".bali-admin-theme .admin-tab.active") &&
-  html.includes('<meta name="theme-color" content="#0b0d11">') &&
-  admin.includes('<meta name="theme-color" content="#0b0d11">'),
-  "New velvet fuchsia and gold cascade must supersede earlier subdued bamboo on both interfaces");
+  "Every designer vector icon must retain its local SVG sizing and handlers");
 assert(customIconJs.includes('"book":') &&
   customIconJs.includes('menu:"book"') &&
   customIconJs.includes('replaceAll(".bali-menu-banner-icon","book")') &&
