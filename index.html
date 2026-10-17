@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="bali-lime-neutral.css?v=20261017-62">
     <link rel="stylesheet" href="bali-desktop-fullwidth.css?v=20261017-64">
     <link rel="stylesheet" href="bali-bar-menu.css?v=20261017-65">
-    <link rel="stylesheet" href="bali-pc-reference.css?v=20261017-66">
+    <link rel="stylesheet" href="bali-pc-reference.css?v=20261017-67">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,8 +45,16 @@
         <a href="#home" class="logo" id="homeBrandBtn" aria-label="BALI — на главную">
           <span class="logo-text">BALI<small>NIGHT CLUB</small></span>
         </a>
-        <label class="bali-pc-search"><span aria-hidden="true">⌕</span><input type="search" id="baliPcEventSearch" placeholder="Поиск событий..." autocomplete="off" aria-label="Поиск ближайших событий"></label>
-        <button type="button" class="account-btn" id="accountBtn" aria-label="Открыть личный кабинет">Кабинет</button>
+        <div class="bali-pc-account-wrap">
+          <button type="button" class="account-btn" id="accountBtn" aria-label="Войти в личный кабинет" aria-haspopup="menu" aria-expanded="false" aria-controls="baliPcProfileMenu">Войти в личный кабинет</button>
+          <div class="bali-pc-profile-menu" id="baliPcProfileMenu" role="menu" aria-label="Личный кабинет" hidden>
+            <button type="button" role="menuitem" data-bali-profile-action="orders"><span aria-hidden="true">▤</span>Мои заказы</button>
+            <button type="button" role="menuitem" data-bali-profile-action="plans"><span aria-hidden="true">♡</span>Мои планы</button>
+            <button type="button" role="menuitem" data-bali-profile-action="details"><span aria-hidden="true">♙</span>Мои данные</button>
+            <div class="bali-pc-profile-separator" role="separator"></div>
+            <button type="button" role="menuitem" data-bali-profile-action="logout"><span aria-hidden="true">⇥</span>Выйти из аккаунта</button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -56,8 +64,7 @@
         <button type="button" data-bali-nav="home" class="active"><span aria-hidden="true">⌂</span>Главная</button>
         <button type="button" data-bali-nav="events"><span aria-hidden="true">▦</span>События</button>
         <button type="button" data-bali-nav="menu"><span aria-hidden="true">▥</span>Меню</button>
-        <button type="button" data-bali-plans-link><span aria-hidden="true">♡</span>Мои планы</button>
-        <button type="button" data-bali-nav="contacts"><span aria-hidden="true">⌖</span>Контакты</button>
+        <button type="button" id="baliPcCartBtn" class="bali-pc-cart-nav" hidden><span aria-hidden="true">▤</span>Корзина <small id="baliPcCartCount" aria-label="Товаров в корзине">0</small></button>
       </nav>
       <div class="bali-pc-sidebar-foot"><strong>МУЗЫКА<br>ЛЮДИ<br>АТМОСФЕРА</strong><span>BALI NIGHT CLUB</span></div>
     </aside>
@@ -478,8 +485,8 @@
 
     <script src="firebase-config.js?v=20261017-10"></script>
     <script src="app.js?v=20261017-65"></script>
-    <script src="bali-pc-reference.js?v=20261017-66" defer></script>
-    <script type="module" src="auth.js?v=20261017-16"></script>
+    <script src="bali-pc-reference.js?v=20261017-67" defer></script>
+    <script type="module" src="auth.js?v=20261017-67"></script>
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>
     <script type="module" src="bali-bar-menu.js?v=20261017-65"></script>
     <script type="module" src="orders-firestore.js?v=20261017-28"></script>
