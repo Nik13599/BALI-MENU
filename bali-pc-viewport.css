@@ -450,3 +450,38 @@
     gap:clamp(7px,1vw,13px)!important;
   }
 }
+
+/* v88 — Unified graphite-free PC centre: artwork and event cards remain.
+   The centre's wrapper, calendar gutter, and big Menu action share the
+   single #080b11 canvas instead of creating separate grey rectangles. */
+@media (min-width:1180px) {
+  :root[data-bali-theme] body.bali-guest-theme #homeSection,
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-inner,
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-events-panel,
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-pc-events-title,
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-events,
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-menu-banner {
+    background:#080b11!important;
+    background-color:#080b11!important;
+    background-image:none!important;
+    box-shadow:none!important;
+  }
+  /* The centre is a single undivided canvas; no tinted
+     panel edges or translucent overlays between event posters. */
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-events-panel {
+    border:0!important;
+    border-color:transparent!important;
+    border-radius:0!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-events-panel::before,
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-events-panel::after,
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-inner::before,
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-inner::after {
+    content:none!important;
+    display:none!important;
+  }
+  /* Keep Menu clearly clickable, but remove its grey-filled panel. */
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-menu-banner {
+    border-color:rgba(255,255,255,.12)!important;
+  }
+}
