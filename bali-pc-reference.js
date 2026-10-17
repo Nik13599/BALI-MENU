@@ -23,7 +23,17 @@
     active=previous<0?0:previous;
     renderHero();
   }
-  const observer=new MutationObserver(syncPosters);
+  const search=document.getElementById("baliPcEventSearch");
+  function filterBySearch(){
+    const query=(search?.value||"").trim().toLocaleLowerCase("ru");
+    for(const card of carousel.querySelectorAll(".bali-home-event-card")){
+      const title=card.querySelector(".bali-home-event-info h3")?.textContent||"";
+      const description=card.querySelector(".bali-home-event-description")?.textContent||"";
+      card.hidden=Boolean(query)&&!(title+" "+description).toLocaleLowerCase("ru").includes(query);
+    }
+  }
+  search?.addEventListener("input",filterBySearch);
+  const observer=new MutationObserver(()=>{syncPosters();filterBySearch();});
   observer.observe(carousel,{childList:true});
   syncPosters();
   document.querySelectorAll("[data-bali-hero-step]").forEach(button=>{
