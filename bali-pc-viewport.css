@@ -700,3 +700,29 @@
     margin:0!important;
   }
 }
+
+/* v93 — SECRET is centered geometrically in the BLACK poster area.
+   Independent of event card height, overlay content and viewport size. */
+@media (min-width:1180px) {
+  body.bali-guest-theme #homeSection .bali-home-placeholder-poster>.bali-home-placeholder-overlay {
+    display:block!important;
+    position:absolute!important;
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-placeholder-poster .bali-home-placeholder-message {
+    position:absolute!important;
+    top:50%!important;
+    left:50%!important;
+    transform:translate(-50%,-50%)!important;
+    display:block!important;
+    width:max-content!important;
+    max-width:calc(100% - 24px)!important;
+    margin:0!important;
+    padding:0!important;
+    text-align:center!important;
+  }
+}
