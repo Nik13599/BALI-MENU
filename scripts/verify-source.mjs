@@ -56,6 +56,71 @@ const themeCss=source("bali-theme.css");
 const neutralLimeCss=source("bali-lime-neutral.css");
 
 const desktopLayoutCss=source("bali-desktop-fullwidth.css");
+
+const barPublic=source("bali-bar-menu.js");
+const barCss=source("bali-bar-menu.css");
+const barAdmin=source("bali-admin-bar.js");
+const barAdminCss=source("bali-admin-bar.css");
+assert(html.includes('id="baliMenuModeSwitch"') &&
+  html.includes('data-bali-menu-mode="kitchen"') &&
+  html.includes('data-bali-menu-mode="bar"') &&
+  html.includes('id="baliKitchenContent"') &&
+  html.includes('id="baliBarContent"') &&
+  html.includes('id="baliBarList"') &&
+  html.includes('id="baliBarCategoryFilter"') &&
+  html.includes('Предзаказ алкогольной продукции недоступен') &&
+  html.indexOf('id="baliMenuModeSwitch"') < html.indexOf('id="categoryFilter"') &&
+  html.includes('bali-bar-menu.css?v=20261017-65') &&
+  html.includes('bali-bar-menu.js?v=20261017-65'),
+  "Menu must open on Kitchen and place a read-only Bar tab above Kitchen categories");
+assert(app.includes("let baliActiveMenuMode = 'kitchen'") &&
+  app.includes('function switchBaliMenuMode(nextMode)') &&
+  app.includes('mode!=="kitchen"') &&
+  app.includes('selected!=="menu"||baliActiveMenuMode!=="kitchen"') &&
+  app.includes('switchBaliMenuMode("kitchen")') &&
+  app.includes('if(mode==="bar"&&typeof closeCart==="function")closeCart()'),
+  "Bar page must never expose checkout dock or food order interactions");
+assert(barPublic.includes('collection(db,"bar_menu")') &&
+  barPublic.includes('onSnapshot(') &&
+  barPublic.includes('bali-bar-row') &&
+  barPublic.includes('bali-bar-portions') &&
+  barPublic.includes('bali-bar-volume') &&
+  barPublic.includes('bali-bar-price') &&
+  barPublic.includes('bali-bar-category-name') &&
+  barPublic.includes('formatPrice(price)') &&
+  !barPublic.includes('BaliOrders') &&
+  !barPublic.includes('add-to-cart-btn') &&
+  !barPublic.includes('openCheckout('),
+  "Bar prices must be real Firestore data shown as grouped rows, without preorder code");
+assert(barCss.includes('grid-template-columns:repeat(2,minmax(0,190px))') &&
+  barCss.includes('background:var(--bt-primary)') &&
+  barCss.includes('bali-bar-row') &&
+  barCss.includes('bali-bar-portions') &&
+  barCss.includes('@media(max-width:767px)'),
+  "Kitchen/Bar tabs and bar list must adapt to desktop and mobile in the same theme");
+assert(admin.includes('id="baliAdminBarSection"') &&
+  admin.includes('id="baliAdminBarForm"') &&
+  admin.includes('id="baliAdminBarCategory"') &&
+  admin.includes('id="baliAdminBarVolume1"') &&
+  admin.includes('id="baliAdminBarPrice1"') &&
+  admin.includes('id="baliAdminBarVolume2"') &&
+  admin.includes('id="baliAdminBarPrice2"') &&
+  admin.includes('bali-admin-bar.js?v=20261017-65') &&
+  admin.includes('bali-admin-bar.css?v=20261017-65') &&
+  barAdmin.includes('role.data()?.active!==true') &&
+  barAdmin.includes('onAuthStateChanged(auth,') &&
+  barAdmin.includes('setDoc(ref,') &&
+  barAdmin.includes('deleteDoc(doc(db,"bar_menu",item.id))') &&
+  barAdminCss.includes('.bali-admin-bar-row'),
+  "Bar menu must be editable only in the authorized admin UI with one or two price volumes");
+assert(rules.includes('match /bar_menu/{drinkId}') &&
+  rules.includes('allow get, list: if true;') &&
+  rules.includes('allow create, update: if isAdmin() && validBarMenuItem(request.resource.data)') &&
+  rules.includes('allow delete: if isAdmin();') &&
+  rules.includes('data.keys().hasOnly([\'name\',\'category\',\'volume1\',\'price1\',\'volume2\',\'price2\',\'sort\',\'updatedAt\'])') &&
+  rules.includes('data.updatedAt == request.time'),
+  "Bar Firestore collection must be publicly read-only and securely admin-editable");
+
 assert(html.includes('bali-desktop-fullwidth.css?v=20261017-64') &&
   html.indexOf('bali-desktop-fullwidth.css?v=20261017-64') >
   html.indexOf('bali-lime-neutral.css?v=20261017-62'),
