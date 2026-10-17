@@ -16,7 +16,7 @@ const $ = (id) => document.getElementById(id);
 const menu = new Map(), events = new Map(), categories = new Map();
 const renderStatus = (id, text) => { $(id).textContent = text; };
 let unsubMenu = null, unsubEvents = null, unsubCategories = null, authorized = false;
-let pendingProductImage = "", pendingEventPoster = "";
+let pendingProductImage = "", pendingEventPoster = "", pendingDetailImage = "", processingDetailImage = false;
 function imagePreview(id,src){
   const img=$(id);
   if(!img)return;
@@ -37,6 +37,45 @@ $("menuImageFile").addEventListener("change",async event=>{
     renderStatus("menuStatus","Фото обработано: 1:1, WebP. Нажмите «Сохранить товар».");
   }catch(error){pendingProductImage="";imagePreview("menuImagePreview","");renderStatus("menuStatus",error.message);}
 });
+// The checkbox is the only switch that publishes the guest "Подробнее" button.
+function updateDetailsFields() {
+  const enabled=$("menuDetailsEnabled").checked;
+  $("menuDetailsFields").hidden=!enabled;
+  $("menuDetailsText").required=enabled;
+}
+$("menuDetailsEnabled").addEventListener("change",()=>{
+  updateDetailsFields();
+  if($("menuDetailsEnabled").checked && !$("menuDetailsText").value.trim())
+    renderStatus("menuStatus","Для кнопки «Подробнее» обязательно заполните дополнительное описание.");
+  else renderStatus("menuStatus","");
+});
+$("menuDetailsImageFile").addEventListener("change",async event=>{
+  const file=event.target.files?.[0];
+  if(!file)return;
+  processingDetailImage=true;
+  renderStatus("menuStatus","Подготавливаем дополнительное фото (4:3)...");
+  try{
+    const result=await compressImage(file,"menu-detail");
+    pendingDetailImage=result;
+    $("menuDetailsImage").value="";
+    imagePreview("menuDetailsImagePreview",result);
+    renderStatus("menuStatus","Дополнительное фото подготовлено. Нажмите «Сохранить товар».");
+  }catch(error){
+    pendingDetailImage="";
+    renderStatus("menuStatus",error.message||"Не удалось загрузить фотографию.");
+  }finally{processingDetailImage=false;}
+});
+$("menuDetailsImage").addEventListener("input",()=>{
+  pendingDetailImage="";
+  imagePreview("menuDetailsImagePreview",$("menuDetailsImage").value.trim());
+});
+$("menuDetailsClearImage").addEventListener("click",()=>{
+  pendingDetailImage="";
+  $("menuDetailsImage").value="";
+  $("menuDetailsImageFile").value="";
+  imagePreview("menuDetailsImagePreview","");
+});
+
 $("eventPosterFile").addEventListener("change",async event=>{
   const file=event.target.files?.[0];
   if(!file)return;
@@ -187,6 +226,16 @@ function openProductDialog(item=null){
   $("menuName").value=item?.name||"";
   $("menuPrice").value=item?.price??"";
   $("menuDescription").value=item?.description||"";
+  $("menuWeight").value=item?.weight||"";
+  $("menuDetailsEnabled").checked=item?.detailEnabled===true;
+  $("menuDetailsText").value=item?.detailText||"";
+  pendingDetailImage="";
+  processingDetailImage=false;
+  $("menuDetailsImageFile").value="";
+  const oldDetailImage=item?.detailImageUrl||"";
+  $("menuDetailsImage").value=isImageDataUri(oldDetailImage)?"":oldDetailImage;
+  imagePreview("menuDetailsImagePreview",oldDetailImage);
+  updateDetailsFields();
   $("menuSort").value=item?.sort??100;
   pendingProductImage="";
   $("menuImageFile").value="";
@@ -374,8 +423,13 @@ function eventRender() {
 
 function clearMenu() {
   pendingProductImage="";
+  pendingDetailImage="";
+  processingDetailImage=false;
   imagePreview("menuImagePreview","");
+  imagePreview("menuDetailsImagePreview","");
+  $("menuDetailsImageFile").value="";
   $("menuForm").reset();
+  updateDetailsFields();
   $("menuId").readOnly=false;
   $("menuSort").value=100;
   $("menuAvailable").checked=true;
@@ -399,6 +453,25 @@ $("menuForm").addEventListener("submit",async event=>{
      !Number.isInteger(sort)||sort<0||sort>100000||!allCategories().some(c=>c.name===category)){
     renderStatus("menuStatus","Проверьте цену, сортировку и выберите существующую категорию.");return;
   }
+  const detailsEnabled=$("menuDetailsEnabled").checked;
+  const detailsText=$("menuDetailsText").value.trim();
+  if(detailsEnabled&&!detailsText){
+    renderStatus("menuStatus","Чтобы включить кнопку «Подробнее», обязательно заполните дополнительное описание.");
+    $("menuDetailsText").focus();
+    return;
+  }
+  if(processingDetailImage){
+    renderStatus("menuStatus","Дождитесь обработки дополнительной фотографии.");
+    return;
+  }
+  const detailImage=detailsEnabled?(pendingDetailImage ||
+    $("menuDetailsImage").value.trim() ||
+    (activeMenuEdit!==null && isImageDataUri(menu.get(String(activeMenuEdit))?.detailImageUrl)
+      ? menu.get(String(activeMenuEdit)).detailImageUrl : "")):"";
+  if(detailImage&&!/^https:\\/\\/[^ ]+$/.test(detailImage)&&!isImageDataUri(detailImage)){
+    renderStatus("menuStatus","Дополнительная фотография должна иметь HTTPS-ссылку.");
+    return;
+  }
   const url=pendingProductImage ||
     $("menuImage").value.trim() ||
     (activeMenuEdit!==null && isImageDataUri(menu.get(String(activeMenuEdit))?.image_url)
@@ -408,7 +481,11 @@ $("menuForm").addEventListener("submit",async event=>{
   }
   const data={
     id,name:$("menuName").value.trim(),category,
-    description:$("menuDescription").value.trim(),price,image_url:url,
+    description:$("menuDescription").value.trim(),
+    weight:$("menuWeight").value.trim(),
+    detailEnabled:detailsEnabled,detailText:detailsEnabled?detailsText:"",
+    detailImageUrl:detailImage,
+    price,image_url:url,
     available:$("menuAvailable").checked,sort,updatedAt:serverTimestamp()
   };
   const button=event.currentTarget.querySelector('[type="submit"]');
