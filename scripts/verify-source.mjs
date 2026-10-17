@@ -258,10 +258,17 @@ assert(html.includes('id="homeEventCarousel"') &&
   app.includes('function renderHomeEvents()') &&
   app.includes('updateHomeEventPosition()'), "Home event story carousel missing");
 assert(html.includes('class="bali-home-contacts-card"') &&
+  html.includes('class="bali-home-social"') &&
+  html.includes('bali-social-phone') &&
+  html.includes('bali-social-telegram') &&
+  html.includes('bali-social-instagram') &&
+  html.includes('class="bali-home-map bali-yandex-map"') &&
   html.includes('href="tel:+375296700300"') &&
+  html.includes('href="https://t.me/baliclubminsk"') &&
   html.includes('href="https://www.instagram.com/baliminsk/"') &&
-  html.includes('href="https://yandex.by/maps/org/bali_night_club/104137822369/"'),
-  "Home must retain actual phone, Instagram and map contact links");
+  html.includes('href="https://yandex.by/maps/org/bali_night_club/104137822369/"') &&
+  (html.match(/class="bali-social-svg"/g)||[]).length===3,
+  "Home must retain original Call, Telegram, Instagram SVG buttons and Yandex Maps button");
 assert(html.includes('class="bali-home-menu-banner"') &&
   html.includes('id="menuNavBtn"'), "Home menu shortcut must remain functional");
 const approvedCss=source("bali-redesign.css");
