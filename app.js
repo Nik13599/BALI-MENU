@@ -66,11 +66,11 @@ function populateEvents() {
     if (!select) return;
     const chosen = select.value;
     select.replaceChildren(new Option('Выбери мероприятие', ''));
-    for (const event of availableEvents.filter(e => e.preorderEnabled && e.date >= minskDateToday())) {
+    for (const event of availableEvents.filter(e => e.preorderEnabled && e.date >= minskDateToday() && e.closesAt?.toDate?.() > new Date())) {
         const opt = new Option(event.date + ' — ' + event.title, event.date);
         select.add(opt);
     }
-    if (availableEvents.some(e => e.date === chosen && e.preorderEnabled)) select.value=chosen;
+    if (availableEvents.some(e => e.date === chosen && e.preorderEnabled && e.closesAt?.toDate?.() > new Date())) select.value=chosen;
     document.getElementById('eventDate').value = select.value;
     if (select.length === 1) select.options[0].textContent = 'Доступных мероприятий пока нет';
 }
@@ -161,6 +161,13 @@ function attachEventListeners() {
     // Category filter
     elements.categoryFilter.addEventListener('click', handleCategoryFilter);
 
+    document.getElementById('myOrdersBtn').addEventListener('click', openMyOrders);
+    document.getElementById('closeMyOrders').addEventListener('click', closeMyOrders);
+    document.getElementById('successMyOrders').addEventListener('click', async () => {
+        closeSuccess();
+        await openMyOrders();
+    });
+
     // Location Sharing
     const shareBtn = document.getElementById('shareLocationBtn');
     if (shareBtn) shareBtn.addEventListener('click', handleShareLocation);
@@ -179,32 +186,15 @@ async function fetchMenuItems() {
     elements.menuGrid.innerHTML = '<div class="loading-state"><p>Загружаем меню BALI...</p></div>';
 }
 
+let editingOrderId = null;
 async function placeOrder(orderData) {
-    // Заказы пока заблокированы на сервере до проверки ID-токенов и прав.
-    if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(CONFIG.API_URL)) {
-        return { success: false, error: 'Приём предзаказов пока не подключён. Настройте безопасный сервер.' };
-    }
     try {
-        const token = await window.BaliAuth?.getIdToken();
-        if (!token) return { success: false, error: 'Необходимо войти через Google' };
-        const response = await fetch(CONFIG.API_URL, {
-            method: 'POST',
-            redirect: 'follow',
-            headers: {
-                'Content-Type': 'text/plain'
-            },
-            body: JSON.stringify({
-                path: 'order/create',
-                id_token: token,
-                ...orderData
-            })
-        });
-
-        const data = await response.json();
-        return data;
+        if (!window.BaliOrders) throw new Error('Модуль предзаказов ещё загружается. Обновите страницу.');
+        const result = await window.BaliOrders.save(orderData, editingOrderId);
+        editingOrderId = null;
+        return result;
     } catch (error) {
-        console.error('Error placing order:', error);
-        return { success: false, error: 'Unable to connect to server' };
+        return { success:false, error: window.BaliOrders?.errorText(error) || error.message };
     }
 }
 
@@ -341,6 +331,9 @@ function removeFromCart(itemId) {
 function updateQuantity(itemId, delta) {
     const item = cart.find(i => i.id === itemId);
     if (!item) return;
+    if (item.quantity + delta > 50) {
+        alert('Не более 50 единиц одного блюда.'); return;
+    }
 
     item.quantity += delta;
 
@@ -569,7 +562,7 @@ async function handleCheckout(e) {
     const eventDate = document.getElementById('eventSelect').value;
     const tableNumber = document.getElementById('tableNumber').value.trim();
     const bookingId = document.getElementById('bookingId').value.trim();
-    if (!availableEvents.some(e => e.date === eventDate && e.preorderEnabled)) {
+    if (!availableEvents.some(e => e.date === eventDate && e.preorderEnabled && e.closesAt?.toDate?.() > new Date())) {
         alert('Выберите доступное мероприятие из списка.');
         return;
     }
@@ -632,6 +625,110 @@ function closeSuccess() {
     elements.overlay.classList.remove('active');
 }
 
+let myOrders = [];
+window.addEventListener('bali:orders', ({detail}) => {
+    myOrders = detail.orders;
+    renderMyOrders();
+});
+window.addEventListener('bali:orders-error', ({detail}) => {
+    const list = document.getElementById('myOrdersList');
+    if(list) list.textContent = 'Не удалось получить предзаказы: ' + detail.message;
+});
+async function openMyOrders() {
+    if (!window.BaliAuth || !(await window.BaliAuth.requireProfile())) return;
+    closeCart();
+    closeCheckout();
+    document.getElementById('myOrdersModal').classList.add('active');
+    document.getElementById('myOrdersModal').setAttribute('aria-hidden','false');
+    elements.overlay.classList.add('active');
+    renderMyOrders();
+}
+function closeMyOrders() {
+    document.getElementById('myOrdersModal')?.classList.remove('active');
+    document.getElementById('myOrdersModal')?.setAttribute('aria-hidden','true');
+    if (!elements.checkoutModal.classList.contains('active') &&
+        !elements.successModal.classList.contains('active') &&
+        !elements.cartSidebar.classList.contains('active')) {
+        elements.overlay.classList.remove('active');
+    }
+}
+function renderMyOrders() {
+    const list = document.getElementById('myOrdersList');
+    if (!list) return;
+    list.replaceChildren();
+    if (!myOrders.length) {
+        const empty = document.createElement('p');
+        empty.textContent = 'Пока нет оформленных предзаказов.';
+        list.append(empty);
+        return;
+    }
+    const statusText = {
+        pending:'Ожидает подтверждения',
+        confirmed:'Подтверждён',
+        completed:'Выполнен',
+        cancelled:'Отменён'
+    };
+    for (const order of myOrders) {
+        const card = document.createElement('article');
+        card.className='bali-order-card';
+        const head = document.createElement('h4');
+        head.textContent='№ '+order.id+' · '+(statusText[order.status]||order.status);
+        const meta = document.createElement('p');
+        meta.textContent=order.eventDate+' · '+(order.tableNumber?'Столик '+order.tableNumber:'ID '+order.bookingId);
+        const items = document.createElement('ul');
+        for(const item of order.items||[]) {
+            const li = document.createElement('li');
+            li.textContent=item.name+' × '+item.quantity+' — '+(item.quantity*item.unitPrice).toFixed(2)+' BYN';
+            items.append(li);
+        }
+        const sum = document.createElement('strong');
+        sum.textContent='Итого: '+Number(order.total||0).toFixed(2)+' BYN';
+        card.append(head,meta,items,sum);
+        if(order.status === 'pending') {
+            const actions = document.createElement('div');
+            actions.className='bali-order-actions';
+            const edit = document.createElement('button');
+            edit.type='button';edit.textContent='Изменить';edit.className='auth-btn';
+            edit.addEventListener('click',()=>editMyOrder(order.id));
+            const cancel = document.createElement('button');
+            cancel.type='button';cancel.textContent='Отменить';cancel.className='auth-outline-btn';
+            cancel.addEventListener('click',async()=>{
+                if(!confirm('Отменить этот предзаказ?'))return;
+                cancel.disabled=true;
+                try{await window.BaliOrders.cancel(order.id);}
+                catch(error){alert(window.BaliOrders.errorText(error));cancel.disabled=false;}
+            });
+            actions.append(edit,cancel);card.append(actions);
+        }
+        list.append(card);
+    }
+}
+async function editMyOrder(orderId) {
+    try {
+        const order = await window.BaliOrders.getOrderWithItems(orderId);
+        if(order.status !== 'pending') throw new Error('Предзаказ уже подтверждён.');
+        const ids = new Set(order.items.map(x=>x.id));
+        if(order.items.length>12) throw new Error('В предзаказе больше 12 разных позиций.');
+        const known = new Map(menuItems.filter(x=>x.available).map(x=>[x.id,x]));
+        if([...ids].some(id=>!known.has(id)))
+            throw new Error('Некоторые блюда больше недоступны. Обратитесь к администратору.');
+        cart = order.items.map(line=>({
+            id:line.id,name:known.get(line.id).name,price:known.get(line.id).price,
+            quantity:line.quantity
+        }));
+        saveCart();updateCartUI();
+        editingOrderId=orderId;
+        closeMyOrders();
+        await openCheckout();
+        const select=document.getElementById('eventSelect');
+        select.value=order.eventDate;
+        document.getElementById('eventDate').value=order.eventDate;
+        document.getElementById('tableNumber').value=order.tableNumber;
+        document.getElementById('bookingId').value=order.bookingId;
+        document.getElementById('orderNotes').value=order.notes||'';
+    }catch(error){alert(window.BaliOrders?.errorText(error)||error.message);}
+}
+
 // ============================================
 // UTILITIES
 // ============================================
@@ -640,4 +737,5 @@ function closeAllModals() {
     closeCart();
     closeCheckout();
     closeSuccess();
+    closeMyOrders();
 }
