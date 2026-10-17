@@ -53,7 +53,8 @@
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-social-pending {
     cursor:default!important;
-    opacity:.48;
+    opacity:1;
+    border-style:dashed!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials a[hidden],
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-social-pending[hidden] {
@@ -79,5 +80,21 @@
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-sidebar-contacts {
     gap:3px!important;
+  }
+}
+
+/* Optional TikTok is visually the same size as the social buttons, but
+   never opens an unconfirmed profile before its official URL is entered. */
+@media(min-width:1180px){
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-social-pending{
+    color:#f0f2ef!important;
+    background:rgba(255,255,255,.035)!important;
+    border-style:solid!important;
+    opacity:1!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-write a.has-custom-icon>.bali-custom-upload-icon{
+    width:20px!important;
+    height:20px!important;
+    object-fit:contain!important;
   }
 }
