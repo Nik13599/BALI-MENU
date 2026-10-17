@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="admin-catalog.css?v=3">
   <link rel="stylesheet" href="admin-dashboard.css?v=20261017-20">
   <link rel="stylesheet" href="bali-obsidian-premium.css?v=20261017-57">
+  <link rel="stylesheet" href="bali-theme.css?v=20261017-58">
 
 </head>
 <body class="bali-admin-theme">
@@ -54,6 +55,9 @@
         </button>
         <button type="button" class="admin-tab" data-admin-tab="events" aria-selected="false" aria-controls="adminEventsPanel">
           <span class="tab-icon" aria-hidden="true">▤</span><span>Мероприятия</span>
+        </button>
+        <button type="button" class="admin-tab" data-admin-tab="appearance" aria-selected="false" aria-controls="adminAppearancePanel">
+          <span class="tab-icon" aria-hidden="true">✦</span><span>Цветовая тема</span>
         </button>
       </nav>
       <div class="sidebar-note">
@@ -236,6 +240,97 @@
           </section>
         </div>
       </section>
+
+      <section class="admin-panel" id="adminAppearancePanel" data-admin-panel="appearance" aria-labelledby="appearanceHeading" hidden>
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">BALI / ДИЗАЙН-СИСТЕМА</div>
+            <h2 id="appearanceHeading">Цветовая тема</h2>
+            <p>Акцентные цвета всего приложения. Основной тёмный фон и фотографии остаются без изменений.</p>
+          </div>
+        </div>
+        <form id="baliThemeForm" class="bali-theme-editor">
+          <section class="card bali-theme-settings">
+            <div class="card-heading"><h3>Готовые темы</h3><span class="tag">Для всех гостей</span></div>
+            <fieldset class="bali-theme-presets">
+              <legend class="bali-theme-legend">Выберите цветовое решение</legend>
+              <label class="bali-theme-preset">
+                <input type="radio" name="baliThemePreset" value="cobalt" checked>
+                <span class="bali-preset-swatch bali-preset-cobalt" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span><strong>Кобальтово-синий</strong><small>Cobalt Blue · холодный яркий акцент</small></span>
+              </label>
+              <label class="bali-theme-preset">
+                <input type="radio" name="baliThemePreset" value="lime">
+                <span class="bali-preset-swatch bali-preset-lime" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span><strong>LIME SHADOW</strong><small>Dark Luxury · благородный лайм</small></span>
+              </label>
+              <label class="bali-theme-preset">
+                <input type="radio" name="baliThemePreset" value="white">
+                <span class="bali-preset-swatch bali-preset-white" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span><strong>Матовый белый</strong><small>Soft White · нейтральные светлые акценты</small></span>
+              </label>
+              <label class="bali-theme-preset">
+                <input type="radio" name="baliThemePreset" value="custom">
+                <span class="bali-preset-swatch bali-preset-custom" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span><strong>Свои цвета</strong><small>Вручную · точная настройка оттенков</small></span>
+              </label>
+            </fieldset>
+          </section>
+
+          <section class="card bali-theme-settings">
+            <div class="card-heading"><h3>Точные цвета</h3><span class="tag">HEX · #RRGGBB</span></div>
+            <p class="hint bali-theme-hint">Можно выбрать оттенок палитрой или вписать HEX-код. Любое изменение переводит выбор в режим «Свои цвета».</p>
+            <div class="bali-theme-color-grid">
+              <label for="baliColorPrimary">Основной акцент
+                <span class="bali-color-field">
+                  <input id="baliColorPrimary" class="bali-color-picker" type="color" value="#7585ff" aria-label="Основной акцент — палитра">
+                  <input id="baliColorPrimaryHex" class="bali-color-hex" type="text" value="#7585FF" maxlength="7" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Основной акцент — HEX">
+                </span>
+              </label>
+              <label for="baliColorSecondary">Второй акцент
+                <span class="bali-color-field">
+                  <input id="baliColorSecondary" class="bali-color-picker" type="color" value="#536ae0" aria-label="Второй акцент — палитра">
+                  <input id="baliColorSecondaryHex" class="bali-color-hex" type="text" value="#536AE0" maxlength="7" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Второй акцент — HEX">
+                </span>
+              </label>
+              <label for="baliColorText">Акцентный текст и значки
+                <span class="bali-color-field">
+                  <input id="baliColorText" class="bali-color-picker" type="color" value="#c3caff" aria-label="Цвет акцентного текста — палитра">
+                  <input id="baliColorTextHex" class="bali-color-hex" type="text" value="#C3CAFF" maxlength="7" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Цвет акцентного текста — HEX">
+                </span>
+              </label>
+              <label for="baliColorBorder">Выделения и обводки
+                <span class="bali-color-field">
+                  <input id="baliColorBorder" class="bali-color-picker" type="color" value="#8192ff" aria-label="Цвет обводок — палитра">
+                  <input id="baliColorBorderHex" class="bali-color-hex" type="text" value="#8192FF" maxlength="7" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Цвет обводок — HEX">
+                </span>
+              </label>
+            </div>
+          </section>
+
+          <section class="card bali-theme-settings">
+            <div class="card-heading"><h3>Предпросмотр</h3><span class="tag">До публикации</span></div>
+            <div class="bali-theme-sample" id="baliThemeSample" aria-label="Пример отображения выбранных акцентов">
+              <div class="bali-theme-sample-top"><span>BALI <small>NIGHT CLUB</small></span><span>АКЦЕНТЫ</span></div>
+              <div class="bali-theme-sample-line">
+                <span class="bali-theme-sample-chip">Все события</span>
+                <span class="bali-theme-sample-outline">Мои планы</span>
+              </div>
+              <div class="bali-theme-sample-line">
+                <span class="bali-theme-sample-button">Открыть меню</span>
+                <span class="bali-theme-sample-icon" aria-hidden="true">♡</span>
+              </div>
+              <p>Цвета кнопок, обводок, активных разделов и иконок. Фоновое оформление сайта не меняется.</p>
+            </div>
+            <div class="actions bali-theme-actions">
+              <button class="primary" type="submit" id="baliThemeSave">Опубликовать тему</button>
+              <button type="button" id="baliThemeCancel">Вернуть опубликованную</button>
+            </div>
+            <p id="baliThemeStatus" class="status" role="status" aria-live="polite">Загружаем опубликованную тему...</p>
+            <p id="baliThemeRulesHelp" class="hint" hidden>Для сохранения нужно <a href="https://github.com/Nik13599/BALI-MENU/blob/main/firestore.rules" target="_blank" rel="noopener noreferrer">опубликовать новые правила Firestore</a> в <a href="https://console.firebase.google.com/project/bali-menu-5a48b/firestore/rules" target="_blank" rel="noopener noreferrer">Firebase Console → Rules → Publish</a>. Не удаляйте старые правила.</p>
+          </section>
+        </form>
+      </section>
     </div>
     <section id="orderPrintSheet" hidden aria-hidden="true"></section>
   </section>
@@ -344,5 +439,6 @@
 <script type="module" src="admin-clients.js?v=20261017-20"></script>
 <script src="admin-dashboard.js?v=20261017-20" defer></script>
 <script src="bali-icon-atelier.js?v=20261017-53" defer></script>
+<script type="module" src="bali-theme.js?v=20261017-58"></script>
 </body>
 </html>
