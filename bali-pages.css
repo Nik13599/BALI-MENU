@@ -79,3 +79,12 @@ body{min-height:100svh;background:linear-gradient(135deg,#0b1020,#191c32 55%,#0b
 }
 @media(max-width:359px){.bali-menu-toolbar-title{font-size:11px}.bali-orders-shortcut{font-size:10px;padding:7px}.bali-home-action-copy strong{font-size:14px}}
 @media(prefers-reduced-motion:reduce){.bali-home-action,.bali-contact-card{transition:none}}
+
+/* Плавающий возврат — всегда снизу СЛЕВА */
+.bali-floating-home{
+  left:clamp(12px,4vw,30px);
+  right:auto;
+}
+@media(max-width:767px){
+  .bali-floating-home{left:12px;right:auto}
+}
