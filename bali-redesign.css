@@ -551,3 +551,73 @@ body[data-bali-page="events"]{overflow-y:hidden}
   #eventsSection .event-preorder-state,
   #eventsSection .event-interest-count{font-size:9px!important}
 }
+
+/* BALI v42 — compact homepage stories and larger accessible controls.
+   Mobile viewport remains locked; gestures and underlying functions unchanged. */
+@media (max-width:767px){
+  /* Stories stay vertical (9:16), but are about 14% shorter and narrower. */
+  .bali-home-events{
+    align-items:center;
+    scroll-snap-type:x mandatory;
+  }
+  .bali-home-events>.bali-home-event-card{
+    align-self:center;
+    flex:0 0 auto;
+    width:auto;
+    height:86%!important;
+    max-height:86%!important;
+    aspect-ratio:9/16;
+    scroll-snap-align:start;
+  }
+
+  /* Take the full useful phone width without enlarging the whole page. */
+  .bali-home-menu-banner{
+    position:relative;
+    left:50%;
+    transform:translateX(-50%);
+    width:calc(100vw - 8px);
+    max-width:none;
+    margin-left:0;
+    padding-inline:15px;
+  }
+
+  /* Larger, easier-to-tap calendar and plans buttons. */
+  .bali-home-calendar-row{margin:5px 0 6px;gap:6px}
+  .bali-home-calendar-row button{
+    min-height:41px;
+    padding:7px 5px;
+    font-size:11px;
+  }
+  .bali-home-calendar-btn strong{font-size:clamp(10px,2.8vw,12px)}
+  .bali-home-calendar-btn span:first-child{font-size:19px}
+
+  /* The previous BALI social icons and Yandex Maps remain unchanged. */
+  .bali-home-contacts-card .bali-home-social{
+    width:min(100%,314px);
+    gap:10px;
+  }
+  .bali-home-contacts-card .bali-home-social .bali-social-btn{
+    min-height:45px;
+    height:45px;
+    border-radius:12px;
+  }
+  .bali-home-contacts-card .bali-social-btn .bali-social-svg{
+    width:25px;height:25px;flex-basis:25px;
+  }
+  .bali-home-contacts-card .bali-yandex-map{
+    min-height:45px;height:45px;border-radius:11px;
+  }
+  .bali-home-contacts-card .bali-yandex-address{font-size:12px}
+}
+@media (max-width:767px) and (max-height:700px){
+  .bali-home-calendar-row{margin:3px 0 4px}
+  .bali-home-calendar-row button{min-height:38px;padding:5px 4px}
+  .bali-home-menu-banner{height:54px;min-height:54px!important}
+  .bali-menu-banner-icon{height:52px}
+  .bali-home-contacts-card .bali-home-social .bali-social-btn{
+    min-height:42px;height:42px;
+  }
+  .bali-home-contacts-card .bali-yandex-map{
+    min-height:41px;height:41px;
+  }
+}
