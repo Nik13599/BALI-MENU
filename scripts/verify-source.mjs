@@ -146,12 +146,12 @@ assert(admin.includes('bali-design-studio.css?v=20261017-84') &&
   sitePublic.includes('label("#baliMenuHeading",data.menuPageTitle)') &&
   rules.includes('function validHomeInterface(d)') &&
   rules.includes("settingId == 'homeInterface' && validHomeInterface(request.resource.data)") &&
-  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface']"),
+  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder']"),
   "Live admin design studio must preview all 3 real device layouts, permit block editing and protect the site settings in Firestore");
 // v87 PC viewport is a fixed full-width, full-height 3-column dashboard.
 // Other desktop pages must not scroll down; only product lists scroll.
 const viewportCss=source("bali-pc-viewport.css");
-assert(html.includes('bali-pc-viewport.css?v=20261018-90') &&
+assert(html.includes('bali-pc-viewport.css?v=20261018-91') &&
   viewportCss.includes('@media (min-width:1180px)') &&
   viewportCss.includes('--bali-pc-side:clamp(195px,15vw,640px)') &&
   viewportCss.includes('--bali-pc-gap:clamp(11px,1vw,42px)') &&
@@ -182,7 +182,7 @@ const homeTeaser=app.slice(app.indexOf('function renderHomeEvents()'),app.indexO
 assert(homeTeaser.includes('const isPcHome=window.matchMedia("(min-width:1180px)").matches') &&
   homeTeaser.includes('Math.max(0,5-upcoming.length)') &&
   homeTeaser.includes('bali-home-event-card bali-home-event-placeholder') &&
-  homeTeaser.includes('Мы готовим для вас что-то интересное') &&
+  homeTeaser.includes('posterTitle:"SECRET"') &&
   homeTeaser.includes('Совсем скоро узнаете') &&
   homeTeaser.includes('if(!upcoming.length&&!isPcHome)') &&
   !app.slice(app.indexOf('function renderUpcomingEvents()')).includes('bali-home-event-placeholder') &&
@@ -192,6 +192,38 @@ assert(homeTeaser.includes('const isPcHome=window.matchMedia("(min-width:1180px)
   viewportCss.includes('body.bali-guest-theme #homeSection .bali-pc-events-title {') &&
   viewportCss.includes('body.bali-guest-theme #homeSection #homeEventCarousel>.bali-home-event-placeholder'),
   "PC HOME only must display five slots and extend posters; full calendar stays real-only.");
+// All 5 PC Home event cells share one editable visual style, NOT fake events.
+const placeholderAdmin=source("bali-home-placeholder-admin.js");
+const placeholderPublic=source("bali-home-placeholder.js");
+const adminPlaceholderCss=source("bali-home-placeholder-admin.css");
+assert(admin.includes('id="baliEventPlaceholderEditor"') &&
+  admin.includes('id="baliEventPlaceholderForm"') &&
+  admin.includes('id="baliPlaceholderImageFile"') &&
+  admin.includes('id="baliPlaceholderPosterTitle"') &&
+  admin.includes('bali-home-placeholder-admin.js?v=20261018-91') &&
+  admin.includes('bali-home-placeholder-admin.css?v=20261018-91') &&
+  html.includes('bali-home-placeholder.js?v=20261018-91') &&
+  placeholderAdmin.includes('doc(db,"settings","homeEventPlaceholder")') &&
+  placeholderAdmin.includes('compressImage(upload,"design-placeholder")') &&
+  placeholderAdmin.includes('getDoc(doc(db,"admins",user.uid))') &&
+  placeholderAdmin.includes('setDoc(ref,{...values,updatedAt:serverTimestamp()})') &&
+  placeholderAdmin.includes('baliPlaceholderRestoreDefaults') &&
+  placeholderPublic.includes('posterTitle:"SECRET"') &&
+  placeholderPublic.includes('footerTitle:"СКОРО В BALI"') &&
+  placeholderPublic.includes('footerSubtitle:"Совсем скоро узнаете"') &&
+  placeholderPublic.includes('onSnapshot(doc(db,"settings","homeEventPlaceholder")') &&
+  placeholderPublic.includes('new CustomEvent("bali:home-placeholder")') &&
+  app.includes('window.BaliHomePlaceholder||{') &&
+  app.includes('assets/bali-secret-placeholder.svg') &&
+  app.includes('window.addEventListener("bali:home-placeholder"') &&
+  viewportCss.includes('v91 — Branded SECRET picture') &&
+  viewportCss.includes('bali-home-placeholder-image') &&
+  adminPlaceholderCss.includes('.bali-placeholder-preview-card') &&
+  source("image-compressor.js").includes('"design-placeholder":{ratio:3/4,maxChars:120000') &&
+  rules.includes('function validHomeEventPlaceholder(d)') &&
+  rules.includes("settingId == 'homeEventPlaceholder' && validHomeEventPlaceholder(request.resource.data)") &&
+  !app.slice(app.indexOf('function renderUpcomingEvents()')).includes('BaliHomePlaceholder'),
+  "Shared SECRET poster must be editable in admin Events, default consistently, and never appear on full calendar.");
 const barAdmin=source("bali-admin-bar.js");
 const barAdminCss=source("bali-admin-bar.css");
 assert(html.includes('id="baliMenuModeSwitch"') &&
@@ -491,7 +523,7 @@ assert(themeCss.includes("/* BALI v58") &&
   !themeClient.includes('setProperty("--bg-'),
   "Theme may change interactive accents only, leaving fixed background color unchanged");
 assert(rules.includes('match /settings/{settingId}') &&
-  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface']") &&
+  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder']") &&
   rules.includes('allow list: if false') &&
   rules.includes("settingId == 'appearance' && validAppearance(request.resource.data)") &&
   rules.includes("data.colors.keys().hasOnly(['primary','secondary','text','border'])") &&
@@ -584,7 +616,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261018-90"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261018-91"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -596,7 +628,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261018-90'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261018-91'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-67'), "Guest profile label code should load without old cache");
