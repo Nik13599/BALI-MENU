@@ -1,0 +1,102 @@
+/**
+ * BALI MENU — private "Хочу пойти" lists and public event counts.
+ * Firestore transaction updates TWO documents atomically:
+ *   events/{YYYY-MM-DD}.interestCount
+ *   users/{uid}/eventInterests/{YYYY-MM-DD}
+ * A validated interest change is the only way for guests to change the count.
+ */
+import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {
+  getFirestore,collection,doc,onSnapshot,runTransaction,serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
+const db=getFirestore(app);
+const auth=getAuth(app);
+let uid="";
+let unsubscribe=null;
+let selected=new Set();
+const working=new Set();
+let loaded=false;
+const publish=()=>window.dispatchEvent(new CustomEvent("bali:interests",{
+  detail:{dates:[...selected],ready:loaded}
+}));
+function todayInMinsk(){
+  const p=Object.fromEntries(new Intl.DateTimeFormat("en-GB",{
+    timeZone:"Europe/Minsk",year:"numeric",month:"2-digit",day:"2-digit"
+  }).formatToParts(new Date()).map(x=>[x.type,x.value]));
+  return p.year+"-"+p.month+"-"+p.day;
+}
+function errorMessage(error){
+  if(error?.code==="permission-denied")
+    return "Firebase запретил сохранение. Администратору нужно опубликовать новые Firestore Rules с eventInterests и interestCount.";
+  if(error?.code==="unavailable")return "Нет связи с Firebase. Попробуйте позже.";
+  return error?.message||"Не удалось сохранить выбранное событие.";
+}
+onAuthStateChanged(auth,user=>{
+  if(unsubscribe){unsubscribe();unsubscribe=null;}
+  selected=new Set();loaded=false;
+  uid=user?.emailVerified?user.uid:"";
+  publish();
+  if(!uid){loaded=true;publish();return;}
+  const watcherUid=uid;
+  unsubscribe=onSnapshot(
+    collection(db,"users",watcherUid,"eventInterests"),
+    snapshot=>{
+      if(uid!==watcherUid)return;
+      selected=new Set(snapshot.docs.map(x=>x.id));
+      loaded=true;
+      publish();
+    },
+    error=>{
+      if(uid!==watcherUid)return;
+      loaded=false;
+      window.dispatchEvent(new CustomEvent("bali:interests-error",{
+        detail:{message:errorMessage(error)}
+      }));
+      publish();
+    }
+  );
+});
+async function toggle(date){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error("Некорректная дата мероприятия.");
+  if(date<todayInMinsk())throw new Error("Прошедшие мероприятия нельзя добавлять в планы.");
+  if(!window.BaliAuth || !(await window.BaliAuth.requireProfile()))return {loginRequired:true};
+  const user=auth.currentUser;
+  if(!user?.emailVerified||!user.email)throw new Error("Войдите через Google.");
+  if(working.has(date))return {busy:true};
+  working.add(date);
+  try {
+    const eventRef=doc(db,"events",date);
+    const selectedRef=doc(db,"users",user.uid,"eventInterests",date);
+    const result=await runTransaction(db,async transaction=>{
+      const eventSnap=await transaction.get(eventRef);
+      const wishSnap=await transaction.get(selectedRef);
+      if(!eventSnap.exists())throw new Error("Мероприятие больше не найдено.");
+      const current=eventSnap.data()?.interestCount??0;
+      if(!Number.isSafeInteger(current)||current<0)throw new Error("Некорректный счётчик мероприятия.");
+      const removing=wishSnap.exists();
+      if(removing && current===0)throw new Error("Счётчик не совпадает с отметками. Обратитесь к администратору.");
+      transaction.update(eventRef,{interestCount:current+(removing?-1:1)});
+      if(removing){
+        transaction.delete(selectedRef);
+      }else{
+        transaction.set(selectedRef,{
+          uid:user.uid,eventDate:date,createdAt:serverTimestamp()
+        });
+      }
+      return {selected:!removing};
+    });
+    return result;
+  }catch(error){
+    throw new Error(errorMessage(error));
+  }finally{working.delete(date);}
+}
+window.BaliInterests={
+  toggle,
+  getSelected:()=>new Set(selected),
+  isReady:()=>loaded,
+  todayInMinsk
+};
+publish();
