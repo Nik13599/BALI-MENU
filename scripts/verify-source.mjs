@@ -129,14 +129,14 @@ const siteAdmin=source("bali-site-content-admin.js");
 const sitePublic=source("bali-site-content.js");
 assert(admin.includes('bali-design-studio.css?v=20261017-84') &&
   admin.includes('bali-design-studio.js?v=20261017-85') &&
-  admin.includes('bali-site-content-admin.js?v=20261017-85') &&
+  admin.includes('bali-site-content-admin.js?v=20261018-96') &&
   admin.includes('id="baliDesignLiveFrame"') &&
   admin.includes('id="baliDesignCanvas"') &&
   admin.includes('data-studio-device="desktop"') &&
   admin.includes('data-studio-device="tablet"') &&
   admin.includes('data-studio-device="phone"') &&
   admin.includes('data-site-field="menuPageTitle"') &&
-  html.includes('bali-site-content.js?v=20261017-85') &&
+  html.includes('bali-site-content.js?v=20261018-95') &&
   liveStudio.includes('frame.contentDocument') &&
   liveStudio.includes('selectionFrom(target)') &&
   liveStudio.includes('fit()') &&
@@ -269,6 +269,26 @@ assert(html.includes('bali-contact-channels.css?v=20261018-96') &&
   rules.includes('d.telegramChatUrl is string') &&
   rules.includes('d.tiktokUrl is string'),
   "PC contact rows, glowing nonempty cart, and no-image dish cards must render correctly.");
+// 18+ age confirmation is required for bar and hookah only, never tea.
+const ageGate=source("bali-age-gate.js");
+const ageCss=source("bali-age-gate.css");
+assert(html.includes('id="baliAgeGate"') &&
+  html.includes('bali-age-gate.js?v=20261018-97') &&
+  html.includes('bali-age-gate.css?v=20261018-98') &&
+  app.includes('if(mode==="bar"||mode==="hookah")') &&
+  app.includes('switchBaliMenuMode("kitchen")') &&
+  app.includes('window.BaliAgeGate?.confirm?.()') &&
+  ageGate.includes('consentRef=uid=>doc(db,"users",uid,"ageConfirmations","restrictedMenus")') &&
+  ageGate.includes('window.BaliAuth?.isRegistered?.()') &&
+  ageGate.includes('dialog.showModal()') &&
+  ageCss.includes('.bali-age-dialog::backdrop') &&
+  html.includes('Предзаказ кальянов недоступен') &&
+  html.includes('Заказать кальян можно непосредственно в заведении') &&
+  html.includes('Предзаказ чая недоступен') &&
+  html.includes('Заказать чай можно непосредственно в заведении') &&
+  source('bali-bar-menu.css').includes('#menuPage #baliHookahContent .bali-bar-intro') &&
+  rules.includes('match /users/{uid}/ageConfirmations/{consentId}'),
+  "Bar and hookah require 18+ account-based confirmation; tea and hookah read-only notices display.");
 const barAdmin=source("bali-admin-bar.js");
 const barAdminCss=source("bali-admin-bar.css");
 assert(html.includes('id="baliMenuModeSwitch"') &&
@@ -280,7 +300,7 @@ assert(html.includes('id="baliMenuModeSwitch"') &&
   html.includes('id="baliBarCategoryFilter"') &&
   html.includes('Предзаказ алкогольной продукции недоступен') &&
   html.indexOf('id="baliMenuModeSwitch"') < html.indexOf('id="categoryFilter"') &&
-  html.includes('bali-bar-menu.css?v=20261017-85') &&
+  html.includes('bali-bar-menu.css?v=20261018-98') &&
   html.includes('bali-bar-menu.js?v=20261017-85'),
   "Menu must open on Kitchen and place a read-only Bar tab above Kitchen categories");
 assert(app.includes("let baliActiveMenuMode = 'kitchen'") &&
@@ -661,7 +681,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261018-92"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261018-96"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -673,7 +693,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261018-92'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261018-96'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-67'), "Guest profile label code should load without old cache");
