@@ -59,6 +59,27 @@ const desktopLayoutCss=source("bali-desktop-fullwidth.css");
 
 const barPublic=source("bali-bar-menu.js");
 const barCss=source("bali-bar-menu.css");
+// On phones the four menu maps use accessible icon-only square controls,
+// not the previous two-row arrangement of wide text buttons.
+for(const [key,label] of [
+  ["kitchen","Меню кухни"],["bar","Барная карта"],
+  ["hookah","Кальянная карта"],["tea","Чайная карта"]
+]){
+  const tab=html.match(new RegExp('<button[^>]*data-bali-menu-mode="'+key+'"[^>]*>[\\s\\S]*?<\\/button>'));
+  assert(tab && tab[0].includes('aria-label="'+label+'"') &&
+    tab[0].includes('bali-menu-mode-icon') &&
+    tab[0].includes('bali-menu-mode-label') &&
+    tab[0].includes('<svg') && tab[0].includes('viewBox="0 0 48 48"'),
+    "Mobile icon button missing or not accessible: "+key);
+}
+assert(barCss.includes('@media(max-width:767px)') &&
+  barCss.includes('flex-flow:row nowrap!important') &&
+  barCss.includes('flex:0 0 46px!important') &&
+  barCss.includes('.bali-menu-mode-label{') &&
+  barCss.includes('display:none!important;') &&
+  barCss.includes('.bali-menu-mode-btn[hidden]{display:none!important}') &&
+  barCss.includes('.bali-menu-mode-btn.is-active{'),
+  "Four compact mobile icon-only menu switches must stay on a single row and support hidden/selected states");
 const barAdmin=source("bali-admin-bar.js");
 const barAdminCss=source("bali-admin-bar.css");
 assert(html.includes('id="baliMenuModeSwitch"') &&
@@ -70,7 +91,7 @@ assert(html.includes('id="baliMenuModeSwitch"') &&
   html.includes('id="baliBarCategoryFilter"') &&
   html.includes('Предзаказ алкогольной продукции недоступен') &&
   html.indexOf('id="baliMenuModeSwitch"') < html.indexOf('id="categoryFilter"') &&
-  html.includes('bali-bar-menu.css?v=20261017-72') &&
+  html.includes('bali-bar-menu.css?v=20261017-80') &&
   html.includes('bali-bar-menu.js?v=20261017-65'),
   "Menu must open on Kitchen and place a read-only Bar tab above Kitchen categories");
 assert(app.includes("let baliActiveMenuMode = 'kitchen'") &&
