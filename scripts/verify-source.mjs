@@ -159,7 +159,7 @@ const promosAdmin=source("bali-admin-promos.js");
 const promosPublic=source("bali-pc-offers.js");
 assert(admin.includes('id="adminDesignPanel"') &&
   admin.includes('data-admin-tab="design"') &&
-  dashboardJs.includes('design: ["Дизайн главной"') &&
+  source("admin-dashboard.js").includes('design: ["Дизайн главной"') &&
   admin.includes('id="baliHomeAboutForm"') &&
   admin.includes('id="baliHomeMerchForm"') &&
   admin.includes('id="baliPromoForm"') &&
