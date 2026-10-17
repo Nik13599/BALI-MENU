@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-38"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-39"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -99,7 +99,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-38'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-39'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
@@ -281,8 +281,8 @@ assert(app.includes("menuSection.scrollTop = 0") &&
   app.includes('if(window.matchMedia("(max-width:767px)").matches)return;'),
   "Mobile category change must scroll the product list without hijacking gestures");
 const approvedCss=source("bali-redesign.css");
-assert(html.includes('bali-redesign.css?v=20261017-38') &&
-  html.indexOf('bali-redesign.css?v=20261017-38') >
+assert(html.includes('bali-redesign.css?v=20261017-39') &&
+  html.indexOf('bali-redesign.css?v=20261017-39') >
     html.indexOf('events-carousel.css?v=20261017-36'),
   "Approved mobile visual override must load last");
 assert(html.includes('id="profileSection"') &&
