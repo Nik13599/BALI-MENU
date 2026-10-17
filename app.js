@@ -849,10 +849,16 @@ async function loadConfig() {
 }
 
 function attachEventListeners() {
-    document.getElementById("baliMenuModeSwitch")?.addEventListener("click",event=>{
+    document.getElementById("baliMenuModeSwitch")?.addEventListener("click",async event=>{
         const tab=event.target.closest("button[data-bali-menu-mode]");
         if(!tab)return;
-        switchBaliMenuMode(tab.dataset.baliMenuMode);
+        const mode=tab.dataset.baliMenuMode;
+        if(mode==="bar"||mode==="hookah"){
+            // No restricted contents become visible until age is confirmed.
+            switchBaliMenuMode("kitchen");
+            if(!await window.BaliAgeGate?.confirm?.())return;
+        }
+        switchBaliMenuMode(mode);
     });
     switchBaliMenuMode("kitchen");
     window.addEventListener("bali:menu-visibility",event=>{
