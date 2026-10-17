@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="bali-admin-bar.css?v=20261017-65">
   <link rel="stylesheet" href="bali-admin-cards.css?v=20261017-82">
   <link rel="stylesheet" href="bali-design-studio.css?v=20261017-84">
+  <link rel="stylesheet" href="bali-home-placeholder-admin.css?v=20261018-91">
 
 </head>
 <body class="bali-admin-theme">
@@ -334,6 +335,79 @@
             <div id="eventList" class="scroll-list">Загрузка...</div>
           </section>
         </div>
+
+        <section class="card bali-event-placeholder-editor" id="baliEventPlaceholderEditor"
+                 aria-labelledby="baliEventPlaceholderHeading">
+          <div class="card-heading">
+            <div>
+              <div class="eyebrow">ОФОРМЛЕНИЕ ГЛАВНОЙ · ПК</div>
+              <h3 id="baliEventPlaceholderHeading">Единая заглушка мероприятий</h3>
+              <p class="hint">Отдельно от мероприятий. Один шаблон автоматически повторяется во всех свободных местах из пяти на главной. В полном календаре заглушки не показываются.</p>
+            </div>
+            <span class="tag">Общий шаблон</span>
+          </div>
+          <div class="bali-placeholder-editor-grid">
+            <form id="baliEventPlaceholderForm" class="bali-placeholder-edit-form">
+              <label>Основная надпись на изображении
+                <input id="baliPlaceholderPosterTitle" type="text" minlength="1" maxlength="40" value="SECRET" required>
+              </label>
+              <label>Маленькая надпись над заголовком
+                <input id="baliPlaceholderKicker" type="text" minlength="1" maxlength="42" value="BALI NIGHT CLUB" required>
+              </label>
+              <div class="double">
+                <label>Заголовок внизу
+                  <input id="baliPlaceholderFooterTitle" type="text" minlength="1" maxlength="52" value="СКОРО В BALI" required>
+                </label>
+                <label>Описание внизу
+                  <input id="baliPlaceholderFooterSubtitle" type="text" minlength="1" maxlength="85" value="Совсем скоро узнаете" required>
+                </label>
+              </div>
+              <div class="bali-placeholder-poster-upload">
+                <strong>Изображение · 900 × 1200 px · 3:4</strong>
+                <small>По умолчанию используется фирменная афиша SECRET. Загрузите собственную картинку JPG/PNG/WebP или укажите HTTPS-ссылку. Изображение автоматически сжимается в WebP.</small>
+                <label>Загрузить картинку
+                  <input type="file" id="baliPlaceholderImageFile" accept="image/png,image/jpeg,image/webp,image/heic,image/heif">
+                </label>
+                <label>Или ссылка на изображение
+                  <input type="url" id="baliPlaceholderImageUrl" maxlength="2048" placeholder="https://...">
+                </label>
+                <button type="button" id="baliPlaceholderResetImage">Вернуть картинку SECRET</button>
+              </div>
+              <div class="double">
+                <label>Цвет акцентов
+                  <input id="baliPlaceholderAccentColor" type="color" value="#b9ff51">
+                </label>
+                <label>Фон нижней подписи
+                  <input id="baliPlaceholderBackgroundColor" type="color" value="#12171c">
+                </label>
+              </div>
+              <div class="actions">
+                <button type="submit" class="primary" id="baliPlaceholderSave">Сохранить все заглушки</button>
+                <button type="button" id="baliPlaceholderRestoreDefaults">Вернуть исходный шаблон</button>
+              </div>
+              <p id="baliPlaceholderStatus" class="status" role="status" aria-live="polite"></p>
+            </form>
+            <div class="bali-placeholder-preview-wrap">
+              <strong>Предпросмотр общей заглушки</strong>
+              <article id="baliPlaceholderAdminPreview" class="bali-placeholder-preview-card"
+                       aria-label="Предпросмотр заглушки ближайшего мероприятия">
+                <div class="bali-placeholder-preview-art" id="baliPlaceholderPreviewArt">
+                  <img id="baliPlaceholderPreviewImage" src="assets/bali-secret-placeholder.svg"
+                       alt="Изображение заглушки SECRET">
+                  <div class="bali-placeholder-preview-overlay">
+                    <span id="baliPlaceholderPreviewKicker">BALI NIGHT CLUB</span>
+                    <strong id="baliPlaceholderPreviewTitle">SECRET</strong>
+                  </div>
+                </div>
+                <div class="bali-placeholder-preview-footer" id="baliPlaceholderPreviewFooter">
+                  <strong id="baliPlaceholderPreviewFooterTitle">СКОРО В BALI</strong>
+                  <span id="baliPlaceholderPreviewFooterSubtitle">Совсем скоро узнаете</span>
+                </div>
+              </article>
+              <p class="hint">Изображение и надписи одинаковые у всех заглушек. Они исчезают сами, когда вы добавляете реальные мероприятия.</p>
+            </div>
+          </div>
+        </section>
 
       </section>
 
@@ -823,6 +897,7 @@
 <script type="module" src="bali-menu-visibility.js?v=20261017-72"></script>
 <script type="module" src="bali-admin-promos.js?v=20261017-79"></script>
 <script type="module" src="bali-home-design-admin.js?v=20261017-79"></script>
+<script type="module" src="bali-home-placeholder-admin.js?v=20261018-91"></script>
 <script type="module" src="admin-orders.js?v=20261017-20"></script>
 <script type="module" src="admin-clients.js?v=20261017-20"></script>
 <script src="admin-dashboard.js?v=20261017-84" defer></script>
