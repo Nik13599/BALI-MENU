@@ -308,3 +308,11 @@
     grid-template-rows:minmax(180px,1fr) auto auto!important;
   }
 }
+
+/* Extra-short desktop landscape: keep the same two-column footer
+   rather than creating a vacant third grid row. */
+@media (min-width:1100px) and (max-height:520px){
+  body.bali-guest-theme #homeSection .bali-home-inner{
+    grid-template-rows:minmax(180px,1fr) auto!important;
+  }
+}
