@@ -273,3 +273,13 @@
   #eventsSection .event-preorder-state,#eventsSection .event-interest-count {display:none!important}
   #profileSection .bali-profile-action {min-height:34px!important;margin-top:5px!important}
 }
+
+/* Route visibility must override fixed-screen display rules. */
+@media(max-width:767px){
+  body > #homeSection[hidden],
+  body > #eventsSection[hidden],
+  body > #menuPage[hidden],
+  body > #profileSection[hidden],
+  body > #contactsSection[hidden],
+  #baliCartDock[hidden] {display:none!important}
+}
