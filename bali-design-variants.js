@@ -1,6 +1,6 @@
 /* BALI Home Design image variants. Each editable card may have tablet/mobile art.
    Empty variants fall back to the primary desktop image on the guest website. */
-import {compressImage} from "./image-compressor.js";
+import {compressImage} from "./image-compressor.js?v=20261017-79";
 const el=id=>document.getElementById(id);
 export function makeImageVariants(prefix,kind,notify=()=>{}){
   const variants={};
