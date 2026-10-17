@@ -487,7 +487,7 @@ function renderHomeEvents() {
     // no fake date, RSVP heart, event link, or calendar record is created.
     if(isPcHome){
         const settings=window.BaliHomePlaceholder||{
-            posterTitle:"SECRET",kicker:"BALI NIGHT CLUB",
+            posterTitle:"SECRET",kicker:"SECRET",
             footerTitle:"СКОРО В BALI",footerSubtitle:"Совсем скоро узнаете",
             imageUrl:"",accentColor:"#b9ff51",backgroundColor:"#12171c"
         };
@@ -500,21 +500,22 @@ function renderHomeEvents() {
             card.style.setProperty("--bali-placeholder-footer",settings.backgroundColor);
             const poster=document.createElement("div");
             poster.className="bali-home-poster-wrap bali-home-placeholder-poster";
-            const picture=document.createElement("img");
-            picture.className="bali-home-placeholder-image";
-            picture.src=settings.imageUrl||"assets/bali-secret-placeholder.svg";
-            picture.alt="Афиша-анонс "+settings.posterTitle;
-            picture.loading="lazy";
-            poster.append(picture);
+            // Black is the default teaser background. An administrator may
+            // still intentionally upload a custom picture for all placeholders.
+            if(settings.imageUrl){
+                const picture=document.createElement("img");
+                picture.className="bali-home-placeholder-image";
+                picture.src=settings.imageUrl;
+                picture.alt="";
+                picture.loading="lazy";
+                poster.append(picture);
+            }
             const overlay=document.createElement("div");
             overlay.className="bali-home-placeholder-overlay";
-            const kicker=document.createElement("span");
-            kicker.className="bali-home-placeholder-kicker";
-            kicker.textContent=settings.kicker;
             const message=document.createElement("strong");
             message.className="bali-home-placeholder-message";
             message.textContent=settings.posterTitle;
-            overlay.append(kicker,message);
+            overlay.append(message);
             poster.append(overlay);
             const information=document.createElement("div");
             information.className="bali-home-event-info bali-home-placeholder-info";
