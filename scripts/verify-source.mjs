@@ -70,7 +70,7 @@ assert(html.includes('id="baliMenuModeSwitch"') &&
   html.includes('id="baliBarCategoryFilter"') &&
   html.includes('Предзаказ алкогольной продукции недоступен') &&
   html.indexOf('id="baliMenuModeSwitch"') < html.indexOf('id="categoryFilter"') &&
-  html.includes('bali-bar-menu.css?v=20261017-65') &&
+  html.includes('bali-bar-menu.css?v=20261017-71') &&
   html.includes('bali-bar-menu.js?v=20261017-65'),
   "Menu must open on Kitchen and place a read-only Bar tab above Kitchen categories");
 assert(app.includes("let baliActiveMenuMode = 'kitchen'") &&
@@ -78,7 +78,7 @@ assert(app.includes("let baliActiveMenuMode = 'kitchen'") &&
   app.includes('mode!=="kitchen"') &&
   app.includes('selected!=="menu"||baliActiveMenuMode!=="kitchen"') &&
   app.includes('switchBaliMenuMode("kitchen")') &&
-  app.includes('if(mode==="bar"&&typeof closeCart==="function")closeCart()'),
+  app.includes('if(mode!=="kitchen"&&typeof closeCart==="function")closeCart()'),
   "Bar page must never expose checkout dock or food order interactions");
 assert(barPublic.includes('collection(db,"bar_menu")') &&
   barPublic.includes('onSnapshot(') &&
@@ -92,7 +92,27 @@ assert(barPublic.includes('collection(db,"bar_menu")') &&
   !barPublic.includes('add-to-cart-btn') &&
   !barPublic.includes('openCheckout('),
   "Bar prices must be real Firestore data shown as grouped rows, without preorder code");
-assert(barCss.includes('grid-template-columns:repeat(2,minmax(0,190px))') &&
+const extraMenus=source("bali-extra-menus.js");
+assert(["kitchen","bar","hookah","tea"].every(name=>html.includes('data-bali-menu-mode="'+name+'"')) &&
+  html.includes('id="baliHookahContent"') && html.includes('id="baliTeaContent"') &&
+  html.includes('id="baliHookahCategoryFilter"') && html.includes('id="baliTeaCategoryFilter"') &&
+  html.includes('id="baliHookahList"') && html.includes('id="baliTeaList"') &&
+  html.includes('bali-extra-menus.js?v=20261017-71') &&
+  app.includes('hookah:"baliHookahContent"') && app.includes('tea:"baliTeaContent"') &&
+  app.includes('mode!==section') &&
+  extraMenus.includes('collection:"hookah_menu"') && extraMenus.includes('collection:"tea_menu"') &&
+  extraMenus.includes('onSnapshot(') &&
+  !extraMenus.includes('BaliOrders') &&
+  !extraMenus.includes('addToCart(') &&
+  !extraMenus.includes('openCheckout('),
+  "Kitchen bar hookah and tea must be distinct; hookah and tea are live read-only prices, never preorder");
+assert(rules.includes('match /hookah_menu/{hookahId}') &&
+  rules.includes('match /tea_menu/{teaId}') &&
+  /match \/hookah_menu\/\{hookahId\}\s*\{\s*allow get, list: if true;/.test(rules) &&
+  /match \/tea_menu\/\{teaId\}\s*\{\s*allow get, list: if true;/.test(rules) &&
+  rules.includes('validBarMenuItem(request.resource.data)'),
+  "Guest price lists are public but only verified administrators can edit their content");
+assert(barCss.includes('grid-template-columns:repeat(4,minmax(0,190px))') &&
   barCss.includes('background:var(--bt-primary)') &&
   barCss.includes('bali-bar-row') &&
   barCss.includes('bali-bar-portions') &&
@@ -355,7 +375,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-67"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-71"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -367,7 +387,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-67'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-71'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-67'), "Guest profile label code should load without old cache");
@@ -414,7 +434,7 @@ assert(imageProcessor.includes('canvas.toDataURL("image/webp"') && imageProcesso
   "Image compression must create 1:1 dishes and 4:5 flyers");
 assert(adminClient.includes('compressImage(file,"product")') &&
   adminClient.includes('compressImage(file,"poster")'), "Image picker must upload to Firestore");
-assert(html.includes('id="eventsNavBtn"') && html.includes('id="eventsSection"'), "Guest events tab missing");
+assert(html.includes('data-bali-nav="events"') && html.includes('id="eventsSection"'), "Guest events page missing");
 assert(app.includes('renderUpcomingEvents()') && app.includes('.sort((a,b)=>a.date.localeCompare(b.date))'),
   "Upcoming events must display nearest first");
 assert(responsive.includes('grid-template-rows:auto 42px') &&
@@ -508,7 +528,7 @@ assert(html.includes('id="homeSection"') &&
   html.includes('id="homeFloatingBtn"'), "Separate guest page sections missing");
 assert(html.includes('id="homeBrandBtn"') &&
   html.includes('id="menuNavBtn"') &&
-  html.includes('id="eventsNavBtn"'), "Home page navigation missing");
+  html.includes('aria-label="BALI календарь — открыть все предстоящие мероприятия"'), "Home page full calendar button missing");
 assert(app.includes('renderGuestPage(routeFromLocation()') &&
   app.includes('addEventListener("popstate"') &&
   app.includes('navigateGuestPage(page'), "Guest app must support browser Back navigation");
@@ -524,15 +544,18 @@ assert(!html.includes('id="cartBtn"') &&
   html.includes('id="profileMyOrdersBtn"'),
   "Menu top toolbar must be absent; fixed cart and Profile/My Orders must remain");
 assert(html.includes('id="accountMyOrdersBtn"'), "My Orders shortcut must remain in account");
-// Home starts with the calendar: advertising hero intentionally removed.
+// Home uses a promotion hero plus a single calendar-title link (no duplicate filter strip).
 assert(!html.includes('class="bali-hero-scene"') &&
-  !html.includes('Современный<br>ночной клуб') &&
-  !html.includes('Лучшие вечеринки.') &&
-  html.includes('class="bali-home-calendar-row"'),
-  "Home should start at calendar without redundant club advertising hero");
-assert(html.includes('class="bali-home-calendar-row"') &&
-  html.includes('data-home-events-view="all"') &&
-  html.includes('data-home-events-view="planned"'), "Home calendar and My Plans controls missing");
+  html.includes('class="bali-pc-hero"') &&
+  html.includes('id="baliPcOfferTitle"') &&
+  html.includes('class="bali-pc-events-title"'),
+  "Home should display BALI PRIVILEGE hero above the event carousel");
+assert(!html.includes('class="bali-home-calendar-row"') &&
+  !html.includes('data-home-events-view="all"') &&
+  !html.includes('data-home-events-view="planned"') &&
+  html.includes('aria-label="BALI календарь — открыть все предстоящие мероприятия"') &&
+  !html.includes('Смотреть всё'),
+  "Home must use one full-calendar heading without top filters or redundant More button");
 assert(html.includes('id="homeEventCarousel"') &&
   app.includes('function renderHomeEvents()') &&
   app.includes('bali-home-event-card'), "Home event story carousel missing");
