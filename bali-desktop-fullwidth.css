@@ -1,183 +1,352 @@
-/* BALI v63 • Full-width desktop editorial layout.
-   Applies ONLY from 768px upwards. No mobile selectors, DOM or JS changes.
-   All contact controls (three socials + address) share EXACTLY the same size. */
+/* BALI STUDIO / v64 — modern desktop first, not stretched mobile.
+   Desktop and laptop only (>=768px). Mobile CSS and application logic untouched.
+   Architectural layout: cinematic event gallery + balanced menu/contact rail.
+   Ink, graphite, warm white and the existing theme's single accent. */
 @media (min-width:768px){
-  :root{--bali-desktop-side:clamp(18px,2.25vw,58px)}
+  :root{
+    --studio-inset:clamp(22px,2.8vw,64px);
+    --studio-gap:clamp(14px,1.55vw,26px);
+    --studio-ink:#0e1013;
+    --studio-surface:#181a1e;
+    --studio-raised:#23262b;
+    --studio-stroke:rgba(255,255,255,.105);
+    --studio-stroke-strong:rgba(255,255,255,.19);
+  }
 
-  /* The app shell / brand should span the actual monitor width, not 1100px. */
+  /* No constrained page column on desktop, yet buttons stay compact. */
   body.bali-guest-theme .header .header-content{
     width:100%!important;
     max-width:none!important;
-    padding-inline:var(--bali-desktop-side)!important;
+    min-height:clamp(62px,7.8vh,84px)!important;
+    padding:9px var(--studio-inset)!important;
+  }
+  body.bali-guest-theme .header .logo .logo-text{
+    font-size:clamp(27px,2.45vw,37px)!important;
+    letter-spacing:.27em!important;
+  }
+  body.bali-guest-theme .header #accountBtn{
+    max-width:220px!important;
+    font-size:clamp(12px,.95vw,14px)!important;
   }
   body.bali-guest-theme > .bali-bottom-nav{
     width:100%!important;
     max-width:none!important;
-    margin-inline:0!important;
-    grid-template-columns:repeat(4,minmax(0,160px))!important;
+    margin:0!important;
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,150px))!important;
     justify-content:center!important;
     border-radius:0!important;
+    background:#111317!important;
+    border-top:1px solid var(--studio-stroke)!important;
+    box-shadow:none!important;
   }
   body.bali-guest-theme > .bali-bottom-nav button{
     width:100%;
-    min-width:0;
-    max-width:160px;
+    max-width:150px;
     justify-self:center;
+    border:0;
+    background:transparent;
   }
 
-  /* 100% available width and height, with refined adaptive side breathing room. */
+  /* Laptop 768–1179: wide event gallery above two tidy utility cards. */
   body.bali-guest-theme #homeSection .bali-home-inner{
     box-sizing:border-box;
-    display:grid!important;
     width:100%!important;
     max-width:none!important;
     height:100%!important;
     min-height:0!important;
+    display:grid!important;
     grid-template-columns:minmax(0,1fr);
     grid-template-rows:minmax(0,1fr) auto auto!important;
-    column-gap:clamp(12px,1.4vw,22px);
-    row-gap:clamp(10px,1.35vh,16px)!important;
-    padding:clamp(9px,1.55vh,20px) var(--bali-desktop-side) clamp(11px,1.5vh,19px)!important;
+    column-gap:var(--studio-gap);
+    row-gap:clamp(9px,1.4vh,16px)!important;
+    padding:clamp(9px,1.35vh,17px) var(--studio-inset) clamp(9px,1.35vh,17px)!important;
     overflow:hidden;
     align-items:stretch;
   }
   body.bali-guest-theme #homeSection .bali-home-events-panel{
-    grid-column:1 / -1;
+    grid-column:1/-1;
     grid-row:1;
+    display:flex!important;
+    flex-direction:column;
+    min-width:0;
     min-height:0;
-    max-width:none!important;
     width:100%!important;
+    max-width:none!important;
     margin:0!important;
-    border-radius:18px!important;
+    border:1px solid var(--studio-stroke)!important;
+    border-radius:19px!important;
+    background:#17191d!important;
+    box-shadow:none!important;
+    overflow:hidden;
+  }
+  body.bali-guest-theme #homeSection .bali-home-events-panel::before{
+    display:none!important;
   }
 
-  /* Top filters are identically sized, never stretched into long strips. */
+  /* Typography replaces gradients, heavy frames and oversized filter controls. */
   body.bali-guest-theme #homeSection .bali-home-calendar-row{
     display:grid!important;
-    grid-template-columns:repeat(3,minmax(0,clamp(170px,14vw,218px)))!important;
+    grid-template-columns:repeat(3,minmax(0,clamp(133px,12.6vw,168px)))!important;
+    gap:9px!important;
+    align-items:center;
+    align-content:start;
     justify-content:start!important;
-    gap:10px!important;
+    flex:0 0 auto;
+    min-width:0;
     width:100%;
     margin:0!important;
-    padding:12px clamp(12px,1.45vw,24px)!important;
-    min-width:0;
+    padding:clamp(16px,2vw,27px) clamp(17px,2vw,31px) 16px!important;
+    background:transparent!important;
+    border-bottom:1px solid var(--studio-stroke)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-calendar-row::before{
+    content:"Афиша";
+    display:block;
+    grid-column:1/-1;
+    margin:0 0 9px;
+    color:#f6f6f6;
+    font-family:"Manrope",Inter,sans-serif;
+    font-size:clamp(27px,2.5vw,42px);
+    font-weight:740;
+    letter-spacing:-.065em;
+    line-height:1.03;
   }
   body.bali-guest-theme #homeSection .bali-home-calendar-row button{
-    width:100%!important;
-    height:46px!important;
-    min-height:46px!important;
-    max-height:46px!important;
-    padding:7px 12px!important;
-    border-radius:10px!important;
-    font-size:clamp(11px,.82vw,14px)!important;
-    white-space:nowrap;
     box-sizing:border-box;
+    width:100%!important;
+    height:39px!important;
+    min-height:39px!important;
+    max-height:39px!important;
+    padding:6px 12px!important;
+    border:1px solid var(--studio-stroke-strong)!important;
+    border-radius:9px!important;
+    background:#24262b!important;
+    color:#dddfe1!important;
+    box-shadow:none!important;
+    font-size:clamp(11px,.85vw,13px)!important;
+    font-weight:630!important;
+    line-height:1.1!important;
+    text-align:center;
+    white-space:nowrap;
+    transition:background-color .16s ease,border-color .16s ease,color .16s ease!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-calendar-row .is-current{
+    color:var(--bt-on-primary)!important;
+    background:var(--bt-primary)!important;
+    border-color:var(--bt-primary)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-calendar-btn{
+    display:flex!important;
+    justify-content:space-between!important;
+    gap:5px!important;
   }
   body.bali-guest-theme #homeSection .bali-home-calendar-btn strong{
-    font-size:clamp(11px,.82vw,14px)!important;
+    flex:1 1 auto;
+    min-width:0;
+    font-size:clamp(11px,.82vw,13px)!important;
+    text-align:left;
     white-space:nowrap;
   }
+  body.bali-guest-theme #homeSection .bali-home-calendar-btn .bali-custom-icon{
+    width:17px!important;
+    height:17px!important;
+  }
+
+  /* Gallery cards are editorial portrait covers. Square artwork remains square,
+     information stays below it, and the saved red heart is unchanged. */
   body.bali-guest-theme #homeSection .bali-home-events{
-    height:0!important;
+    display:flex!important;
     flex:1 1 0!important;
     width:100%;
+    height:0!important;
     min-height:0!important;
     max-height:none!important;
-    gap:clamp(12px,1.25vw,20px)!important;
-    padding:clamp(10px,1.35vh,16px) clamp(12px,1.5vw,25px)!important;
     align-items:center;
     justify-content:flex-start;
+    gap:clamp(13px,1.4vw,25px)!important;
+    padding:clamp(13px,1.5vw,25px) clamp(17px,2vw,31px)!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    scroll-snap-type:x mandatory;
+    scrollbar-width:none;
+    touch-action:pan-x pan-y;
   }
   body.bali-guest-theme #homeSection .bali-home-events > .bali-home-event-card{
     flex:0 0 auto!important;
-    height:min(91%,620px)!important;
-    max-height:min(91%,620px)!important;
+    align-self:center;
     width:auto!important;
-    aspect-ratio:9/16!important;
-    border-radius:14px!important;
+    height:min(93%,620px)!important;
+    max-height:93%!important;
+    aspect-ratio:3/4!important;
+    min-width:0;
+    min-height:0;
+    border-radius:13px!important;
+    border:1px solid var(--studio-stroke-strong)!important;
+    background:#1d1f24!important;
+    box-shadow:none!important;
     scroll-snap-align:start;
+    transition:border-color .18s ease,transform .18s ease!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-poster-wrap{
+    aspect-ratio:1/1;
+    border-color:var(--studio-stroke)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-event-info{
+    background:#1d1f24!important;
+    padding:clamp(11px,1.25vw,18px)!important;
+    gap:clamp(5px,.65vh,9px)!important;
+    overflow:hidden!important;
   }
   body.bali-guest-theme #homeSection .bali-home-event-info h3{
-    font-size:clamp(14px,1.05vw,19px)!important;
-    line-height:1.2!important;
+    color:#f8f8f8!important;
+    font-size:clamp(15px,1.15vw,20px)!important;
+    font-weight:740!important;
+    line-height:1.15!important;
+    letter-spacing:-.035em!important;
   }
   body.bali-guest-theme #homeSection .bali-home-event-hours{
-    font-size:clamp(12px,.92vw,15px)!important;
+    color:#f3f3f3!important;
+    font-size:clamp(12px,.84vw,14px)!important;
+    font-weight:670!important;
   }
   body.bali-guest-theme #homeSection .bali-home-event-description{
-    font-size:clamp(11px,.8vw,13px)!important;
+    color:#bcc0c4!important;
+    font-size:clamp(10px,.76vw,12px)!important;
+    line-height:1.35!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-event-count{
+    color:#9da2a8!important;
+    font-size:11px!important;
+    margin-top:auto!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-heart{
+    top:11px!important;
+    right:11px!important;
+    width:37px!important;
+    height:37px!important;
+    background:rgba(11,13,16,.62)!important;
+    border:1px solid rgba(255,255,255,.36)!important;
+    border-radius:50%!important;
+    box-shadow:none!important;
   }
 
-  /* Menu retains the established banner look, but NOT a screen-wide button. */
+  /* Compact horizontal menu signpost — no oversized full-width gold button. */
   body.bali-guest-theme #homeSection .bali-home-menu-banner{
-    grid-column:1 / -1;
+    grid-column:1/-1;
     grid-row:2;
-    display:flex!important;
     width:100%!important;
-    max-width:100%!important;
-    height:clamp(67px,8.5vh,91px)!important;
-    min-height:clamp(67px,8.5vh,91px)!important;
+    max-width:none!important;
+    min-width:0;
+    height:74px!important;
+    min-height:74px!important;
+    max-height:none!important;
     margin:0!important;
-    border-radius:15px!important;
-    box-sizing:border-box;
+    padding:0 18px!important;
+    display:flex!important;
+    align-items:center;
+    gap:15px!important;
+    background:#23252a!important;
+    border:1px solid var(--studio-stroke-strong)!important;
+    border-radius:14px!important;
+    box-shadow:none!important;
+    transform:none!important;
+    filter:none!important;
+    transition:background-color .16s ease,border-color .16s ease!important;
+  }
+  body.bali-guest-theme #homeSection .bali-menu-banner-icon{
+    flex:0 0 50px!important;
+    width:50px!important;
+    height:50px!important;
+    max-height:50px!important;
+    margin:0!important;
+    padding:0!important;
+    background:#303339!important;
+    border:1px solid var(--studio-stroke)!important;
+    border-radius:10px!important;
+    color:var(--bt-primary)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-menu-banner-icon .bali-custom-icon{
+    width:28px!important;
+    height:28px!important;
   }
   body.bali-guest-theme #homeSection .bali-home-menu-banner strong{
-    font-size:clamp(22px,1.8vw,29px)!important;
+    color:#f7f7f8!important;
+    font-size:clamp(22px,2vw,31px)!important;
+    font-weight:720!important;
+    letter-spacing:-.05em!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-menu-banner small{
+    color:#afb2b8!important;
+    font-size:12px!important;
+    margin-top:3px;
+  }
+  body.bali-guest-theme #homeSection .bali-menu-banner-arrow{
+    color:var(--bt-text)!important;
   }
 
-  /* One contact panel. The inner four controls are identical in width/height:
-     x = (available panel width - 3*gaps) / 4, capped at 220px each.
-     The social group gets 3x+2gap; the address gets x. */
+  /* Contact pane: use display:contents to make all FOUR existing links equal
+     grid siblings. No JS, nesting, href or hit area is altered. */
   body.bali-guest-theme #homeSection .bali-home-contacts-card{
-    --bali-contact-gap:10px;
     display:grid!important;
-    grid-column:1 / -1;
+    grid-column:1/-1;
     grid-row:3;
-    grid-template-columns:
-      minmax(0,min(calc(75% - 2.5px),680px))
-      minmax(0,min(calc(25% - 7.5px),220px));
+    width:100%!important;
+    max-width:none!important;
+    min-width:0;
+    margin:0!important;
+    padding:15px clamp(15px,1.6vw,24px)!important;
+    grid-template-columns:repeat(4,minmax(0,154px))!important;
     grid-template-rows:auto 50px;
-    column-gap:var(--bali-contact-gap);
-    row-gap:9px;
     align-content:center;
     justify-content:center;
     align-items:center;
-    width:100%!important;
-    max-width:none!important;
-    min-width:0;
-    margin:0!important;
-    padding:clamp(10px,1.35vh,17px) clamp(14px,2vw,28px)!important;
-    border-radius:16px!important;
+    column-gap:10px;
+    row-gap:11px;
+    background:#17191d!important;
+    border:1px solid var(--studio-stroke)!important;
+    border-radius:14px!important;
+    box-shadow:none!important;
     box-sizing:border-box;
+    overflow:hidden;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card::before{
+    display:none!important;
   }
   body.bali-guest-theme #homeSection .bali-home-contacts-heading{
-    grid-column:1 / -1;
+    grid-column:1/-1;
     grid-row:1;
-    justify-self:stretch;
     width:100%;
     min-width:0;
     margin:0!important;
-    padding:0 2px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
   }
   body.bali-guest-theme #homeSection .bali-home-contacts-heading h2{
-    font-size:clamp(14px,1.13vw,18px)!important;
+    font-size:clamp(15px,1.16vw,19px)!important;
+    color:#f3f4f4!important;
+    letter-spacing:-.035em;
+    font-weight:730!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-heading span{
+    color:#a2a5aa!important;
+    font-size:10px!important;
   }
   body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-home-social{
-    grid-column:1;
-    grid-row:2;
-    display:grid!important;
-    grid-template-columns:repeat(3,minmax(0,1fr))!important;
-    align-items:stretch;
-    width:100%!important;
-    max-width:none!important;
-    min-width:0;
-    margin:0!important;
-    gap:var(--bali-contact-gap)!important;
+    display:contents!important;
   }
-  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-home-social .bali-social-btn,
+  body.bali-guest-theme #homeSection .bali-home-social .bali-social-phone{grid-column:1;grid-row:2}
+  body.bali-guest-theme #homeSection .bali-home-social .bali-social-telegram{grid-column:2;grid-row:2}
+  body.bali-guest-theme #homeSection .bali-home-social .bali-social-instagram{grid-column:3;grid-row:2}
+
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-social-btn,
   body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map{
     box-sizing:border-box;
     display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
     width:100%!important;
     max-width:none!important;
     min-width:0;
@@ -185,45 +354,56 @@
     min-height:50px!important;
     max-height:50px!important;
     margin:0!important;
-    align-items:center;
-    justify-content:center;
+    padding:7px 10px!important;
+    background:#25282d!important;
+    color:#e7e8e9!important;
+    border:1px solid var(--studio-stroke-strong)!important;
     border-radius:10px!important;
     box-shadow:none!important;
+    text-align:center;
+    transition:background-color .18s ease,border-color .18s ease!important;
   }
   body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map{
-    grid-column:2;
+    grid-column:4;
     grid-row:2;
     position:relative;
-    padding:0 8px 0 32px!important;
-    white-space:normal;
-    text-align:center;
+    padding:6px 8px 6px 31px!important;
   }
   body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-address{
     display:block;
     width:100%;
     min-width:0;
-    line-height:1.2!important;
-    font-size:clamp(10px,.84vw,13px)!important;
-    font-weight:650;
-    text-align:center;
+    font-size:clamp(10px,.74vw,12px)!important;
+    font-weight:630!important;
+    line-height:1.15!important;
+    color:#f0f0f0!important;
     overflow-wrap:normal;
+    white-space:normal;
+    text-align:center;
   }
   body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-pin{
-    left:7px!important;
+    position:absolute;
     top:50%!important;
-    width:22px!important;
-    height:27px!important;
+    left:8px!important;
+    width:19px!important;
+    height:24px!important;
+    margin:0!important;
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+    color:var(--bt-primary)!important;
   }
   body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-pin svg{
-    width:22px!important;
-    height:27px!important;
-  }
-  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-social-svg{
-    width:24px!important;
+    width:19px!important;
     height:24px!important;
   }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-social-svg{
+    width:23px!important;
+    height:23px!important;
+    flex:0 0 23px!important;
+  }
 
-  /* Full-width subpages too. Keep controls contained and readable. */
+  /* Desktop event and catalog pages also use available width. */
   body.bali-guest-theme #eventsSection > .container,
   body.bali-guest-theme #menuPage .categories > .container,
   body.bali-guest-theme #menuPage .bali-menu-search > .container,
@@ -231,74 +411,145 @@
     width:100%!important;
     max-width:none!important;
     box-sizing:border-box;
-    padding-left:var(--bali-desktop-side)!important;
-    padding-right:var(--bali-desktop-side)!important;
+    padding-inline:var(--studio-inset)!important;
   }
   body.bali-guest-theme #eventsSection #eventsGrid{
     width:100%;
-    min-width:0;
     max-width:none!important;
+    min-width:0;
   }
 }
-/* On a desktop/laptop wide enough for both footer sections, arrange them as
-   a compact editorial control row — no oversized full-width Menu button. */
-@media (min-width:1100px){
+
+/* Large display: event gallery left, elegant controls in a side rail. */
+@media (min-width:1180px){
   body.bali-guest-theme #homeSection .bali-home-inner{
-    grid-template-columns:minmax(270px,min(28vw,420px)) minmax(0,1fr)!important;
-    grid-template-rows:minmax(0,1fr) auto!important;
+    grid-template-columns:minmax(0,1fr) clamp(320px,25vw,400px)!important;
+    grid-template-rows:minmax(145px, 0.34fr) minmax(265px,1fr)!important;
+    row-gap:var(--studio-gap)!important;
+    column-gap:var(--studio-gap)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-events-panel{
+    grid-column:1;
+    grid-row:1/3;
   }
   body.bali-guest-theme #homeSection .bali-home-menu-banner{
-    grid-column:1;
-    grid-row:2;
+    grid-column:2;
+    grid-row:1;
     height:100%!important;
-    min-height:100px!important;
-    max-height:136px!important;
-    padding-inline:clamp(13px,1.6vw,23px)!important;
+    min-height:0!important;
+    max-height:none!important;
+    align-self:stretch;
+    padding:clamp(16px,1.8vw,27px)!important;
+    gap:clamp(12px,1.1vw,18px)!important;
   }
   body.bali-guest-theme #homeSection .bali-menu-banner-icon{
-    flex-basis:clamp(45px,4.5vw,61px)!important;
-    width:clamp(45px,4.5vw,61px)!important;
+    flex:0 0 clamp(52px,5vw,70px)!important;
+    width:clamp(52px,5vw,70px)!important;
+    height:clamp(52px,5vw,70px)!important;
+    max-height:70px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-menu-banner-icon .bali-custom-icon{
+    width:35px!important;
+    height:35px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-menu-banner strong{
+    font-size:clamp(26px,2.3vw,39px)!important;
   }
   body.bali-guest-theme #homeSection .bali-home-contacts-card{
     grid-column:2;
     grid-row:2;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:auto 55px 55px!important;
+    gap:clamp(9px,1.1vw,14px)!important;
+    padding:clamp(19px,2.15vw,32px)!important;
+    align-content:center!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-heading{
+    margin-bottom:clamp(9px,1vw,17px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-heading h2{
+    font-size:clamp(22px,2.05vw,31px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-social .bali-social-phone{grid-column:1;grid-row:2}
+  body.bali-guest-theme #homeSection .bali-home-social .bali-social-telegram{grid-column:2;grid-row:2}
+  body.bali-guest-theme #homeSection .bali-home-social .bali-social-instagram{grid-column:1;grid-row:3}
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map{
+    grid-column:2;
+    grid-row:3;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-social-btn,
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map{
+    height:55px!important;
+    min-height:55px!important;
+    max-height:55px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-address{
+    font-size:clamp(10px,.77vw,12px)!important;
   }
 }
-@media (min-width:768px) and (max-height:700px){
+/* Narrow laptop viewports: same content but a calmer, shorter footer. */
+@media (min-width:768px) and (max-width:1179px){
   body.bali-guest-theme #homeSection .bali-home-inner{
-    row-gap:8px!important;
-    padding-top:5px!important;
-    padding-bottom:7px!important;
+    grid-template-rows:minmax(0,1fr) auto auto!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-events-panel{grid-row:1}
+  body.bali-guest-theme #homeSection .bali-home-menu-banner{grid-row:2}
+  body.bali-guest-theme #homeSection .bali-home-contacts-card{grid-row:3}
+}
+/* Reduced-height laptop: prevent footer controls from clipping. */
+@media (min-width:768px) and (max-height:720px){
+  body.bali-guest-theme #homeSection .bali-home-inner{
+    row-gap:9px!important;
+    padding-top:7px!important;
+    padding-bottom:8px!important;
   }
   body.bali-guest-theme #homeSection .bali-home-calendar-row{
-    padding:7px 12px!important;
+    padding:11px 15px 10px!important;
+    gap:7px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-calendar-row::before{
+    font-size:25px!important;
+    margin-bottom:2px;
   }
   body.bali-guest-theme #homeSection .bali-home-calendar-row button{
-    min-height:38px!important;
-    height:38px!important;
-    max-height:38px!important;
+    height:34px!important;
+    min-height:34px!important;
+    max-height:34px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-events{
+    padding:9px 14px!important;
   }
   body.bali-guest-theme #homeSection .bali-home-menu-banner{
-    min-height:58px!important;
-    height:58px!important;
+    height:60px!important;
+    min-height:60px!important;
   }
   body.bali-guest-theme #homeSection .bali-home-contacts-card{
+    padding:9px 14px!important;
     grid-template-rows:auto 42px;
-    row-gap:4px;
-    padding:7px 12px!important;
+    row-gap:5px;
   }
-  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-home-social .bali-social-btn,
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-social-btn,
   body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map{
     height:42px!important;
     min-height:42px!important;
     max-height:42px!important;
   }
 }
-@media (min-width:1100px) and (max-height:700px){
+@media (min-width:1180px) and (max-height:720px){
   body.bali-guest-theme #homeSection .bali-home-menu-banner{
-    min-height:84px!important;
     height:100%!important;
-    max-height:110px!important;
+    min-height:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card{
+    grid-template-rows:auto 42px 42px!important;
+    gap:8px!important;
+    padding:13px 18px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-social-btn,
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map{
+    height:42px!important;
+    min-height:42px!important;
+    max-height:42px!important;
   }
 }
 @media (min-width:768px) and (max-height:520px){
@@ -308,11 +559,30 @@
     grid-template-rows:minmax(180px,1fr) auto auto!important;
   }
 }
-
-/* Extra-short desktop landscape: keep the same two-column footer
-   rather than creating a vacant third grid row. */
-@media (min-width:1100px) and (max-height:520px){
+@media (min-width:1180px) and (max-height:520px){
   body.bali-guest-theme #homeSection .bali-home-inner{
-    grid-template-rows:minmax(180px,1fr) auto!important;
+    grid-template-rows:minmax(155px,.34fr) minmax(230px,1fr)!important;
+  }
+}
+/* Deliberate, quiet interaction states on devices with a mouse. */
+@media (min-width:768px) and (hover:hover){
+  body.bali-guest-theme #homeSection .bali-home-events > .bali-home-event-card:hover{
+    border-color:rgba(255,255,255,.47)!important;
+    transform:translateY(-2px);
+  }
+  body.bali-guest-theme #homeSection .bali-home-menu-banner:hover,
+  body.bali-guest-theme #homeSection .bali-home-contacts-card :is(.bali-social-btn,.bali-yandex-map):hover{
+    background:#30343a!important;
+    border-color:rgba(255,255,255,.35)!important;
+    filter:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-calendar-row button:not(.is-current):hover{
+    background:#32353b!important;
+    border-color:rgba(255,255,255,.28)!important;
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  body.bali-guest-theme #homeSection .bali-home-events > .bali-home-event-card{
+    transition:none!important;
   }
 }
