@@ -327,7 +327,15 @@
               <button type="button" id="baliThemeCancel">Вернуть опубликованную</button>
             </div>
             <p id="baliThemeStatus" class="status" role="status" aria-live="polite">Загружаем опубликованную тему...</p>
-            <p id="baliThemeRulesHelp" class="hint" hidden>Для сохранения нужно <a href="https://github.com/Nik13599/BALI-MENU/blob/main/firestore.rules" target="_blank" rel="noopener noreferrer">опубликовать новые правила Firestore</a> в <a href="https://console.firebase.google.com/project/bali-menu-5a48b/firestore/rules" target="_blank" rel="noopener noreferrer">Firebase Console → Rules → Publish</a>. Не удаляйте старые правила.</p>
+            <div id="baliThemeRulesHelp" class="bali-theme-rules-help" hidden>
+              <strong>Нужна публикация правил Firebase — только один раз.</strong>
+              <p>Скопируйте готовые правила, откройте Firebase Console → Firestore → Rules, вставьте их вместо текущего текста и нажмите <b>Publish</b>. После публикации обновите эту страницу. Базу данных удалять не нужно.</p>
+              <div class="actions">
+                <button type="button" id="baliCopyRules">Скопировать правила</button>
+                <a href="https://console.firebase.google.com/project/bali-menu-5a48b/firestore/rules" target="_blank" rel="noopener noreferrer">Открыть Firebase Rules ↗</a>
+                <a href="https://github.com/Nik13599/BALI-MENU/blob/main/firestore.rules" target="_blank" rel="noopener noreferrer">Просмотреть исходник ↗</a>
+              </div>
+            </div>
           </section>
         </form>
       </section>
