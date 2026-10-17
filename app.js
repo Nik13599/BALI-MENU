@@ -343,13 +343,16 @@ function renderHomeEvents() {
     const preserveScroll=track.dataset.homeView==="all";
     track.dataset.homeView="all";
     const today=minskDateToday();
+    // Five event slots are filled ONLY on the PC HOME preview; the complete
+    // calendar below never receives these promotional placeholders.
+    const isPcHome=window.matchMedia("(min-width:1180px)").matches;
     const upcoming=availableEvents
         .filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date||"")&&e.date>=today)
         .sort((a,b)=>a.date.localeCompare(b.date))
         // The FULL events calendar remains unlimited; only the homepage is capped.
         .slice(0,window.matchMedia("(max-width:767px)").matches?3:5);
     track.replaceChildren();
-    if(!upcoming.length){
+    if(!upcoming.length&&!isPcHome){
         const p=document.createElement("p");
         p.className="bali-home-event-empty";
         p.textContent="Афиши ближайших мероприятий пока не опубликованы.";
@@ -480,6 +483,39 @@ function renderHomeEvents() {
         card.append(posterWrap,information,openCard,heart);
         track.append(card);
     }
+    // Fill only vacant PC HOME slots. These are decorative announcements:
+    // no fake date, RSVP heart, event link, or calendar record is created.
+    if(isPcHome){
+        const missing=Math.max(0,5-upcoming.length);
+        for(let i=0;i<missing;i++){
+            const card=document.createElement("article");
+            card.className="bali-home-event-card bali-home-event-placeholder";
+            card.setAttribute("aria-label","Скоро новое мероприятие BALI");
+            const poster=document.createElement("div");
+            poster.className="bali-home-poster-wrap bali-home-placeholder-poster";
+            const ornament=document.createElement("span");
+            ornament.className="bali-home-placeholder-ornament";
+            ornament.setAttribute("aria-hidden","true");
+            ornament.textContent="✦";
+            const kicker=document.createElement("span");
+            kicker.className="bali-home-placeholder-kicker";
+            kicker.textContent="BALI NIGHT CLUB";
+            const message=document.createElement("strong");
+            message.className="bali-home-placeholder-message";
+            message.textContent="Мы готовим для вас что-то интересное";
+            poster.append(ornament,kicker,message);
+            const information=document.createElement("div");
+            information.className="bali-home-event-info bali-home-placeholder-info";
+            const name=document.createElement("h3");
+            name.textContent="СКОРО В BALI";
+            const hint=document.createElement("p");
+            hint.className="bali-home-event-hours";
+            hint.textContent="Совсем скоро узнаете";
+            information.append(name,hint);
+            card.append(poster,information);
+            track.append(card);
+        }
+    }
     if(preserveScroll&&previousScroll>0){
         requestAnimationFrame(()=>{
             track.scrollLeft=Math.min(previousScroll,Math.max(0,track.scrollWidth-track.clientWidth));
@@ -492,6 +528,9 @@ function renderHomeEvents() {
 // Switch between three phone posters and five tablet/desktop posters
 // when the browser crosses the responsive breakpoint.
 window.matchMedia("(max-width:767px)").addEventListener("change",()=>{
+    if(document.body.dataset.baliPage==="home")renderHomeEvents();
+});
+window.matchMedia("(min-width:1180px)").addEventListener("change",()=>{
     if(document.body.dataset.baliPage==="home")renderHomeEvents();
 });
 function renderUpcomingEvents() {
