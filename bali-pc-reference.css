@@ -853,3 +853,26 @@
     text-align:center!important;
   }
 }
+
+/* v78: compact uppercase desktop navigation with consistent outline icons. */
+@media(min-width:1180px){
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button{
+    font-family:Manrope,Inter,sans-serif!important;
+    font-size:clamp(11px,.98vw,13px)!important;
+    font-weight:780!important;
+    letter-spacing:.07em!important;
+    gap:12px!important;
+    text-transform:uppercase;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation .bali-pc-nav-icon{
+    display:grid!important;place-items:center;
+    flex:0 0 28px;width:28px!important;height:28px!important;
+    color:inherit!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation .bali-pc-nav-icon svg{
+    display:block;width:24px;height:24px;stroke:currentColor;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button.active .bali-pc-nav-icon{
+    color:var(--bt-primary,#b9ff51)!important;
+  }
+}
