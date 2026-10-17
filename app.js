@@ -497,6 +497,7 @@ function renderHomeEvents() {
             card.className="bali-home-event-card bali-home-event-placeholder";
             card.setAttribute("aria-label",settings.posterTitle+" — "+settings.footerTitle);
             card.style.setProperty("--bali-secret-accent",settings.accentColor);
+            card.style.setProperty("--bali-placeholder-footer",settings.backgroundColor);
             const poster=document.createElement("div");
             poster.className="bali-home-poster-wrap bali-home-placeholder-poster";
             const picture=document.createElement("img");
