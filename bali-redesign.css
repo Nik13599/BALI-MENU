@@ -627,3 +627,371 @@ body[data-bali-page="events"]{overflow-y:hidden}
     min-height:41px;height:41px;
   }
 }
+
+/* BALI v44 — device-responsive guest layout.
+   Phones (<=767px) keep their fixed view, tablet (768–1199px) and desktop
+   (>=1200px) use spacious but still viewport-bound views. Category labels,
+   RSVP, cart and account actions remain driven by existing JavaScript. */
+
+/* Large phones with very short landscape viewports: preserve access to actions. */
+@media(max-width:767px) and (max-height:560px){
+  .bali-home-story-note{display:none}
+  .bali-home-contacts-heading{display:none!important}
+  .bali-home-menu-banner{height:56px;min-height:56px!important;flex-basis:56px}
+  .bali-menu-banner-icon{height:52px}
+  .bali-home-contacts-card{padding:5px 8px;margin-top:4px}
+  .bali-home-contacts-card .bali-home-social{margin:2px auto 4px}
+  .bali-home-contacts-card .bali-home-social .bali-social-btn{height:36px;min-height:36px}
+  .bali-home-contacts-card .bali-yandex-map{height:34px;min-height:34px}
+}
+
+/* Tablets and desktops: fixed application frame, scroll only data lists. */
+@media (min-width:768px){
+  :root{--bali-bottom-size:clamp(68px,8dvh,82px)}
+  html{
+    height:100%;
+    overflow:hidden;
+    overscroll-behavior:none;
+  }
+  body{
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+    height:100dvh;
+    max-height:100dvh;
+    min-height:0!important;
+    overflow:hidden!important;
+    padding-bottom:calc(var(--bali-bottom-size) + env(safe-area-inset-bottom));
+  }
+  .bali-preview-banner{
+    flex:0 0 auto;
+    font-size:11px;
+    line-height:1.25;
+    padding:5px 16px;
+    text-align:center;
+  }
+  .header{flex:0 0 auto;position:relative;top:auto}
+  .header .header-content{
+    width:100%;
+    max-width:1240px;
+    min-height:62px!important;
+    padding:10px clamp(20px,3vw,36px)!important;
+  }
+  .header .logo .logo-text{font-size:clamp(24px,2.2vw,31px)!important}
+  .header #accountBtn{min-height:40px!important;font-size:13px!important;max-width:225px!important}
+  .bali-bottom-nav{
+    width:min(92%,950px);
+    max-width:950px;
+    margin-inline:auto;
+    min-height:var(--bali-bottom-size);
+    border-radius:18px 18px 0 0;
+  }
+  .bali-bottom-nav button{gap:2px}
+  .bali-bottom-nav .bali-nav-glyph{height:30px}
+  .bali-bottom-nav small{font-size:12px}
+
+  /* All guest pages get only the space between header and bottom navigation. */
+  body[data-bali-page] > #homeSection,
+  body[data-bali-page] > #eventsSection,
+  body[data-bali-page] > #menuPage,
+  body[data-bali-page] > #profileSection,
+  body[data-bali-page] > #contactsSection{
+    flex:1 1 auto;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:hidden!important;
+    padding-top:0!important;
+    padding-bottom:0!important;
+  }
+  .bali-home{display:block!important}
+  .bali-home .bali-home-inner{
+    height:100%;
+    max-width:clamp(740px,85vw,1100px);
+    min-height:0;
+    overflow:hidden;
+    padding:8px 18px 11px!important;
+    display:flex;
+    flex-direction:column;
+    gap:0;
+  }
+  .bali-home-calendar-row{
+    flex:0 0 auto;
+    grid-template-columns:minmax(230px,1fr) auto auto;
+    gap:12px;
+    margin:5px 0 11px;
+  }
+  .bali-home-calendar-row button{
+    min-height:47px;
+    padding:9px 17px;
+    font-size:14px;
+  }
+  .bali-home-calendar-btn{justify-content:flex-start;gap:14px}
+  .bali-home-calendar-btn strong{font-size:15px}
+  .bali-home-events{
+    flex:1 1 auto;
+    min-height:0!important;
+    height:0;
+    align-items:center;
+    gap:15px;
+    padding:3px 5px;
+    scroll-snap-type:x mandatory;
+    overflow-x:auto;
+    overflow-y:hidden;
+    touch-action:pan-x pan-y;
+  }
+  .bali-home-events>.bali-home-event-card{
+    flex:0 0 auto;
+    align-self:center;
+    width:auto;
+    height:min(91%,450px);
+    max-height:91%;
+    aspect-ratio:9/16;
+    scroll-snap-align:start;
+    border-radius:15px;
+  }
+  .bali-home-dots{flex:0 0 auto;padding:4px 0;font-size:11px}
+  .bali-home-story-note{
+    flex:0 0 auto;
+    margin:4px 0 11px;
+    font-size:12px;
+    line-height:1.35;
+  }
+  .bali-home-menu-banner{
+    flex:0 0 auto;
+    align-self:center;
+    position:relative;
+    left:auto;
+    transform:none;
+    width:min(94%,880px);
+    min-height:78px;
+    height:78px;
+    margin:0;
+    padding:0 18px;
+  }
+  .bali-menu-banner-icon{height:73px;flex-basis:68px}
+  .bali-home-contacts-card{
+    flex:0 0 auto;
+    width:min(100%,900px);
+    align-self:center;
+    margin:11px 0 0;
+    padding:10px 18px 12px;
+  }
+  .bali-home-contacts-heading{margin-bottom:5px}
+  .bali-home-contacts-heading h2{font-size:19px}
+  .bali-home-contacts-card .bali-home-social{
+    width:min(100%,375px);
+    margin:5px auto 8px;
+    gap:12px;
+  }
+  .bali-home-contacts-card .bali-home-social .bali-social-btn{
+    min-height:49px;height:49px;
+    aspect-ratio:auto;
+    padding:8px;
+    border-radius:12px;
+  }
+  .bali-home-contacts-card .bali-social-btn .bali-social-svg{
+    width:25px;height:25px;flex-basis:25px;
+  }
+  .bali-home-contacts-card .bali-yandex-map{
+    width:min(100%,630px);
+    min-height:44px;height:44px;
+    margin:5px auto 0;
+    padding:6px 50px;
+    border-radius:11px;
+  }
+  .bali-home-contacts-card .bali-yandex-address{font-size:13px}
+
+  /* Events occupy a fixed panel; carousel alone scrolls horizontally. */
+  #eventsSection{display:flex!important;flex-direction:column}
+  #eventsSection[hidden]{display:none!important}
+  #eventsSection>.container{
+    display:flex;
+    flex-direction:column;
+    width:min(100%,1180px);
+    height:100%;
+    min-height:0;
+    padding:12px 18px 10px;
+  }
+  #eventsSection .events-topbar{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:nowrap;
+    gap:16px;
+    margin:0 0 10px;
+  }
+  #eventsSection .events-topbar .events-heading{display:flex!important;margin:0}
+  #eventsSection .events-topbar .events-eyebrow{
+    font-size:clamp(15px,1.8vw,20px);
+    line-height:1.2;
+    color:#e9c98e;
+  }
+  #eventsSection .events-topbar .events-view-tabs{
+    width:auto;
+    display:flex;
+    gap:9px;
+    padding:0;
+    border:0;
+    background:transparent;
+  }
+  #eventsSection .events-topbar .events-view-button{
+    width:auto;
+    min-height:43px;
+    padding:8px 18px;
+    font-size:13px;
+  }
+  #eventsSection .events-carousel-shell{
+    flex:1 1 auto;
+    height:0;
+    min-height:0;
+  }
+  #eventsSection #eventsGrid{
+    flex:1 1 auto;
+    height:0!important;
+    min-height:0!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    touch-action:pan-x pan-y;
+    scroll-snap-type:x mandatory;
+  }
+  #eventsSection #eventsGrid>.event-card{height:calc(100% - 18px)!important;max-height:calc(100% - 18px)!important}
+  #eventsSection #eventsGrid>.event-card>.event-card-body{
+    max-height:75%;
+    overflow-y:auto;
+    scrollbar-width:thin;
+  }
+  #eventsSection .events-carousel-footer{flex:0 0 auto}
+
+  /* Sticky/visible category tabs, stationary cart and separately scrollable products. */
+  #menuPage{
+    display:flex;
+    flex-direction:column;
+    width:100%;
+    min-height:0!important;
+  }
+  #menuPage[hidden]{display:none!important}
+  #menuPage .categories{
+    position:relative;
+    top:auto!important;
+    flex:0 0 auto;
+    z-index:4;
+    padding:8px 0 5px;
+  }
+  #menuPage .categories>.container{max-width:1360px}
+  #menuPage .category-buttons{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scroll-snap-type:x proximity;
+    overscroll-behavior-x:contain;
+    touch-action:pan-x pan-y;
+    scrollbar-width:thin;
+  }
+  #menuPage .bali-menu-search{
+    flex:0 0 auto;
+    width:100%;
+    max-width:1360px;
+    margin:7px auto 5px;
+    padding-inline:clamp(12px,2.8vw,28px);
+  }
+  #menuPage .menu-section{
+    flex:1 1 auto;
+    min-height:0!important;
+    height:auto;
+    max-height:none;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    overscroll-behavior-y:contain;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
+    padding:10px 0 95px!important;
+    scrollbar-width:thin;
+  }
+  #menuPage .menu-category-block{scroll-margin-top:12px}
+  .bali-cart-dock{
+    max-width:560px;
+    bottom:calc(var(--bali-bottom-size) + env(safe-area-inset-bottom) + 9px);
+  }
+
+  /* Fixed profile card without inaccessible overflow on shorter monitors. */
+  .bali-profile-page{display:flex;flex-direction:column;justify-content:center;padding:0!important}
+  .bali-profile-page>.container{width:100%;min-height:0;max-height:100%}
+  .bali-profile-card{
+    max-width:640px;
+    max-height:100%;
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    margin:0 auto;
+  }
+  .bali-contacts{display:flex;flex-direction:column;justify-content:center}
+  .bali-contacts-inner{max-height:100%;overflow-y:auto;overscroll-behavior-y:contain}
+}
+
+/* Portrait tablet: wider cards, compact contact strip, three menu columns. */
+@media (min-width:768px) and (max-width:1199px){
+  .bali-home .bali-home-inner{max-width:870px;padding:6px 18px 8px!important}
+  .bali-home-calendar-row button{min-height:44px;padding:8px 12px;font-size:12px}
+  .bali-home-menu-banner{height:73px;min-height:73px}
+  .bali-menu-banner-icon{height:69px}
+  .bali-home-contacts-card{margin-top:8px;padding:8px 13px 9px}
+  .bali-home-contacts-card .bali-home-social .bali-social-btn{height:44px;min-height:44px}
+  .bali-home-contacts-card .bali-yandex-map{height:41px;min-height:41px}
+  #menuPage .menu-category-block .menu-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #eventsSection>.container{padding-inline:12px}
+  #eventsSection .events-topbar .events-view-button{padding-inline:13px}
+}
+
+/* Large desktop: keep original 5-column catalog and a centered dashboard. */
+@media (min-width:1200px){
+  .bali-home .bali-home-inner{max-width:1140px}
+  .bali-home-menu-banner{max-width:920px}
+  #menuPage .menu-category-block .menu-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+  #eventsSection>.container{max-width:1250px}
+}
+
+/* Short laptop/tablet landscape: favor functional controls over decoration. */
+@media (min-width:768px) and (max-height:720px){
+  :root{--bali-bottom-size:62px}
+  .header .header-content{min-height:52px!important;padding-block:6px!important}
+  .bali-preview-banner{font-size:9px;padding-block:3px}
+  .bali-home .bali-home-inner{padding-block:4px!important}
+  .bali-home-calendar-row{margin:3px 0 6px}
+  .bali-home-calendar-row button{min-height:39px;padding-block:5px}
+  .bali-home-dots{padding:1px}
+  .bali-home-story-note{font-size:10px;margin:2px 0 4px}
+  .bali-home-menu-banner{height:64px;min-height:64px}
+  .bali-menu-banner-icon{height:60px}
+  .bali-home-contacts-card{margin-top:5px;padding:6px 12px}
+  .bali-home-contacts-heading{margin-bottom:2px}
+  .bali-home-contacts-heading h2{font-size:15px}
+  .bali-home-contacts-card .bali-home-social{margin:3px auto 5px}
+  .bali-home-contacts-card .bali-home-social .bali-social-btn{height:37px;min-height:37px}
+  .bali-home-contacts-card .bali-yandex-map{height:36px;min-height:36px}
+  #eventsSection .events-topbar{margin-bottom:4px}
+}
+
+/* Exception: a very short rotated tablet window must never hide action buttons. */
+@media (min-width:768px) and (max-height:520px){
+  .bali-home .bali-home-inner{
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    scrollbar-width:thin;
+  }
+  .bali-home-events{flex:0 0 170px;height:170px}
+  .bali-home-menu-banner{flex-shrink:0}
+  .bali-home-contacts-card{flex-shrink:0}
+  .bali-profile-page>.container{overflow-y:auto}
+}
+
+/* Make touch controls consistent for all three classes of devices. */
+@media (pointer:coarse){
+  .bali-bottom-nav button{min-width:0;touch-action:manipulation}
+  .bali-home-calendar-row button,
+  .bali-home-menu-banner,.bali-social-btn,
+  .bali-yandex-map,.bali-profile-action{
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+}
