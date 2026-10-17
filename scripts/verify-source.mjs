@@ -290,7 +290,10 @@ const approvedCss=source("bali-redesign.css");
 assert(approvedCss.includes("/* BALI v42") &&
   approvedCss.includes("height:86%!important") &&
   approvedCss.includes("aspect-ratio:9/16") &&
-  approvedCss.includes("width:calc(100vw - 8px)") &&
+  approvedCss.includes("width:94%") &&
+  approvedCss.includes("min-height:76px!important") &&
+  approvedCss.includes("min-height:66px!important") &&
+  !approvedCss.includes("width:calc(100vw - 8px)") &&
   approvedCss.includes("min-height:41px") &&
   approvedCss.includes("min-height:45px;height:45px"),
   "Homepage posters must be smaller and calendar, menu, contacts must have larger mobile controls");
@@ -304,8 +307,8 @@ assert(approvedCss.includes("/* BALI v41: compact event calendar above its tabs;
   approvedCss.includes("#eventsSection .events-topbar .events-heading{") &&
   approvedCss.includes("#eventsSection .event-interest-count{display:block!important"),
   "Events should show compact calendar, slightly shorter stories and all event details");
-assert(html.includes('bali-redesign.css?v=20261017-42') &&
-  html.indexOf('bali-redesign.css?v=20261017-42') >
+assert(html.includes('bali-redesign.css?v=20261017-43') &&
+  html.indexOf('bali-redesign.css?v=20261017-43') >
     html.indexOf('events-carousel.css?v=20261017-36'),
   "Approved mobile visual override must load last");
 assert(html.includes('id="profileSection"') &&
