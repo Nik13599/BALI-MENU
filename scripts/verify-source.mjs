@@ -151,6 +151,43 @@ assert(html.includes('class="bali-pc-sidebar-contacts"') &&
   pcReferenceCss.includes('body.bali-guest-theme #homeSection .bali-home-contacts-card{display:none!important}') &&
   !html.includes('Барная карта и кухня'),
   "PC contacts belong in persistent left sidebar, mobile contacts remain available, menu banner no subtitle");
+// Homepage design tools must be publicly read-only and safely admin-managed.
+const designAdmin=source("bali-home-design-admin.js");
+const designPublic=source("bali-home-design.js");
+const designVariants=source("bali-design-variants.js");
+const promosAdmin=source("bali-admin-promos.js");
+const promosPublic=source("bali-pc-offers.js");
+assert(admin.includes('id="adminDesignPanel"') &&
+  admin.includes('data-admin-tab="design"') &&
+  dashboardJs.includes('design: ["Дизайн главной"') &&
+  admin.includes('id="baliHomeAboutForm"') &&
+  admin.includes('id="baliHomeMerchForm"') &&
+  admin.includes('id="baliPromoForm"') &&
+  admin.includes('bali-home-design-admin.js?v=20261017-79') &&
+  admin.includes('bali-admin-promos.js?v=20261017-79') &&
+  html.includes('bali-home-design.js?v=20261017-79') &&
+  html.includes('bali-pc-offers.js?v=20261017-79') &&
+  html.includes('class="bali-pc-about-picture"') &&
+  html.includes('class="bali-pc-merch-picture"') &&
+  !html.includes('>Забронировать стол</strong>') &&
+  !html.includes('>Фотогалерея</strong>') &&
+  designAdmin.includes('makeImageVariants(') &&
+  promosAdmin.includes('makeImageVariants(') &&
+  designVariants.includes('compressImage(f,kind+"-"+suffix)') &&
+  designPublic.includes('where("published","==",true)') &&
+  promosPublic.includes('imageMobileUrl') &&
+  rules.includes("match /merch/{merchId}") &&
+  rules.includes('validHomeDesign(request.resource.data)') &&
+  rules.includes('validMerch(request.resource.data)') &&
+  rules.includes('validDesignImage(data.imageTabletUrl, 155000)'),
+  "Home Design must allow safe admin artwork uploads, responsive previews and published merch.");
+assert(html.includes('>ГЛАВНАЯ</button>') &&
+  html.includes('>КАЛЕНДАРЬ</button>') &&
+  html.includes('>МЕНЮ</button>') &&
+  html.includes('class="bali-pc-nav-icon"') &&
+  html.includes('data-bali-nav="events"') &&
+  pcReferenceCss.includes('bali-pc-nav-icon'),
+  "Desktop sidebar must use uppercase Home Calendar Menu and matching SVG icons.");
 assert(barCss.includes('grid-template-columns:repeat(4,minmax(0,190px))') &&
   barCss.includes('background:var(--bt-primary)') &&
   barCss.includes('bali-bar-row') &&
@@ -321,7 +358,7 @@ assert(themeCss.includes("/* BALI v58") &&
   !themeClient.includes('setProperty("--bg-'),
   "Theme may change interactive accents only, leaving fixed background color unchanged");
 assert(rules.includes('match /settings/{settingId}') &&
-  rules.includes("allow get: if settingId in ['appearance','menuVisibility']") &&
+  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign']") &&
   rules.includes('allow list: if false') &&
   rules.includes("settingId == 'appearance' && validAppearance(request.resource.data)") &&
   rules.includes("data.colors.keys().hasOnly(['primary','secondary','text','border'])") &&
