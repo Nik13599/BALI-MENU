@@ -939,3 +939,223 @@
   width:27px;height:27px;border:1px solid rgba(255,255,255,.35);
   border-radius:50%;color:#fff;background:rgba(0,0,0,.28);cursor:pointer;
 }
+
+/* v81 — Desktop menu/calendar share the upper baseline of the left BALI logo.
+   The profile stays fixed at the upper right, clear of calendar filters. */
+@media (min-width:1180px){
+  /* BALI wordmark starts at sidebar top (10px) + its upper padding (11px). */
+  body.bali-guest-theme[data-bali-page="menu"] #menuPage,
+  body.bali-guest-theme[data-bali-page="events"] #eventsSection{
+    padding-top:21px!important;
+  }
+  body.bali-guest-theme #menuPage #baliMenuModeSwitch{
+    display:flex!important;
+    flex-flow:row nowrap!important;
+    justify-content:center!important;
+    align-items:flex-start!important;
+    gap:clamp(8px,1vw,14px)!important;
+    padding:0 0 10px!important;
+    margin:0!important;
+    min-height:0!important;
+    border-bottom:1px solid rgba(255,255,255,.09);
+  }
+  body.bali-guest-theme #menuPage #baliMenuModeSwitch .bali-menu-mode-btn:not([hidden]){
+    flex:0 1 190px;
+    min-height:43px!important;
+    height:43px!important;
+    font-size:clamp(11px,.96vw,14px)!important;
+    border-radius:10px!important;
+  }
+  body.bali-guest-theme #menuPage .bali-kitchen-content .categories{
+    padding-top:7px!important;
+    padding-bottom:3px!important;
+  }
+  body.bali-guest-theme #menuPage .bali-menu-search{
+    margin-top:4px!important;
+    margin-bottom:4px!important;
+  }
+  body.bali-guest-theme #menuPage .menu-section{
+    padding-top:4px!important;
+    padding-bottom:15px!important;
+  }
+  /* Six tiles per dish category, including Cold Starters, Salads, etc. */
+  body.bali-guest-theme #menuPage .menu-category-block>.menu-grid,
+  body.bali-guest-theme #menuPage .menu-category-block .menu-grid.menu-category-products{
+    display:grid!important;
+    grid-template-columns:repeat(6,minmax(0,1fr))!important;
+    gap:clamp(7px,.72vw,12px)!important;
+    align-items:stretch!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .menu-item{
+    display:flex!important;
+    flex-direction:column!important;
+    min-width:0!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    border-radius:10px!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .menu-item-image{
+    display:block!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    aspect-ratio:5/3!important;
+    object-fit:cover!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .menu-item-content{
+    padding:7px 7px 9px!important;
+    gap:3px!important;
+    min-width:0!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .menu-item-category{
+    font-size:9px!important;
+    padding:3px 5px!important;
+    margin:0 0 1px!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .menu-item-header{
+    gap:3px!important;
+    margin:0!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .menu-item-name{
+    font-size:clamp(10px,.86vw,12px)!important;
+    line-height:1.28!important;
+    overflow-wrap:anywhere;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .menu-item-price{
+    font-size:clamp(11px,1vw,14px)!important;
+    line-height:1.2!important;
+    white-space:nowrap;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .menu-item-description{
+    font-size:10px!important;
+    line-height:1.3!important;
+    margin:2px 0 5px!important;
+    display:-webkit-box!important;
+    -webkit-line-clamp:2!important;
+    line-clamp:2!important;
+    -webkit-box-orient:vertical!important;
+    overflow:hidden!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .menu-purchase-controls{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:4px!important;
+    margin-top:auto!important;
+    width:100%!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .menu-quantity{
+    grid-template-columns:minmax(26px,1fr) minmax(20px,.65fr) minmax(26px,1fr)!important;
+    gap:4px!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .menu-quantity-btn{
+    height:28px!important;
+    min-height:28px!important;
+    font-size:15px!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .menu-quantity-value{
+    font-size:11px!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .menu-purchase-controls .add-to-cart-btn{
+    min-height:28px!important;
+    height:28px!important;
+    width:100%!important;
+    padding:3px!important;
+    font-size:11px!important;
+  }
+  /* Calendar headline and tabs remain in one top line; third column
+     reserves space for the independent profile control on the right. */
+  body.bali-guest-theme #eventsSection>.container{
+    padding-top:0!important;
+    padding-bottom:8px!important;
+  }
+  body.bali-guest-theme #eventsSection .events-topbar{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto clamp(200px,18.5vw,280px)!important;
+    align-items:start!important;
+    justify-content:stretch!important;
+    column-gap:clamp(8px,1vw,15px)!important;
+    min-height:48px!important;
+    margin:0 0 8px!important;
+    padding:0!important;
+  }
+  body.bali-guest-theme #eventsSection .events-topbar .events-heading{
+    display:flex!important;
+    align-items:center!important;
+    min-width:0!important;
+    min-height:44px!important;
+    grid-column:1!important;
+    margin:0!important;
+  }
+  body.bali-guest-theme #eventsSection .events-topbar #eventsHeadingGuest{
+    margin:0!important;
+    color:#f2f5f1!important;
+    font:800 clamp(24px,2.15vw,33px)/1.15 Manrope,Inter,sans-serif!important;
+    letter-spacing:.018em!important;
+    text-transform:uppercase!important;
+    white-space:nowrap!important;
+  }
+  body.bali-guest-theme #eventsSection .events-topbar #eventsViewTabs{
+    grid-column:2!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    flex-wrap:nowrap!important;
+    width:auto!important;
+    min-height:43px!important;
+    padding:0!important;
+    margin:0!important;
+    gap:7px!important;
+    background:transparent!important;
+    border:0!important;
+  }
+  body.bali-guest-theme #eventsSection .events-topbar #eventsViewTabs .events-view-button{
+    min-height:42px!important;
+    padding:8px 11px!important;
+    font-size:clamp(10px,.83vw,12px)!important;
+    white-space:nowrap!important;
+  }
+  /* Editorial fade at the side edges; configurable without touching cards.
+     An opacity of .05 means the very outer slice almost disappears. */
+  body.bali-guest-theme #eventsSection{
+    --bali-calendar-edge-width:clamp(55px,7.5vw,116px);
+    --bali-calendar-edge-opacity:.05;
+  }
+  body.bali-guest-theme #eventsSection #eventsGrid{
+    -webkit-mask-image:linear-gradient(to right,
+      rgba(0,0,0,var(--bali-calendar-edge-opacity)) 0,
+      #000 var(--bali-calendar-edge-width),
+      #000 calc(100% - var(--bali-calendar-edge-width)),
+      rgba(0,0,0,var(--bali-calendar-edge-opacity)) 100%)!important;
+    mask-image:linear-gradient(to right,
+      rgba(0,0,0,var(--bali-calendar-edge-opacity)) 0,
+      #000 var(--bali-calendar-edge-width),
+      #000 calc(100% - var(--bali-calendar-edge-width)),
+      rgba(0,0,0,var(--bali-calendar-edge-opacity)) 100%)!important;
+    scroll-snap-type:x mandatory!important;
+    scroll-behavior:smooth!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+    transition:
+      transform .38s cubic-bezier(.2,.8,.2,1),
+      opacity .38s ease,
+      filter .38s ease,
+      border-color .38s ease,
+      box-shadow .38s ease!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active{
+    opacity:1!important;
+    transform:scale(1)!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-neighbor{
+    opacity:.77!important;
+    transform:scale(.9)!important;
+  }
+}
+@media (min-width:1180px) and (prefers-reduced-motion:reduce){
+  body.bali-guest-theme #eventsSection #eventsGrid{
+    scroll-behavior:auto!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+    transition:none!important;
+  }
+}
