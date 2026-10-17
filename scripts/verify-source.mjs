@@ -25,7 +25,9 @@ assert(auth.includes("emailVerified"), "Email must be verified");
 assert(auth.includes("serverTimestamp()"), "Server timestamps missing");
 assert(auth.includes('doc(database, "users", user.uid)'), "User profile persistence missing");
 assert(app.includes("BaliAuth.requireProfile()"), "Checkout must require profile");
-assert(/BaliAuth\??\.getIdToken\(\)/.test(app), "Checkout must obtain ID token");
+const ordersClient = source("orders-firestore.js");
+assert(app.includes("window.BaliOrders.save"), "Checkout must use Firestore order service");
+assert(ordersClient.includes("getAuth(") && ordersClient.includes("writeBatch("), "Order service must use Firebase authentication and atomic writes");
 assert(rules.includes("request.auth.uid == uid"), "Rules need UID ownership");
 assert(rules.includes("data.email == request.auth.token.email"), "Rules must pin email");
 assert(rules.includes("allow read, write: if false"), "Default deny required");
@@ -66,4 +68,14 @@ assert(new Set(BALI_MENU_SEED.map(item => item.category)).size === 5, "Menu must
 assert(BALI_MENU_SEED.every(item => Number.isInteger(item.price) && item.price > 0), "Every product requires a positive BYN price");
 assert(admin.includes('id="seedImportBtn"') && admin.includes('id="seedPreview"'), "Menu import controls missing");
 assert(adminClient.includes('runTransaction(db') && adminClient.includes('current[i].exists()'), "Menu import must skip existing documents in a transaction");
+const css = source("styles.css");
+assert(css.includes("repeat(5, minmax(0, 1fr))"), "Desktop/tablet BALI menu must have 5 columns");
+assert(css.includes("repeat(3, minmax(0, 1fr))"), "Mobile BALI menu must have 3 columns");
+assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"minus\"")
+  && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
+  "Product quantity controls must add selected number of items");
+assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
+assert(html.includes("app.js?v=20261017-12"), "Published app.js cache version must be current");
+assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
+assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
