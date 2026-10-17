@@ -68,6 +68,18 @@ assert(new Set(BALI_MENU_SEED.map(item => item.category)).size === 5, "Menu must
 assert(BALI_MENU_SEED.every(item => Number.isInteger(item.price) && item.price > 0), "Every product requires a positive BYN price");
 assert(admin.includes('id="seedImportBtn"') && admin.includes('id="seedPreview"'), "Menu import controls missing");
 assert(adminClient.includes('runTransaction(db') && adminClient.includes('current[i].exists()'), "Menu import must skip existing documents in a transaction");
+const responsive = source("responsive-menu.css");
+assert(html.includes('responsive-menu.css?v=20261017-13'), "Responsive stylesheet must be loaded with current cache version");
+assert(html.indexOf('responsive-menu.css?v=20261017-13') > html.indexOf('href="auth.css"'), "Responsive stylesheet must load after auth.css");
+assert(/grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/.test(responsive), "Desktop must use 5 columns");
+assert(/@media\s*\(min-width:\s*768px\)\s*and\s*\(max-width:\s*1199px\)/.test(responsive), "Tablet breakpoint missing");
+assert(/@media\s*\(max-width:\s*767px\)/.test(responsive), "Phone breakpoint missing");
+assert(/grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/.test(responsive), "Tablet must use 3 columns");
+assert(/grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/.test(responsive), "Phone must use 2 columns");
+assert(responsive.includes('grid-template-areas:') && responsive.includes('display: contents'), "Mobile two-row header missing");
+assert(responsive.includes('.modal-content') && responsive.includes('.cart-sidebar'), "Phone modal/cart adjustments missing");
+assert(responsive.includes('font-size: 16px;'), "iOS form-zoom prevention missing");
+assert((responsive.match(/\{/g)||[]).length === (responsive.match(/\}/g)||[]).length, "Responsive CSS brace mismatch");
 const css = source("styles.css");
 assert(css.includes("repeat(5, minmax(0, 1fr))"), "Desktop/tablet BALI menu must have 5 columns");
 assert(css.includes("repeat(3, minmax(0, 1fr))"), "Mobile BALI menu must have 3 columns");
