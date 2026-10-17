@@ -151,7 +151,7 @@ assert(admin.includes('bali-design-studio.css?v=20261017-84') &&
 // v87 PC viewport is a fixed full-width, full-height 3-column dashboard.
 // Other desktop pages must not scroll down; only product lists scroll.
 const viewportCss=source("bali-pc-viewport.css");
-assert(html.includes('bali-pc-viewport.css?v=20261018-92') &&
+assert(html.includes('bali-pc-viewport.css?v=20261018-93') &&
   viewportCss.includes('@media (min-width:1180px)') &&
   viewportCss.includes('--bali-pc-side:clamp(195px,15vw,640px)') &&
   viewportCss.includes('--bali-pc-gap:clamp(11px,1vw,42px)') &&
@@ -201,7 +201,7 @@ assert(admin.includes('id="baliEventPlaceholderEditor"') &&
   admin.includes('id="baliPlaceholderImageFile"') &&
   admin.includes('id="baliPlaceholderPosterTitle"') &&
   admin.includes('bali-home-placeholder-admin.js?v=20261018-92') &&
-  admin.includes('bali-home-placeholder-admin.css?v=20261018-92') &&
+  admin.includes('bali-home-placeholder-admin.css?v=20261018-93') &&
   html.includes('bali-home-placeholder.js?v=20261018-92') &&
   placeholderAdmin.includes('doc(db,"settings","homeEventPlaceholder")') &&
   placeholderAdmin.includes('compressImage(upload,"design-placeholder")') &&
@@ -223,6 +223,11 @@ assert(admin.includes('id="baliEventPlaceholderEditor"') &&
   placeholderAdmin.includes('data.kicker="SECRET"') &&
   placeholderAdmin.includes('image.hidden=!customPicture') &&
   viewportCss.includes('v92 — Minimal PC HOME placeholders') &&
+  viewportCss.includes('v93 — SECRET is centered geometrically') &&
+  viewportCss.includes('top:50%!important') &&
+  viewportCss.includes('left:50%!important') &&
+  viewportCss.includes('transform:translate(-50%,-50%)!important') &&
+  adminPlaceholderCss.includes('v93 — Match the site: SECRET') &&
   viewportCss.includes('background:#000!important') &&
   viewportCss.includes('justify-content:flex-start!important') &&
   viewportCss.includes('padding:8px 11px!important') &&
