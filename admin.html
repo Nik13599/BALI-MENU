@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="bali-theme.css?v=20261017-60">
   <link rel="stylesheet" href="bali-lime-neutral.css?v=20261017-62">
   <link rel="stylesheet" href="bali-admin-bar.css?v=20261017-65">
-  <link rel="stylesheet" href="bali-admin-cards.css?v=20261017-73">
+  <link rel="stylesheet" href="bali-admin-cards.css?v=20261017-77">
 
 </head>
 <body class="bali-admin-theme">
@@ -347,25 +347,42 @@
         </div>
         <div class="bali-design-overview">
           <div><strong>BALI PRIVILEGE</strong><span>1600 × 600 px · 8:3</span></div>
-          <div><strong>О клубе BALI</strong><span>1000 × 1000 px · 1:1</span></div>
-          <div><strong>BALI MERCH</strong><span>1200 × 800 px · 3:2</span></div>
+          <div><strong>О клубе BALI</strong><span>ПК: 900 × 1400 px · 9:14</span></div>
+          <div><strong>BALI MERCH</strong><span>ПК: 1200 × 800 px · 3:2</span></div>
         </div>
         <section class="card bali-design-about-editor">
           <div class="card-heading"><h3>О клубе BALI</h3><span class="tag">Правая колонка ПК</span></div>
           <div class="bali-design-spec">
-            <div class="bali-design-spec-art bali-design-spec-art-square"><span>1000 × 1000</span></div>
-            <div><strong>Фото карточки — 1000 × 1000 px</strong><small>Квадратный макет 1:1. Изображение используется фоном карточки «О клубе»; края могут немного обрезаться. Заголовок, подпись и описание редактируются ниже.</small></div>
+            <div class="bali-design-spec-art bali-design-spec-art-square"><span>900 × 1400</span></div>
+            <div><strong>Фото карточки — ПК 900 × 1400 px</strong><small>Вертикальный макет 9:14 для высокой карточки «О клубе», занимающей место двух прежних кнопок. Отдельные версии для планшета и телефона загрузите ниже. Текст сайта накладывается поверх изображения.</small></div>
           </div>
           <form id="baliHomeAboutForm" class="bali-design-form">
             <label>Название блока<input id="baliHomeAboutTitle" required maxlength="50" value="О клубе"></label>
             <label>Подпись<input id="baliHomeAboutSubtitle" required maxlength="85" value="Атмосфера, музыка, люди"></label>
             <label>Текст внутри раскрывающейся карточки<textarea id="baliHomeAboutDescription" required rows="3" maxlength="450">Ночной клуб BALI в Минске. Музыка, события и встречи в одной атмосфере.</textarea></label>
             <div class="bali-design-upload">
-              <label>Загрузить фото клуба<input id="baliHomeAboutFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
-              <div class="bali-design-image-preview bali-design-image-preview-square" id="baliHomeAboutPreview"><span>Фото клуба 1:1</span></div>
+              <label>Фото «О клубе» для ПК — 900×1400<input id="baliHomeAboutFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
+              <div class="bali-design-image-preview bali-design-image-preview-square" id="baliHomeAboutPreview"><span>Фото ПК 9:14</span></div>
               <button type="button" id="baliHomeAboutRemoveImage">Убрать фото</button>
             </div>
             <label>Или HTTPS-ссылка на фото<input id="baliHomeAboutImageUrl" type="url" maxlength="2048" placeholder="https://..."></label>
+            <p class="hint">Планшет и телефон: можно загрузить отдельные кадры, если нужна иная композиция. Если оставить пустыми, сайт использует картинку ПК.</p>
+            <div class="bali-design-variant-grid" aria-label="Адаптивные изображения">
+ <div class="bali-design-variant">
+    <strong>Планшет · 1200 × 900 px · 4:3</strong>
+    <label>Загрузить вариант <input id="baliHomeAboutTabletFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
+    <div class="bali-design-image-preview" id="baliHomeAboutTabletPreview"><span>Планшет 4:3</span></div>
+    <label>Или HTTPS-ссылка <input id="baliHomeAboutTabletImageUrl" type="url" maxlength="2048" placeholder="https://..."></label>
+    <button type="button" id="baliHomeAboutTabletRemoveImage">Убрать изображение</button>
+  </div>
+<div class="bali-design-variant">
+    <strong>Телефон · 900 × 1200 px · 3:4</strong>
+    <label>Загрузить вариант <input id="baliHomeAboutMobileFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
+    <div class="bali-design-image-preview" id="baliHomeAboutMobilePreview"><span>Телефон 3:4</span></div>
+    <label>Или HTTPS-ссылка <input id="baliHomeAboutMobileImageUrl" type="url" maxlength="2048" placeholder="https://..."></label>
+    <button type="button" id="baliHomeAboutMobileRemoveImage">Убрать изображение</button>
+  </div>
+ </div>
             <div class="actions"><button type="submit" class="primary" id="baliHomeAboutSave">Сохранить блок «О клубе»</button></div>
             <p class="status" id="baliHomeAboutStatus" role="status" aria-live="polite">Проверяем доступ…</p>
           </form>
@@ -395,11 +412,28 @@
               <label class="check bali-design-publication"><input type="checkbox" id="baliHomeMerchPublished">Показывать на сайте</label>
             </div>
             <div class="bali-design-upload">
-              <label>Фото товара<input id="baliHomeMerchFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
+              <label>Фото товара для ПК — 1200×800<input id="baliHomeMerchFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
               <div class="bali-design-image-preview" id="baliHomeMerchPreview"><span>Фото товара 3:2</span></div>
               <button type="button" id="baliHomeMerchRemoveImage">Убрать фото</button>
             </div>
             <label>Или HTTPS-ссылка на фото<input id="baliHomeMerchImageUrl" type="url" maxlength="2048" placeholder="https://..."></label>
+            <p class="hint">Здесь можно подготовить отдельные фотографии одного товара для разных экранов.</p>
+            <div class="bali-design-variant-grid" aria-label="Адаптивные изображения">
+ <div class="bali-design-variant">
+    <strong>Планшет · 900 × 900 px · 1:1</strong>
+    <label>Загрузить вариант <input id="baliHomeMerchTabletFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
+    <div class="bali-design-image-preview" id="baliHomeMerchTabletPreview"><span>Планшет 1:1</span></div>
+    <label>Или HTTPS-ссылка <input id="baliHomeMerchTabletImageUrl" type="url" maxlength="2048" placeholder="https://..."></label>
+    <button type="button" id="baliHomeMerchTabletRemoveImage">Убрать изображение</button>
+  </div>
+<div class="bali-design-variant">
+    <strong>Телефон · 720 × 900 px · 4:5</strong>
+    <label>Загрузить вариант <input id="baliHomeMerchMobileFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
+    <div class="bali-design-image-preview" id="baliHomeMerchMobilePreview"><span>Телефон 4:5</span></div>
+    <label>Или HTTPS-ссылка <input id="baliHomeMerchMobileImageUrl" type="url" maxlength="2048" placeholder="https://..."></label>
+    <button type="button" id="baliHomeMerchMobileRemoveImage">Убрать изображение</button>
+  </div>
+ </div>
             <div class="actions">
               <button type="submit" id="baliHomeMerchSave" class="primary">Сохранить товар</button>
               <button type="button" id="baliHomeMerchReset">Новый товар</button>
@@ -420,11 +454,28 @@
             <label>Заголовок предложения *<input id="baliPromoTitle" required minlength="2" maxlength="100" placeholder="Название предложения"></label>
             <label>Описание *<textarea id="baliPromoDescription" required maxlength="260" rows="3" placeholder="Условия предложения без вымышленных цен и обещаний"></textarea></label>
             <div class="bali-design-upload">
-              <label>Загрузить баннер с компьютера<input id="baliPromoImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
+              <label>Баннер для ПК — 1600×600<input id="baliPromoImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
               <div class="bali-design-image-preview" id="baliPromoImagePreview" aria-label="Предпросмотр баннера"><span>Предпросмотр баннера 8:3</span></div>
               <button type="button" id="baliPromoRemoveImage">Убрать изображение</button>
             </div>
             <label>Или ссылка на изображение (HTTPS)<input id="baliPromoImage" type="url" maxlength="2048" placeholder="https://..."></label>
+            <p class="hint">Добавьте специально скомпонованные баннеры для планшета и телефона. Если их нет — используется основной слайд.</p>
+            <div class="bali-design-variant-grid" aria-label="Адаптивные изображения">
+ <div class="bali-design-variant">
+    <strong>Планшет · 1200 × 675 px · 16:9</strong>
+    <label>Загрузить вариант <input id="baliPromoTabletFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
+    <div class="bali-design-image-preview" id="baliPromoTabletPreview"><span>Планшет 16:9</span></div>
+    <label>Или HTTPS-ссылка <input id="baliPromoTabletImageUrl" type="url" maxlength="2048" placeholder="https://..."></label>
+    <button type="button" id="baliPromoTabletRemoveImage">Убрать изображение</button>
+  </div>
+<div class="bali-design-variant">
+    <strong>Телефон · 750 × 1000 px · 3:4</strong>
+    <label>Загрузить вариант <input id="baliPromoMobileFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
+    <div class="bali-design-image-preview" id="baliPromoMobilePreview"><span>Телефон 3:4</span></div>
+    <label>Или HTTPS-ссылка <input id="baliPromoMobileImageUrl" type="url" maxlength="2048" placeholder="https://..."></label>
+    <button type="button" id="baliPromoMobileRemoveImage">Убрать изображение</button>
+  </div>
+ </div>
             <div class="double">
               <label>Куда ведёт кнопка
                 <select id="baliPromoDestination">
@@ -655,8 +706,8 @@
 <script type="module" src="bali-admin-bar.js?v=20261017-65"></script>
 <script type="module" src="bali-admin-cards.js?v=20261017-66"></script>
 <script type="module" src="bali-menu-visibility.js?v=20261017-72"></script>
-<script type="module" src="bali-admin-promos.js?v=20261017-73"></script>
-<script type="module" src="bali-home-design-admin.js?v=20261017-73"></script>
+<script type="module" src="bali-admin-promos.js?v=20261017-77"></script>
+<script type="module" src="bali-home-design-admin.js?v=20261017-77"></script>
 <script type="module" src="admin-orders.js?v=20261017-20"></script>
 <script type="module" src="admin-clients.js?v=20261017-20"></script>
 <script src="admin-dashboard.js?v=20261017-58" defer></script>
