@@ -98,3 +98,39 @@
     object-fit:contain!important;
   }
 }
+
+/* v95 — A visible PC cart is a primary, high-contrast action,
+   not an ordinary inactive navigation item. */
+@media (min-width:1180px) {
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button#baliPcCartBtn:not([hidden]),
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button#baliPcCartBtn:not([hidden]).active,
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button#baliPcCartBtn:not([hidden]):hover {
+    display:flex!important;
+    background:#b9ff51!important;
+    background-image:none!important;
+    border:1px solid #d4ff87!important;
+    color:#0a130b!important;
+    font-weight:850!important;
+    box-shadow:0 0 0 1px rgba(185,255,81,.3),0 0 21px rgba(185,255,81,.43)!important;
+    opacity:1!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button#baliPcCartBtn:not([hidden])::before {
+    background:#0a130b!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button#baliPcCartBtn:not([hidden]) .bali-pc-nav-icon,
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button#baliPcCartBtn:not([hidden]) .bali-pc-nav-icon svg {
+    color:#0a130b!important;
+    stroke:#0a130b!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button#baliPcCartBtn:not([hidden]) #baliPcCartCount {
+    color:#dfffad!important;
+    background:#0d2715!important;
+    border:1px solid rgba(7,21,10,.28);
+    font-weight:850!important;
+    border-radius:999px!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button#baliPcCartBtn:not([hidden]):focus-visible{
+    outline:3px solid #fff!important;
+    outline-offset:3px!important;
+  }
+}
