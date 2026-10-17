@@ -433,3 +433,38 @@
   #menuPage .bali-menu-heading-row{padding:0!important}
   #menuPage #baliMenuHeading{display:none!important}
 }
+
+/* v84 — Four desktop/tablet tab buttons immediately to the RIGHT of BALI МЕНЮ.
+   The toolbar is left-packed rather than spread over the entire header width. */
+@media(min-width:768px){
+  #menuPage .bali-menu-heading-row{
+    justify-content:flex-start!important;
+    gap:clamp(10px,1.3vw,18px)!important;
+  }
+  #menuPage .bali-menu-heading-row #baliMenuModeSwitch,
+  body.bali-guest-theme #menuPage .bali-menu-heading-row #baliMenuModeSwitch{
+    flex:0 1 660px!important;
+    width:auto!important;
+    justify-content:flex-start!important;
+    gap:clamp(5px,.7vw,10px)!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  #menuPage .bali-menu-heading-row .bali-menu-mode-btn:not([hidden]),
+  body.bali-guest-theme #menuPage .bali-menu-heading-row .bali-menu-mode-btn:not([hidden]){
+    flex:0 1 155px!important;
+    width:auto!important;
+    max-width:155px!important;
+    min-width:0!important;
+    padding:6px 4px!important;
+  }
+}
+@media(min-width:768px) and (max-width:900px){
+  #menuPage .bali-menu-heading-row #baliMenuHeading{
+    font-size:clamp(20px,2.5vw,24px)!important;
+  }
+  #menuPage .bali-menu-heading-row .bali-menu-mode-btn:not([hidden]){
+    font-size:clamp(10px,1.4vw,12px)!important;
+    min-height:42px!important;
+  }
+}
