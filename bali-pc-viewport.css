@@ -1,0 +1,451 @@
+/* BALI desktop viewport shell v87.
+   Reference geometry: 1792×852 screenshot, preserving its block order and
+   proportions on wider/taller and smaller desktop monitors.
+   No vertical document/page scrolling on PC, except the menu catalog. */
+@media (min-width:1180px) {
+  :root {
+    /* Sidebar + its trailing gutter = the starting X of main content. */
+    --bali-pc-side:clamp(195px,15vw,300px);
+    --bali-pc-gap:clamp(11px,1vw,20px);
+    --bali-pc-right:clamp(275px,20.7vw,450px);
+    --bali-pc-edge-right:clamp(15px,2vw,40px);
+    --bali-pc-edge-y:clamp(12px,2.55dvh,34px);
+    --bali-pc-sidebar-left:clamp(12px,2.1vw,42px);
+  }
+  html {
+    height:100%!important;
+    height:100dvh!important;
+    overflow:hidden!important;
+  }
+  body.bali-guest-theme,
+  body.bali-guest-theme[data-bali-page],
+  body.bali-guest-theme[data-bali-page="home"] {
+    height:100dvh!important;
+    max-height:100dvh!important;
+    min-height:0!important;
+    width:100%!important;
+    max-width:100vw!important;
+    padding:0!important;
+    margin:0!important;
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
+  }
+
+  /* The gap between the LEFT navigation and centre is the same
+     as the gap between centre and RIGHT rail. */
+  body.bali-guest-theme>.bali-pc-sidebar {
+    box-sizing:border-box!important;
+    position:fixed!important;
+    top:calc(var(--bali-banner-height,0px) + var(--bali-pc-edge-y))!important;
+    bottom:var(--bali-pc-edge-y)!important;
+    left:var(--bali-pc-sidebar-left)!important;
+    width:calc(var(--bali-pc-side) - var(--bali-pc-sidebar-left) - var(--bali-pc-gap))!important;
+    max-width:none!important;
+    height:auto!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    padding:0!important;
+    margin:0!important;
+    gap:clamp(9px,2.1dvh,28px)!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-brand {
+    flex:0 0 auto;
+    max-width:100%;
+    padding:11px 0 0!important;
+    font-size:clamp(23px,2.55vw,43px)!important;
+    letter-spacing:clamp(.07em,.16vw,.15em)!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation {
+    min-height:0;
+    gap:clamp(4px,.65dvh,9px)!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button {
+    height:clamp(37px,5.6dvh,52px)!important;
+    min-height:0!important;
+    padding:6px 9px!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-sidebar-contacts {
+    box-sizing:border-box!important;
+    flex:0 0 auto!important;
+    margin-top:auto!important;
+    margin-bottom:0!important;
+    padding:clamp(6px,1.1dvh,13px) 2px 0!important;
+    gap:clamp(5px,.9dvh,10px)!important;
+    width:100%!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location {
+    margin-top:clamp(3px,.8dvh,10px)!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-phone {
+    padding:clamp(6px,.95dvh,10px) 6px!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials a {
+    padding:clamp(5px,.85dvh,9px) 3px!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location a {
+    padding:clamp(6px,.95dvh,10px) 7px!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contacts-heading,
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location>.bali-pc-contacts-heading {
+    font-size:clamp(9px,.68vw,12px)!important;
+    white-space:nowrap!important;
+  }
+
+  /* The complete HOME screen fills the available viewport, edge to edge
+     inside its intentional outer gutters — never a fixed-height long page. */
+  body.bali-guest-theme #homeSection,
+  body.bali-guest-theme[data-bali-page="home"] #homeSection {
+    position:fixed!important;
+    top:var(--bali-banner-height,0px)!important;
+    right:0!important;
+    bottom:0!important;
+    left:0!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    padding:0!important;
+    margin:0!important;
+    overflow:hidden!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-inner {
+    display:grid!important;
+    box-sizing:border-box!important;
+    width:calc(100% - var(--bali-pc-side) - var(--bali-pc-edge-right))!important;
+    max-width:none!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    margin:0 var(--bali-pc-edge-right) 0 var(--bali-pc-side)!important;
+    padding:var(--bali-pc-edge-y) 0!important;
+    grid-template-columns:minmax(0,1fr) var(--bali-pc-right)!important;
+    grid-template-rows:
+      minmax(0,1.13fr)
+      minmax(0,.15fr)
+      minmax(0,1fr)
+      minmax(0,.40fr)!important;
+    gap:var(--bali-pc-gap)!important;
+    justify-content:stretch!important;
+    align-content:stretch!important;
+    align-items:stretch!important;
+    overflow:hidden!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-events-panel {
+    display:grid!important;
+    box-sizing:border-box!important;
+    grid-column:1!important;
+    grid-row:1 / 4!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:
+      minmax(0,1.13fr)
+      minmax(0,.15fr)
+      minmax(0,1fr)!important;
+    gap:var(--bali-pc-gap)!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:100%!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero {
+    display:flex!important;
+    grid-column:1!important;
+    grid-row:1!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    overflow:hidden!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero-content {
+    box-sizing:border-box!important;
+    padding:clamp(17px,2.45vw,44px)!important;
+    max-height:100%;
+    overflow:hidden;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero-content h1 {
+    font-size:clamp(27px,3.15vw,59px)!important;
+    line-height:1.04!important;
+    overflow-wrap:anywhere;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero-content p {
+    font-size:clamp(11px,1.03vw,17px)!important;
+    line-height:1.38!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-events-title {
+    grid-column:1!important;
+    grid-row:2!important;
+    display:flex!important;
+    align-items:center!important;
+    align-self:stretch!important;
+    min-height:0!important;
+    height:auto!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-events-title h2 button {
+    font-size:clamp(17px,1.6vw,29px)!important;
+    min-height:0!important;
+    max-height:100%!important;
+    line-height:1.1!important;
+    padding:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-events {
+    grid-column:1!important;
+    grid-row:3!important;
+    box-sizing:border-box!important;
+    align-self:stretch!important;
+    width:100%!important;
+    min-height:0!important;
+    height:100%!important;
+    max-height:100%!important;
+    margin:0!important;
+    padding:0 2px 3px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    overscroll-behavior-y:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-events>.bali-home-event-card {
+    height:100%!important;
+    max-height:100%!important;
+    min-height:0!important;
+    width:clamp(130px,13vw,230px)!important;
+    flex-shrink:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-poster-wrap{
+    min-height:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-event-info{
+    min-height:0!important;
+    overflow:hidden!important;
+    padding:clamp(5px,.7dvh,10px) clamp(7px,.75vw,12px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-menu-banner {
+    box-sizing:border-box!important;
+    display:flex!important;
+    grid-column:1!important;
+    grid-row:4!important;
+    align-self:stretch!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:clamp(8px,1.2dvh,16px) clamp(11px,1.5vw,26px)!important;
+    overflow:hidden!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-menu-banner strong {
+    font-size:clamp(17px,1.45vw,27px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-menu-banner-icon {
+    flex:0 0 auto!important;
+    width:clamp(40px,4.4vw,72px)!important;
+    height:clamp(40px,4.4vw,72px)!important;
+    max-height:calc(100% - 2px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-menu-cta {
+    flex:0 0 auto;
+    font-size:clamp(10px,.75vw,13px)!important;
+    padding:clamp(7px,.8dvh,12px) clamp(9px,1.2vw,22px)!important;
+  }
+
+  /* One equal-width gutter between centre and About/Merch. */
+  body.bali-guest-theme #homeSection .bali-pc-right-rail {
+    display:grid!important;
+    grid-column:2!important;
+    grid-row:1 / 5!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,2.75fr) minmax(0,1fr)!important;
+    gap:var(--bali-pc-gap)!important;
+    align-content:stretch!important;
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about {
+    box-sizing:border-box!important;
+    grid-row:1!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary {
+    min-height:0!important;
+    max-height:100%!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-merch {
+    box-sizing:border-box!important;
+    grid-row:2!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:clamp(11px,1.2vw,22px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card {
+    display:none!important;
+  }
+
+  /* Other overview sections are viewport-bound too. Only the kitchen/bar
+     catalog has a vertical scrolling region. */
+  body.bali-guest-theme #eventsSection,
+  body.bali-guest-theme #profileSection,
+  body.bali-guest-theme #contactsSection,
+  body.bali-guest-theme #menuPage {
+    box-sizing:border-box!important;
+    position:fixed!important;
+    top:var(--bali-banner-height,0px)!important;
+    bottom:0!important;
+    left:var(--bali-pc-side)!important;
+    right:0!important;
+    width:auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:hidden!important;
+    padding:var(--bali-pc-edge-y) var(--bali-pc-edge-right)!important;
+    overscroll-behavior:none!important;
+  }
+  body.bali-guest-theme #eventsSection>.container {
+    box-sizing:border-box!important;
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    max-width:none!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    padding:0!important;
+    margin:0!important;
+    overflow:hidden!important;
+  }
+  body.bali-guest-theme #eventsSection .events-topbar {
+    flex:0 0 auto!important;
+    max-width:100%!important;
+  }
+  body.bali-guest-theme #eventsSection .events-carousel-shell {
+    display:flex!important;
+    flex-direction:column!important;
+    flex:1 1 0!important;
+    min-height:0!important;
+    max-height:100%!important;
+    overflow:hidden!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsGrid {
+    flex:1 1 0!important;
+    min-height:0!important;
+    height:100%!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    overscroll-behavior-y:none!important;
+  }
+  body.bali-guest-theme #eventsSection .events-carousel-footer {
+    flex:0 0 auto!important;
+  }
+  body.bali-guest-theme #profileSection>.container,
+  body.bali-guest-theme #contactsSection>.container {
+    box-sizing:border-box!important;
+    height:100%!important;
+    max-height:100%!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+
+  /* Menu: pinned shared toolbar, scrollable FOOD/DRINK entries only. */
+  body.bali-guest-theme #menuPage {
+    display:flex!important;
+    flex-direction:column!important;
+    gap:0!important;
+  }
+  body.bali-guest-theme #menuPage .bali-menu-heading-row,
+  body.bali-guest-theme #menuPage #baliSharedMenuControls,
+  body.bali-guest-theme #menuPage #baliMenuUnavailableNotice {
+    flex:0 0 auto!important;
+  }
+  body.bali-guest-theme #menuPage #baliKitchenContent,
+  body.bali-guest-theme #menuPage #baliBarContent,
+  body.bali-guest-theme #menuPage #baliHookahContent,
+  body.bali-guest-theme #menuPage #baliTeaContent {
+    box-sizing:border-box!important;
+    flex:1 1 0!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:100%!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:contain!important;
+  }
+  body.bali-guest-theme #menuPage #baliKitchenContent:not([hidden]) {
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+  }
+  body.bali-guest-theme #menuPage #baliKitchenContent .menu-section {
+    flex:1 1 0!important;
+    min-height:0!important;
+    max-height:100%!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:contain!important;
+  }
+  body.bali-guest-theme #menuPage #baliBarContent[hidden],
+  body.bali-guest-theme #menuPage #baliHookahContent[hidden],
+  body.bali-guest-theme #menuPage #baliTeaContent[hidden],
+  body.bali-guest-theme #menuPage #baliKitchenContent[hidden] {
+    display:none!important;
+  }
+
+  /* The floating account button stays inside the right column's outer edge. */
+  body.bali-guest-theme .header,
+  body.bali-guest-theme[data-bali-page="home"] .header {
+    top:calc(var(--bali-banner-height,0px) + var(--bali-pc-edge-y))!important;
+    right:var(--bali-pc-edge-right)!important;
+  }
+}
+/* Allow the header, dates and tiny controls to fit even short desktop windows,
+   instead of introducing the old vertical page scroll. */
+@media (min-width:1180px) and (max-height:720px) {
+  :root {--bali-pc-edge-y:clamp(8px,1.7dvh,15px)}
+  body.bali-guest-theme #homeSection .bali-pc-hero-content{
+    padding:clamp(12px,1.7vw,25px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero-content h1{
+    font-size:clamp(24px,2.75vw,46px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero-content p{
+    font-size:clamp(10px,.9vw,13px)!important;
+    margin-bottom:7px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-event-info h3{
+    font-size:clamp(10px,.9vw,15px)!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar {
+    gap:6px!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-brand{
+    font-size:clamp(21px,2.15vw,34px)!important;
+    padding:3px 0 0!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-brand small{
+    margin-top:2px!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-sidebar-contacts{
+    gap:4px!important;
+    padding-top:5px!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials a{
+    padding:4px 2px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-menu-banner{
+    gap:clamp(7px,1vw,13px)!important;
+  }
+}
