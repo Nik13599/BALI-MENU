@@ -277,3 +277,41 @@ body{min-height:100svh;background:linear-gradient(135deg,#0b1020,#191c32 55%,#0b
     border-radius:7px;
   }
 }
+
+/* BALI v32 — адрес строго по центру кнопки, маркер Яндекса слева. */
+.bali-yandex-map{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  min-height:59px;
+  padding:12px 53px;
+  gap:0;
+}
+.bali-yandex-pin{
+  position:absolute;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+}
+.bali-yandex-address{
+  display:block;
+  width:100%;
+  text-align:center;
+  font-size:13px;
+  line-height:1.35;
+}
+@media(max-width:767px){
+  .bali-yandex-map{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    grid-template-columns:none;
+    grid-template-areas:none;
+    min-height:59px;
+    padding:11px 47px;
+  }
+  .bali-yandex-pin{left:10px;top:50%;width:34px;height:34px}
+  .bali-yandex-address{font-size:12px;text-align:center}
+}
