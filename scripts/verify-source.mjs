@@ -269,4 +269,14 @@ assert(app.includes("String(result.order_number).padStart(2,'0')") &&
   app.includes('String(order.orderNumber).padStart(2'), "Guest must see padded date-specific order number");
 assert(orderAdminSource.includes('orderLabel = o =>') &&
   orderAdminSource.includes('runTransaction(db,async tx=>'), "Admin must show date-based order numbers and renumber date changes");
+assert(html.includes('bali-pages.css?v=20261017-30'), "Updated social icon CSS must load");
+const socialStart=html.indexOf('class="bali-home-social"');
+const socialEnd=html.indexOf('class="bali-home-map"',socialStart);
+assert(socialStart>=0 && socialEnd>socialStart, "Home social row missing");
+const socialMarkup=html.slice(socialStart,socialEnd);
+assert((socialMarkup.match(/class="bali-social-svg"/g)||[]).length===3, "Social row must contain 3 actual SVG icons");
+assert((socialMarkup.match(/aria-label="[^"]+"/g)||[]).length>=4, "Social links must have accessible descriptions");
+assert(!/>\s*(Позвонить|Telegram|Instagram)\s*</.test(socialMarkup), "Social icons should replace textual button labels");
+assert(landingCss.includes(".bali-home-social .bali-social-btn") &&
+  landingCss.includes("min-height:66px"), "Icon links need visible touch targets");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
