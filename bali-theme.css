@@ -1,14 +1,14 @@
 /* BALI v58 — Global accent themes. NEVER recolor application backgrounds.
    Only controls, selected states, accent text, icon strokes and outlines change. */
 :root{
-  --bt-primary:#7585ff;
-  --bt-secondary:#536ae0;
-  --bt-text:#c3caff;
-  --bt-border:#8192ff;
-  --bt-on-primary:#11151e;
-  --bt-on-secondary:#FFFFFF;
-  --bt-tint:rgba(117,133,255,.16);
-  --bt-stroke:rgba(129,146,255,.50);
+  --bt-primary:#B9FF51;
+  --bt-secondary:#88D43E;
+  --bt-text:#D8FF9F;
+  --bt-border:#B2EF5F;
+  --bt-on-primary:#10131A;
+  --bt-on-secondary:#10131A;
+  --bt-tint:rgba(185,255,81,.17);
+  --bt-stroke:rgba(178,239,95,.60);
 }
 body.bali-guest-theme,
 body.bali-admin-theme{
