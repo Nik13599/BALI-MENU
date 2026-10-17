@@ -10,8 +10,14 @@ export async function compressImage(file,kind="product") {
   if(file.size > 15*1024*1024)
     throw new Error("Файл слишком большой. Максимум 15 МБ.");
   const poster=kind==="poster";
-  const maxChars=poster?145000:90000;
-  const ratio=poster?4/5:1;
+  const designPresets={
+    "design-hero":{ratio:8/3,maxChars:155000,widths:[1280,1120,960,800,640]},
+    "design-about":{ratio:1,maxChars:125000,widths:[850,720,600,480,400]},
+    "design-merch":{ratio:3/2,maxChars:125000,widths:[1000,850,720,600,480]}
+  };
+  const design=designPresets[kind];
+  const maxChars=design?.maxChars||(poster?145000:90000);
+  const ratio=design?.ratio||(poster?4/5:1);
   const url=URL.createObjectURL(file);
   let image;
   try {
@@ -24,14 +30,13 @@ export async function compressImage(file,kind="product") {
   }finally{URL.revokeObjectURL(url);}
   const iw=image.naturalWidth,ih=image.naturalHeight;
   if(!iw||!ih)throw new Error("У изображения нет доступных размеров.");
-  const square=Math.min(iw,ih);
-  // Product images are always a centered square. Posters are 4:5.
+  // Product images are centered square, event posters 4:5; homepage artwork uses designer-sized ratios.
   let cropWidth,cropHeight;
   if(iw/ih > ratio){cropHeight=ih;cropWidth=ih*ratio;}
   else{cropWidth=iw;cropHeight=iw/ratio;}
   const sx=(iw-cropWidth)/2,sy=(ih-cropHeight)/2;
   let result="";
-  const bases=poster?[640,560,480,400,320]:[560,480,400,320,256];
+  const bases=design?.widths||(poster?[640,560,480,400,320]:[560,480,400,320,256]);
   for(const width of bases){
     const canvas=document.createElement("canvas");
     canvas.width=width;
