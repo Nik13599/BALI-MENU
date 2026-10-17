@@ -486,31 +486,43 @@ function renderHomeEvents() {
     // Fill only vacant PC HOME slots. These are decorative announcements:
     // no fake date, RSVP heart, event link, or calendar record is created.
     if(isPcHome){
+        const settings=window.BaliHomePlaceholder||{
+            posterTitle:"SECRET",kicker:"BALI NIGHT CLUB",
+            footerTitle:"СКОРО В BALI",footerSubtitle:"Совсем скоро узнаете",
+            imageUrl:"",accentColor:"#b9ff51",backgroundColor:"#12171c"
+        };
         const missing=Math.max(0,5-upcoming.length);
         for(let i=0;i<missing;i++){
             const card=document.createElement("article");
             card.className="bali-home-event-card bali-home-event-placeholder";
-            card.setAttribute("aria-label","Скоро новое мероприятие BALI");
+            card.setAttribute("aria-label",settings.posterTitle+" — "+settings.footerTitle);
+            card.style.setProperty("--bali-secret-accent",settings.accentColor);
             const poster=document.createElement("div");
             poster.className="bali-home-poster-wrap bali-home-placeholder-poster";
-            const ornament=document.createElement("span");
-            ornament.className="bali-home-placeholder-ornament";
-            ornament.setAttribute("aria-hidden","true");
-            ornament.textContent="✦";
+            const picture=document.createElement("img");
+            picture.className="bali-home-placeholder-image";
+            picture.src=settings.imageUrl||"assets/bali-secret-placeholder.svg";
+            picture.alt="Афиша-анонс "+settings.posterTitle;
+            picture.loading="lazy";
+            poster.append(picture);
+            const overlay=document.createElement("div");
+            overlay.className="bali-home-placeholder-overlay";
             const kicker=document.createElement("span");
             kicker.className="bali-home-placeholder-kicker";
-            kicker.textContent="BALI NIGHT CLUB";
+            kicker.textContent=settings.kicker;
             const message=document.createElement("strong");
             message.className="bali-home-placeholder-message";
-            message.textContent="Мы готовим для вас что-то интересное";
-            poster.append(ornament,kicker,message);
+            message.textContent=settings.posterTitle;
+            overlay.append(kicker,message);
+            poster.append(overlay);
             const information=document.createElement("div");
             information.className="bali-home-event-info bali-home-placeholder-info";
+            information.style.backgroundColor=settings.backgroundColor;
             const name=document.createElement("h3");
-            name.textContent="СКОРО В BALI";
+            name.textContent=settings.footerTitle;
             const hint=document.createElement("p");
             hint.className="bali-home-event-hours";
-            hint.textContent="Совсем скоро узнаете";
+            hint.textContent=settings.footerSubtitle;
             information.append(name,hint);
             card.append(poster,information);
             track.append(card);
@@ -531,6 +543,9 @@ window.matchMedia("(max-width:767px)").addEventListener("change",()=>{
     if(document.body.dataset.baliPage==="home")renderHomeEvents();
 });
 window.matchMedia("(min-width:1180px)").addEventListener("change",()=>{
+    if(document.body.dataset.baliPage==="home")renderHomeEvents();
+});
+window.addEventListener("bali:home-placeholder",()=>{
     if(document.body.dataset.baliPage==="home")renderHomeEvents();
 });
 function renderUpcomingEvents() {
