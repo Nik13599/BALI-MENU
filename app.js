@@ -167,9 +167,14 @@ function handleMenuGridClick(event) {
     if (!button || !elements.menuGrid.contains(button)) return;
     const itemId = Number(button.dataset.id);
     if (!Number.isSafeInteger(itemId) || itemId <= 0) return;
-    const product = menuItems.find(item => item.id === itemId && item.available);
-    if (!product) return;
     const action = button.dataset.menuAction;
+    const product = menuItems.find(item => Number(item.id) === itemId);
+    if (!product) return;
+    if (action === "details") {
+        openBaliMenuDetails(product);
+        return;
+    }
+    if (!product.available) return;
     const quantity = selectedMenuQuantity(itemId);
     if (action === 'add') {
         addToCart(itemId, quantity);
@@ -1007,7 +1012,7 @@ function displayMenuItems(items) {
         ? items
         : items.filter(item => item.category === currentCategory);
     const filteredItems = baliMenuSearchText
-        ? categoryItems.filter(item=>[item.name,item.description,item.category]
+        ? categoryItems.filter(item=>[item.name,item.description,item.category,item.weight,item.detailText]
           .some(value=>String(value||"").toLocaleLowerCase("ru-RU").includes(baliMenuSearchText)))
         : categoryItems;
     const groups = new Map();
@@ -1053,6 +1058,7 @@ function createMenuItemHTML(item) {
                     <span class="menu-item-price">${CONFIG.CURRENCY_SYMBOL} ${price.toFixed(2)}</span>
                 </div>
                 <p class="menu-item-description">${escapeHTML(item.description)}</p>
+                ${item.weight ? `<span class="menu-item-weight">${escapeHTML(item.weight)}</span>` : ''}
                 ${unavailable
                     ? '<span class="unavailable-badge">Недоступно</span>'
                     : `<div class="menu-purchase-controls">
@@ -1064,6 +1070,8 @@ function createMenuItemHTML(item) {
                         <button type="button" class="add-to-cart-btn" data-menu-action="add" data-id="${id}">В корзину</button>
                     </div>`
                 }
+                ${item.detailEnabled===true && String(item.detailText||"").trim()
+                  ? `<button type="button" class="menu-details-btn" data-menu-action="details" data-id="${id}">Подробнее</button>` : ''}
             </div>
         </div>
     `;
@@ -1078,6 +1086,51 @@ elements.menuGrid?.addEventListener("error",event=>{
     image.remove();
     item?.classList.add("menu-item--no-image");
 },true);
+
+// More information is separate from the preorder flow. Each property comes
+// from the current Firestore product, never from a stale cart.
+function openBaliMenuDetails(product) {
+    if(product.detailEnabled!==true||!String(product.detailText||"").trim())return;
+    const dialog=document.getElementById("baliMenuDetailsDialog");
+    const body=document.getElementById("baliMenuDetailsBody");
+    if(!dialog||!body)return;
+    body.replaceChildren();
+    const make=(tag,className,content)=>{
+        const node=document.createElement(tag);
+        if(className)node.className=className;
+        if(content!==undefined)node.textContent=content;
+        return node;
+    };
+    const imageValue=String(product.detailImageUrl||"").trim();
+    const src=imageValue?safeImageUrl(imageValue):"";
+    if(src&&src!=="https://placehold.co/400x200?text=BALI"){
+        const photo=make("img","bali-menu-details-photo");
+        photo.src=src;
+        photo.alt="Дополнительное фото: "+String(product.name||"");
+        photo.addEventListener("error",()=>photo.remove(),{once:true});
+        body.append(photo);
+    }
+    body.append(make("h2","bali-menu-details-name",product.name||""));
+    const price=Number(product.price)||0;
+    body.append(make("strong","bali-menu-details-price",
+        CONFIG.CURRENCY_SYMBOL+" "+price.toFixed(2)));
+    if(String(product.weight||"").trim())
+        body.append(make("p","bali-menu-details-weight","Граммовка / объём: "+product.weight.trim()));
+    if(String(product.description||"").trim()){
+        body.append(make("h3","bali-menu-details-label","Состав и основные сведения"));
+        body.append(make("p","bali-menu-details-copy",product.description));
+    }
+    body.append(make("h3","bali-menu-details-label","Подробное описание"));
+    body.append(make("p","bali-menu-details-copy",product.detailText));
+    if(dialog.open)dialog.close();
+    dialog.showModal();
+}
+document.getElementById("baliMenuDetailsClose")?.addEventListener("click",()=>{
+    document.getElementById("baliMenuDetailsDialog")?.close();
+});
+document.getElementById("baliMenuDetailsDialog")?.addEventListener("click",event=>{
+    if(event.target===event.currentTarget)event.currentTarget.close();
+});
 
 function showLoading() {
     elements.menuGrid.innerHTML = `
