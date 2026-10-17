@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-33"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-35"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -99,7 +99,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-33'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-35'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
@@ -298,8 +298,8 @@ assert(landingCss.includes('BALI v32') &&
   landingCss.includes('.bali-yandex-pin{left:10px;top:50%'),
   "Yandex Maps address text must be centered with red pin left on mobile");
 const carouselCss=source("events-carousel.css");
-assert(html.includes('events-carousel.css?v=20261017-34'), "Swipe carousel stylesheet must load");
-assert(html.indexOf('events-carousel.css?v=20261017-34') >
+assert(html.includes('events-carousel.css?v=20261017-35'), "Swipe carousel stylesheet must load");
+assert(html.indexOf('events-carousel.css?v=20261017-35') >
   html.indexOf('bali-pages.css?v=20261017-32'), "Carousel must override older event grid styles");
 assert(html.includes('id="eventsCarouselShell"') &&
   html.includes('id="eventsCarouselPosition"') &&
@@ -311,7 +311,7 @@ assert(app.includes('function initEventCarousel()') &&
   app.includes('track.addEventListener("keydown"'),
   "Events must scroll by desktop wheel and keyboard");
 assert(app.includes('const previousDate=previousCards[previousIndex]?.dataset.eventDate') &&
-  app.includes('grid.scrollLeft=Math.max(0,cards[restoreIndex].offsetLeft-cards[0].offsetLeft)'),
+  app.includes('centerEventCard(grid,cards[restoreIndex],false)'),
   "Realtime RSVP refreshes must preserve carousel position");
 assert(carouselCss.includes('scroll-snap-type:x mandatory') &&
   carouselCss.includes('touch-action:pan-x') &&
@@ -320,8 +320,20 @@ assert(carouselCss.includes('scroll-snap-type:x mandatory') &&
 assert(carouselCss.includes('body[data-bali-page="events"]{overflow-y:hidden}') &&
   carouselCss.includes('height:calc(100dvh - var(--bali-header-height'),
   "Events must remain a fixed-height screen instead of a vertical feed");
-assert(carouselCss.includes('grid-template-rows:minmax(60px,1fr) auto') &&
-  carouselCss.includes('max-height:100%'), "Slides must fit on screen with controls visible");
-assert(carouselCss.includes('padding-bottom:max(65px,env(safe-area-inset-bottom))'),
+assert(carouselCss.includes('BALI EVENTS v35') &&
+  carouselCss.includes('object-fit:contain') &&
+  carouselCss.includes('.event-card.is-active'), "Centered carousel must display a full poster with legible detail controls");
+assert(carouselCss.includes('padding:9px 0 max(64px,env(safe-area-inset-bottom))'),
   "Carousel must reserve safe room for floating home button on mobile");
+assert(html.includes('class="events-info-panel"') &&
+  html.includes('Твой вечер начинается в BALI'), "Bottom event information area is missing");
+assert(carouselCss.includes('transform:scale(.86) translateY(7px)') &&
+  carouselCss.includes('transform:scale(1) translateY(0)') &&
+  carouselCss.includes('transition:'), "Neighbor slides must shrink and active slide must grow smoothly");
+assert(app.includes('card.classList.toggle("is-active",focused)') &&
+  app.includes('const middle=viewport.left+viewport.width/2') &&
+  app.includes('function centerEventCard('), "Carousel must track and center active event during swipe");
+assert(carouselCss.includes('font-size:16px') &&
+  carouselCss.includes('min-height:41px') &&
+  carouselCss.includes('.events-info-panel'), "Mobile detail labels, actions and info panel must be readable");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
