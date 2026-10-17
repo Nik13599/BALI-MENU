@@ -343,12 +343,16 @@ function eventRender() {
     list.append(createEntry(
       event.date + " — " + event.title,
       (event.preorderEnabled ? "Приём включён" : "Приём выключен") +
-        (event.cutoff ? " · До " + event.cutoff + " по Минску" : "") +
+        (event.startTime && event.endTime ? " · "+event.startTime+"–"+event.endTime : "") +
+        (event.cutoff ? " · Предзаказ до " + event.cutoff + " по Минску" : "") +
         " · Хочет пойти: " + (Number.isSafeInteger(event.interestCount)?event.interestCount:0),
       () => {
         $("eventDateAdmin").value=event.date;
         $("eventDateAdmin").readOnly=true;
         $("eventTitle").value=event.title;
+        $("eventDescription").value=event.description||"";
+        $("eventStartTime").value=event.startTime||"";
+        $("eventEndTime").value=event.endTime||"";
         $("eventCutoff").value=event.cutoff;
         $("eventOpen").checked=event.preorderEnabled;
         pendingEventPoster="";
@@ -438,9 +442,20 @@ $("eventForm").addEventListener("submit",async (event)=>{
   event.preventDefault();
   if(!authorized)return;
   const date=$("eventDateAdmin").value,title=$("eventTitle").value.trim(),
-    cutoff=$("eventCutoff").value||"";
+    cutoff=$("eventCutoff").value||"",
+    description=$("eventDescription").value.trim(),
+    startTime=$("eventStartTime").value||"",
+    endTime=$("eventEndTime").value||"";
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || title.length<2) {
     renderStatus("eventStatus","Укажите дату и название мероприятия.");return;
+  }
+  // Start/end describe the party itself. Cutoff controls preorders separately.
+  // Overnight events (e.g. 22:00–03:00) are valid.
+  const validTime=/^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+  if(description.length>600 || (!!startTime!==!!endTime) ||
+     (startTime && (!validTime.test(startTime)||!validTime.test(endTime)))) {
+    renderStatus("eventStatus","Заполните оба времени в формате ЧЧ:ММ или оставьте оба пустыми. Описание — до 600 символов.");
+    return;
   }
   const closesAt = new Date(date+"T"+(cutoff || "23:59")+":00+03:00");
   if (!Number.isFinite(closesAt.getTime()) || closesAt <= new Date()) {
@@ -459,7 +474,7 @@ $("eventForm").addEventListener("submit",async (event)=>{
   renderStatus("eventStatus","Сохраняем мероприятие...");
   try{
     const payload={
-      date, title, cutoff, preorderEnabled:$("eventOpen").checked,
+      date, title, cutoff, description, startTime, endTime, preorderEnabled:$("eventOpen").checked,
       closesAt: Timestamp.fromDate(closesAt),
       updatedAt:serverTimestamp()
     };
