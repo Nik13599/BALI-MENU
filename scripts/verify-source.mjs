@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-19"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-23"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -99,7 +99,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-19'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-23'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
@@ -167,4 +167,22 @@ assert(modernHeader.includes('prefers-reduced-motion:reduce') &&
   modernHeader.includes('focus-visible'), "Header must support keyboard and reduced motion");
 assert((modernHeader.match(/\\{/g)||[]).length === (modernHeader.match(/\\}/g)||[]).length,
   "Modern BALI header CSS has unbalanced braces");
+const categoryCss = source("menu-categories.css");
+assert(html.includes('menu-categories.css?v=20261017-23'), "Category layout CSS not linked");
+assert(html.indexOf('menu-categories.css?v=20261017-23') >
+  html.indexOf('header-modern.css?v=20261017-22'), "Sticky category stylesheet must load after header CSS");
+assert(app.includes("class=\"menu-category-block\"") && app.includes("menu-category-heading"),
+  "All menu view must render product categories with visible headings");
+assert(app.includes("const groups = new Map()") && app.includes("groups.get(name).push(item)"),
+  "Products must be grouped by their category");
+assert(app.includes('initStickyCategories()') &&
+  app.includes("new ResizeObserver(syncHeight)"), "Sticky category toolbar needs accurate header height");
+assert(categoryCss.includes("position: sticky") &&
+  categoryCss.includes("var(--bali-header-height, 80px)") &&
+  categoryCss.includes("z-index: 950"), "Category toolbar must stay below sticky header");
+assert(categoryCss.includes("overflow-x: auto") &&
+  categoryCss.includes("flex-wrap: nowrap"), "Category filters must remain horizontally scrollable");
+assert(categoryCss.includes("repeat(5, minmax(0, 1fr))") &&
+  categoryCss.includes("repeat(3, minmax(0,1fr))") &&
+  categoryCss.includes("repeat(2, minmax(0,1fr))"), "Grouped menu must keep desktop/tablet/mobile grids");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
