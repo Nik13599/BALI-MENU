@@ -134,3 +134,50 @@
     outline-offset:3px!important;
   }
 }
+
+/* v96 — image-free MENU cards on phone, tablet, and desktop.
+   Never preserve a phantom image column or reserved poster height. */
+#menuPage .menu-category-block .menu-item.menu-item--no-image{
+  display:flex!important;
+  flex-direction:column!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:auto!important;
+  padding:0!important;
+}
+#menuPage .menu-category-block .menu-item.menu-item--no-image>.menu-item-image{
+  display:none!important;
+}
+#menuPage .menu-category-block .menu-item.menu-item--no-image>.menu-item-content{
+  flex:1 1 auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+  justify-content:flex-start!important;
+}
+#menuPage .menu-category-block .menu-item.menu-item--no-image .menu-item-description{
+  min-height:0!important;
+  flex-grow:0!important;
+}
+#menuPage .menu-category-block .menu-item.menu-item--no-image .menu-purchase-controls{
+  margin-top:auto!important;
+}
+@media(max-width:767px){
+  #menuPage .menu-category-block .menu-item.menu-item--no-image{
+    grid-template-columns:minmax(0,1fr)!important;
+    min-height:0!important;
+  }
+  #menuPage .menu-category-block .menu-item.menu-item--no-image>.menu-item-content{
+    padding:clamp(9px,2.5vw,13px)!important;
+    gap:5px!important;
+  }
+}
+@media(min-width:768px) and (max-width:1179px){
+  #menuPage .menu-category-block .menu-item.menu-item--no-image{
+    grid-template-columns:minmax(0,1fr)!important;
+    min-height:0!important;
+  }
+}
