@@ -1,0 +1,81 @@
+/* BALI · отдельные разделы приложения, v27 */
+:root{--bali-sand:#e9c78f;--bali-quiet:#bbc1d0}
+[hidden]{display:none!important}
+body{min-height:100svh;background:linear-gradient(135deg,#0b1020,#191c32 55%,#0b1020)}
+.header{background:rgba(16,19,32,.96);border-bottom:1px solid rgba(231,196,143,.25);backdrop-filter:blur(20px)}
+.header .header-content{display:flex!important;justify-content:space-between;align-items:center;gap:12px;min-height:70px;height:auto;padding:12px clamp(12px,3vw,28px)}
+.header .logo{display:inline-flex;align-items:center;gap:10px;color:#fff0dc}
+.header .logo-text{font-size:clamp(20px,3vw,26px);letter-spacing:.12em}
+.header #accountBtn{display:inline-flex;align-items:center;justify-content:center;max-width:min(36vw,225px);min-width:42px;min-height:43px;width:auto;height:auto;padding:9px 15px;margin:0;border-radius:999px;font-size:12px;line-height:1.3;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.header #accountBtn::before,.header #accountBtn::after{display:none;content:none}
+.bali-home{position:relative;min-height:calc(100svh - var(--bali-header-height,70px));display:flex;align-items:center;justify-content:center;overflow:hidden;padding:32px 0 43px;isolation:isolate}
+.bali-home::before{content:"";position:absolute;z-index:-1;top:-18%;left:50%;transform:translateX(-50%);width:min(100vw,820px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(229,191,133,.13),transparent 70%)}
+.bali-home-inner{width:100%;max-width:680px;text-align:center}
+.bali-home-mark{font-size:30px;color:var(--bali-sand);margin-bottom:16px}
+.bali-home-eyebrow{font-size:11px;letter-spacing:.2em;color:var(--bali-sand);font-weight:700}
+.bali-home h1{font-size:clamp(63px,12vw,112px);line-height:1.05;letter-spacing:.14em;padding-left:.14em;font-weight:800;color:#ffefd6;margin:7px 0}
+.bali-home-subtitle{color:#c6c3c4;letter-spacing:.07em;font-size:15px;margin:10px 0 30px}
+.bali-home-actions{display:grid;gap:11px;width:min(100%,500px);margin:0 auto}
+.bali-home-action{display:grid;grid-template-columns:49px minmax(0,1fr) 22px;align-items:center;gap:13px;min-height:84px;padding:13px 18px;text-align:left;border:1px solid rgba(233,195,133,.27);border-radius:17px;background:linear-gradient(120deg,#272a3d,#1b2030);color:#f8efe1;box-shadow:inset 0 1px rgba(255,255,255,.07),0 7px 21px rgba(0,0,0,.14);cursor:pointer;touch-action:manipulation}
+.bali-home-action:hover{background:#35364a;border-color:rgba(240,204,144,.65)}
+.bali-home-action-symbol{display:grid;place-items:center;width:49px;height:49px;border-radius:13px;border:1px solid rgba(236,203,151,.24);background:rgba(229,195,140,.1);color:var(--bali-sand);font-size:26px}
+.bali-home-action-copy{min-width:0;display:block}
+.bali-home-action-copy strong{display:block;font-size:18px;line-height:1.3}
+.bali-home-action-copy small{display:block;font-size:12px;line-height:1.45;color:var(--bali-quiet);margin-top:4px;overflow-wrap:anywhere}
+.bali-home-action-arrow{font-size:20px;color:var(--bali-sand);justify-self:end}
+.bali-home-footnote{margin-top:25px;color:#999aab;font-size:12px}
+#menuPage .hero{display:none!important}
+#menuPage .categories{top:var(--bali-header-height,70px);padding:8px 0 5px}
+.bali-menu-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 8px}
+.bali-menu-toolbar-title{font-size:13px;font-weight:750;color:#f1d5a4}
+.bali-menu-tools{display:flex;gap:8px;align-items:center}
+.bali-orders-shortcut{min-height:42px;padding:8px 12px;white-space:nowrap;border:1px solid rgba(231,193,133,.35);border-radius:11px;background:rgba(255,255,255,.07);color:#f0e1cb;font-weight:700;font-size:12px;cursor:pointer;touch-action:manipulation}
+.bali-menu-tools #cartBtn{display:flex;min-height:42px;height:42px;width:auto;max-width:none;min-width:69px;padding:7px 10px;gap:7px;border-radius:11px;align-items:center;justify-content:center}
+#menuPage .menu-section{padding-top:25px}
+.bali-contacts{min-height:calc(100svh - var(--bali-header-height,70px));padding:clamp(36px,6vh,75px) 0 110px}
+.bali-contacts-inner{max-width:780px}
+.bali-contacts h2{font-size:clamp(34px,5vw,50px);margin:12px 0;color:#fff0dc}
+.bali-contacts-lead{color:var(--bali-quiet);line-height:1.6;margin-bottom:28px}
+.bali-contact-cards{display:grid;gap:12px}
+.bali-contact-card{display:grid;grid-template-columns:48px minmax(0,1fr) 20px;align-items:center;gap:15px;padding:18px 19px;border-radius:15px;border:1px solid rgba(232,197,141,.25);background:rgba(255,255,255,.055);text-decoration:none;color:#f8ecd8;transition:background .15s}
+.bali-contact-card:hover{background:rgba(229,193,136,.13)}
+.contact-symbol{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:rgba(229,193,136,.12);color:var(--bali-sand);font-size:23px}
+.bali-contact-card small{display:block;color:#d6b687;font-size:10px;letter-spacing:.08em;margin-bottom:5px}
+.bali-contact-card strong{display:block;font-size:16px;overflow-wrap:anywhere}
+.bali-floating-home{position:fixed;right:clamp(12px,4vw,30px);bottom:max(20px,env(safe-area-inset-bottom));z-index:980;display:flex;align-items:center;gap:9px;min-height:48px;padding:9px 16px;border-radius:999px;border:1px solid rgba(244,211,155,.7);background:linear-gradient(135deg,#f0d3a2,#d1ac72);color:#261d15;font-size:13px;font-weight:800;box-shadow:0 7px 29px rgba(0,0,0,.33);cursor:pointer;touch-action:manipulation}
+.bali-floating-home span:first-child{font-size:21px;line-height:1}
+.bali-account-orders-link{width:100%;min-height:45px;background:rgba(233,193,136,.09);border:1px solid rgba(233,193,136,.4);border-radius:10px;margin:7px 0 13px;color:#f1d4a2;font-size:13px;font-weight:750}
+#eventsSection .events-grid{padding-bottom:75px}
+#eventsSection .events-heading{margin-top:0}
+@media(max-width:767px){
+ .header .header-content{min-height:61px;grid-template-columns:none;grid-template-areas:none;grid-template-rows:none;padding:9px 12px}
+ .header .logo-icon{width:34px;height:34px;flex:0 0 34px;font-size:18px}
+ .header .logo-text{font-size:21px}
+ .header #accountBtn{width:42px;max-width:42px;height:42px;min-height:42px;padding:0;font-size:0;border-radius:50%;background:rgba(233,193,136,.14)}
+ .header #accountBtn::before{content:"";display:block;width:21px;height:21px;flex:0 0 21px;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23edd19e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21v-2a8 8 0 0 1 16 0v2'/%3E%3C/svg%3E")}
+ .bali-home{padding:24px 0 39px}
+ .bali-home-mark{margin-bottom:11px;font-size:24px}
+ .bali-home h1{font-size:clamp(55px,17vw,83px)}
+ .bali-home-subtitle{font-size:13px;margin:9px 0 25px}
+ .bali-home-actions{gap:9px}
+ .bali-home-action{grid-template-columns:45px minmax(0,1fr) 18px;gap:10px;min-height:78px;padding:11px 12px;border-radius:14px}
+ .bali-home-action-symbol{width:43px;height:43px;font-size:24px}
+ .bali-home-action-copy strong{font-size:16px}
+ .bali-home-action-copy small{font-size:11px}
+ .bali-home-footnote{margin-top:20px}
+ #menuPage .categories{padding:8px 0 5px}
+ #menuPage .categories>.container{padding:0}
+ .bali-menu-toolbar{padding:0 11px}
+ .bali-menu-tools{gap:6px}
+ .bali-menu-toolbar-title{font-size:12px}
+ .bali-orders-shortcut{min-height:39px;padding:7px 9px;font-size:11px}
+ .bali-menu-tools #cartBtn{min-height:39px;height:39px;min-width:58px;padding:6px;gap:3px}
+ .bali-menu-tools #cartBtn .cart-icon{width:17px;height:17px;flex:0 0 17px}
+ .bali-menu-tools #cartBtn .cart-count{width:19px;height:19px;flex:0 0 19px;font-size:10px}
+ .bali-contacts{padding:31px 0 100px}
+ .bali-contact-card{gap:10px;grid-template-columns:43px minmax(0,1fr) 17px;padding:14px 12px}
+ .bali-contact-card strong{font-size:14px}
+ .bali-floating-home{bottom:max(13px,env(safe-area-inset-bottom));right:12px;min-height:46px;padding:9px 13px;font-size:12px}
+}
+@media(max-width:359px){.bali-menu-toolbar-title{font-size:11px}.bali-orders-shortcut{font-size:10px;padding:7px}.bali-home-action-copy strong{font-size:14px}}
+@media(prefers-reduced-motion:reduce){.bali-home-action,.bali-contact-card{transition:none}}
