@@ -94,6 +94,8 @@ if(form){
     });
   });
   function manualUpdate(key,value,isPicker){
+    // Start manual edits from the currently previewed preset, not an older draft.
+    if(local.theme!=="custom")lastCustom=clone(local.colors);
     const normalized=normalize(value);
     const entry=fields[key];
     const valid=colorValid.test(normalized);
