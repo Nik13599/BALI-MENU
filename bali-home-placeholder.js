@@ -3,7 +3,7 @@
 import {getApp,getApps,initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getFirestore,doc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 export const BALI_PLACEHOLDER_DEFAULTS=Object.freeze({
-  posterTitle:"SECRET",kicker:"BALI NIGHT CLUB",
+  posterTitle:"SECRET",kicker:"SECRET",
   footerTitle:"СКОРО В BALI",footerSubtitle:"Совсем скоро узнаете",
   imageUrl:"",accentColor:"#b9ff51",backgroundColor:"#12171c"
 });
