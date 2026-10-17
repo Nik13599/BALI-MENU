@@ -4,98 +4,209 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>BALI — Управление меню</title>
-  <link rel="stylesheet" href="admin-catalog.css?v=2">
+  <meta name="theme-color" content="#10121a">
+  <title>BALI — Панель управления</title>
+  <link rel="stylesheet" href="admin-catalog.css?v=3">
+  <link rel="stylesheet" href="admin-dashboard.css?v=20261017-14">
 </head>
 <body>
 <header class="topbar">
-  <div><strong class="brand">BALI <span>MENU</span></strong><small>Управление меню и мероприятиями</small></div>
-  <a href="index.html">← На сайт</a>
+  <a class="topbar-brand" href="index.html" aria-label="BALI MENU — на сайт">
+    <span class="brand-mark" aria-hidden="true">✦</span>
+    <span class="brand">BALI <span>MENU</span></span>
+  </a>
+  <span class="topbar-label">Управление заведением</span>
+  <a class="topbar-site" href="index.html">Открыть меню <span aria-hidden="true">↗</span></a>
 </header>
+
 <main class="layout">
-  <section class="card" id="loginView">
-    <h1>Администратор BALI</h1>
-    <p>Войдите через Google. Доступ предоставляется только сотрудникам с правами администратора, назначенными в Firestore.</p>
-    <button type="button" id="adminSignIn" class="primary">Войти через Google</button>
+  <section class="card login-card" id="loginView">
+    <div class="login-logo" aria-hidden="true">✦</div>
+    <div class="eyebrow">BALI · ADMIN</div>
+    <h1>Вход для сотрудников</h1>
+    <p class="login-description">Управляйте заказами, ассортиментом и мероприятиями. Для входа используйте Google-аккаунт с назначенными правами администратора.</p>
+    <button type="button" id="adminSignIn" class="primary login-button">Войти через Google →</button>
     <button type="button" id="adminSwitchAccount" hidden>Выйти и выбрать другой аккаунт</button>
     <p id="loginIdentity" class="hint" role="status"></p>
     <p id="adminUid" class="hint"></p>
     <p id="loginStatus" class="status" role="status" aria-live="polite"></p>
-    <p class="hint">Версия админ-панели: 17.10.2026-10</p>
+    <p class="login-version">BALI MENU · версия интерфейса 14</p>
   </section>
-  <section id="adminView" hidden>
-    <div class="heading">
-      <div><h1>Управление BALI MENU</h1><p id="adminEmail"></p></div>
-      <button type="button" id="adminSignOut">Выйти</button>
-    </div>
-    <div class="notice">В этой версии можно управлять каталогом и мероприятиями. Реальные предзаказы пока отключены до настройки защищённого хранения заказов.</div>
-    <section class="card">
-      <h2>Импорт меню BALI с фотографии</h2>
-      <p class="hint">Подготовлены 18 позиций из пяти разделов исходного меню. Цены указаны в BYN. Сначала проверьте список ниже, затем нажмите «Добавить отсутствующие позиции».</p>
-      <div id="seedPreview" class="seed-preview" aria-live="polite"></div>
-      <div class="actions">
-        <button type="button" class="primary" id="seedImportBtn">Добавить отсутствующие позиции</button>
-        <span class="hint">Существующие товары не перезаписываются.</span>
+
+  <section id="adminView" class="admin-shell" hidden>
+    <aside class="admin-sidebar" aria-label="Навигация по панели">
+      <div class="sidebar-caption">РАБОЧЕЕ ПРОСТРАНСТВО</div>
+      <nav class="admin-tabs" aria-label="Разделы">
+        <button type="button" class="admin-tab active" data-admin-tab="orders" aria-selected="true" aria-controls="adminOrdersPanel">
+          <span class="tab-icon" aria-hidden="true">◈</span><span>Предзаказы</span>
+          <span class="tab-count" id="sidebarPendingCount" hidden>0</span>
+        </button>
+        <button type="button" class="admin-tab" data-admin-tab="menu" aria-selected="false" aria-controls="adminMenuPanel">
+          <span class="tab-icon" aria-hidden="true">▦</span><span>Меню и цены</span>
+        </button>
+        <button type="button" class="admin-tab" data-admin-tab="events" aria-selected="false" aria-controls="adminEventsPanel">
+          <span class="tab-icon" aria-hidden="true">▤</span><span>Мероприятия</span>
+        </button>
+      </nav>
+      <div class="sidebar-note">
+        <span class="online-dot" aria-hidden="true"></span>
+        <span>Данные обновляются через Firebase</span>
       </div>
-      <p id="seedImportStatus" class="status" role="status" aria-live="polite"></p>
-    </section>
-    <section class="card">
-      <div class="heading">
-        <h2>Предзаказы гостей</h2>
-        <label>Дата мероприятия
-          <select id="ordersDateFilter"><option value="">Все даты</option></select>
-        </label>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-toolbar">
+        <div class="toolbar-title">
+          <div class="eyebrow">BALI / ПАНЕЛЬ УПРАВЛЕНИЯ</div>
+          <h1 id="adminPageTitle">Предзаказы</h1>
+          <p id="adminPageDescription">Новые заявки, подтверждения и печать заказов</p>
+        </div>
+        <div class="toolbar-account">
+          <span id="adminEmail" class="admin-email"></span>
+          <button type="button" id="adminSignOut" class="logout-btn">Выйти</button>
+        </div>
+      </header>
+
+      <div class="admin-stats" aria-label="Сводка">
+        <div class="stat-card">
+          <span class="stat-label">Всего заказов</span>
+          <strong id="adminStatOrders" class="stat-value" aria-live="polite">—</strong>
+          <small>В загруженной очереди</small>
+        </div>
+        <div class="stat-card stat-card-attention">
+          <span class="stat-label">Ожидают решения</span>
+          <strong id="adminStatPending" class="stat-value" aria-live="polite">—</strong>
+          <small>Требуют подтверждения</small>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Позиций в меню</span>
+          <strong id="adminStatMenu" class="stat-value" aria-live="polite">—</strong>
+          <small>Управление ассортиментом</small>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Мероприятий</span>
+          <strong id="adminStatEvents" class="stat-value" aria-live="polite">—</strong>
+          <small>Доступные даты</small>
+        </div>
       </div>
-      <p class="hint">Новые заказы появляются автоматически. Подтверждённые заказы нельзя изменять со стороны гостя. Кнопка «Печать» открывает стандартную печать браузера.</p>
-      <p id="ordersAdminStatus" class="status" role="status" aria-live="polite"></p>
-      <div id="ordersAdminList">Ожидаем входа администратора...</div>
-    </section>
-    <section id="orderPrintSheet" hidden aria-hidden="true"></section>
-    <div class="columns">
-      <section class="card">
-        <h2>Добавить или изменить товар</h2>
-        <form id="menuForm">
-          <label>ID товара (уникальное число)<input id="menuId" type="number" min="1" step="1" required></label>
-          <label>Название<input id="menuName" minlength="2" maxlength="120" required></label>
-          <label>Категория<input id="menuCategory" minlength="2" maxlength="60" placeholder="Например, Горячие блюда" required></label>
-          <label>Описание<textarea id="menuDescription" maxlength="800"></textarea></label>
-          <div class="double">
-            <label>Цена, BYN<input id="menuPrice" type="number" min="0" max="20000" step="0.01" required></label>
-            <label>Порядок сортировки<input id="menuSort" type="number" min="0" max="100000" step="1" value="100" required></label>
+
+      <section class="admin-panel" id="adminOrdersPanel" data-admin-panel="orders" aria-labelledby="ordersHeading">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">РАБОТА С ГОСТЯМИ</div>
+            <h2 id="ordersHeading">Очередь предзаказов</h2>
+            <p>Подтверждайте заявки, меняйте статусы и отправляйте на печать.</p>
           </div>
-          <label>Фото (HTTPS-ссылка)<input id="menuImage" type="url" placeholder="https://..."></label>
-          <label class="check"><input id="menuAvailable" type="checkbox" checked> Доступен для заказа</label>
-          <div class="actions"><button type="submit" class="primary">Сохранить товар</button><button id="clearMenu" type="button">Очистить</button></div>
-          <p id="menuStatus" role="status" aria-live="polite"></p>
-        </form>
+          <div class="filter-stack">
+            <label for="ordersDateFilter">Дата мероприятия</label>
+            <select id="ordersDateFilter"><option value="">Все даты</option></select>
+          </div>
+        </div>
+        <div class="notice notice-info">Заявки начнут поступать после подключения правил Firestore для заказов. Онлайн-оплата не включена.</div>
+        <p id="ordersAdminStatus" class="status" role="status" aria-live="polite"></p>
+        <div class="order-queue" id="ordersAdminList">Ожидаем входа администратора...</div>
       </section>
-      <section class="card">
-        <h2>Каталог</h2>
-        <p class="hint">Нажмите «Изменить» для редактирования. Список обновляется автоматически.</p>
-        <div id="menuList" class="scroll-list">Загрузка...</div>
+
+      <section class="admin-panel" id="adminMenuPanel" data-admin-panel="menu" aria-labelledby="menuHeading" hidden>
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">АССОРТИМЕНТ</div>
+            <h2 id="menuHeading">Меню и цены</h2>
+            <p>Добавляйте блюда и обновляйте стоимость — изменения видны гостям.</p>
+          </div>
+          <button type="button" id="addMenuBtn" class="primary">+ Добавить позицию</button>
+        </div>
+
+        <div class="editor-layout">
+          <section class="card catalog-form-card" id="menuEditorCard">
+            <div class="card-heading">
+              <h3>Карточка товара</h3>
+              <span class="tag">BYN</span>
+            </div>
+            <form id="menuForm">
+              <div class="double">
+                <label>ID товара <input id="menuId" type="number" min="1" step="1" placeholder="101" required></label>
+                <label>Цена, BYN <input id="menuPrice" type="number" min="0" max="20000" step="0.01" placeholder="0.00" required></label>
+              </div>
+              <label>Название блюда <input id="menuName" minlength="2" maxlength="120" placeholder="Например, Салат Цезарь" required></label>
+              <label>Категория <input id="menuCategory" minlength="2" maxlength="60" placeholder="Например, Салаты" required></label>
+              <label>Описание <textarea id="menuDescription" maxlength="800" placeholder="Состав, вес и подробности..."></textarea></label>
+              <label>Ссылка на фотографию <input id="menuImage" type="url" placeholder="https://..."></label>
+              <div class="double compact-fields">
+                <label>Сортировка <input id="menuSort" type="number" min="0" max="100000" step="1" value="100" required></label>
+                <label class="check availability-toggle"><input id="menuAvailable" type="checkbox" checked><span>В наличии</span></label>
+              </div>
+              <div class="actions">
+                <button type="submit" class="primary">Сохранить товар</button>
+                <button id="clearMenu" type="button">Сбросить</button>
+              </div>
+              <p id="menuStatus" class="status" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+
+          <section class="card catalog-list-card">
+            <div class="card-heading">
+              <h3>Каталог</h3>
+              <span class="tag"><span id="menuResultCount">0</span> позиций</span>
+            </div>
+            <label class="search-label" for="menuSearch">Поиск по меню</label>
+            <input id="menuSearch" type="search" placeholder="Название, категория, ID..." autocomplete="off">
+            <div id="menuList" class="scroll-list">Загрузка...</div>
+          </section>
+        </div>
+
+        <details class="card import-panel">
+          <summary><span>Импорт меню с фотографии</span><span class="hint">18 позиций · 5 разделов</span></summary>
+          <div class="import-body">
+            <p class="hint">Проверьте позиции и цены перед добавлением. Импорт не перезаписывает уже существующие товары.</p>
+            <div id="seedPreview" class="seed-preview" aria-live="polite"></div>
+            <div class="actions">
+              <button type="button" class="primary" id="seedImportBtn">Добавить отсутствующие позиции</button>
+              <span class="hint">Позиции с совпадающими ID будут пропущены.</span>
+            </div>
+            <p id="seedImportStatus" class="status" role="status" aria-live="polite"></p>
+          </div>
+        </details>
+      </section>
+
+      <section class="admin-panel" id="adminEventsPanel" data-admin-panel="events" aria-labelledby="eventsHeading" hidden>
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">КАЛЕНДАРЬ</div>
+            <h2 id="eventsHeading">Мероприятия</h2>
+            <p>Управляйте датами и временем закрытия предзаказов.</p>
+          </div>
+          <button type="button" id="addEventBtn" class="primary">+ Новая дата</button>
+        </div>
+        <div class="editor-layout">
+          <section class="card catalog-form-card" id="eventEditorCard">
+            <div class="card-heading"><h3>Настройки мероприятия</h3><span class="tag">Минск</span></div>
+            <form id="eventForm">
+              <label>Дата мероприятия <input type="date" id="eventDateAdmin" required></label>
+              <label>Название мероприятия <input id="eventTitle" minlength="2" maxlength="150" placeholder="Например, BALI ICE NIGHT" required></label>
+              <label>Закрыть предзаказы в (по Минску) <input id="eventCutoff" type="time"></label>
+              <label class="check availability-toggle"><input id="eventOpen" type="checkbox" checked><span>Разрешить предзаказы</span></label>
+              <div class="actions">
+                <button type="submit" class="primary">Сохранить мероприятие</button>
+                <button id="clearEvent" type="button">Сбросить</button>
+              </div>
+              <p id="eventStatus" class="status" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+          <section class="card catalog-list-card">
+            <div class="card-heading"><h3>Календарь BALI</h3><span class="tag">Предстоящие и прошедшие</span></div>
+            <div id="eventList" class="scroll-list">Загрузка...</div>
+          </section>
+        </div>
       </section>
     </div>
-    <div class="columns">
-      <section class="card">
-        <h2>Добавить мероприятие</h2>
-        <form id="eventForm">
-          <label>Дата мероприятия<input type="date" id="eventDateAdmin" required></label>
-          <label>Название<input id="eventTitle" minlength="2" maxlength="150" required></label>
-          <label>Закрыть приём в (время Минска, необязательно)<input id="eventCutoff" type="time"></label>
-          <label class="check"><input id="eventOpen" type="checkbox" checked> Разрешить предзаказы</label>
-          <div class="actions"><button type="submit" class="primary">Сохранить мероприятие</button><button id="clearEvent" type="button">Очистить</button></div>
-          <p id="eventStatus" role="status" aria-live="polite"></p>
-        </form>
-      </section>
-      <section class="card">
-        <h2>Даты мероприятий</h2>
-        <div id="eventList" class="scroll-list">Загрузка...</div>
-      </section>
-    </div>
+    <section id="orderPrintSheet" hidden aria-hidden="true"></section>
   </section>
 </main>
+
 <script src="firebase-config.js?v=20261017-8"></script>
 <script type="module" src="admin-firestore.js?v=20261017-10"></script>
 <script type="module" src="admin-orders.js?v=20261017-10"></script>
+<script src="admin-dashboard.js?v=20261017-14" defer></script>
 </body>
 </html>
