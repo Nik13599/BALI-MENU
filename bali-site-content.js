@@ -37,8 +37,8 @@ function setIcon(selector,url){
 }
 function apply(data){
   if(!data)return;
-  preserveButtonChildren(".bali-pc-brand",data.brandTitle);
-  label(".bali-pc-brand small",data.brandSubtitle);
+  // The original BALI artwork is an image, not an editable text label.
+  // Do not append legacy Firestore brandTitle/brandSubtitle to the logo button.
   for(const [key,name] of [
     ["navHomeText","home"],["navCalendarText","events"],
     ["navMenuText","menu"]]){
