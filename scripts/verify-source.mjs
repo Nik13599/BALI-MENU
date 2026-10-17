@@ -56,24 +56,30 @@ const themeCss=source("bali-theme.css");
 const neutralLimeCss=source("bali-lime-neutral.css");
 
 const desktopLayoutCss=source("bali-desktop-fullwidth.css");
-assert(html.includes('bali-desktop-fullwidth.css?v=20261017-63') &&
-  html.indexOf('bali-desktop-fullwidth.css?v=20261017-63') >
+assert(html.includes('bali-desktop-fullwidth.css?v=20261017-64') &&
+  html.indexOf('bali-desktop-fullwidth.css?v=20261017-64') >
   html.indexOf('bali-lime-neutral.css?v=20261017-62'),
-  "Desktop fullscreen layout must be loaded after all guest mobile and palette styles");
-assert(desktopLayoutCss.includes('@media (min-width:768px)') &&
-  desktopLayoutCss.includes('max-width:none!important') &&
-  desktopLayoutCss.includes('body.bali-guest-theme #homeSection .bali-home-inner') &&
-  desktopLayoutCss.includes('grid-template-columns:minmax(270px,min(28vw,420px)) minmax(0,1fr)') &&
-  desktopLayoutCss.includes('grid-template-columns:repeat(3,minmax(0,clamp(170px,14vw,218px)))') &&
-  desktopLayoutCss.includes('grid-template-columns:repeat(3,minmax(0,1fr))') &&
-  desktopLayoutCss.includes('minmax(0,min(calc(75% - 2.5px),680px))') &&
-  desktopLayoutCss.includes('minmax(0,min(calc(25% - 7.5px),220px))') &&
-  desktopLayoutCss.includes('grid-column:2') &&
-  desktopLayoutCss.includes('height:50px!important') &&
+  "Desktop studio redesign must load last while LIME remains the default skin");
+assert(desktopLayoutCss.includes('/* BALI STUDIO / v64') &&
+  desktopLayoutCss.includes('@media (min-width:768px)') &&
+  desktopLayoutCss.includes('@media (min-width:1180px)') &&
+  desktopLayoutCss.includes('grid-template-columns:minmax(0,1fr) clamp(320px,25vw,400px)') &&
+  desktopLayoutCss.includes('grid-row:1/3') &&
+  desktopLayoutCss.includes('content:"Афиша"') &&
+  desktopLayoutCss.includes('aspect-ratio:3/4!important') &&
+  desktopLayoutCss.includes('aspect-ratio:1/1') &&
+  desktopLayoutCss.includes('body.bali-guest-theme #homeSection .bali-home-menu-banner') &&
+  desktopLayoutCss.includes('display:contents!important') &&
+  desktopLayoutCss.includes('grid-template-columns:repeat(4,minmax(0,154px))') &&
+  desktopLayoutCss.includes('grid-template-columns:repeat(2,minmax(0,1fr))') &&
+  desktopLayoutCss.includes('body.bali-guest-theme #homeSection .bali-home-social .bali-social-telegram{grid-column:2;grid-row:2}') &&
+  desktopLayoutCss.includes('body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map') &&
+  desktopLayoutCss.includes('height:55px!important') &&
+  desktopLayoutCss.includes('background:#23252a!important') &&
   desktopLayoutCss.includes('body.bali-guest-theme #eventsSection > .container') &&
   !desktopLayoutCss.includes('@media(max-width:767px)') &&
   !desktopLayoutCss.includes('@media (max-width:767px)'),
-  "Desktop-only layout should fill viewport and align four compact equal-sized contact buttons without touching mobile");
+  "2026-style desktop must be a cinematic gallery and compact equal-size contact sidebar without touching mobile");
 
 assert(html.includes('class="bali-yandex-pin"') &&
   !html.includes('<circle cx="12" cy="12" r="4.25" fill="white"/>') &&
