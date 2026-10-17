@@ -80,6 +80,25 @@ assert(barCss.includes('@media(max-width:767px)') &&
   barCss.includes('.bali-menu-mode-btn[hidden]{display:none!important}') &&
   barCss.includes('.bali-menu-mode-btn.is-active{'),
   "Four compact mobile icon-only menu switches must stay on a single row and support hidden/selected states");
+// PC-only improvements: menu tabs and calendar title align with the top of the
+// BALI sidebar logo; six fully functional cards per dish row; fading event edges.
+assert(html.includes('bali-pc-reference.css?v=20261017-81') &&
+  pcReferenceCss.includes('v81 — Desktop menu/calendar') &&
+  pcReferenceCss.includes('padding-top:21px!important') &&
+  pcReferenceCss.includes('body.bali-guest-theme #menuPage #baliMenuModeSwitch') &&
+  pcReferenceCss.includes('grid-template-columns:repeat(6,minmax(0,1fr))!important') &&
+  pcReferenceCss.includes('body.bali-guest-theme #menuPage .menu-category-block .menu-purchase-controls') &&
+  pcReferenceCss.includes('grid-template-columns:1fr!important') &&
+  pcReferenceCss.includes('body.bali-guest-theme #eventsSection .events-topbar') &&
+  pcReferenceCss.includes('grid-template-columns:minmax(0,1fr) auto clamp(200px,18.5vw,280px)!important') &&
+  pcReferenceCss.includes('body.bali-guest-theme #eventsSection .events-topbar #eventsViewTabs') &&
+  pcReferenceCss.includes('grid-column:2!important') &&
+  pcReferenceCss.includes('--bali-calendar-edge-width:') &&
+  pcReferenceCss.includes('--bali-calendar-edge-opacity:') &&
+  pcReferenceCss.includes('-webkit-mask-image:linear-gradient(to right,') &&
+  pcReferenceCss.includes('scroll-behavior:smooth!important') &&
+  pcReferenceCss.includes('(prefers-reduced-motion:reduce)'),
+  "PC menu/category grid and calendar heading, profile clearance and fade animation must be preserved");
 const barAdmin=source("bali-admin-bar.js");
 const barAdminCss=source("bali-admin-bar.css");
 assert(html.includes('id="baliMenuModeSwitch"') &&
@@ -904,7 +923,7 @@ assert(carouselCss.includes('font-size:16px') &&
   carouselCss.includes('min-height:41px') &&
   carouselCss.includes('.events-info-panel'), "Mobile detail labels, actions and info panel must be readable");
 assert(html.includes('class="events-topbar"') &&
-  html.includes('<h2 class="events-eyebrow" id="eventsHeadingGuest">BALI календарь</h2>'),
+  html.includes('<h2 class="events-eyebrow" id="eventsHeadingGuest">BALI КАЛЕНДАРЬ</h2>'),
   "Bali Calendar must be the only visible title above Stories");
 assert(!html.includes('Ближайшие мероприятия по датам — от самого раннего к следующему.') &&
   !html.includes('id="eventsHeadingGuest">События</h2>'),
