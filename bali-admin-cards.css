@@ -78,3 +78,30 @@
   .bali-promo-item{flex-wrap:wrap}
   .bali-promo-actions{width:100%}
 }
+
+/* v72: publication controls. Independent switch, live persisted state. */
+.bali-catalog-visibility{padding:clamp(16px,2vw,25px);margin:0 0 24px}
+.bali-catalog-visibility-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:18px}
+.bali-catalog-visibility-heading h3{font:750 clamp(17px,1.7vw,22px)/1.2 Manrope,sans-serif;color:#f4f5f6;margin:5px 0 8px}
+.bali-catalog-visibility-heading p{max-width:750px;margin:0;color:#aeb4bd;font-size:12px;line-height:1.6}
+.bali-catalog-visibility-heading .tag{white-space:nowrap}
+.bali-catalog-visibility-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.bali-visibility-option{display:flex;position:relative;align-items:center;justify-content:space-between;gap:10px;min-width:0;cursor:pointer;background:#22262a;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:15px}
+.bali-visibility-option.is-off{background:#191c20;border-color:rgba(255,255,255,.09)}
+.bali-visibility-label{min-width:0;display:grid;gap:6px}
+.bali-visibility-label strong{color:#f4f4f4;font:700 13px/1.25 Manrope,sans-serif}
+.bali-visibility-label small{color:var(--bt-text,#d8ff9f);font:570 11px/1.2 Manrope,sans-serif}
+.bali-visibility-option.is-off .bali-visibility-label small{color:#9ea4ad}
+.bali-visibility-option>input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.bali-visibility-track{position:relative;display:block;flex:0 0 44px;width:44px;height:25px;border-radius:40px;background:#535b60;transition:background .18s}
+.bali-visibility-track:after{content:"";position:absolute;left:3px;top:3px;height:19px;width:19px;border-radius:50%;background:#f4f4f4;transition:transform .18s}
+.bali-visibility-option>input:checked+.bali-visibility-track{background:var(--bt-primary,#b9ff51)}
+.bali-visibility-option>input:checked+.bali-visibility-track:after{transform:translateX(19px);background:var(--bt-on-primary,#10131a)}
+.bali-visibility-option>input:focus-visible+.bali-visibility-track{outline:2px solid var(--bt-border,#b2ef5f);outline-offset:4px}
+.bali-visibility-option:has(input:disabled){cursor:progress;opacity:.68}
+#baliVisibilityStatus{margin:13px 0 0;min-height:17px;font-size:12px}
+@media(max-width:720px){
+  .bali-catalog-visibility-grid{grid-template-columns:1fr}
+  .bali-catalog-visibility-heading{display:block}
+  .bali-catalog-visibility-heading>.tag{display:inline-block;margin-top:10px}
+}
