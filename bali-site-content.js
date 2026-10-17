@@ -47,6 +47,7 @@ function apply(data){
   preserveButtonChildren("#baliPcCartBtn",data.navCartText);
   preserveButtonChildren(".bali-pc-events-title h2 button",data.calendarPreviewTitle);
   label("#eventsHeadingGuest",data.calendarPageTitle);
+  label("#baliMenuHeading",data.menuPageTitle);
   label("#menuNavBtn strong",data.menuBannerTitle);
   if(typeof data.menuBannerCta==="string"&&data.menuBannerCta.trim()){
     const node=one("#menuNavBtn .bali-pc-menu-cta");
@@ -55,7 +56,6 @@ function apply(data){
   label(".bali-pc-sidebar-contacts>.bali-pc-contacts-heading",data.contactHeading);
   label(".bali-pc-contact-phone span",data.phoneText);
   label(".bali-pc-contact-location>.bali-pc-contacts-heading",data.findHeading);
-  label(".bali-pc-contact-location a>span",data.addressText);
   const floor=one(".bali-pc-contact-location a>span small");
   if(typeof data.addressFloor==="string"&&data.addressFloor.trim()){
     // The surrounding text needs a separate text node to preserve the small caption.
