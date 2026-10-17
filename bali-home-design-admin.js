@@ -54,7 +54,7 @@ if(aboutForm&&merchForm){
     if(!file)return;
     const serial=isAbout?++aboutFileSerial:++merchFileSerial;
     if(isAbout)aboutProcessing=true;else merchProcessing=true;
-    const id=isAbout?"baliHomeAboutStatus":"baliHomeMerchStatus";
+    const id=isAbout?"baliHomeAboutStatus":"baliHomeMerchFeedback";
     const target=isAbout?"baliHomeAboutPreview":"baliHomeMerchPreview";
     const urlId=isAbout?"baliHomeAboutImageUrl":"baliHomeMerchImageUrl";
     say(id,"Обрабатываем изображение…");
@@ -92,7 +92,7 @@ if(aboutForm&&merchForm){
       else{merchFileSerial++;merchImage="";}
       urlInput.value="";fileInput.value="";
       preview(previewId,"",about?"Фото клуба 1:1":"Фото товара 3:2");
-      say(about?"baliHomeAboutStatus":"baliHomeMerchStatus","Изображение убрано из формы. Сохраните изменение.");
+      say(about?"baliHomeAboutStatus":"baliHomeMerchFeedback","Изображение убрано из формы. Сохраните изменение.");
     });
   }
   aboutForm.addEventListener("submit",async e=>{
@@ -130,7 +130,7 @@ if(aboutForm&&merchForm){
     preview("baliHomeMerchPreview",item.imageUrl,"Фото товара 3:2");
     el("baliHomeMerchSave").textContent="Сохранить изменения";
     merchForm.scrollIntoView({block:"start",behavior:"smooth"});
-    say("baliHomeMerchStatus","Редактирование товара: "+item.name);
+    say("baliHomeMerchFeedback","Редактирование товара: "+item.name);
   }
   function renderMerch(){
     const host=el("baliHomeMerchList");host.replaceChildren();
@@ -152,16 +152,16 @@ if(aboutForm&&merchForm){
         if(!authorized||!confirm("Удалить «"+item.name+"»?"))return;
         remove.disabled=true;
         try{await deleteDoc(doc(db,"merch",item.id));if(el("baliHomeMerchId").value===item.id)resetMerch();}
-        catch(error){say("baliHomeMerchStatus","Ошибка удаления: "+(error.code||"неизвестная"));}
+        catch(error){say("baliHomeMerchFeedback","Ошибка удаления: "+(error.code||"неизвестная"));}
         finally{remove.disabled=false;}
       });
       buttons.append(edit,remove);row.append(info,buttons);host.append(row);
     }
   }
-  el("baliHomeMerchReset").addEventListener("click",()=>{resetMerch();say("baliHomeMerchStatus","Новый товар.");});
+  el("baliHomeMerchReset").addEventListener("click",()=>{resetMerch();say("baliHomeMerchFeedback","Новый товар.");});
   merchForm.addEventListener("submit",async e=>{
     e.preventDefault();
-    if(!authorized||merchProcessing){say("baliHomeMerchStatus","Дождитесь обработки фотографии или войдите как администратор.");return;}
+    if(!authorized||merchProcessing){say("baliHomeMerchFeedback","Дождитесь обработки фотографии или войдите как администратор.");return;}
     const name=el("baliHomeMerchName").value.trim();
     const description=el("baliHomeMerchDescription").value.trim();
     const status=el("baliHomeMerchStatus").value;
@@ -173,16 +173,16 @@ if(aboutForm&&merchForm){
        !Number.isFinite(price)||price<0||price>20000||
        !Number.isInteger(sort)||sort<0||sort>100000||!validImage(imageUrl)||
        (status==="available"&&price<=0)){
-      say("baliHomeMerchStatus","Проверьте название, цену, фото и сортировку. Для товара в продаже цена должна быть больше нуля.");return;
+      say("baliHomeMerchFeedback","Проверьте название, цену, фото и сортировку. Для товара в продаже цена должна быть больше нуля.");return;
     }
     const id=el("baliHomeMerchId").value;
     const ref=id?doc(db,"merch",id):doc(merchRef);
     const button=el("baliHomeMerchSave");button.disabled=true;
-    say("baliHomeMerchStatus","Сохраняем товар…");
+    say("baliHomeMerchFeedback","Сохраняем товар…");
     try{
       await setDoc(ref,{name,description,imageUrl,status,price,sort,published,updatedAt:serverTimestamp()});
-      resetMerch();say("baliHomeMerchStatus",published?"Товар опубликован.":"Черновик сохранён.");
-    }catch(error){say("baliHomeMerchStatus",error.code==="permission-denied"
+      resetMerch();say("baliHomeMerchFeedback",published?"Товар опубликован.":"Черновик сохранён.");
+    }catch(error){say("baliHomeMerchFeedback",error.code==="permission-denied"
       ?"Недостаточно прав. Опубликуйте обновлённые Firestore Rules."
       :"Ошибка сохранения: "+(error.code||"неизвестная"));}
     finally{button.disabled=false;}
@@ -193,14 +193,14 @@ if(aboutForm&&merchForm){
     aboutUnsub=null;merchUnsub=null;merchItems.clear();renderMerch();setAccess(false);
     if(!user?.emailVerified){
       say("baliHomeAboutStatus","Войдите в подтверждённый аккаунт администратора.");
-      say("baliHomeMerchStatus","Ожидаем авторизацию администратора.");return;
+      say("baliHomeMerchFeedback","Ожидаем авторизацию администратора.");return;
     }
     try{
       const role=await getDoc(doc(db,"admins",user.uid));
       if(serial!==epoch||auth.currentUser?.uid!==user.uid)return;
       if(role.data()?.active!==true){
         say("baliHomeAboutStatus","Нет роли администратора.");
-        say("baliHomeMerchStatus","Нет роли администратора.");return;
+        say("baliHomeMerchFeedback","Нет роли администратора.");return;
       }
       authorized=true;setAccess(true);
       aboutUnsub=onSnapshot(aboutRef,snapshot=>{
@@ -216,12 +216,12 @@ if(aboutForm&&merchForm){
              typeof item.published==="boolean")merchItems.set(d.id,item);
         }
         renderMerch();
-        say("baliHomeMerchStatus","Товаров мерча: "+merchItems.size+". Данные синхронизируются с сайтом.");
-      },error=>say("baliHomeMerchStatus","Не удалось загрузить мерч: "+(error.code||"ошибка")));
+        say("baliHomeMerchFeedback","Товаров мерча: "+merchItems.size+". Данные синхронизируются с сайтом.");
+      },error=>say("baliHomeMerchFeedback","Не удалось загрузить мерч: "+(error.code||"ошибка")));
     }catch(error){
       if(serial===epoch){
         say("baliHomeAboutStatus","Проверка прав не удалась: "+(error.code||"ошибка"));
-        say("baliHomeMerchStatus","Проверка прав не удалась.");
+        say("baliHomeMerchFeedback","Проверка прав не удалась.");
       }
     }
   });
