@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-28"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-33"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -99,7 +99,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-28'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-33'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
@@ -297,4 +297,29 @@ assert(landingCss.includes('BALI v32') &&
   landingCss.includes('text-align:center') &&
   landingCss.includes('.bali-yandex-pin{left:10px;top:50%'),
   "Yandex Maps address text must be centered with red pin left on mobile");
+const carouselCss=source("events-carousel.css");
+assert(html.includes('events-carousel.css?v=20261017-33'), "Swipe carousel stylesheet must load");
+assert(html.indexOf('events-carousel.css?v=20261017-33') >
+  html.indexOf('bali-pages.css?v=20261017-32'), "Carousel must override older event grid styles");
+assert(html.includes('id="eventsCarouselShell"') &&
+  html.includes('id="eventsCarouselPosition"') &&
+  html.includes('aria-roledescription="карусель"'), "Accessible event carousel shell missing");
+assert(!html.includes('<h2 class="section-title">Меню BALI</h2>'),
+  "Do not duplicate menu title after category buttons");
+assert(app.includes('function initEventCarousel()') &&
+  app.includes('track.addEventListener("wheel"') &&
+  app.includes('track.addEventListener("keydown"'),
+  "Events must scroll by desktop wheel and keyboard");
+assert(app.includes('const previousDate=previousCards[previousIndex]?.dataset.eventDate') &&
+  app.includes('grid.scrollLeft=Math.max(0,cards[restoreIndex].offsetLeft-cards[0].offsetLeft)'),
+  "Realtime RSVP refreshes must preserve carousel position");
+assert(carouselCss.includes('scroll-snap-type:x mandatory') &&
+  carouselCss.includes('touch-action:pan-x') &&
+  carouselCss.includes('overflow-x:auto'),
+  "Carousel must swipe horizontally and snap to event cards");
+assert(carouselCss.includes('body[data-bali-page="events"]{overflow-y:hidden}') &&
+  carouselCss.includes('height:calc(100dvh - var(--bali-header-height'),
+  "Events must remain a fixed-height screen instead of a vertical feed");
+assert(carouselCss.includes('grid-template-rows:minmax(60px,1fr) auto') &&
+  carouselCss.includes('max-height:100%'), "Slides must fit on screen with controls visible");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
