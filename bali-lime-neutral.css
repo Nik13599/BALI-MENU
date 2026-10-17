@@ -1,0 +1,209 @@
+/* BALI v61 — LIME SHADOW / MONOCHROME LUXURY
+   Only when LIME SHADOW is selected: ink + charcoal + smoke + white with lime
+   interaction accents. The site's base background and event artwork stay put.
+   This file also stabilizes the mobile app shell against vertical rubberband. */
+
+:root[data-bali-theme="lime"]{
+  --bali-hairline:rgba(247,248,250,.10);
+  --bali-hairline-strong:rgba(247,248,250,.19);
+  --bali-ui-panel:#16181c;
+  --bali-secondary:#bbc0c5;
+  --bali-subtle:#92969e;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme,
+:root[data-bali-theme="lime"] body.bali-admin-theme{
+  --bg-secondary:#17191d;
+  --bg-tertiary:#222429;
+  --text-secondary:#c1c3c7;
+  --text-muted:#90959c;
+  --border-color:rgba(255,255,255,.12);
+}
+/* Keep the actual page background unchanged; neutralise blue-tinted overlays. */
+:root[data-bali-theme="lime"] body.bali-guest-theme .header,
+:root[data-bali-theme="lime"] body.bali-guest-theme[data-bali-page="home"] .header{
+  background:rgba(9,11,14,.98)!important;
+  border-color:rgba(255,255,255,.10)!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme .bali-preview-banner,
+:root[data-bali-theme="lime"] body.bali-guest-theme[data-bali-page="home"] .bali-preview-banner{
+  background:#17191d!important;
+  color:#b0b2b8!important;
+  border-color:rgba(255,255,255,.11)!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme .bali-bottom-nav{
+  background:rgba(12,14,17,.99)!important;
+  border-color:rgba(255,255,255,.14)!important;
+  box-shadow:none!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme .bali-bottom-nav button:not(.active){
+  color:#a9adb5!important;
+}
+/* Main page background is the existing #080b11; only the subtle blue overlay
+   from the older cobalt skin is removed in LIME mode. */
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection{
+  background:transparent!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-events-panel,
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-contacts-card{
+  background:#16181d!important;
+  border-color:rgba(255,255,255,.17)!important;
+  box-shadow:0 8px 20px rgba(0,0,0,.18)!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-calendar-row{
+  background:transparent!important;
+  border-color:rgba(255,255,255,.09)!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-calendar-row button:not(.is-current){
+  background:#22252b!important;
+  color:#e3e5e8!important;
+  border-color:transparent!important;
+}
+/* The only filled selection remains lime from bali-theme.css. */
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-calendar-row button.is-current{
+  background:var(--bt-primary)!important;
+  color:var(--bt-on-primary)!important;
+  border-color:var(--bt-primary)!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-event-card{
+  background:#16181d!important;
+  border-color:rgba(255,255,255,.22)!important;
+  box-shadow:none!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-event-info{
+  background:#191b21!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-event-info h3{
+  color:#f5f5f5!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-event-description{
+  color:#c3c4c8!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-event-count{
+  color:#a2a4ab!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-poster-wrap{
+  border-color:rgba(255,255,255,.09)!important;
+}
+/* Signature menu tile — matte graphite, not navy blue. */
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-menu-banner{
+  background:#23252b!important;
+  border:1px solid rgba(255,255,255,.19)!important;
+  box-shadow:none!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-menu-banner-icon{
+  background:#30333a!important;
+  color:var(--bt-primary)!important;
+  border-color:rgba(255,255,255,.16)!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-menu-banner strong{
+  color:#f7f7f7!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-menu-banner small{
+  color:#b7bac1!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-contacts-heading span{
+  color:#a6a9ae!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-social-btn,
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map{
+  background:#24272d!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  box-shadow:none!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #homeSection .bali-yandex-address{
+  color:#efeff1!important;
+}
+/* Other guest pages: consistent quiet panels and active lime only. */
+:root[data-bali-theme="lime"] body.bali-guest-theme #eventsSection .events-view-button:not(.active),
+:root[data-bali-theme="lime"] body.bali-guest-theme #menuPage .category-btn:not(.active){
+  background:#22252b!important;
+  color:#d5d7dc!important;
+  border-color:rgba(255,255,255,.11)!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #eventsSection #eventsGrid>.event-card,
+:root[data-bali-theme="lime"] body.bali-guest-theme #menuPage .menu-item,
+:root[data-bali-theme="lime"] body.bali-guest-theme .bali-profile-card,
+:root[data-bali-theme="lime"] body.bali-guest-theme .bali-contact-card{
+  background:#191b20!important;
+  border-color:rgba(255,255,255,.15)!important;
+  box-shadow:none!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body,
+:root[data-bali-theme="lime"] body.bali-guest-theme #menuPage .categories{
+  background:#17191e!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #eventsSection .bali-event-actions{
+  background:#17191e!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #menuPage .bali-menu-search-field,
+:root[data-bali-theme="lime"] body.bali-guest-theme #menuPage .menu-quantity-btn,
+:root[data-bali-theme="lime"] body.bali-guest-theme .bali-profile-action{
+  background:#24272d!important;
+  border-color:rgba(255,255,255,.15)!important;
+  color:#f2f2f3!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme .bali-profile-avatar{
+  background:#262a30!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme .modal-content,
+:root[data-bali-theme="lime"] body.bali-guest-theme .cart-sidebar{
+  background:#191c21!important;
+  border-color:rgba(255,255,255,.18)!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme .modal-content input,
+:root[data-bali-theme="lime"] body.bali-guest-theme .modal-content textarea,
+:root[data-bali-theme="lime"] body.bali-guest-theme .modal-content select{
+  background:#26292f!important;
+  border-color:rgba(255,255,255,.18)!important;
+}
+/* Admin also becomes monochrome, regardless of the underlying cobalt skin. */
+:root[data-bali-theme="lime"] body.bali-admin-theme .topbar,
+:root[data-bali-theme="lime"] body.bali-admin-theme .admin-sidebar{
+  background:#17191d!important;
+  border-color:rgba(255,255,255,.12)!important;
+}
+:root[data-bali-theme="lime"] body.bali-admin-theme .card,
+:root[data-bali-theme="lime"] body.bali-admin-theme .stat-card,
+:root[data-bali-theme="lime"] body.bali-admin-theme .admin-form-dialog,
+:root[data-bali-theme="lime"] body.bali-admin-theme dialog{
+  background:#1d2025!important;
+  border-color:rgba(255,255,255,.15)!important;
+  box-shadow:none!important;
+}
+:root[data-bali-theme="lime"] body.bali-admin-theme .admin-tab:not(.active),
+:root[data-bali-theme="lime"] body.bali-admin-theme .tag{
+  background:#24272d!important;
+  color:#c8c9ce!important;
+  border-color:rgba(255,255,255,.12)!important;
+}
+:root[data-bali-theme="lime"] body.bali-admin-theme input:not([type="checkbox"]),
+:root[data-bali-theme="lime"] body.bali-admin-theme textarea,
+:root[data-bali-theme="lime"] body.bali-admin-theme select{
+  background:#272a30!important;
+  border-color:rgba(255,255,255,.18)!important;
+}
+:root[data-bali-theme="lime"] body.bali-admin-theme .bali-theme-preset,
+:root[data-bali-theme="lime"] body.bali-admin-theme .bali-color-field,
+:root[data-bali-theme="lime"] body.bali-admin-theme .bali-theme-sample{
+  background:#22252b!important;
+  border-color:rgba(255,255,255,.18)!important;
+}
+:root[data-bali-theme="lime"] body.bali-admin-theme .bali-theme-preset:has(input:checked){
+  border-color:var(--bt-stroke)!important;
+}
+/* iPhone Safari: only the inner intended areas may scroll vertically.
+   The outer document cannot restore a vertical offset from another page. */
+@media(max-width:767px){
+  html,body{
+    overflow-y:hidden!important;
+    overscroll-behavior-y:none;
+  }
+  body.bali-guest-theme[data-bali-page]{
+    overscroll-behavior-y:none;
+  }
+  #homeSection .bali-home-events-panel,
+  #homeSection .bali-home-contacts-card,
+  #homeSection .bali-home-menu-banner{
+    min-height:0;
+  }
+}
