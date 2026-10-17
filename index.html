@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="bali-lime-neutral.css?v=20261017-62">
     <link rel="stylesheet" href="bali-desktop-fullwidth.css?v=20261017-64">
     <link rel="stylesheet" href="bali-bar-menu.css?v=20261017-65">
+    <link rel="stylesheet" href="bali-pc-reference.css?v=20261017-66">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,6 +49,17 @@
       </div>
     </header>
 
+    <aside class="bali-pc-sidebar" aria-label="Навигация BALI">
+      <button type="button" class="bali-pc-brand" data-bali-nav="home" aria-label="На главную BALI">B A L I<small>NIGHT CLUB</small></button>
+      <nav class="bali-pc-navigation" aria-label="Разделы">
+        <button type="button" data-bali-nav="home" class="active"><span aria-hidden="true">⌂</span>Главная</button>
+        <button type="button" data-bali-nav="events"><span aria-hidden="true">▦</span>События</button>
+        <button type="button" data-bali-nav="menu"><span aria-hidden="true">▥</span>Меню</button>
+        <button type="button" data-bali-nav="profile"><span aria-hidden="true">♡</span>Мои планы</button>
+        <button type="button" data-bali-nav="contacts"><span aria-hidden="true">⌖</span>Контакты</button>
+      </nav>
+      <div class="bali-pc-sidebar-foot"><strong>МУЗЫКА<br>ЛЮДИ<br>АТМОСФЕРА</strong><span>BALI NIGHT CLUB</span></div>
+    </aside>
     <!-- Главная BALI: календарь, события, меню и контакты без рекламного блока -->
     <section class="bali-home" id="homeSection" aria-label="Главная страница BALI">
       <div class="container bali-home-inner">
@@ -60,14 +72,43 @@
             <button type="button" class="bali-home-filter is-current" data-home-events-view="all">Все события</button>
             <button type="button" class="bali-home-filter" data-home-events-view="planned">Мои планы</button>
           </div>
+          <div class="bali-pc-hero">
+            <div class="bali-pc-hero-visual"><img id="baliPcHeroPoster" alt="" decoding="async"></div>
+            <div class="bali-pc-hero-content">
+              <span class="bali-pc-kicker">BALI NIGHT CLUB</span>
+              <h1>СОБЫТИЯ<br>ЭТОГО МЕСЯЦА</h1>
+              <p>Музыка · Атмосфера · Люди</p>
+              <button type="button" class="bali-pc-outline-button" data-bali-nav="events">Смотреть календарь <span aria-hidden="true">→</span></button>
+            </div>
+            <div class="bali-pc-hero-controls">
+              <span id="baliPcHeroCounter">01 / 01</span>
+              <button type="button" data-bali-hero-step="-1" aria-label="Предыдущее событие">‹</button>
+              <button type="button" data-bali-hero-step="1" aria-label="Следующее событие">›</button>
+            </div>
+          </div>
+          <div class="bali-pc-events-title">
+            <h2>Ближайшие события</h2>
+            <button type="button" data-bali-nav="events">Смотреть все <span aria-hidden="true">→</span></button>
+          </div>
           <div id="homeEventCarousel" class="bali-home-events" role="region" aria-label="Карусель мероприятий" tabindex="0">
             <p class="bali-home-event-empty">Загружаем афиши...</p>
           </div>
           <p id="homeInterestFeedback" class="bali-home-interest-feedback" role="status" aria-live="polite"></p>
         </section>
+        <aside class="bali-pc-right-rail" aria-label="Больше о клубе">
+          <details class="bali-pc-about">
+            <summary><span class="bali-pc-about-logo">BALI</span><strong>О клубе</strong><small>Атмосфера, музыка, люди</small><span class="bali-pc-round-arrow" aria-hidden="true">›</span></summary>
+            <p>Ночной клуб BALI в Минске. Музыка, события и встречи в одной атмосфере.</p>
+            <button type="button" data-bali-nav="contacts">Контакты клуба →</button>
+          </details>
+          <a class="bali-pc-rail-link" href="tel:+375296700300"><span aria-hidden="true">▦</span><span><strong>Забронировать стол</strong><small>Связаться с клубом</small></span><i aria-hidden="true">›</i></a>
+          <a class="bali-pc-rail-link" href="https://www.instagram.com/baliminsk/" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">▧</span><span><strong>Фотогалерея</strong><small>Фотографии в Instagram</small></span><i aria-hidden="true">›</i></a>
+          <div class="bali-pc-merch"><span class="bali-pc-merch-mark" aria-hidden="true">BALI</span><strong>BALI MERCH</strong><small>Скоро в продаже</small></div>
+        </aside>
         <button type="button" id="menuNavBtn" class="bali-home-menu-banner" aria-controls="menuPage">
           <span class="bali-menu-banner-icon" aria-hidden="true">▥</span>
           <span><strong>Меню</strong><small>Барная карта и кухня</small></span>
+          <span class="bali-pc-menu-cta" aria-hidden="true">Посмотреть меню &nbsp; →</span>
           <span class="bali-menu-banner-arrow" aria-hidden="true">›</span>
         </button>
         <div class="bali-home-contacts-card">
@@ -79,14 +120,14 @@
                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
                  stroke-linejoin="round" aria-hidden="true" focusable="false">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.35 1.9.68 2.79a2 2 0 0 1-.45 2.11L8.06 9.91a16 16 0 0 0 6 6l1.29-1.28a2 2 0 0 1 2.11-.45c.89.33 1.83.56 2.79.68A2 2 0 0 1 22 16.92z"/>
-            </svg>
+            </svg><span class="bali-pc-contact-label">Позвонить</span>
           </a>
           <a href="https://t.me/baliclubminsk" class="bali-social-btn bali-social-telegram"
              target="_blank" rel="noopener noreferrer" aria-label="Открыть Telegram BALI" title="Telegram">
             <svg class="bali-social-svg" viewBox="0 0 24 24" fill="currentColor"
                  aria-hidden="true" focusable="false">
               <path d="M21.54 2.86 2.43 10.2c-1.3.52-1.29 1.25-.24 1.57l4.91 1.53 11.36-7.17c.53-.35 1.02-.16.62.19l-9.2 8.3-.35 4.9c.5 0 .72-.23 1-.5l2.4-2.34 5 3.69c.92.5 1.58.24 1.81-.85l3.25-15.3c.34-1.35-.52-1.96-1.45-1.36z"/>
-            </svg>
+            </svg><span class="bali-pc-contact-label">Написать</span>
           </a>
           <a href="https://www.instagram.com/baliminsk/" class="bali-social-btn bali-social-instagram"
              target="_blank" rel="noopener noreferrer" aria-label="Открыть Instagram BALI" title="Instagram">
@@ -96,7 +137,7 @@
               <rect x="2" y="2" width="20" height="20" rx="5"/>
               <circle cx="12" cy="12" r="4"/>
               <circle cx="17.6" cy="6.5" r="1" fill="currentColor" stroke="none"/>
-            </svg>
+            </svg><span class="bali-pc-contact-label">Instagram</span>
           </a>
         </div>
         <a class="bali-home-map bali-yandex-map" href="https://yandex.by/maps/org/bali_night_club/104137822369/"
@@ -436,6 +477,7 @@
 
     <script src="firebase-config.js?v=20261017-10"></script>
     <script src="app.js?v=20261017-65"></script>
+    <script src="bali-pc-reference.js?v=20261017-66" defer></script>
     <script type="module" src="auth.js?v=20261017-16"></script>
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>
     <script type="module" src="bali-bar-menu.js?v=20261017-65"></script>
