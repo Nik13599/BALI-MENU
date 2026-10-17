@@ -2,7 +2,7 @@
    Existing dark site background, published event posters, and theme variables are preserved.
    No changes to phone/tablet, ordering, or Firestore logic. */
 .bali-pc-sidebar,.bali-pc-hero,.bali-pc-events-title,.bali-pc-right-rail,
-.bali-pc-menu-cta,.bali-pc-contact-label{display:none}
+.bali-pc-menu-cta,.bali-pc-contact-label,.bali-pc-profile-menu{display:none}
 @media(min-width:1180px){
   :root{--bali-pc-side:clamp(195px,15vw,250px);--bali-pc-gap:clamp(11px,1vw,17px);--bali-pc-right:clamp(275px,20.7vw,352px)}
   body.bali-guest-theme[data-bali-page="home"]{
@@ -333,37 +333,155 @@
   }
 }
 
-@media(min-width:1180px){
-  body.bali-guest-theme:not([data-bali-page="home"])>.bali-pc-sidebar{display:none!important}
-}
 
+/* v67: persistent desktop app shell, profile menu, and cart shortcut. */
 @media(min-width:1180px){
+  html{overflow:hidden!important}
+  body.bali-guest-theme,
+  body.bali-guest-theme[data-bali-page]{
+    display:block!important;width:100%!important;height:100dvh!important;
+    max-height:100dvh!important;min-height:0!important;
+    margin:0!important;padding:0!important;
+    overflow:hidden!important;background:#080b11!important
+  }
+  body.bali-guest-theme>.bali-preview-banner{
+    position:fixed!important;z-index:45!important;
+    left:0;right:0;top:0;margin:0!important
+  }
+  body.bali-guest-theme>.bali-pc-sidebar{
+    display:flex!important;position:fixed!important;
+    z-index:52!important;
+    top:calc(var(--bali-banner-height,0px) + 10px)!important;
+    bottom:15px!important;
+  }
+  body.bali-guest-theme>.bali-bottom-nav{
+    display:none!important;visibility:hidden!important;
+  }
+  body.bali-guest-theme #homeFloatingBtn{display:none!important}
+  body.bali-guest-theme .header,
   body.bali-guest-theme[data-bali-page="home"] .header{
-    width:calc(var(--bali-pc-right) + clamp(110px,7.5vw,155px))!important
+    position:fixed!important;
+    z-index:55!important;
+    top:calc(var(--bali-banner-height,0px) + 14px)!important;
+    right:clamp(20px,2.4vw,45px)!important;
+    left:auto!important;bottom:auto!important;
+    display:flex!important;justify-content:flex-end;align-items:center;
+    width:auto!important;max-width:350px!important;
+    height:48px!important;min-height:48px!important;
+    margin:0!important;padding:0!important;
+    background:transparent!important;
+    border:0!important;border-radius:0!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
   }
+  body.bali-guest-theme .header .header-content,
   body.bali-guest-theme[data-bali-page="home"] .header .header-content{
-    display:flex!important;gap:9px!important;align-items:center
+    display:flex!important;justify-content:flex-end!important;align-items:center!important;
+    width:auto!important;max-width:none!important;height:48px!important;min-height:48px!important;
+    gap:0!important;padding:0!important;margin:0!important;
+    background:transparent!important;border:0!important;box-shadow:none!important;
   }
-  .bali-pc-search{
-    display:flex!important;align-items:center;gap:8px;flex:0 1 178px;
-    height:39px;margin:0!important;padding:0 11px!important;
-    min-width:100px;border:1px solid rgba(255,255,255,.16);border-radius:11px;
-    background:rgba(10,12,15,.86);color:#bbc1c3
-  }
-  .bali-pc-search span{font-size:20px;line-height:1}
-  .bali-pc-search input{
-    margin:0!important;padding:0!important;min-width:0!important;
-    flex:1;max-width:100%;height:35px;border:0!important;outline:0;
-    background:transparent!important;color:#fff!important;font-size:11px!important
-  }
+  body.bali-guest-theme .header .logo{display:none!important}
+  body.bali-guest-theme .header #accountBtn,
   body.bali-guest-theme[data-bali-page="home"] .header #accountBtn{
-    max-width:clamp(110px,9.5vw,162px)!important;flex:0 1 auto
+    display:inline-flex!important;align-items:center!important;justify-content:flex-end!important;
+    gap:10px!important;flex:0 1 auto!important;
+    width:auto!important;max-width:320px!important;min-width:0!important;min-height:44px!important;
+    height:44px!important;padding:7px 6px!important;margin:0!important;
+    border:0!important;border-radius:0!important;background:transparent!important;
+    box-shadow:none!important;filter:none!important;
+    color:#f5f5f5!important;
+    font:650 13px/1.2 Manrope,Inter,sans-serif!important;white-space:nowrap;
+    text-overflow:ellipsis;overflow:hidden;cursor:pointer
   }
-  body.bali-guest-theme #homeSection .bali-home-event-card[hidden]{display:none!important}
-  #homeSection[hidden]{display:none!important}
+  body.bali-guest-theme .header #accountBtn:hover{color:var(--bt-text,#d8ff9f)!important}
+  body.bali-guest-theme .header #accountBtn::after{display:none!important;content:none!important}
+  body.bali-guest-theme .header #accountBtn[data-pc-signed-in="true"]::before{
+    display:block!important;content:""!important;
+    width:24px!important;height:24px!important;flex:0 0 24px!important;
+    background:var(--bt-text,#d8ff9f)!important;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21v-2a8 8 0 0 1 16 0v2'/%3E%3C/svg%3E") center/contain no-repeat!important;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21v-2a8 8 0 0 1 16 0v2'/%3E%3C/svg%3E") center/contain no-repeat!important;
+  }
+  body.bali-guest-theme .header #accountBtn:not([data-pc-signed-in="true"])::before{display:none!important;content:none!important}
+  .bali-pc-account-wrap{position:relative;display:flex;align-items:center;justify-content:flex-end}
+  .bali-pc-profile-menu:not([hidden]){
+    position:absolute;z-index:59;top:calc(100% + 10px);right:0;
+    display:grid!important;grid-template-columns:1fr;gap:3px;
+    width:224px;padding:8px;background:#17191d;border:1px solid rgba(255,255,255,.17);
+    border-radius:14px;box-shadow:0 14px 45px rgba(0,0,0,.65)
+  }
+  .bali-pc-profile-menu button{
+    display:flex;align-items:center;gap:12px;min-height:44px;text-align:left;
+    padding:10px 12px;border:0;border-radius:8px;background:transparent;color:#f5f5f5;
+    font:600 12px/1.2 Manrope,sans-serif;white-space:nowrap;cursor:pointer
+  }
+  .bali-pc-profile-menu button:hover,.bali-pc-profile-menu button:focus-visible{background:#2a3033!important;color:var(--bt-text)!important}
+  .bali-pc-profile-menu button span{color:var(--bt-primary,#b9ff51);font-size:19px;width:22px;text-align:center}
+  .bali-pc-profile-separator{height:1px;background:rgba(255,255,255,.14);margin:4px 7px}
+  body.bali-guest-theme #homeSection,
+  body.bali-guest-theme #eventsSection,
+  body.bali-guest-theme #menuPage,
+  body.bali-guest-theme #profileSection,
+  body.bali-guest-theme #contactsSection{
+    box-sizing:border-box!important;
+    position:fixed!important;
+    top:var(--bali-banner-height,0px)!important;
+    bottom:0!important;right:0!important;
+    margin:0!important;
+    max-height:none!important;min-height:0!important;
+    overflow-x:hidden!important;
+    overscroll-behavior-y:contain;
+    z-index:1;
+  }
+  body.bali-guest-theme #homeSection{
+    left:0!important;height:auto!important;overflow-y:auto!important;
+    padding:0!important
+  }
+  body.bali-guest-theme #eventsSection,
+  body.bali-guest-theme #menuPage,
+  body.bali-guest-theme #profileSection,
+  body.bali-guest-theme #contactsSection{
+    left:var(--bali-pc-side)!important;
+    width:auto!important;height:auto!important;
+    padding:86px clamp(22px,2.4vw,38px) 20px!important;
+    overflow-y:auto!important;background:transparent!important;
+    border:0!important
+  }
+  body.bali-guest-theme #menuPage{
+    display:flex!important;flex-direction:column!important;
+    padding-bottom:15px!important
+  }
+  body.bali-guest-theme #menuPage[hidden],
+  body.bali-guest-theme #eventsSection[hidden],
+  body.bali-guest-theme #profileSection[hidden],
+  body.bali-guest-theme #contactsSection[hidden],
+  body.bali-guest-theme #homeSection[hidden]{display:none!important}
+  body.bali-guest-theme #menuPage .menu-section{
+    min-height:0!important;overflow-y:auto!important;
+    padding-bottom:25px!important
+  }
+  body.bali-guest-theme #menuPage .categories{top:auto!important}
+  body.bali-guest-theme #profileSection,
+  body.bali-guest-theme #contactsSection{justify-content:flex-start!important}
+  body.bali-guest-theme #profileSection>.container,
+  body.bali-guest-theme #contactsSection>.container{max-width:1100px!important}
+  body.bali-guest-theme #eventsSection>.container{min-height:360px!important;height:100%!important}
+  body.bali-guest-theme .bali-cart-dock{display:none!important}
+  .bali-pc-navigation button.bali-pc-cart-nav:not([hidden]){display:flex!important}
+  .bali-pc-navigation .bali-pc-cart-nav small{
+    display:grid;place-items:center;margin-left:auto;min-width:22px;min-height:22px;
+    padding:2px 5px;border-radius:999px;
+    background:var(--bt-primary,#b9ff51);color:var(--bt-on-primary,#10131a);
+    font:750 11px Manrope,sans-serif
+  }
+  .bali-pc-navigation button.bali-pc-cart-nav.active{background:rgba(185,255,81,.12)}
+  @media(max-height:700px){
+    body.bali-guest-theme>.bali-pc-sidebar{overflow-y:auto!important;gap:13px!important}
+    .bali-pc-sidebar-foot{display:none}
+  }
 }
-@media(max-width:1179px){.bali-pc-search{display:none!important}}
-
-@media(min-width:1180px){
-  body.bali-guest-theme:not([data-bali-page="home"]) .header .bali-pc-search{display:none!important}
+@media(max-width:1179px){
+  .bali-pc-account-wrap{display:contents}
+  .bali-pc-profile-menu{display:none!important}
 }
