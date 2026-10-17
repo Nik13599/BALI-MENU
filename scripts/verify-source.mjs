@@ -298,8 +298,8 @@ assert(landingCss.includes('BALI v32') &&
   landingCss.includes('.bali-yandex-pin{left:10px;top:50%'),
   "Yandex Maps address text must be centered with red pin left on mobile");
 const carouselCss=source("events-carousel.css");
-assert(html.includes('events-carousel.css?v=20261017-33'), "Swipe carousel stylesheet must load");
-assert(html.indexOf('events-carousel.css?v=20261017-33') >
+assert(html.includes('events-carousel.css?v=20261017-34'), "Swipe carousel stylesheet must load");
+assert(html.indexOf('events-carousel.css?v=20261017-34') >
   html.indexOf('bali-pages.css?v=20261017-32'), "Carousel must override older event grid styles");
 assert(html.includes('id="eventsCarouselShell"') &&
   html.includes('id="eventsCarouselPosition"') &&
@@ -322,4 +322,6 @@ assert(carouselCss.includes('body[data-bali-page="events"]{overflow-y:hidden}') 
   "Events must remain a fixed-height screen instead of a vertical feed");
 assert(carouselCss.includes('grid-template-rows:minmax(60px,1fr) auto') &&
   carouselCss.includes('max-height:100%'), "Slides must fit on screen with controls visible");
+assert(carouselCss.includes('padding-bottom:max(65px,env(safe-area-inset-bottom))'),
+  "Carousel must reserve safe room for floating home button on mobile");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
