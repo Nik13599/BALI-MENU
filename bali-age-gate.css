@@ -31,3 +31,18 @@
 }
 .bali-age-actions button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 @media(max-width:360px){.bali-age-actions{grid-template-columns:1fr}}
+
+/* The 18+ modal is centered against the visible mobile viewport, not the page. */
+@media (max-width:767px){
+  #baliAgeGate.bali-age-dialog[open]{
+    position:fixed!important;
+    top:50%!important;
+    left:50%!important;
+    right:auto!important;
+    bottom:auto!important;
+    margin:0!important;
+    transform:translate(-50%,-50%)!important;
+    width:min(440px,calc(100vw - 32px))!important;
+    max-height:calc(100dvh - 32px)!important;
+  }
+}
