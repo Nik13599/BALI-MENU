@@ -86,6 +86,29 @@ function draft(selection,message){
   report(message||"Предпросмотр готов. Нажмите «Опубликовать тему», чтобы сохранить её для всех.");
 }
 if(form){
+  // Admin-only convenience: copy the public, reviewed rules from this repo.
+  // Clipboard access requires a user gesture and is never attempted silently.
+  $("baliCopyRules")?.addEventListener("click",async()=>{
+    const button=$("baliCopyRules");
+    if(button.disabled)return;
+    button.disabled=true;
+    try{
+      const response=await fetch("https://raw.githubusercontent.com/Nik13599/BALI-MENU/main/firestore.rules",{cache:"no-store"});
+      if(!response.ok)throw new Error("Не удалось загрузить актуальный файл правил.");
+      const rulesText=await response.text();
+      if(!rulesText.startsWith("rules_version = '2';") ||
+        !rulesText.includes("match /settings/{settingId}") ||
+        !rulesText.includes("match /orders/{orderId}") ||
+        !rulesText.includes("match /{document=**}")){
+        throw new Error("Файл правил не прошёл проверку. Скопируйте его напрямую с GitHub.");
+      }
+      if(!navigator.clipboard?.writeText)throw new Error("В этом браузере недоступно копирование. Откройте исходник на GitHub.");
+      await navigator.clipboard.writeText(rulesText);
+      report("Правила скопированы. Теперь вставьте их в Firebase Console → Firestore → Rules и нажмите Publish.");
+    }catch(error){
+      report("Не удалось скопировать правила: "+(error?.message||"Ошибка")+". Используйте ссылку «Просмотреть исходник».");
+    }finally{button.disabled=false;}
+  });
   form.querySelectorAll('input[name="baliThemePreset"]').forEach(radio=>{
     radio.addEventListener("change",()=>{
       if(!radio.checked)return;
@@ -172,7 +195,7 @@ if(form){
     }catch(error){
       if(error?.code==="permission-denied"){
         if(help)help.hidden=false;
-        report("Firebase отклонил запись. Опубликуйте обновлённые Firestore Rules и повторите.");
+        report("Firebase отклонил запись. В блоке ниже нажмите «Скопировать правила», опубликуйте их в Firebase Console и обновите страницу.");
       }else report("Не удалось опубликовать тему: "+(error?.message||error?.code||"неизвестная ошибка"));
     }finally{
       saveButton.disabled=false;
@@ -187,6 +210,7 @@ const auth=getAuth(app);
 const themeRef=doc(db,"settings","appearance");
 onSnapshot(themeRef,snapshot=>{
   received=true;
+  if(help)help.hidden=true;
   const data=snapshot.exists()?snapshot.data():null;
   published=data?selectionFor(data.theme,data.colors):defaultSelection();
   if(!editing){
@@ -202,7 +226,7 @@ onSnapshot(themeRef,snapshot=>{
   if(isAdminPage){
     if(error?.code==="permission-denied"){
       if(help)help.hidden=false;
-      report("Не удалось получить цветовую тему: Firestore Rules не разрешают чтение settings/appearance.");
+      report("Firestore пока не разрешает чтение темы. Скопируйте актуальные правила ниже, опубликуйте их в Firebase Console и обновите страницу.");
     }else report("Нет соединения с настройками цветов: "+(error?.code||"ошибка")+".");
   }
   // A safe cobalt fallback remains usable without Firestore.

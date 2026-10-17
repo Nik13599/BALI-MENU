@@ -52,14 +52,29 @@ const customIconJs=source("bali-icon-atelier.js");
 
 const themeClient=source("bali-theme.js");
 const themeCss=source("bali-theme.css");
+
+assert(themeCss.includes('background:var(--bt-primary)!important') &&
+  themeCss.includes('color:var(--bt-on-primary)!important') &&
+  themeCss.includes('body.bali-guest-theme .bali-bottom-nav button.active') &&
+  themeCss.includes('bali-theme-rules-help[hidden]') &&
+  !themeCss.includes('background:#1b2640!important') &&
+  !themeCss.includes('background:#29354d!important'),
+  "Active elements must reflect the theme while existing menu and site backgrounds remain unchanged");
+assert(admin.includes('id="baliCopyRules"') &&
+  admin.includes('Firebase Console → Firestore → Rules') &&
+  themeClient.includes('raw.githubusercontent.com/Nik13599/BALI-MENU/main/firestore.rules') &&
+  themeClient.includes('navigator.clipboard.writeText(rulesText)') &&
+  themeClient.includes('if(help)help.hidden=true'),
+  "Appearance editor needs a safe recovery path for publishing protected Firestore rules");
+
 const dashboardClient=source("admin-dashboard.js");
-assert(html.includes('bali-theme.css?v=20261017-58') &&
-  admin.includes('bali-theme.css?v=20261017-58') &&
-  html.includes('bali-theme.js?v=20261017-58') &&
-  admin.includes('bali-theme.js?v=20261017-58') &&
-  html.indexOf('bali-theme.css?v=20261017-58') >
+assert(html.includes('bali-theme.css?v=20261017-59') &&
+  admin.includes('bali-theme.css?v=20261017-59') &&
+  html.includes('bali-theme.js?v=20261017-59') &&
+  admin.includes('bali-theme.js?v=20261017-59') &&
+  html.indexOf('bali-theme.css?v=20261017-59') >
   html.indexOf('bali-obsidian-premium.css?v=20261017-57') &&
-  admin.indexOf('bali-theme.css?v=20261017-58') >
+  admin.indexOf('bali-theme.css?v=20261017-59') >
   admin.indexOf('bali-obsidian-premium.css?v=20261017-57'),
   "Global accent CSS and realtime settings module must load last on both interfaces");
 assert(admin.includes('data-admin-tab="appearance"') &&

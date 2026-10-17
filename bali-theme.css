@@ -29,6 +29,9 @@ body.bali-guest-theme .bali-profile-action>b,
 body.bali-guest-theme .bali-contact-card .contact-symbol{
   color:var(--bt-text)!important;
 }
+body.bali-guest-theme .bali-bottom-nav button.active{
+  color:var(--bt-text)!important;
+}
 body.bali-guest-theme .bali-bottom-nav button.active .bali-custom-icon{
   stroke:var(--bt-primary)!important;
 }
@@ -38,22 +41,19 @@ body.bali-guest-theme .bali-bottom-nav button.active::after{
 body.bali-guest-theme #homeSection .bali-home-calendar-row .is-current,
 body.bali-guest-theme #eventsSection .events-view-button.active,
 body.bali-guest-theme #menuPage .category-btn.active{
-  background:var(--bt-tint)!important;
-  color:var(--bt-text)!important;
-  border-color:var(--bt-stroke)!important;
+  background:var(--bt-primary)!important;
+  color:var(--bt-on-primary)!important;
+  border-color:var(--bt-primary)!important;
   box-shadow:none!important;
 }
 body.bali-guest-theme #homeSection .bali-home-event-card{
   border-color:var(--bt-stroke)!important;
 }
 body.bali-guest-theme #homeSection .bali-home-menu-banner{
-  /* Constant dark surface across all presets, not a user-selectable background. */
-  background:#1b2640!important;
+  /* Accent-only: original tile background is owned by the fixed site design. */
   border-color:var(--bt-stroke)!important;
-  box-shadow:0 8px 22px rgba(0,0,0,.22)!important;
 }
 body.bali-guest-theme #homeSection .bali-menu-banner-icon{
-  background:#29354d!important;
   border-color:var(--bt-stroke)!important;
 }
 body.bali-guest-theme #homeSection .bali-home-menu-banner small{
@@ -116,6 +116,35 @@ body.bali-admin-theme :is(button,a,input,select,textarea):focus-visible{
 }
 /* Intentionally retain red for the RSVP heart and green for live/preorder status.
    They convey state and are not themeable. */
+
+
+/* Additional themed details — the photo, site background and all card fills stay untouched. */
+body.bali-guest-theme #homeSection .bali-home-calendar-row .is-current .bali-custom-icon,
+body.bali-guest-theme #eventsSection .events-view-button.active .bali-custom-icon,
+body.bali-guest-theme #menuPage .category-btn.active .bali-custom-icon{
+  color:var(--bt-on-primary)!important;
+  stroke:var(--bt-on-primary)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-calendar-row button:focus-visible,
+body.bali-guest-theme #homeSection .bali-home-heart:focus-visible,
+body.bali-guest-theme #eventsSection .event-want-to-go:focus-visible{
+  outline-color:var(--bt-border)!important;
+}
+body.bali-guest-theme #menuPage .bali-menu-search-field:focus-within,
+body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-social-btn:hover,
+body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map:hover,
+body.bali-guest-theme .bali-profile-action:focus-visible,
+body.bali-guest-theme .bali-profile-action:hover{
+  border-color:var(--bt-stroke)!important;
+}
+body.bali-guest-theme #menuPage .menu-quantity-btn:hover,
+body.bali-guest-theme #menuPage .category-btn:hover,
+body.bali-guest-theme #eventsSection .events-view-button:hover{
+  border-color:var(--bt-stroke)!important;
+}
+body.bali-admin-theme .admin-tab.active .bali-custom-icon{
+  stroke:var(--bt-text)!important;
+}
 
 /* Admin navigation and working controls receive the same accent set. */
 body.bali-admin-theme{
@@ -416,3 +445,43 @@ body.bali-admin-theme{
   .bali-theme-color-grid{grid-template-columns:1fr}
   .bali-theme-sample{padding:14px}
 }
+
+/* Firebase rules publication is a separate protected backend action. */
+.bali-theme-rules-help{
+  margin-top:15px;
+  padding:16px;
+  border-radius:12px;
+  border:1px solid rgba(240,192,117,.35);
+  background:#242633;
+  color:#eceaf0;
+}
+.bali-theme-rules-help>strong{
+  font-size:13px;
+  font-weight:750;
+  color:#f3d4a0;
+}
+.bali-theme-rules-help>p{
+  margin:8px 0 12px;
+  font-size:12px;
+  line-height:1.6;
+  color:#c8cfdf;
+}
+.bali-theme-rules-help .actions{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.bali-theme-rules-help .actions>a{
+  font-size:12px;
+  font-weight:630;
+  color:var(--bt-text);
+  text-underline-offset:3px;
+}
+.bali-theme-rules-help .actions>button{
+  min-height:41px;
+  border:1px solid var(--bt-stroke);
+  color:var(--bt-text);
+  background:#2d3442;
+}
+.bali-theme-rules-help[hidden]{display:none!important}
