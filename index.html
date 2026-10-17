@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="bali-pc-reference.css?v=20261017-86">
     <link rel="stylesheet" href="bali-pc-viewport.css?v=20261018-93">
     <link rel="stylesheet" href="bali-contact-channels.css?v=20261018-96">
+    <link rel="stylesheet" href="bali-menu-details.css?v=20261018-97">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -474,6 +475,15 @@
       </div>
     </div>
 
+    <!-- Дополнительная информация по конкретному блюду кухни. -->
+    <dialog id="baliMenuDetailsDialog" class="bali-menu-details-dialog"
+      aria-labelledby="baliMenuDetailsTitle" aria-modal="true">
+      <div class="bali-menu-details-head">
+        <span>ПОДРОБНЕЕ О БЛЮДЕ</span>
+        <button id="baliMenuDetailsClose" type="button" aria-label="Закрыть подробную информацию">✕</button>
+      </div>
+      <div id="baliMenuDetailsBody" class="bali-menu-details-body"></div>
+    </dialog>
     <!-- Checkout Modal -->
     <div class="modal" id="checkoutModal">
         <div class="modal-content">
