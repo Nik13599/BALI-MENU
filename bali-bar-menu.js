@@ -9,7 +9,8 @@ const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const db=getFirestore(app);
 const host=document.getElementById("baliBarList");
 const tabs=document.getElementById("baliBarCategoryFilter");
-const current={items:[],category:"all"};
+const current={items:[],category:"all",term:""};
+const search=document.getElementById("baliMenuSearch");
 const validText=(value,max=120)=>typeof value==="string"&&value.trim().length>0&&value.trim().length<=max;
 const validPrice=value=>typeof value==="number"&&Number.isFinite(value)&&value>=0&&value<=20000;
 const formatPrice=value=>new Intl.NumberFormat("ru-RU",{minimumFractionDigits:2,maximumFractionDigits:2}).format(value)+" BYN";
@@ -49,7 +50,14 @@ function draw(){
     host.append(make("p","bali-bar-empty","Барная карта готовится к публикации. Актуальные позиции и цены появятся здесь."));
     return;
   }
-  const listed=current.category==="all"?current.items:current.items.filter(x=>x.category===current.category);
+  const listed=current.items.filter(x=>
+    (current.category==="all"||x.category===current.category)&&
+    (!current.term||[x.name,x.category,x.volume1,x.volume2].some(v=>String(v||"").toLocaleLowerCase("ru-RU").includes(current.term)))
+  );
+  if(!listed.length&&current.items.length){
+    host.append(make("p","bali-bar-empty","По выбранной категории или запросу ничего не найдено."));
+    return;
+  }
   const groups=new Map();
   for(const item of listed){
     if(!groups.has(item.category))groups.set(item.category,[]);
@@ -77,6 +85,17 @@ function draw(){
     host.append(group);
   }
 }
+search?.addEventListener("input",()=>{
+  if(window.BaliActiveMenuMode!=="bar")return;
+  current.term=search.value.trim().toLocaleLowerCase("ru-RU");
+  draw();
+});
+window.addEventListener("bali:menu-mode-changed",event=>{
+  if(event.detail?.mode==="bar"){
+    current.category="all";current.term="";
+    draw();
+  }
+});
 tabs?.addEventListener("click",event=>{
   const button=event.target.closest("button[data-bar-category]");
   if(!button||!tabs.contains(button))return;
