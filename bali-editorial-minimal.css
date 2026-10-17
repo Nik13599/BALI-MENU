@@ -1,0 +1,645 @@
+/* BALI STUDIO / v56 — contemporary editorial minimalism.
+   The posters and photography carry the colour. UI is ink, chalk and one berry accent.
+   A flat, precise design system; no gold gradients, bevelled buttons or neon glows.
+   Layout and original interactions remain owned by earlier responsive styles. */
+:root{
+  --bali-min-black:#0b0d11;
+  --bali-min-back:#101217;
+  --bali-min-panel:#171a21;
+  --bali-min-panel-2:#20232b;
+  --bali-min-fg:#f6f5f4;
+  --bali-min-sub:#b1b1bb;
+  --bali-min-tertiary:#888b97;
+  --bali-min-line:rgba(243,242,249,.105);
+  --bali-min-line-strong:rgba(243,242,249,.21);
+  --bali-min-pink:#fb477c;
+  --bali-min-pink-soft:rgba(251,71,124,.12);
+  --bali-min-focus:#ff8fae;
+  --bali-luxe-night:#0b0d11;
+  --bali-luxe-surface:#171a21;
+  --bali-luxe-elevated:#20232b;
+  --bali-luxe-wine:#302129;
+  --bali-luxe-wine-light:#633447;
+  --bali-luxe-ivory:#f6f5f4;
+  --bali-luxe-muted:#b1b1bb;
+  --bali-luxe-champagne:#fb477c;
+  --bali-luxe-gold-light:#f5f5f7;
+  --bali-luxe-line:var(--bali-min-line);
+  --bali-luxe-soft-shadow:none;
+}
+body.bali-guest-theme{
+  --primary-color:#f5f5f7;
+  --primary-dark:#e7e7eb;
+  --secondary-color:#363742;
+  --accent-color:#fb477c;
+  --success-color:#55bca0;
+  --warning-color:#f4bb76;
+  --error-color:#fa5872;
+  --info-color:#aaa4ff;
+  --bg-primary:#0b0d11;
+  --bg-secondary:#171a21;
+  --bg-tertiary:#20232b;
+  --text-primary:#f6f5f4;
+  --text-secondary:#b1b1bb;
+  --text-muted:#888b97;
+  --border-color:var(--bali-min-line);
+  --shadow-glow:none;
+  --bali-ui-bg:#0b0d11;
+  --bali-ui-panel:#171a21;
+  --bali-ui-gold:#f6f5f4;
+  --bali-ui-pink:#fb477c;
+  --bali-ui-border:var(--bali-min-line);
+  background:var(--bali-min-black)!important;
+  color:var(--bali-min-fg)!important;
+  color-scheme:dark;
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+body.bali-guest-theme::before{
+  background:#0b0d11!important;
+}
+body.bali-guest-theme .header,
+body.bali-guest-theme[data-bali-page="home"] .header{
+  background:rgba(12,14,19,.98)!important;
+  border-bottom:1px solid var(--bali-min-line)!important;
+  box-shadow:none!important;
+  backdrop-filter:blur(16px);
+}
+body.bali-guest-theme .header .logo .logo-text{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font-weight:450!important;
+  letter-spacing:.245em!important;
+}
+body.bali-guest-theme .header .logo .logo-text small{
+  color:#a8a8b0!important;
+  letter-spacing:.42em!important;
+}
+body.bali-guest-theme .header #accountBtn{
+  color:#eeeef0!important;
+  font-weight:550!important;
+  text-shadow:none!important;
+}
+body.bali-guest-theme .bali-preview-banner,
+body.bali-guest-theme[data-bali-page="home"] .bali-preview-banner{
+  background:#161920!important;
+  color:#a3a5af!important;
+  border-color:var(--bali-min-line)!important;
+  box-shadow:none!important;
+  font-size:10px;
+  letter-spacing:0;
+}
+body.bali-guest-theme .bali-bottom-nav{
+  background:rgba(16,18,23,.985)!important;
+  border-top:1px solid var(--bali-min-line-strong)!important;
+  box-shadow:none!important;
+  backdrop-filter:blur(18px)!important;
+  border-radius:0!important;
+}
+body.bali-guest-theme .bali-bottom-nav button{
+  color:#92949e!important;
+  text-shadow:none!important;
+  font-weight:500!important;
+  transition:color .16s ease;
+}
+body.bali-guest-theme .bali-bottom-nav button.active{
+  color:#f8f8fa!important;
+  text-shadow:none!important;
+}
+body.bali-guest-theme .bali-bottom-nav button.active .bali-custom-icon{
+  stroke:var(--bali-min-pink);
+}
+body.bali-guest-theme .bali-bottom-nav button.active::after{
+  background:var(--bali-min-pink)!important;
+  width:16px!important;
+  height:2px!important;
+  border-radius:2px;
+  opacity:1!important;
+}
+.bali-guest-theme .bali-nav-glyph .bali-custom-icon{
+  width:23px;height:23px;
+  stroke-width:1.7;
+}
+/* A restrained three-section homepage with generous negative space. */
+body.bali-guest-theme #homeSection{
+  background:var(--bali-min-black)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-events-panel,
+body.bali-guest-theme #homeSection .bali-home-contacts-card{
+  background:#15171e!important;
+  border:1px solid var(--bali-min-line)!important;
+  border-radius:16px!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #homeSection .bali-home-events-panel::before,
+body.bali-guest-theme #homeSection .bali-home-contacts-card::before{
+  display:none!important;
+}
+body.bali-guest-theme #homeSection .bali-home-calendar-row{
+  background:transparent!important;
+  border-bottom:1px solid var(--bali-min-line)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-calendar-row button{
+  background:#20222a!important;
+  border:1px solid transparent!important;
+  border-radius:9px!important;
+  color:#b4b4c0!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+  font-weight:550!important;
+}
+body.bali-guest-theme #homeSection .bali-home-calendar-row .bali-home-calendar-btn{
+  color:#f0f0f3!important;
+  background:#20222a!important;
+}
+body.bali-guest-theme #homeSection .bali-home-calendar-row .is-current{
+  background:#f1f1f3!important;
+  color:#14151a!important;
+  border-color:#f1f1f3!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-card{
+  background:#191a20!important;
+  border:1px solid var(--bali-min-line-strong)!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #homeSection .bali-home-poster-wrap{
+  border-bottom:1px solid var(--bali-min-line)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-info{
+  background:#191a20!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-info h3{
+  color:#fafafa!important;
+  font-weight:720!important;
+  text-shadow:none!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-hours{
+  color:#e7e7ed!important;
+  font-weight:620!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-description{
+  color:#aeb0b8!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-count{
+  color:#868895!important;
+}
+body.bali-guest-theme #homeSection .bali-home-heart:not(.is-liked){
+  background:rgba(18,19,24,.60)!important;
+  color:#fafafa!important;
+  border:1px solid rgba(255,255,255,.36)!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #homeSection .bali-home-heart.is-liked{
+  background:#31141e!important;
+  color:#ff4c78!important;
+  border-color:#e64b74!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #homeSection .bali-home-heart.is-liked svg{
+  fill:#ff4c78!important;
+  stroke:#ff4c78!important;
+}
+/* Key menu CTA is a typographic signpost, not a glossy button. */
+body.bali-guest-theme #homeSection .bali-home-menu-banner{
+  background:#20212a!important;
+  border:1px solid var(--bali-min-line-strong)!important;
+  border-radius:15px!important;
+  box-shadow:none!important;
+  filter:none!important;
+  padding-inline:15px!important;
+  gap:12px!important;
+}
+body.bali-guest-theme #homeSection .bali-menu-banner-icon{
+  color:var(--bali-min-pink)!important;
+  border:0!important;
+  border-radius:10px!important;
+  background:#31202d!important;
+  margin-left:-5px!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #homeSection .bali-home-menu-banner strong{
+  color:#f9f9fb!important;
+  font-weight:740!important;
+  letter-spacing:-.045em!important;
+  font-size:clamp(21px,3vw,27px)!important;
+  text-shadow:none!important;
+}
+body.bali-guest-theme #homeSection .bali-home-menu-banner small{
+  color:#a7a8b5!important;
+  letter-spacing:.005em;
+}
+body.bali-guest-theme #homeSection .bali-menu-banner-arrow{
+  color:#d4d4de!important;
+}
+body.bali-guest-theme #homeSection .bali-home-contacts-heading h2{
+  color:#f1f1f5!important;
+  font-weight:650!important;
+  letter-spacing:-.028em;
+}
+body.bali-guest-theme #homeSection .bali-home-contacts-heading span{
+  color:#898c97!important;
+}
+body.bali-guest-theme #homeSection .bali-home-contacts-heading i{
+  background:#64ba9b!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-social-btn{
+  background:#22242b!important;
+  border:1px solid var(--bali-min-line)!important;
+  border-radius:10px!important;
+  color:#f0f0f2!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map{
+  background:#22242b!important;
+  border:1px solid var(--bali-min-line)!important;
+  border-radius:10px!important;
+  color:#eeeeef!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #homeSection .bali-yandex-pin{
+  color:var(--bali-min-pink)!important;
+}
+body.bali-guest-theme #homeSection .bali-yandex-address{
+  color:#f0f0f1!important;
+}
+/* Events: square posters and content in crisp neutrals, no glowing outlines. */
+body.bali-guest-theme #eventsSection{
+  background:var(--bali-min-black)!important;
+}
+body.bali-guest-theme #eventsSection .events-topbar .events-eyebrow{
+  color:#f4f4f6!important;
+  font-weight:700!important;
+  letter-spacing:-.024em!important;
+}
+body.bali-guest-theme #eventsSection .events-view-button{
+  background:#1d1f26!important;
+  border:1px solid var(--bali-min-line)!important;
+  border-radius:9px!important;
+  color:#aaacb9!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #eventsSection .events-view-button.active{
+  background:#f3f3f4!important;
+  color:#16161a!important;
+  border-color:#f3f3f4!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+  background:#15171d!important;
+  border:1px solid var(--bali-min-line-strong)!important;
+  border-radius:14px!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active{
+  border-color:rgba(255,255,255,.56)!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body{
+  background:#181a21!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-info h3{
+  color:#f5f5f5!important;
+  font-weight:740!important;
+  letter-spacing:-.025em;
+}
+body.bali-guest-theme #eventsSection .bali-event-hours{
+  color:#dedee4!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-description,
+body.bali-guest-theme #eventsSection .event-interest-count{
+  color:#abb0ba!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions{
+  background:#181a21!important;
+  border-top:1px solid var(--bali-min-line)!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions .event-want-to-go{
+  background:#f2f2f4!important;
+  color:#15161b!important;
+  border:1px solid #f2f2f4!important;
+  box-shadow:none!important;
+  border-radius:9px!important;
+  font-weight:690!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions .event-want-to-go.selected{
+  background:#301c27!important;
+  color:#ff8fae!important;
+  border-color:#83405b!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions .event-go-to-menu{
+  background:#282a33!important;
+  color:#f0f0f1!important;
+  border:1px solid var(--bali-min-line-strong)!important;
+  border-radius:9px!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-preorder-badge{
+  background:rgba(15,18,21,.85)!important;
+  color:#cbedd9!important;
+  border:1px solid rgba(140,204,171,.31)!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #eventsSection .events-carousel-position{
+  color:#dedee3!important;
+}
+/* Catalog: exact quantity/add flow retained, but flat functional controls. */
+body.bali-guest-theme #menuPage{
+  background:var(--bali-min-black)!important;
+}
+body.bali-guest-theme #menuPage .categories{
+  background:#13151b!important;
+  border-bottom:1px solid var(--bali-min-line)!important;
+}
+body.bali-guest-theme #menuPage .category-btn{
+  background:#23252c!important;
+  color:#b1b1bb!important;
+  border:1px solid transparent!important;
+  border-radius:9px!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #menuPage .category-btn.active{
+  background:#f0f0f2!important;
+  color:#16171b!important;
+  border-color:#f0f0f2!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #menuPage .bali-menu-search-field{
+  background:#1d1f26!important;
+  color:#9e9fac!important;
+  border:1px solid var(--bali-min-line)!important;
+  border-radius:11px!important;
+}
+body.bali-guest-theme #menuPage .menu-item{
+  background:#1a1c23!important;
+  border:1px solid var(--bali-min-line)!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #menuPage .menu-item-name{
+  color:#f4f4f5!important;
+  font-weight:680!important;
+  letter-spacing:-.02em;
+}
+body.bali-guest-theme #menuPage .menu-item-price{
+  color:#f6f6f7!important;
+  font-weight:740!important;
+}
+body.bali-guest-theme #menuPage .menu-item-description{
+  color:#999aa5!important;
+}
+body.bali-guest-theme #menuPage .menu-quantity-btn{
+  background:#292b34!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:8px!important;
+  color:#f0f0f2!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #menuPage .add-to-cart-btn{
+  background:#f2f2f3!important;
+  color:#17181c!important;
+  border:1px solid #f2f2f3!important;
+  border-radius:8px!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+  font-weight:680!important;
+}
+body.bali-guest-theme .bali-cart-dock{
+  background:#f4f4f5!important;
+  color:#141519!important;
+  border:1px solid #f4f4f5!important;
+  border-radius:12px!important;
+  box-shadow:0 5px 22px rgba(0,0,0,.23)!important;
+}
+body.bali-guest-theme #baliDockCount{
+  background:#e3e3e6!important;
+  color:#1a1b22!important;
+}
+/* Profile and all overlays */
+body.bali-guest-theme .bali-profile-page{
+  background:var(--bali-min-black)!important;
+}
+body.bali-guest-theme .bali-profile-card{
+  background:#181a20!important;
+  border:1px solid var(--bali-min-line)!important;
+  border-radius:17px!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme .bali-profile-avatar{
+  background:#29222c!important;
+  color:#f8f4f7!important;
+  border:1px solid #613046!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme .bali-profile-action{
+  background:#25262d!important;
+  color:#f0f0f2!important;
+  border:1px solid rgba(255,255,255,.085)!important;
+  border-radius:10px!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme .bali-profile-action > span,
+body.bali-guest-theme .bali-profile-action > b{
+  color:#d5d5dc!important;
+}
+body.bali-guest-theme .bali-logout > span{
+  color:#f1849d!important;
+}
+body.bali-guest-theme .modal-content,
+body.bali-guest-theme .cart-sidebar{
+  background:#1b1c23!important;
+  border:1px solid var(--bali-min-line-strong)!important;
+  box-shadow:0 14px 28px rgba(0,0,0,.42)!important;
+}
+body.bali-guest-theme .modal-content input,
+body.bali-guest-theme .modal-content textarea,
+body.bali-guest-theme .modal-content select{
+  background:#252730!important;
+  color:#f4f4f7!important;
+  border:1px solid var(--bali-min-line-strong)!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme .checkout-btn,
+body.bali-guest-theme .submit-order-btn{
+  background:#f3f3f4!important;
+  color:#17181a!important;
+  border:1px solid #f3f3f4!important;
+  border-radius:10px!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme .close-cart,
+body.bali-guest-theme .close-modal{
+  background:#272932!important;
+  color:#f2f2f4!important;
+  border:1px solid var(--bali-min-line)!important;
+}
+body.bali-guest-theme .success-icon{
+  color:#8bd3b0!important;
+}
+body.bali-guest-theme .bali-contact-card{
+  background:#1d1f26!important;
+  border:1px solid var(--bali-min-line)!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme .bali-contact-card .contact-symbol{
+  color:#fafafa!important;
+}
+/* Admin uses the same architecture, with soft utility contrast for dense tables. */
+body.bali-admin-theme{
+  --surface:#1a1c22;
+  --surface-2:#24262e;
+  --border:rgba(255,255,255,.10);
+  --ink:#f2f2f4;
+  --muted:#a8aab5;
+  --gold:#ededf0;
+  --gold-strong:#fff;
+  --focus:#ff8fae;
+  background:#101217!important;
+  color:#f2f2f4!important;
+  color-scheme:dark;
+  -webkit-font-smoothing:antialiased;
+}
+.bali-admin-theme .topbar{
+  background:#14161c!important;
+  border-bottom:1px solid var(--bali-min-line)!important;
+  box-shadow:none!important;
+}
+.bali-admin-theme .brand-mark{
+  background:#2c202c!important;
+  color:#fc769c!important;
+  border:1px solid rgba(251,71,124,.35)!important;
+}
+.bali-admin-theme .brand span,
+.bali-admin-theme .login-logo{
+  color:#f5f5f7!important;
+}
+.bali-admin-theme .admin-sidebar{
+  background:#13151b!important;
+  border-color:var(--bali-min-line)!important;
+}
+.bali-admin-theme .admin-tab{
+  background:transparent!important;
+  color:#999ca7!important;
+  border:1px solid transparent!important;
+  border-radius:10px!important;
+  box-shadow:none!important;
+}
+.bali-admin-theme .admin-tab.active{
+  background:#282a32!important;
+  color:#fff!important;
+  border-color:var(--bali-min-line-strong)!important;
+}
+.bali-admin-theme .admin-tab.active .bali-custom-icon{
+  stroke:var(--bali-min-pink)!important;
+}
+.bali-admin-theme .admin-tab:hover:not(:disabled){
+  background:#23252b!important;
+}
+.bali-admin-theme .card,
+.bali-admin-theme .stat-card{
+  background:#1b1d23!important;
+  border:1px solid var(--bali-min-line)!important;
+  border-radius:13px!important;
+  box-shadow:none!important;
+}
+.bali-admin-theme .stat-card-attention{
+  background:#22232a!important;
+  border-color:rgba(251,71,124,.25)!important;
+}
+.bali-admin-theme .eyebrow,
+.bali-admin-theme .stat-card-attention .stat-value{
+  color:#efeeee!important;
+}
+.bali-admin-theme button.primary{
+  background:#f1f1f3!important;
+  color:#13151a!important;
+  border:1px solid #f1f1f3!important;
+  border-radius:10px!important;
+  font-weight:680!important;
+  box-shadow:none!important;
+}
+.bali-admin-theme button.primary:hover:not(:disabled){
+  background:#fff!important;
+  border-color:#fff!important;
+}
+.bali-admin-theme .tag{
+  background:#272932!important;
+  border:1px solid var(--bali-min-line)!important;
+  color:#c5c5cb!important;
+  box-shadow:none!important;
+}
+.bali-admin-theme input:not([type="checkbox"]),
+.bali-admin-theme textarea,
+.bali-admin-theme select{
+  background:#272932!important;
+  color:#f3f3f5!important;
+  border:1px solid var(--bali-min-line-strong)!important;
+  border-radius:9px!important;
+  box-shadow:none!important;
+}
+.bali-admin-theme .dialog-header,
+.bali-admin-theme .dialog-actions{
+  background:#1d1f27!important;
+  border-color:var(--bali-min-line)!important;
+}
+.bali-admin-theme .admin-form-dialog,
+.bali-admin-theme dialog{
+  background:#1b1e25!important;
+  color:#ededf0!important;
+  border:1px solid var(--bali-min-line-strong)!important;
+}
+.bali-admin-theme .dialog-close{
+  background:#292b33!important;
+  color:#f4f4f5!important;
+  border:1px solid var(--bali-min-line)!important;
+}
+.bali-admin-theme .online-dot{
+  background:#5ebd98!important;
+  box-shadow:none!important;
+}
+/* Small details: present-day motion, one accent and accessible feedback. */
+body.bali-guest-theme :is(button,a):hover{filter:none}
+body.bali-guest-theme :is(button,a):active{transform:none}
+@media(hover:hover){
+  body.bali-guest-theme #homeSection .bali-home-menu-banner:hover{
+    background:#282932!important;
+    border-color:rgba(255,255,255,.29)!important;
+    filter:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-social-btn:hover{
+    background:#2b2d35!important;
+    border-color:var(--bali-min-line-strong)!important;
+  }
+  body.bali-guest-theme #menuPage .category-btn:hover{
+    border-color:var(--bali-min-line-strong)!important;
+  }
+}
+body.bali-guest-theme :is(button,a,input,textarea,select):focus-visible,
+body.bali-admin-theme :is(button,a,input,textarea,select):focus-visible{
+  outline:2px solid var(--bali-min-focus)!important;
+  outline-offset:2px!important;
+}
+@media(max-width:767px){
+  body.bali-guest-theme #homeSection .bali-home-events-panel,
+  body.bali-guest-theme #homeSection .bali-home-contacts-card{
+    border-radius:13px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-menu-banner{
+    border-radius:12px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-calendar-row button{
+    border-radius:8px!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+    border-radius:12px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .bali-guest-theme *, .bali-admin-theme *{
+    animation-duration:.01ms!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
+  }
+}
