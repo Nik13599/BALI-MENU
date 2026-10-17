@@ -271,7 +271,7 @@ assert(orderAdminSource.includes('orderLabel = o =>') &&
   orderAdminSource.includes('runTransaction(db,async tx=>'), "Admin must show date-based order numbers and renumber date changes");
 assert(html.includes('bali-pages.css?v=20261017-31'), "Updated social icon CSS must load");
 const socialStart=html.indexOf('class="bali-home-social"');
-const socialEnd=html.indexOf('class="bali-home-map"',socialStart);
+const socialEnd=html.indexOf('class="bali-home-map bali-yandex-map"',socialStart);
 assert(socialStart>=0 && socialEnd>socialStart, "Home social row missing");
 const socialMarkup=html.slice(socialStart,socialEnd);
 assert((socialMarkup.match(/class="bali-social-svg"/g)||[]).length===3, "Social row must contain 3 actual SVG icons");
