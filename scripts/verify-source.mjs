@@ -82,7 +82,7 @@ assert(barCss.includes('@media(max-width:767px)') &&
   "Four compact mobile icon-only menu switches must stay on a single row and support hidden/selected states");
 // PC-only improvements: menu tabs and calendar title align with the top of the
 // BALI sidebar logo; six fully functional cards per dish row; fading event edges.
-assert(html.includes('bali-pc-reference.css?v=20261017-81') &&
+assert(html.includes('bali-pc-reference.css?v=20261017-86') &&
   source("bali-pc-reference.css").includes('v81 — Desktop menu/calendar') &&
   source("bali-pc-reference.css").includes('padding-top:21px!important') &&
   source("bali-pc-reference.css").includes('body.bali-guest-theme #menuPage #baliMenuModeSwitch') &&
