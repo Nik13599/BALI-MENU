@@ -3,6 +3,34 @@ import assert from "node:assert/strict";
 
 const source = (name) => readFileSync(name, "utf8");
 const html = source("index.html");
+
+const customIconJs=source("bali-icon-atelier.js");
+const premiumAtelierCss=source("bali-atelier-theme.css");
+const guestClass='class="bali-guest-theme"';
+const adminClass='class="bali-admin-theme"';
+assert(html.includes(guestClass) &&
+  admin.includes(adminClass) &&
+  html.includes('bali-atelier-theme.css?v=20261017-53') &&
+  admin.includes('bali-atelier-theme.css?v=20261017-53') &&
+  html.includes('bali-icon-atelier.js?v=20261017-53') &&
+  admin.includes('bali-icon-atelier.js?v=20261017-53'),
+  "BALI low-glare design and custom icons must load on public site and admin");
+assert(premiumAtelierCss.includes("--bali-luxe-night:#0c0d11") &&
+  premiumAtelierCss.includes("--bali-luxe-champagne:#c8ae86") &&
+  premiumAtelierCss.includes("--bali-luxe-wine:#372630") &&
+  premiumAtelierCss.includes(".bali-bottom-nav") &&
+  premiumAtelierCss.includes(".bali-home-event-card") &&
+  premiumAtelierCss.includes("#menuPage") &&
+  premiumAtelierCss.includes(".bali-admin-theme"),
+  "All app sections and admin should use the same muted premium color system");
+assert(customIconJs.includes('"book":') &&
+  customIconJs.includes('menu:"book"') &&
+  customIconJs.includes('replaceAll(".bali-menu-banner-icon","book")') &&
+  customIconJs.includes('menu:"book",events:"calendar"') &&
+  !customIconJs.includes('"cocktail"') &&
+  customIconJs.includes("setAttribute(\"aria-label\",\"Закрыть\")"),
+  "Menu must use a designed open book; icon controls must remain accessible");
+
 const auth = source("auth.js");
 const app = source("app.js");
 const rules = source("firestore.rules");
