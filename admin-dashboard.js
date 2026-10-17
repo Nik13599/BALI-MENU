@@ -47,16 +47,21 @@
     $(card)?.scrollIntoView({behavior:"smooth",block:"start"});
     if(focus) setTimeout(()=>$(focus)?.focus({preventScroll:true}),200);
   }
-  $("addMenuBtn")?.addEventListener("click",()=>openEditor("menu","menuEditorCard","clearMenu","menuName"));
   $("addEventBtn")?.addEventListener("click",()=>openEditor("events","eventEditorCard","clearEvent","eventDateAdmin"));
 
   function filterMenu() {
     const phrase=($("menuSearch")?.value||"").trim().toLocaleLowerCase("ru");
     let count=0;
-    for(const card of $("menuList")?.querySelectorAll(".entry")||[]) {
-      const visible=card.textContent.toLocaleLowerCase("ru").includes(phrase);
-      card.hidden=!visible;
-      if(visible)count++;
+    for(const group of $("menuList")?.querySelectorAll(".menu-category-group")||[]) {
+      const title=group.querySelector(".menu-category-title strong")?.textContent?.toLocaleLowerCase("ru")||"";
+      let matched=0;
+      for(const row of group.querySelectorAll(".entry")) {
+        const visible=!phrase||title.includes(phrase)||row.textContent.toLocaleLowerCase("ru").includes(phrase);
+        row.hidden=!visible;
+        if(visible){matched++;count++;}
+      }
+      group.hidden=matched===0;
+      if(phrase&&matched)group.open=true;
     }
     if($("menuResultCount"))$("menuResultCount").textContent=String(count);
   }
@@ -66,6 +71,7 @@
     const observer=new MutationObserver(filterMenu);
     observer.observe(menuList,{childList:true});
   }
+  window.addEventListener("bali:admin:catalog-rendered",filterMenu);
   window.addEventListener("bali:admin:menu",({detail})=>{
     if($("adminStatMenu"))$("adminStatMenu").textContent=String(detail.count);
     filterMenu();
