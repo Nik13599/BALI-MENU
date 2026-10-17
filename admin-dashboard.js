@@ -22,6 +22,9 @@
       tab.tabIndex = active ? 0 : -1;
     }
     for (const panel of panels) panel.hidden = panel.dataset.adminPanel !== name;
+    // Statistics remain on operational pages, but not in the visual designer.
+    document.body.dataset.baliAdminSection=name;
+    window.dispatchEvent(new CustomEvent("bali:admin:section",{detail:{section:name}}));
     $("adminPageTitle").textContent = meta[name][0];
     $("adminPageDescription").textContent = meta[name][1];
     if (scroll) window.scrollTo({top:0,behavior:"smooth"});
