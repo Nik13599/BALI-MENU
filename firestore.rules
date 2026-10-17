@@ -38,6 +38,20 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // 18+ self-attestation, stored only for a verified user's profile.
+    // A visitor without an account never gets a stored confirmation.
+    match /users/{uid}/ageConfirmations/{consentId} {
+      allow get: if consentId == 'restrictedMenus' && signedInAs(uid);
+      allow list: if false;
+      allow create, update: if consentId == 'restrictedMenus' && signedInAs(uid)
+        && exists(/databases/$(database)/documents/users/$(uid))
+        && request.resource.data.keys().hasAll(['over18','confirmedAt'])
+        && request.resource.data.keys().hasOnly(['over18','confirmedAt'])
+        && request.resource.data.over18 == true
+        && request.resource.data.confirmedAt == request.time;
+      allow delete: if false;
+    }
+
     // Служебная роль назначается вручную в Firebase Console.
     // Клиент не может назначить себе права администратора.
     function isAdmin() {
