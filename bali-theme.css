@@ -6,6 +6,7 @@
   --bt-text:#c3caff;
   --bt-border:#8192ff;
   --bt-on-primary:#11151e;
+  --bt-on-secondary:#FFFFFF;
   --bt-tint:rgba(117,133,255,.16);
   --bt-stroke:rgba(129,146,255,.50);
 }
@@ -80,8 +81,9 @@ body.bali-guest-theme #eventsSection .bali-event-actions .event-want-to-go.selec
   border-color:var(--bt-stroke)!important;
 }
 body.bali-guest-theme #eventsSection .bali-event-actions .event-go-to-menu{
-  border-color:var(--bt-stroke)!important;
-  color:var(--bt-text)!important;
+  background:var(--bt-secondary)!important;
+  border-color:var(--bt-secondary)!important;
+  color:var(--bt-on-secondary)!important;
 }
 body.bali-guest-theme #menuPage .menu-quantity-btn{
   border-color:var(--bt-stroke)!important;
@@ -144,7 +146,7 @@ body.bali-admin-theme{
 .bali-admin-theme button.primary:hover:not(:disabled){
   background:var(--bt-secondary)!important;
   border-color:var(--bt-secondary)!important;
-  color:#0b0e14!important;
+  color:var(--bt-on-secondary)!important;
 }
 .bali-admin-theme .stat-card-attention{
   border-color:var(--bt-stroke)!important;
@@ -371,6 +373,11 @@ body.bali-admin-theme{
   color:var(--bt-text);
   font-size:13px;
   background:var(--bt-tint);
+}
+.bali-theme-sample-outline{
+  background:var(--bt-secondary);
+  color:var(--bt-on-secondary);
+  border-color:var(--bt-secondary);
 }
 .bali-theme-sample-icon{
   flex:0 0 48px;
