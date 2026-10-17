@@ -68,17 +68,40 @@ function apply(data){
     }
   }else if(floor)floor.textContent="3-й этаж · Яндекс Карты ↗";
   const phone=one(".bali-pc-contact-phone");
-  if(phone&&/^tel:\+?[0-9]{5,22}$/.test(data.phoneHref||""))phone.href=data.phoneHref;
-  for(const [selector,key] of [
-    ['.bali-pc-contact-socials a[href*="t.me"], .bali-pc-contact-socials a[aria-label*="Telegram"]',"telegramUrl"],
-    ['.bali-pc-contact-socials a[href*="instagram.com"], .bali-pc-contact-socials a[aria-label*="Instagram"]',"instagramUrl"],
-    [".bali-pc-contact-location a","mapUrl"]]){
+  const phoneHref=typeof data.phoneHref==="string"&&/^tel:\\+?[0-9]{5,22}$/.test(data.phoneHref)
+    ?data.phoneHref:"tel:+375296700300";
+  if(phone)phone.href=phoneHref;
+  const digits=phoneHref.replace(/[^0-9]/g,"");
+  const wa=one('[data-bali-contact="whatsapp"]');
+  const viber=one('[data-bali-contact="viber"]');
+  if(wa)wa.href="https://wa.me/"+digits;
+  if(viber)viber.href="viber://chat?number=%2B"+digits;
+  // Keep the Telegram conversation separate from the broadcast channel.
+  const links=[
+    ['[data-bali-contact="telegram-chat"]',"telegramChatUrl"],
+    ['[data-bali-contact="telegram-channel"]',"telegramUrl"],
+    ['[data-bali-contact="instagram"]',"instagramUrl"],
+    [".bali-pc-contact-location a","mapUrl"]
+  ];
+  for(const [selector,key] of links){
     const node=one(selector);
-    if(!node||typeof data[key]!=="string")continue;
+    if(!node||typeof data[key]!=="string"||!data[key])continue;
     try{
       const url=new URL(data[key]);if(url.protocol==="https:")node.href=url.href;
     }catch{}
   }
+  const tiktok=one('[data-bali-contact="tiktok"]');
+  const placeholder=one('[data-bali-contact="tiktok-pending"]');
+  let tiktokUrl="";
+  if(typeof data.tiktokUrl==="string"&&data.tiktokUrl){
+    try{
+      const parsed=new URL(data.tiktokUrl);
+      if(parsed.protocol==="https:"&&/^(www\\.)?tiktok\\.com$/i.test(parsed.hostname))
+        tiktokUrl=parsed.href;
+    }catch{}
+  }
+  if(tiktok){tiktok.hidden=!tiktokUrl;if(tiktokUrl)tiktok.href=tiktokUrl;}
+  if(placeholder)placeholder.hidden=!!tiktokUrl;
   const icons=data.icons||{};
   const targets={
     navHome:'.bali-pc-navigation [data-bali-nav="home"] .bali-pc-nav-icon',
@@ -95,6 +118,8 @@ function apply(data){
   for(const [name,selector] of Object.entries(targets)){
     if(typeof icons[name]==="string")setIcon(selector,icons[name]);
   }
+  if(typeof icons.telegram==="string")
+    setIcon('[data-bali-contact="telegram-chat"]',icons.telegram);
   window.dispatchEvent(new CustomEvent("bali:home-interface",{detail:{saved:true}}));
 }
 onSnapshot(doc(db,"settings","homeInterface"),snapshot=>{
