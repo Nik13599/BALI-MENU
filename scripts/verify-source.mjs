@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-46"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-48"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -99,7 +99,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-46'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-48'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
@@ -243,10 +243,15 @@ assert(app.includes('renderGuestPage(routeFromLocation()') &&
   app.includes('navigateGuestPage(page'), "Guest app must support browser Back navigation");
 assert(landingCss.includes('.bali-floating-home{left:') &&
   landingCss.includes('right:auto'), "Floating home navigation must be bottom-left");
-assert(html.includes('id="cartBtn"') &&
-  html.indexOf('id="cartBtn"') > html.indexOf('id="menuPage"') &&
-  html.indexOf('id="cartBtn"') < html.indexOf('<!-- /menuPage -->'),
-  "Cart must be displayed inside Menu section, not header");
+assert(!html.includes('id="cartBtn"') &&
+  !html.includes('id="myOrdersBtn"') &&
+  !html.includes('id="cartCount"') &&
+  !html.includes('class="bali-menu-toolbar"') &&
+  html.includes('id="baliCartDock"') &&
+  html.includes('id="baliDockCount"') &&
+  html.includes('id="baliDockTotal"') &&
+  html.includes('id="profileMyOrdersBtn"'),
+  "Menu top toolbar must be absent; fixed cart and Profile/My Orders must remain");
 assert(html.includes('id="accountMyOrdersBtn"'), "My Orders shortcut must remain in account");
 // Home starts with the calendar: advertising hero intentionally removed.
 assert(!html.includes('class="bali-hero-scene"') &&
@@ -461,3 +466,9 @@ assert(app.includes('const fitStorySlides=()=>') &&
   app.includes('observer.observe(track)'),
   "Stories must size from measured available height");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
+
+assert(!app.includes("elements.cartCount") &&
+  !app.includes("getElementById('cartBtn')") &&
+  !app.includes("getElementById('myOrdersBtn')") &&
+  app.includes('document.getElementById("baliCartDock")?.addEventListener("click",openCart)'),
+  "Fixed bottom cart and profile order actions must not depend on deleted menu toolbar controls");
