@@ -212,3 +212,132 @@ button.primary:hover:not(:disabled){background:#ffdfaa;border-color:#ffdfaa}
  #orderPrintSheet td,#orderPrintSheet th{border:1px solid #555;padding:6px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}button{transition:none}}
+
+
+/* BALI admin v18: категории + каталог-аккордеон + диалоги товара и категории. */
+.menu-actions-bar {
+  display:flex; align-items:center; flex-wrap:wrap; gap:14px;
+  margin:-1px 0 17px;
+}
+.menu-actions-bar .hint {margin:0;line-height:1.5}
+.category-add-btn {min-height:43px;border-color:#7e6848;color:#f0d4a0;font-weight:700}
+.category-manager {margin-bottom:17px}
+.category-manager .card-heading {margin-bottom:12px}
+.category-pills {display:flex;flex-wrap:wrap;gap:9px;min-height:24px}
+.category-pill {
+  min-width:0;display:inline-flex;align-items:center;flex-wrap:wrap;gap:9px;
+  padding:9px 11px;border:1px solid #455169;border-radius:11px;
+  background:#232b3b;color:#eeeef5;font-size:13px;font-weight:600;
+}
+.category-pill-count {
+  font-size:11px;color:#edcb93;background:#383328;
+  border-radius:30px;padding:4px 7px;white-space:nowrap;
+}
+.category-delete-btn {font-size:11px;padding:6px 9px;min-height:29px;border:1px solid #72505a;color:#ffb7c2}
+.grouped-catalog {margin-bottom:0}
+.grouped-catalog .card-heading{margin-bottom:16px}
+.grouped-catalog .hint {font-size:12px;line-height:1.5;margin:5px 0 15px}
+.category-catalog {max-height:none;overflow:visible}
+.menu-category-group {
+  min-width:0;background:#141c2a;border:1px solid #3b465d;
+  border-radius:13px;overflow:hidden;margin-bottom:11px;
+}
+.menu-category-title {
+  padding:15px 18px;display:flex;align-items:center;justify-content:space-between;
+  gap:10px;cursor:pointer;list-style:none;background:#202a3b;
+  user-select:none;
+}
+.menu-category-title::-webkit-details-marker{display:none}
+.menu-category-title::before {
+  content:"▸";font-size:13px;color:#e1c08a;order:0;
+}
+.menu-category-group[open]>.menu-category-title::before{content:"▾"}
+.menu-category-title strong {
+  font-size:15px;color:#f5e2c0;font-weight:700;order:1;margin-right:auto;overflow-wrap:anywhere
+}
+.category-group-count {
+  order:2;background:#343b4b;color:#d4dbea;
+  padding:4px 8px;border-radius:15px;font-size:11px;white-space:nowrap
+}
+.menu-category-rows {padding:0 16px 5px}
+.menu-category-rows .entry:last-child{border-bottom:0}
+.menu-category-rows .entry {padding:13px 0}
+.menu-category-rows .entry strong{font-size:13px}
+.menu-category-rows .entry small{font-size:11px}
+.menu-category-group[hidden] {display:none!important}
+
+.admin-form-dialog {
+  display:none;position:fixed;inset:0;
+  width:min(660px,calc(100vw - 28px));max-width:none;
+  max-height:min(92dvh,900px);
+  margin:auto;padding:0;
+  border:1px solid #59637c;border-radius:19px;
+  background:#1a2030;color:#f3f4fa;
+  box-shadow:0 24px 90px rgba(0,0,0,.75);
+  overflow:auto;overscroll-behavior:contain;
+}
+.admin-form-dialog[open]{display:block}
+.admin-form-dialog::backdrop {background:rgba(5,8,16,.83);backdrop-filter:blur(5px)}
+.admin-category-dialog {width:min(490px,calc(100vw - 28px))}
+.dialog-header {
+  position:sticky;top:0;z-index:2;
+  display:flex;align-items:center;justify-content:space-between;gap:15px;
+  padding:19px 22px 15px;background:#202738;border-bottom:1px solid #434b62;
+}
+.dialog-header h2{font-size:23px;margin:5px 0 0;line-height:1.2}
+.dialog-close {
+  min-width:41px;min-height:41px;padding:0;display:grid;place-items:center;
+  color:#c6ccda;border:1px solid #485167;border-radius:10px;background:#2a3142;font-size:19px;
+}
+.dialog-form {padding:21px 23px 25px}
+.dialog-form label{display:block}
+.dialog-form .double{gap:14px}
+.dialog-form textarea{min-height:90px}
+.dialog-form .check{display:flex}
+.category-field{margin-bottom:17px}
+.category-field label{margin-bottom:8px}
+.category-select-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px}
+.category-select-row select{min-width:0;margin:0}
+.category-select-row button{padding:10px 12px;min-height:45px;border:1px solid #796344;color:#f1d8ad;white-space:nowrap;font-size:12px}
+.dialog-actions {
+  position:sticky;bottom:0;z-index:2;display:flex;
+  align-items:center;justify-content:flex-end;gap:10px;
+  margin:22px -23px -25px;padding:15px 23px max(16px,env(safe-area-inset-bottom));
+  border-top:1px solid #41495c;background:#202738;
+}
+.dialog-actions button{min-height:43px;min-width:110px}
+.dialog-form .status{margin:10px 0 0}
+#menuDialog input, #menuDialog select, #menuDialog textarea,
+#categoryDialog input{font-size:16px}
+@media (max-width:760px) {
+  .menu-actions-bar .category-add-btn{width:100%}
+  .category-manager,.grouped-catalog{padding:15px}
+  .category-pill{font-size:12px}
+  .menu-category-title{padding:13px 11px}
+  .menu-category-title strong{font-size:13px}
+  .menu-category-rows{padding:0 10px 4px}
+  .menu-category-rows .entry{align-items:flex-start;gap:10px;padding:11px 0}
+  .menu-category-rows .entry .row-actions{flex-direction:column}
+  .admin-form-dialog {
+    width:100%;height:auto;max-height:calc(100dvh - 8px);
+    margin:auto 0 0;inset:auto 0 0 0;
+    border-radius:19px 19px 0 0;
+  }
+  .admin-category-dialog{width:100%}
+  .dialog-header{padding:17px 15px 12px}
+  .dialog-header h2{font-size:20px}
+  .dialog-form{padding:16px}
+  .dialog-form .double{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .dialog-form label{font-size:12px}
+  .dialog-actions{margin:18px -16px -16px;padding:12px 16px max(13px,env(safe-area-inset-bottom))}
+  .dialog-actions button{min-width:0;flex:1}
+  .category-select-row{gap:6px}
+  .category-select-row button{padding:8px}
+}
+@media(max-width:380px){
+  .dialog-form .double{grid-template-columns:minmax(0,1fr)}
+  .category-select-row button{font-size:11px}
+}
+@media print {
+  .admin-form-dialog{display:none!important}
+}
