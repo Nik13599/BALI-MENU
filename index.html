@@ -567,7 +567,19 @@
         </div>
     </div>
 
+    <dialog id="baliAgeGate" class="bali-age-dialog" aria-labelledby="baliAgeGateTitle" aria-describedby="baliAgeGateDescription">
+      <div class="bali-age-dialog-inner">
+        <span class="bali-age-mark" aria-hidden="true">18+</span>
+        <h2 id="baliAgeGateTitle">Подтвердите ваш возраст</h2>
+        <p id="baliAgeGateDescription">Для просмотра барной и кальянной карты вам должно исполниться 18 лет.</p>
+        <div class="bali-age-actions">
+          <button type="button" data-age-answer="no">Нет, мне нет 18</button>
+          <button type="button" data-age-answer="yes">Да, мне есть 18</button>
+        </div>
+      </div>
+    </dialog>
     <script src="firebase-config.js?v=20261017-10"></script>
+    <script type="module" src="bali-age-gate.js?v=20261018-97"></script>
     <script src="app.js?v=20261018-96"></script>
     <script src="bali-pc-reference.js?v=20261017-79" defer></script>
     <script type="module" src="auth.js?v=20261017-67"></script>
