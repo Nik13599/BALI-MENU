@@ -581,3 +581,18 @@
     padding:10px 13px 95px!important;
   }
 }
+
+/* v86: show bar's legal informational notice without duplicating a large header.
+   The category/search toolbar remains identical in all four menus. */
+#menuPage #baliBarContent .bali-bar-intro{
+  display:block!important;
+  margin:0 0 9px!important;
+  padding:0 0 8px!important;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+#menuPage #baliBarContent .bali-bar-intro .bali-bar-label,
+#menuPage #baliBarContent .bali-bar-intro h2{display:none!important}
+#menuPage #baliBarContent .bali-bar-intro p{
+  font-size:11px!important;line-height:1.5!important;
+  margin:0!important;color:#a6afb2!important;
+}
