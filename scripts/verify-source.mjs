@@ -205,8 +205,9 @@ assert(app.includes('Хочу пойти') &&
   app.includes('guestInterestDates.has(event.date)'), "Event cards must display RSVP button and public counts");
 assert(app.includes('window.setInterval(()=>') &&
   app.includes('renderUpcomingEvents();'), "Past events must disappear automatically from My Plans");
-assert(app.includes('body.append(name,date,preorder,interested,planBtn,message);'),
-  "RSVP must appear before preorder button");
+assert(app.includes('body.append(name,date,times,description,preorder,interested,planBtn,message);') &&
+  app.includes('body.append(button);'),
+  "Event time and description must precede RSVP, followed by preorder action");
 assert(interestSource.includes('runTransaction(db,async transaction=>') &&
   interestSource.includes('transaction.update(eventRef,{interestCount:') &&
   interestSource.includes('transaction.delete(selectedRef)') &&
