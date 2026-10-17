@@ -5,7 +5,7 @@ import {
   getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, runTransaction, serverTimestamp
+  getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, runTransaction, serverTimestamp, Timestamp, limit, query
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebase = initializeApp(window.BALI_FIREBASE_CONFIG);
@@ -208,12 +208,18 @@ $("eventForm").addEventListener("submit",async (event)=>{
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || title.length<2) {
     renderStatus("eventStatus","Укажите дату и название мероприятия.");return;
   }
+  const closesAt = new Date(date+"T"+(cutoff || "23:59")+":00+03:00");
+  if (!Number.isFinite(closesAt.getTime()) || closesAt <= new Date()) {
+    renderStatus("eventStatus","Время окончания приёма должно быть в будущем (по Минску)."); return;
+  }
   const btn=event.currentTarget.querySelector('[type="submit"]');
   btn.disabled=true;
   renderStatus("eventStatus","Сохраняем мероприятие...");
   try{
     await setDoc(doc(db,"events",date),{
-      date,title,cutoff,preorderEnabled:$("eventOpen").checked,updatedAt:serverTimestamp()
+      date, title, cutoff, preorderEnabled:$("eventOpen").checked,
+      closesAt: Timestamp.fromDate(closesAt),
+      updatedAt:serverTimestamp()
     });
     clearEvent();renderStatus("eventStatus","Мероприятие сохранено.");
   }catch(e){renderStatus("eventStatus","Ошибка: "+(e.code||"unknown"));}
