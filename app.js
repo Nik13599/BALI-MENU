@@ -16,6 +16,70 @@ let currentCategory = 'all';
 let availableEvents = [];
 let guestInterestDates=new Set();
 let showOnlyPlannedEvents=false;
+let lastRenderedEventsView=false;
+let lastWheelSlideAt=0;
+
+// Карточки могут иметь разную ширину на ПК и мобильном экране.
+// Индекс рассчитывается по реальным позициям, а не по фиксированным пикселям.
+function carouselEventCards(track) {
+    return [...track.querySelectorAll(".event-card")];
+}
+function carouselEventIndex(track, cards=carouselEventCards(track)) {
+    if(!cards.length)return 0;
+    const first=cards[0].offsetLeft;
+    const left=track.scrollLeft;
+    let selected=0,best=Infinity;
+    cards.forEach((card,i)=>{
+        const diff=Math.abs(card.offsetLeft-first-left);
+        if(diff<best){best=diff;selected=i;}
+    });
+    return selected;
+}
+function updateEventCarouselPosition() {
+    const track=document.getElementById("eventsGrid");
+    const counter=document.getElementById("eventsCarouselPosition");
+    if(!track||!counter)return;
+    const cards=carouselEventCards(track);
+    counter.textContent=cards.length
+        ? String(carouselEventIndex(track,cards)+1).padStart(2,"0")+" / "+String(cards.length).padStart(2,"0")
+        : "Нет мероприятий";
+}
+function scrollEventCarousel(direction) {
+    const track=document.getElementById("eventsGrid");
+    if(!track)return;
+    const cards=carouselEventCards(track);
+    if(cards.length<2)return;
+    const current=carouselEventIndex(track,cards);
+    const target=Math.max(0,Math.min(cards.length-1,current+direction));
+    const distance=cards[target].offsetLeft-cards[0].offsetLeft;
+    track.scrollTo({left:distance,behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
+}
+function initEventCarousel() {
+    const track=document.getElementById("eventsGrid");
+    if(!track)return;
+    track.addEventListener("scroll",updateEventCarouselPosition,{passive:true});
+    track.addEventListener("wheel",event=>{
+        if(event.ctrlKey||Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
+        const direction=Math.sign(event.deltaY);
+        if(!direction)return;
+        const cards=carouselEventCards(track);
+        if(cards.length<2)return;
+        // Вертикальное колесо прокручивает карусель по одной карточке.
+        event.preventDefault();
+        const now=performance.now();
+        if(now-lastWheelSlideAt<420)return;
+        lastWheelSlideAt=now;
+        scrollEventCarousel(direction);
+    },{passive:false});
+    track.addEventListener("keydown",event=>{
+        if(event.key!=="ArrowRight"&&event.key!=="ArrowLeft")return;
+        event.preventDefault();
+        scrollEventCarousel(event.key==="ArrowRight"?1:-1);
+    });
+    window.addEventListener("resize",updateEventCarouselPosition,{passive:true});
+    updateEventCarouselPosition();
+}
+
 window.addEventListener('bali:interests',({detail})=>{
     guestInterestDates=new Set(detail?.dates||[]);
     renderUpcomingEvents();
@@ -136,6 +200,11 @@ function updateHomeNextEvent() {
 function renderUpcomingEvents() {
     const grid=document.getElementById("eventsGrid");
     if(!grid)return;
+    const previousCards=carouselEventCards(grid);
+    const previousIndex=carouselEventIndex(grid,previousCards);
+    const previousDate=previousCards[previousIndex]?.dataset.eventDate;
+    const changedView=lastRenderedEventsView!==showOnlyPlannedEvents;
+    lastRenderedEventsView=showOnlyPlannedEvents;
     grid.replaceChildren();
     const today=minskDateToday();
     const allUpcoming=availableEvents
@@ -157,11 +226,14 @@ function renderUpcomingEvents() {
             ?"В планах пока нет будущих мероприятий. Нажмите «Хочу пойти» на интересующем событии."
             :"Ближайшие мероприятия пока не опубликованы.";
         grid.append(empty);
+        grid.scrollLeft=0;
+        updateEventCarouselPosition();
         return;
     }
     for (const event of upcoming) {
         const card=document.createElement("article");
         card.className="event-card";
+        card.dataset.eventDate=event.date;
         const poster=document.createElement("img");
         poster.className="event-poster";
         poster.alt="Афиша: "+event.title;
@@ -228,6 +300,15 @@ function renderUpcomingEvents() {
         card.append(poster,body);
         grid.append(card);
     }
+    const restoreIndex=changedView?0:Math.max(0,upcoming.findIndex(e=>e.date===previousDate));
+    const restore=()=>{
+        const cards=carouselEventCards(grid);
+        if(!cards.length)return;
+        grid.scrollLeft=Math.max(0,cards[restoreIndex].offsetLeft-cards[0].offsetLeft);
+        updateEventCarouselPosition();
+    };
+    grid.scrollLeft=0;
+    requestAnimationFrame(restore);
 }
 function updateCategoryButtons() {
     const all = [...new Set(menuItems.map(i => i.category).filter(Boolean))];
@@ -305,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
     attachEventListeners();
     initStickyCategories();
+    initEventCarousel();
     renderGuestPage(routeFromLocation(),{scroll:false});
     // Возврат смартфона/браузера переключает разделы приложения.
     window.addEventListener("popstate",()=>renderGuestPage(routeFromLocation()));
@@ -326,13 +408,17 @@ document.addEventListener('DOMContentLoaded', () => {
 function initStickyCategories() {
     const header = document.querySelector('.header');
     if (!header) return;
+    const banner=document.querySelector(".bali-preview-banner");
     const syncHeight = () => {
         document.documentElement.style.setProperty('--bali-header-height', header.getBoundingClientRect().height + 'px');
+        document.documentElement.style.setProperty('--bali-banner-height',
+            ((banner&&!banner.hidden)?banner.getBoundingClientRect().height:0)+'px');
     };
     syncHeight();
     if (typeof ResizeObserver === 'function') {
         const observer = new ResizeObserver(syncHeight);
         observer.observe(header);
+        if(banner)observer.observe(banner);
     }
     window.addEventListener('resize', syncHeight, {passive: true});
 }
