@@ -70,9 +70,14 @@ function validProfile(docData, authUser) {
 }
 
 function render() {
-  els.button.textContent = !isConfigured ? "Вход не настроен" :
-    !user ? "Войти / Регистрация" :
-    profile ? "👤 " + profile.name : "Заполнить профиль";
+  // На мобильном вместо фиксированной подписи "Кабинет" отображаем настоящее имя.
+  // До авторизации остаётся короткая кнопка "Кабинет".
+  const accountLabel = !isConfigured ? "Вход не настроен" :
+    !user ? "Кабинет" :
+    profile ? profile.name : "Профиль";
+  els.button.textContent = accountLabel;
+  els.button.title = !user ? "Войти или зарегистрироваться" : accountLabel;
+  els.button.setAttribute("aria-label", !user ? "Кабинет: войти или зарегистрироваться" : "Личный кабинет: " + accountLabel);
   els.google.hidden = !isConfigured || !!user;
   els.form.hidden = !isConfigured || !user;
   els.signOut.hidden = !user;
