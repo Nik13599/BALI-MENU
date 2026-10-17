@@ -54,6 +54,27 @@ const themeClient=source("bali-theme.js");
 const themeCss=source("bali-theme.css");
 
 const neutralLimeCss=source("bali-lime-neutral.css");
+
+const desktopLayoutCss=source("bali-desktop-fullwidth.css");
+assert(html.includes('bali-desktop-fullwidth.css?v=20261017-63') &&
+  html.indexOf('bali-desktop-fullwidth.css?v=20261017-63') >
+  html.indexOf('bali-lime-neutral.css?v=20261017-62'),
+  "Desktop fullscreen layout must be loaded after all guest mobile and palette styles");
+assert(desktopLayoutCss.includes('@media (min-width:768px)') &&
+  desktopLayoutCss.includes('max-width:none!important') &&
+  desktopLayoutCss.includes('body.bali-guest-theme #homeSection .bali-home-inner') &&
+  desktopLayoutCss.includes('grid-template-columns:minmax(270px,min(28vw,420px)) minmax(0,1fr)') &&
+  desktopLayoutCss.includes('grid-template-columns:repeat(3,minmax(0,clamp(170px,14vw,218px)))') &&
+  desktopLayoutCss.includes('grid-template-columns:repeat(3,minmax(0,1fr))') &&
+  desktopLayoutCss.includes('minmax(0,min(calc(75% - 2.5px),680px))') &&
+  desktopLayoutCss.includes('minmax(0,min(calc(25% - 7.5px),220px))') &&
+  desktopLayoutCss.includes('grid-column:2') &&
+  desktopLayoutCss.includes('height:50px!important') &&
+  desktopLayoutCss.includes('body.bali-guest-theme #eventsSection > .container') &&
+  !desktopLayoutCss.includes('@media(max-width:767px)') &&
+  !desktopLayoutCss.includes('@media (max-width:767px)'),
+  "Desktop-only layout should fill viewport and align four compact equal-sized contact buttons without touching mobile");
+
 assert(html.includes('class="bali-yandex-pin"') &&
   !html.includes('<circle cx="12" cy="12" r="4.25" fill="white"/>') &&
   html.includes('M12 7.75a4.25 4.25 0 1 0 0 8.5') &&
