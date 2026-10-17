@@ -180,6 +180,8 @@ async function openEditor(id){
     $("orderEditTitle").textContent="Заказ № "+o.id;
     $("editOrderDate").value=o.eventDate;
     $("editOrderStatus").value=o.status;
+    $("editOrderName").value=o.customerName;
+    $("editOrderPhone").value=o.customerPhone;
     $("editOrderTable").value=o.tableNumber;
     $("editOrderBooking").value=o.bookingId;
     $("editOrderNotes").value=o.notes;
@@ -197,10 +199,14 @@ $("orderEditForm").addEventListener("submit",async event=>{
   if(!editOrder||!authorized)return;
   const status=$("editOrderStatus").value;
   const eventDate=$("editOrderDate").value;
+  const customerName=$("editOrderName").value.trim();
+  const customerPhone=$("editOrderPhone").value.trim();
   const tableNumber=$("editOrderTable").value.trim();
   const bookingId=$("editOrderBooking").value.trim();
   const notes=$("editOrderNotes").value.trim();
   if(!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)
+      ||customerName.length<2||customerName.length>100
+      ||!/^[+]?[1-9][0-9]{7,14}$/.test(customerPhone)
       ||(!tableNumber&&!bookingId)||tableNumber.length>20||bookingId.length>60
       ||notes.length>500||!Object.keys(statuses).includes(status)
       ||!editLines.length||editLines.length>12) {
@@ -231,7 +237,7 @@ $("orderEditForm").addEventListener("submit",async event=>{
       line.unitPrice=data.price;
     }
     const batch=writeBatch(db);
-    batch.update(ref,{eventDate,tableNumber,bookingId,notes,status,updatedAt:serverTimestamp()});
+    batch.update(ref,{eventDate,customerName,customerPhone,tableNumber,bookingId,notes,status,updatedAt:serverTimestamp()});
     const present=new Set(editLines.map(x=>String(x.id)));
     for(const id of originalIds)if(!present.has(id))batch.delete(doc(ref,"items",id));
     for(const line of touched)batch.set(doc(ref,"items",String(line.id)),{
