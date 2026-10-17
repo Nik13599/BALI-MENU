@@ -3,7 +3,7 @@ import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/1
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,collection,doc,getDoc,onSnapshot,setDoc,deleteDoc,serverTimestamp}
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import {compressImage} from "./image-compressor.js";
+import {compressImage} from "./image-compressor.js?v=20261017-79";
 import {makeImageVariants} from "./bali-design-variants.js";
 
 const el=id=>document.getElementById(id);
