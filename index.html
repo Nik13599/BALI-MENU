@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="responsive-menu.css?v=20261017-21">
     <link rel="stylesheet" href="header-modern.css?v=20261017-22">
     <link rel="stylesheet" href="menu-categories.css?v=20261017-23">
+    <link rel="stylesheet" href="event-interests.css?v=20261017-26">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -101,6 +102,11 @@
             <p>Ближайшие мероприятия по датам — от самого раннего к следующему.</p>
           </div>
         </div>
+        <div id="eventsViewTabs" class="events-view-tabs" role="group" aria-label="Показать мероприятия">
+          <button type="button" class="events-view-button active" data-events-view="all" aria-pressed="true">Все события</button>
+          <button type="button" class="events-view-button" data-events-view="planned" aria-pressed="false">Мои планы <span id="plannedEventsCount">0</span></button>
+        </div>
+        <p id="eventsInterestStatus" class="events-interest-status" role="status" aria-live="polite"></p>
         <div id="eventsGrid" class="events-grid" aria-live="polite">Загружаем события...</div>
       </div>
     </section>
@@ -263,10 +269,11 @@
     </div>
 
     <script src="firebase-config.js?v=20261017-10"></script>
-    <script src="app.js?v=20261017-25"></script>
+    <script src="app.js?v=20261017-26"></script>
     <script type="module" src="auth.js?v=20261017-16"></script>
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>
     <script type="module" src="orders-firestore.js?v=20261017-10"></script>
+    <script type="module" src="event-interests.js?v=20261017-26"></script>
 </body>
 
 </html>
