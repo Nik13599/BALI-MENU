@@ -89,3 +89,38 @@
   .events-view-button{font-size:10px;padding:8px 9px}
   .event-want-to-go{font-size:9px}
 }
+
+/* Event navigation v29: "Все события" / "Мои планы" остаются под шапкой. */
+#eventsSection {overflow:visible}
+#eventsSection > .container {overflow:visible}
+#eventsSection .events-view-tabs {
+  position:sticky;
+  top:var(--bali-header-height,70px);
+  z-index:950;
+  width:100%;
+  padding:11px 12px;
+  margin:0 0 16px;
+  background:rgba(15,19,34,.98);
+  border:1px solid rgba(227,197,144,.22);
+  border-radius:14px;
+  box-shadow:0 9px 24px rgba(2,5,14,.3);
+  -webkit-backdrop-filter:blur(17px);
+  backdrop-filter:blur(17px);
+}
+#eventsSection .events-view-button{flex:1 1 130px}
+@media(max-width:767px){
+  #eventsSection .events-view-tabs{
+    top:var(--bali-header-height,61px);
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+    padding:9px 10px;
+    margin-bottom:13px;
+    border-radius:12px;
+  }
+  #eventsSection .events-view-button{
+    min-width:0;width:100%;
+    min-height:42px;margin:0;
+    white-space:nowrap;
+  }
+}
