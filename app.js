@@ -66,11 +66,79 @@ window.addEventListener('bali:menu-error', () => showError('Не удалось 
 window.addEventListener('bali:events', ({ detail }) => {
     availableEvents = detail.events;
     populateEvents();
+    renderUpcomingEvents();
 });
 window.addEventListener('bali:events-error', () => {
     const select = document.getElementById('eventSelect');
     if (select) select.innerHTML = '<option value="">Не удалось загрузить мероприятия</option>';
 });
+function showGuestSection(section) {
+    const events = section === "events";
+    for (const selector of [".hero",".categories",".menu-section"]) {
+        const el = document.querySelector(selector);
+        if (el) el.hidden = events;
+    }
+    const eventsSection = document.getElementById("eventsSection");
+    if (eventsSection) eventsSection.hidden = !events;
+    document.getElementById("eventsNavBtn")?.setAttribute("aria-pressed",String(events));
+    document.getElementById("eventsNavBtn")?.classList.toggle("active",events);
+    document.getElementById("menuNavBtn")?.classList.toggle("active",!events);
+    window.scrollTo({top:0,behavior:"instant"});
+}
+function renderUpcomingEvents() {
+    const grid=document.getElementById("eventsGrid");
+    if(!grid)return;
+    grid.replaceChildren();
+    const today=minskDateToday();
+    const upcoming=availableEvents
+      .filter(e=>e?.date>=today&&/^\d{4}-\d{2}-\d{2}$/.test(e?.date||""))
+      .sort((a,b)=>a.date.localeCompare(b.date));
+    if(!upcoming.length) {
+        const empty=document.createElement("div");
+        empty.className="events-empty";
+        empty.textContent="Ближайшие мероприятия пока не опубликованы.";
+        grid.append(empty);
+        return;
+    }
+    for (const event of upcoming) {
+        const card=document.createElement("article");
+        card.className="event-card";
+        const poster=document.createElement("img");
+        poster.className="event-poster";
+        poster.alt="Афиша: "+event.title;
+        poster.loading="lazy";
+        poster.src=safeImageUrl(event.poster_url);
+        const body=document.createElement("div");
+        body.className="event-card-body";
+        const date=document.createElement("time");
+        date.className="event-card-date";
+        date.dateTime=event.date;
+        date.textContent=new Intl.DateTimeFormat("ru-RU",{
+            timeZone:"Europe/Minsk",day:"numeric",month:"long",year:"numeric",weekday:"long"
+        }).format(new Date(event.date+"T12:00:00+03:00"));
+        const name=document.createElement("h3");
+        name.textContent=event.title;
+        const preorder=document.createElement("span");
+        preorder.className="event-preorder-state";
+        const open=event.preorderEnabled===true&&event.closesAt?.toDate?.()>new Date();
+        preorder.textContent=open?"Предзаказ открыт":"Информация о мероприятии";
+        body.append(date,name,preorder);
+        if(open){
+            const button=document.createElement("button");
+            button.type="button";
+            button.className="event-go-to-menu";
+            button.textContent="Выбрать блюда →";
+            button.addEventListener("click",()=>{
+                showGuestSection("menu");
+                const menu=document.querySelector(".menu-section");
+                if(menu)menu.scrollIntoView({behavior:"smooth",block:"start"});
+            });
+            body.append(button);
+        }
+        card.append(poster,body);
+        grid.append(card);
+    }
+}
 function updateCategoryButtons() {
     const all = [...new Set(menuItems.map(i => i.category).filter(Boolean))];
     if (currentCategory !== 'all' && !all.includes(currentCategory)) currentCategory = 'all';
@@ -112,6 +180,8 @@ function safeImageUrl(value) {
     try {
         const u = new URL(String(value ?? ''));
         if (u.protocol === 'https:' || u.protocol === 'http:') return escapeHTML(u.href);
+        if (/^data:image\/webp;base64,[A-Za-z0-9+/=]+$/.test(String(value||""))
+          && String(value).length <= 210000) return String(value);
     } catch (_) { /* fallback */ }
     return 'https://placehold.co/400x200?text=BALI';
 }
@@ -170,6 +240,13 @@ async function loadConfig() {
 }
 
 function attachEventListeners() {
+    document.getElementById("menuNavBtn")?.addEventListener("click",event=>{
+        event.preventDefault();showGuestSection("menu");
+    });
+    document.getElementById("eventsNavBtn")?.addEventListener("click",()=>{
+        showGuestSection("events");renderUpcomingEvents();
+    });
+
     const eventSelect = document.getElementById('eventSelect');
     if (eventSelect) eventSelect.addEventListener('change', () => {
         document.getElementById('eventDate').value = eventSelect.value;
