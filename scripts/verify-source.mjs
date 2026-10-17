@@ -229,7 +229,7 @@ assert((rules.match(/match \/events\/\{eventId\}/g)||[]).length===1 &&
   "Firestore Rules must contain one event match and one catchall");
 const landingCss = source("bali-pages.css");
 assert(html.includes('<title>Bali</title>') &&
-  html.includes('bali-pages.css?v=20261017-30'), "Bali landing brand and CSS missing");
+  html.includes('bali-pages.css?v=20261017-31'), "Bali landing brand and CSS missing");
 assert(html.includes('id="homeSection"') &&
   html.includes('id="menuPage"') &&
   html.includes('id="contactsSection"') &&
@@ -269,7 +269,7 @@ assert(app.includes("String(result.order_number).padStart(2,'0')") &&
   app.includes('String(order.orderNumber).padStart(2'), "Guest must see padded date-specific order number");
 assert(orderAdminSource.includes('orderLabel = o =>') &&
   orderAdminSource.includes('runTransaction(db,async tx=>'), "Admin must show date-based order numbers and renumber date changes");
-assert(html.includes('bali-pages.css?v=20261017-30'), "Updated social icon CSS must load");
+assert(html.includes('bali-pages.css?v=20261017-31'), "Updated social icon CSS must load");
 const socialStart=html.indexOf('class="bali-home-social"');
 const socialEnd=html.indexOf('class="bali-home-map"',socialStart);
 assert(socialStart>=0 && socialEnd>socialStart, "Home social row missing");
@@ -279,4 +279,20 @@ assert((socialMarkup.match(/aria-label="[^"]+"/g)||[]).length>=4, "Social links 
 assert(!/>\s*(Позвонить|Telegram|Instagram)\s*</.test(socialMarkup), "Social icons should replace textual button labels");
 assert(landingCss.includes(".bali-home-social .bali-social-btn") &&
   landingCss.includes("min-height:66px"), "Icon links need visible touch targets");
+const homeTileStart=html.indexOf('class="bali-home-actions"');
+const homeTileEnd=html.indexOf('class="bali-home-social"',homeTileStart);
+assert(homeTileStart>=0&&homeTileEnd>homeTileStart, "Home navigation tiles must be present");
+assert(!html.slice(homeTileStart,homeTileEnd).includes('bali-home-action-arrow'),
+  "Menu and Events tiles should have no right arrows");
+const yandexMapStart=html.indexOf('class="bali-home-map bali-yandex-map"');
+const yandexMapEnd=html.indexOf('</a>',yandexMapStart);
+assert(yandexMapStart>=0 && yandexMapEnd>yandexMapStart &&
+  html.slice(yandexMapStart,yandexMapEnd).includes('bali-yandex-pin') &&
+  html.slice(yandexMapStart,yandexMapEnd).includes('Яндекс <strong>Карты</strong>') &&
+  !html.slice(yandexMapStart,yandexMapEnd).includes('bali-home-map-arrow'),
+  "Address must show Yandex Maps branding and no arrow");
+assert(landingCss.includes('.bali-yandex-brand') &&
+  landingCss.includes('.bali-yandex-pin') &&
+  landingCss.includes('grid-template-columns:34px minmax(0,1fr)'),
+  "Yandex Maps address card must work on narrow mobile screens");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
