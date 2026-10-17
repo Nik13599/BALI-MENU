@@ -605,3 +605,63 @@
     white-space:normal!important;
   }
 }
+
+/* v91 — Branded SECRET picture and shared customisable typography. */
+@media (min-width:1180px) {
+  body.bali-guest-theme #homeSection #homeEventCarousel>.bali-home-event-placeholder {
+    --bali-secret-accent:#b9ff51;
+    --bali-placeholder-footer:#12171c;
+  }
+  body.bali-guest-theme #homeSection .bali-home-placeholder-poster {
+    position:relative!important;
+    padding:0!important;
+    background:#10171b!important;
+    isolation:isolate;
+  }
+  body.bali-guest-theme #homeSection .bali-home-placeholder-poster>.bali-home-placeholder-image {
+    display:block!important;
+    position:absolute!important;
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
+    object-fit:cover!important;
+    object-position:center!important;
+    z-index:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-placeholder-poster>.bali-home-placeholder-overlay {
+    display:flex!important;
+    position:absolute!important;
+    inset:0!important;
+    z-index:2!important;
+    justify-content:center!important;
+    align-items:center!important;
+    flex-direction:column!important;
+    gap:clamp(6px,.8dvh,13px)!important;
+    padding:clamp(8px,.9vw,16px)!important;
+    box-sizing:border-box!important;
+    text-align:center!important;
+    background:linear-gradient(180deg,rgba(2,5,8,.17) 0,rgba(2,5,8,.12) 43%,rgba(2,5,8,.52) 100%)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-placeholder-kicker {
+    position:relative!important;
+    font-size:clamp(8px,.62vw,12px)!important;
+    color:var(--bali-secret-accent,#b9ff51)!important;
+    letter-spacing:.17em!important;
+    text-shadow:0 2px 12px #000!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-placeholder-message {
+    position:relative!important;
+    font:850 clamp(18px,1.8vw,46px)/1.02 Manrope,Inter,sans-serif!important;
+    letter-spacing:.022em!important;
+    color:#f7faf3!important;
+    text-shadow:0 3px 21px #000!important;
+    text-transform:uppercase!important;
+    overflow-wrap:anywhere!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-placeholder-info {
+    background:var(--bali-placeholder-footer,#12171c)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-placeholder-info .bali-home-event-hours {
+    color:var(--bali-secret-accent,#b9ff51)!important;
+  }
+}
