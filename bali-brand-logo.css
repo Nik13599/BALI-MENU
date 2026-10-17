@@ -1,0 +1,45 @@
+/* Original BALI NIGHT CLUB artwork — unchanged across desktop, tablet and mobile. */
+.header .logo .bali-brand-logo {
+  display: block;
+  width: clamp(136px, 11vw, 178px);
+  max-width: 100%;
+  height: auto !important;
+  object-fit: contain;
+}
+
+@media (min-width: 1180px) {
+  body.bali-guest-theme > .bali-pc-sidebar .bali-pc-brand {
+    display: flex;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  body.bali-guest-theme > .bali-pc-sidebar .bali-pc-brand .bali-brand-logo {
+    display: block;
+    width: min(100%, clamp(145px, 12.5vw, 530px));
+    max-width: 100%;
+    height: auto !important;
+    object-fit: contain;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1179px) {
+  .header .logo .bali-brand-logo {
+    width: clamp(140px, 16vw, 178px);
+  }
+}
+
+@media (max-width: 767px) {
+  .header .logo .bali-brand-logo {
+    width: clamp(124px, 38vw, 158px);
+  }
+}
+
+@media (max-width: 359px) {
+  .header .logo .bali-brand-logo {
+    width: 116px;
+  }
+}
