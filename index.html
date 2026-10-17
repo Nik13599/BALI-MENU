@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="bali-lime-neutral.css?v=20261017-62">
     <link rel="stylesheet" href="bali-desktop-fullwidth.css?v=20261017-64">
     <link rel="stylesheet" href="bali-bar-menu.css?v=20261017-72">
-    <link rel="stylesheet" href="bali-pc-reference.css?v=20261017-72">
+    <link rel="stylesheet" href="bali-pc-reference.css?v=20261017-73">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -119,13 +119,27 @@
         </section>
         <aside class="bali-pc-right-rail" aria-label="Больше о клубе">
           <details class="bali-pc-about">
-            <summary><span class="bali-pc-about-logo">BALI</span><strong>О клубе</strong><small>Атмосфера, музыка, люди</small><span class="bali-pc-round-arrow" aria-hidden="true">›</span></summary>
-            <p>Ночной клуб BALI в Минске. Музыка, события и встречи в одной атмосфере.</p>
+            <summary><img id="baliPcAboutImage" class="bali-pc-about-image" alt="" hidden><span class="bali-pc-about-logo">BALI</span><strong id="baliPcAboutTitle">О клубе</strong><small id="baliPcAboutSubtitle">Атмосфера, музыка, люди</small><span class="bali-pc-round-arrow" aria-hidden="true">›</span></summary>
+            <p id="baliPcAboutDescription">Ночной клуб BALI в Минске. Музыка, события и встречи в одной атмосфере.</p>
             <button type="button" data-bali-nav="contacts">Контакты клуба →</button>
           </details>
           <a class="bali-pc-rail-link" href="tel:+375296700300"><span aria-hidden="true">▦</span><span><strong>Забронировать стол</strong><small>Связаться с клубом</small></span><i aria-hidden="true">›</i></a>
           <a class="bali-pc-rail-link" href="https://www.instagram.com/baliminsk/" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">▧</span><span><strong>Фотогалерея</strong><small>Фотографии в Instagram</small></span><i aria-hidden="true">›</i></a>
-          <div class="bali-pc-merch"><span class="bali-pc-merch-mark" aria-hidden="true">BALI</span><strong>BALI MERCH</strong><small>Скоро в продаже</small></div>
+          <div class="bali-pc-merch" aria-label="BALI MERCH">
+            <img id="baliPcMerchImage" class="bali-pc-merch-photo" alt="" hidden>
+            <span class="bali-pc-merch-mark" aria-hidden="true">BALI</span>
+            <div class="bali-pc-merch-info">
+              <span class="bali-pc-merch-kicker">BALI MERCH</span>
+              <strong id="baliPcMerchTitle">BALI MERCH</strong>
+              <small id="baliPcMerchState">Скоро в продаже</small>
+              <span id="baliPcMerchDescription" class="bali-pc-merch-desc" hidden></span>
+            </div>
+            <div class="bali-pc-merch-controls" id="baliPcMerchControls" hidden>
+              <span id="baliPcMerchCounter">01 / 01</span>
+              <button type="button" data-bali-merch-step="-1" aria-label="Предыдущий мерч">‹</button>
+              <button type="button" data-bali-merch-step="1" aria-label="Следующий мерч">›</button>
+            </div>
+          </div>
         </aside>
         <button type="button" id="menuNavBtn" class="bali-home-menu-banner" aria-controls="menuPage">
           <span class="bali-menu-banner-icon" aria-hidden="true">▥</span>
@@ -533,7 +547,8 @@
     <script type="module" src="bali-bar-menu.js?v=20261017-65"></script>
     <script type="module" src="bali-extra-menus.js?v=20261017-71"></script>
     <script type="module" src="bali-menu-visibility.js?v=20261017-72"></script>
-    <script type="module" src="bali-pc-offers.js?v=20261017-67"></script>
+    <script type="module" src="bali-home-design.js?v=20261017-73"></script>
+    <script type="module" src="bali-pc-offers.js?v=20261017-73"></script>
     <script type="module" src="orders-firestore.js?v=20261017-28"></script>
     <script type="module" src="event-interests.js?v=20261017-26"></script>
     <script src="bali-icon-atelier.js?v=20261017-58" defer></script>
