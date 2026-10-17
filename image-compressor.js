@@ -11,6 +11,7 @@ export async function compressImage(file,kind="product") {
     throw new Error("Файл слишком большой. Максимум 15 МБ.");
   const poster=kind==="poster";
   const designPresets={
+    "design-icon":{ratio:1,maxChars:24000,widths:[160,128,96,80,64]},
     "design-hero":{ratio:8/3,maxChars:155000,widths:[1280,1120,960,800,640]},
     "design-hero-tablet":{ratio:16/9,maxChars:155000,widths:[1050,900,760,640,520]},
     "design-hero-mobile":{ratio:3/4,maxChars:155000,widths:[600,520,440,360,300]},
