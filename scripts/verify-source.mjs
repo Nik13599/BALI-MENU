@@ -53,6 +53,24 @@ const customIconJs=source("bali-icon-atelier.js");
 const themeClient=source("bali-theme.js");
 const themeCss=source("bali-theme.css");
 
+assert(themeClient.includes('const defaultSelection=()=>({theme:"lime",colors:clone(palettes.lime)})') &&
+  themeClient.includes('let lastCustom=clone(palettes.lime)') &&
+  themeClient.includes('const themeRef=doc(db,"settings","appearance")') &&
+  admin.includes('name="baliThemePreset" value="lime" checked') &&
+  !admin.includes('name="baliThemePreset" value="cobalt" checked') &&
+  admin.includes('id="baliColorPrimaryHex" class="bali-color-hex" type="text" value="#B9FF51"') &&
+  admin.includes('id="baliColorTextHex" class="bali-color-hex" type="text" value="#D8FF9F"'),
+  "LIME SHADOW must be the selected default without disabling explicitly published Firestore themes");
+assert(themeCss.includes('--bt-primary:#B9FF51;') &&
+  themeCss.includes('--bt-secondary:#88D43E;') &&
+  themeCss.includes('--bt-text:#D8FF9F;') &&
+  themeCss.includes('--bt-border:#B2EF5F;') &&
+  themeCss.includes('--bt-on-primary:#10131A;') &&
+  !themeClient.includes('setProperty("--bg-'),
+  "LIME SHADOW initial CSS must prevent cobalt flash and preserve fixed site background");
+
+
+
 assert(themeCss.includes('background:var(--bt-primary)!important') &&
   themeCss.includes('color:var(--bt-on-primary)!important') &&
   themeCss.includes('body.bali-guest-theme .bali-bottom-nav button.active') &&
@@ -68,13 +86,13 @@ assert(admin.includes('id="baliCopyRules"') &&
   "Appearance editor needs a safe recovery path for publishing protected Firestore rules");
 
 const dashboardClient=source("admin-dashboard.js");
-assert(html.includes('bali-theme.css?v=20261017-59') &&
-  admin.includes('bali-theme.css?v=20261017-59') &&
-  html.includes('bali-theme.js?v=20261017-59') &&
-  admin.includes('bali-theme.js?v=20261017-59') &&
-  html.indexOf('bali-theme.css?v=20261017-59') >
+assert(html.includes('bali-theme.css?v=20261017-60') &&
+  admin.includes('bali-theme.css?v=20261017-60') &&
+  html.includes('bali-theme.js?v=20261017-60') &&
+  admin.includes('bali-theme.js?v=20261017-60') &&
+  html.indexOf('bali-theme.css?v=20261017-60') >
   html.indexOf('bali-obsidian-premium.css?v=20261017-57') &&
-  admin.indexOf('bali-theme.css?v=20261017-59') >
+  admin.indexOf('bali-theme.css?v=20261017-60') >
   admin.indexOf('bali-obsidian-premium.css?v=20261017-57'),
   "Global accent CSS and realtime settings module must load last on both interfaces");
 assert(admin.includes('data-admin-tab="appearance"') &&
