@@ -133,7 +133,7 @@ service cloud.firestore {
 
     function validEvent(data, eventId) {
       return data.keys().hasAll(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
-        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','poster_url','interestCount','updatedAt'])
+        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','poster_url','interestCount','updatedAt','description','startTime','endTime'])
         && (!('interestCount' in data) || (
           data.interestCount is int
           && data.interestCount >= 0 && data.interestCount <= 1000000
@@ -149,6 +149,14 @@ service cloud.firestore {
         && data.date is string
         && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
+        && (!('description' in data) || (data.description is string && data.description.size() <= 600))
+        && (!('startTime' in data) || (data.startTime is string &&
+          (data.startTime == '' || data.startTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'))))
+        && (!('endTime' in data) || (data.endTime is string &&
+          (data.endTime == '' || data.endTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'))))
+        && (('startTime' in data) == ('endTime' in data))
+        && (!('startTime' in data) || (data.startTime == '' && data.endTime == '') ||
+            (data.startTime != '' && data.endTime != ''))
         && data.preorderEnabled is bool
         && data.closesAt is timestamp
         && data.cutoff is string

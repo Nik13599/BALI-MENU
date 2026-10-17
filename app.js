@@ -288,7 +288,7 @@ function renderHomeEvents() {
         p.className="bali-home-event-empty";
         p.textContent=showOnlyPlannedEvents?"В ваших планах пока нет мероприятий.":"Афиши ближайших мероприятий пока не опубликованы.";
         track.append(p);
-        document.getElementById("homeEventPosition").textContent="";
+
         return;
     }
     for(const event of upcoming){
@@ -317,24 +317,6 @@ function renderHomeEvents() {
         track.append(card);
     }
     track.scrollLeft=0;
-    updateHomeEventPosition();
-}
-function updateHomeEventPosition(){
-    const track=document.getElementById("homeEventCarousel");
-    const indicator=document.getElementById("homeEventPosition");
-    if(!track||!indicator)return;
-    const cards=[...track.querySelectorAll(".bali-home-event-card")];
-    if(!cards.length){indicator.textContent="";return;}
-    // The home posters share one width + gap, so a single measured slide
-    // is enough: no per-poster layout reads during horizontal swiping.
-    const slideWidth=cards[0].getBoundingClientRect().width;
-    const gap=parseFloat(getComputedStyle(track).columnGap)||0;
-    const stride=slideWidth+gap;
-    const active=stride>0
-        ?Math.min(cards.length-1,Math.max(0,Math.round(track.scrollLeft/stride)))
-        :0;
-    const position=String(active+1).padStart(2,"0")+" / "+String(cards.length).padStart(2,"0");
-    if(indicator.textContent!==position)indicator.textContent=position;
 }
 
 function renderUpcomingEvents() {
@@ -400,6 +382,21 @@ function renderUpcomingEvents() {
         }).format(new Date(event.date+"T12:00:00+03:00"));
         const name=document.createElement("h3");
         name.textContent=event.title;
+        // These are the actual start/end fields entered by the administrator.
+        // The preorder cutoff is intentionally NOT used as an event end time.
+        const times=document.createElement("p");
+        times.className="bali-event-hours";
+        const validTime=/^([01]\d|2[0-3]):[0-5]\d$/;
+        const startTime=String(event.startTime||"");
+        const endTime=String(event.endTime||"");
+        times.textContent=validTime.test(startTime)&&validTime.test(endTime)
+            ?startTime+"–"+endTime
+            :"Время уточняется";
+        const description=document.createElement("p");
+        description.className="bali-event-description";
+        description.textContent=typeof event.description==="string"
+            ?event.description.trim().slice(0,600):"";
+        description.hidden=!description.textContent;
         const preorder=document.createElement("span");
         preorder.className="event-preorder-state";
         const open=event.preorderEnabled===true&&event.closesAt?.toDate?.()>new Date();
@@ -442,7 +439,7 @@ function renderUpcomingEvents() {
                 planBtn.textContent=label;
             }
         });
-        body.append(name,date,preorder,interested,planBtn,message);
+        body.append(name,date,times,description,preorder,interested,planBtn,message);
         if(open){
             const button=document.createElement("button");
             button.type="button";
@@ -614,16 +611,6 @@ function attachEventListeners() {
         baliMenuSearchText=String(event.target.value||"").trim().toLocaleLowerCase("ru-RU");
         displayMenuItems(menuItems);
     });
-    // Avoid running geometry measurements for every touchmove on low-end phones.
-    const homeTrack=document.getElementById("homeEventCarousel");
-    let homeScrollFrame=0;
-    homeTrack?.addEventListener("scroll",()=>{
-        if(homeScrollFrame)return;
-        homeScrollFrame=requestAnimationFrame(()=>{
-            homeScrollFrame=0;
-            updateHomeEventPosition();
-        });
-    },{passive:true});
     for(const button of document.querySelectorAll("[data-home-events-view]")){
         button.addEventListener("click",()=>{
             showOnlyPlannedEvents=button.dataset.homeEventsView==="planned";

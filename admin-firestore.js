@@ -343,12 +343,16 @@ function eventRender() {
     list.append(createEntry(
       event.date + " — " + event.title,
       (event.preorderEnabled ? "Приём включён" : "Приём выключен") +
-        (event.cutoff ? " · До " + event.cutoff + " по Минску" : "") +
+        (event.startTime && event.endTime ? " · "+event.startTime+"–"+event.endTime : "") +
+        (event.cutoff ? " · Предзаказ до " + event.cutoff + " по Минску" : "") +
         " · Хочет пойти: " + (Number.isSafeInteger(event.interestCount)?event.interestCount:0),
       () => {
         $("eventDateAdmin").value=event.date;
         $("eventDateAdmin").readOnly=true;
         $("eventTitle").value=event.title;
+        $("eventDescription").value=event.description||"";
+        $("eventStartTime").value=event.startTime||"";
+        $("eventEndTime").value=event.endTime||"";
         $("eventCutoff").value=event.cutoff;
         $("eventOpen").checked=event.preorderEnabled;
         pendingEventPoster="";
@@ -438,9 +442,20 @@ $("eventForm").addEventListener("submit",async (event)=>{
   event.preventDefault();
   if(!authorized)return;
   const date=$("eventDateAdmin").value,title=$("eventTitle").value.trim(),
-    cutoff=$("eventCutoff").value||"";
+    cutoff=$("eventCutoff").value||"",
+    description=$("eventDescription").value.trim(),
+    startTime=$("eventStartTime").value||"",
+    endTime=$("eventEndTime").value||"";
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || title.length<2) {
     renderStatus("eventStatus","Укажите дату и название мероприятия.");return;
+  }
+  // Start/end describe the party itself. Cutoff controls preorders separately.
+  // Overnight events (e.g. 22:00–03:00) are valid.
+  const validTime=/^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+  if(description.length>600 || (!!startTime!==!!endTime) ||
+     (startTime && (!validTime.test(startTime)||!validTime.test(endTime)))) {
+    renderStatus("eventStatus","Заполните оба времени в формате ЧЧ:ММ или оставьте оба пустыми. Описание — до 600 символов.");
+    return;
   }
   const closesAt = new Date(date+"T"+(cutoff || "23:59")+":00+03:00");
   if (!Number.isFinite(closesAt.getTime()) || closesAt <= new Date()) {
@@ -463,6 +478,14 @@ $("eventForm").addEventListener("submit",async (event)=>{
       closesAt: Timestamp.fromDate(closesAt),
       updatedAt:serverTimestamp()
     };
+    // Leave absent metadata absent on older events to preserve edits under
+    // previously deployed Firestore Rules. New metadata requires v46 Rules.
+    const saved=events.get(date)||{};
+    if(description || Object.hasOwn(saved,"description"))payload.description=description;
+    if((startTime&&endTime) || Object.hasOwn(saved,"startTime") || Object.hasOwn(saved,"endTime")){
+      payload.startTime=startTime;
+      payload.endTime=endTime;
+    }
     // Старые документы без афиши не должны записывать лишнее пустое поле.
     // Для настоящих афиш необходимы опубликованные Firebase Rules с poster_url.
     if(poster)payload.poster_url=poster;
@@ -473,8 +496,8 @@ $("eventForm").addEventListener("submit",async (event)=>{
   }catch(e){
     if(e.code==="permission-denied"){
       renderStatus("eventStatus",poster
-        ?"Firebase отклонил сохранение афиши (permission-denied). Опубликуйте последние Firestore Rules: в них должно быть разрешено поле poster_url. Затем повторите сохранение."
-        :"Firebase отклонил сохранение мероприятия (permission-denied). Проверьте, что роль администратора активна, а актуальные Firestore Rules опубликованы.");
+        ?"Firebase отклонил сохранение мероприятия (permission-denied). Опубликуйте последние Firestore Rules с полями афиши, описания и времени. Затем повторите."
+        :"Firebase отклонил сохранение мероприятия (permission-denied). Проверьте права администратора и опубликуйте актуальные Firestore Rules для полей времени и описания.");
       if(help)help.hidden=false;
     }else{
       renderStatus("eventStatus","Не удалось сохранить мероприятие: "+(e.message||e.code||"unknown"));
