@@ -1,0 +1,151 @@
+/* BALI MENU — сгруппированный каталог и закреплённые категории, v23.
+   Подключается после остальных стилей без изменения их сетки карточек. */
+.categories {
+  position: sticky;
+  top: var(--bali-header-height, 80px);
+  z-index: 950; /* шапка .header имеет z-index: 1000 */
+  width: 100%;
+  padding: 10px 0;
+  background: rgba(16, 20, 34, .97);
+  border-bottom: 1px solid rgba(226, 191, 135, .23);
+  box-shadow: 0 8px 20px rgba(4, 7, 20, .22);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+.categories > .container { max-width: 1360px; }
+.category-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 1px 5px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(233, 196, 134, .32) transparent;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+.category-buttons .category-btn {
+  flex: 0 0 auto;
+  min-height: 39px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(205, 208, 221, .18);
+  background: rgba(255, 255, 255, .05);
+  color: #d2d7e3;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 650;
+  white-space: nowrap;
+  box-shadow: none;
+  scroll-snap-align: start;
+  touch-action: manipulation;
+}
+.category-buttons .category-btn.active {
+  background: linear-gradient(110deg, rgba(235, 199, 138, .26), rgba(219, 177, 104, .12));
+  color: #ffdea7;
+  border-color: rgba(239, 201, 135, .60);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .10);
+}
+.category-buttons .category-btn:hover:not(.active),
+.category-buttons .category-btn:focus-visible {
+  background: rgba(255, 255, 255, .10);
+  border-color: rgba(239, 201, 135, .4);
+}
+#menuGrid.menu-categories-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: clamp(27px, 4vw, 45px);
+  width: 100%;
+}
+.menu-category-block {
+  display: block;
+  min-width: 0;
+  width: 100%;
+  scroll-margin-top: calc(var(--bali-header-height, 80px) + 80px);
+}
+.menu-category-heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 0 0 13px;
+  margin-bottom: 17px;
+  border-bottom: 1px solid rgba(232, 196, 139, .28);
+}
+.menu-category-heading::before {
+  content: "";
+  width: 4px;
+  height: 25px;
+  flex: 0 0 4px;
+  background: linear-gradient(#ffdda3, #bb8f53);
+  border-radius: 4px;
+  align-self: center;
+}
+.menu-category-title {
+  margin: 0;
+  font-size: clamp(18px, 2.2vw, 26px);
+  font-weight: 770;
+  letter-spacing: -.02em;
+  line-height: 1.25;
+  color: #faf0df;
+  overflow-wrap: anywhere;
+}
+.menu-category-count {
+  margin-left: auto;
+  color: #c0bdba;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.menu-category-block .menu-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(12px, 1.4vw, 19px);
+  align-items: stretch;
+}
+.menu-category-block .menu-item-category {
+  display: none; /* категория уже видна над списком, не повторяем её в каждой карточке */
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  .menu-category-block .menu-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+@media (max-width: 767px) {
+  .categories {
+    padding: 8px 0 5px;
+  }
+  .categories > .container { padding-inline: 0; }
+  .category-buttons {
+    gap: 7px;
+    padding: 1px 11px 6px;
+  }
+  .category-buttons .category-btn {
+    min-height: 37px;
+    padding: 8px 11px;
+    font-size: 11px;
+    border-radius: 9px;
+  }
+  #menuGrid.menu-categories-layout { gap: 29px; }
+  .menu-category-heading {
+    align-items: center;
+    gap: 8px;
+    padding: 0 0 11px;
+    margin: 0 0 12px;
+  }
+  .menu-category-heading::before { width: 3px; height: 21px; flex-basis: 3px; }
+  .menu-category-title { font-size: 18px; }
+  .menu-category-count { font-size: 10px; }
+  .menu-category-block .menu-grid {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 10px;
+  }
+}
+@media (max-width: 359px) {
+  .category-buttons {padding-inline: 7px;}
+  .menu-category-title {font-size: 16px;}
+  .menu-category-count {font-size: 9px;}
+  .menu-category-block .menu-grid {gap: 7px;}
+}
