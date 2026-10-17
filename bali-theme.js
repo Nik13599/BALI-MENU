@@ -18,7 +18,7 @@ const normalize=color=>String(color||"").trim().toUpperCase();
 const sanitized=colors=>colors&&typeof colors==="object"&&
   keys.every(k=>typeof colors[k]==="string"&&colorValid.test(colors[k]))?
   Object.fromEntries(keys.map(k=>[k,normalize(colors[k])])):null;
-const defaultSelection=()=>({theme:"cobalt",colors:clone(palettes.cobalt)});
+const defaultSelection=()=>({theme:"lime",colors:clone(palettes.lime)});
 function selectionFor(theme,colors){
   if(!allModes.has(theme))return defaultSelection();
   if(theme!=="custom")return {theme,colors:clone(palettes[theme])};
@@ -50,7 +50,7 @@ function applyTheme(selection){
 }
 let published=defaultSelection();
 let local=defaultSelection();
-let lastCustom=clone(palettes.cobalt);
+let lastCustom=clone(palettes.lime);
 let editing=false;
 let received=false;
 const isAdminPage=Boolean(document.getElementById("baliThemeForm"));
@@ -218,7 +218,7 @@ onSnapshot(themeRef,snapshot=>{
     if(local.theme==="custom")lastCustom=clone(local.colors);
     applyTheme(local);
     renderEditor();
-    if(isAdminPage)report(data?"Опубликована тема: "+({cobalt:"Кобальтово-синий",lime:"LIME SHADOW",white:"Матовый белый",custom:"Свои цвета"}[local.theme])+".":"Пока не задана тема. Сейчас используется Кобальтово-синий.");
+    if(isAdminPage)report(data?"Опубликована тема: "+({cobalt:"Кобальтово-синий",lime:"LIME SHADOW",white:"Матовый белый",custom:"Свои цвета"}[local.theme])+".":"Основная тема: LIME SHADOW. Чтобы закрепить её в Firebase для всех посетителей, нажмите «Опубликовать тему».");
   }else if(isAdminPage){
     report("Опубликованная тема обновлена. Ваш локальный предпросмотр не изменён.");
   }
@@ -229,5 +229,5 @@ onSnapshot(themeRef,snapshot=>{
       report("Firestore пока не разрешает чтение темы. Скопируйте актуальные правила ниже, опубликуйте их в Firebase Console и обновите страницу.");
     }else report("Нет соединения с настройками цветов: "+(error?.code||"ошибка")+".");
   }
-  // A safe cobalt fallback remains usable without Firestore.
+  // A safe LIME SHADOW fallback remains usable without Firestore.
 });
