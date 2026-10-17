@@ -52,6 +52,32 @@ const customIconJs=source("bali-icon-atelier.js");
 const premiumAtelierCss=source("bali-atelier-theme.css");
 
 const velvetCss=source("bali-velvet-night.css");
+const minimalCss=source("bali-editorial-minimal.css");
+assert(html.includes('bali-editorial-minimal.css?v=20261017-56') &&
+  admin.includes('bali-editorial-minimal.css?v=20261017-56') &&
+  html.indexOf('bali-editorial-minimal.css?v=20261017-56') >
+  html.indexOf('bali-velvet-night.css?v=20261017-55') &&
+  admin.indexOf('bali-editorial-minimal.css?v=20261017-56') >
+  admin.indexOf('bali-velvet-night.css?v=20261017-55'),
+  "Contemporary editorial minimal CSS must override older themes in guests and admin");
+assert(minimalCss.includes("/* BALI STUDIO / v56") &&
+  minimalCss.includes("--bali-min-black:#0b0d11") &&
+  minimalCss.includes("--bali-min-pink:#fb477c") &&
+  minimalCss.includes("body.bali-guest-theme #homeSection .bali-home-menu-banner") &&
+  minimalCss.includes("body.bali-guest-theme #homeSection .bali-home-heart.is-liked") &&
+  minimalCss.includes("body.bali-guest-theme #eventsSection #eventsGrid>.event-card") &&
+  minimalCss.includes("body.bali-guest-theme #menuPage .category-btn.active") &&
+  minimalCss.includes("body.bali-guest-theme .bali-profile-card") &&
+  minimalCss.includes(".bali-admin-theme .admin-tab.active") &&
+  minimalCss.includes(".bali-admin-theme button.primary") &&
+  minimalCss.includes("background:#f2f2f4!important") &&
+  minimalCss.includes("box-shadow:none!important"),
+  "Editorial minimal system must replace glowing gold fills on every page");
+assert(html.includes('content="#0b0d11"') &&
+  admin.includes('content="#0b0d11"') &&
+  html.includes('bali-icon-atelier.js?v=20261017-53'),
+  "Browser colors should match ink theme and the custom open-book Menu icon must remain");
+
 assert(html.includes('bali-velvet-night.css?v=20261017-55') &&
   admin.includes('bali-velvet-night.css?v=20261017-55') &&
   html.indexOf('bali-velvet-night.css?v=20261017-55') >
@@ -69,7 +95,7 @@ assert(velvetCss.includes("/* BALI v55") &&
   velvetCss.includes(".bali-admin-theme .admin-tab.active") &&
   velvetCss.includes(".bali-admin-theme button.primary"),
   "High-contrast premium fuchsia, champagne and black must cover all pages");
-assert(html.includes('content="#090811"') && admin.includes('content="#090811"') &&
+assert(html.includes('content="#0b0d11"') && admin.includes('content="#0b0d11"') &&
   html.includes('bali-icon-atelier.js?v=20261017-53') &&
   admin.includes('bali-icon-atelier.js?v=20261017-53'),
   "System theme color and custom menu-book icons must remain consistent");
@@ -96,8 +122,8 @@ assert(premiumAtelierCss.includes("/* BALI v54 • BASALT / BAMBOO / VOLCANO") &
   premiumAtelierCss.includes(".bali-admin-theme .admin-tab.active") &&
   velvetCss.includes("body.bali-guest-theme #menuPage .category-btn.active") &&
   velvetCss.includes(".bali-admin-theme .admin-tab.active") &&
-  html.includes('<meta name="theme-color" content="#090811">') &&
-  admin.includes('<meta name="theme-color" content="#090811">'),
+  html.includes('<meta name="theme-color" content="#0b0d11">') &&
+  admin.includes('<meta name="theme-color" content="#0b0d11">'),
   "New velvet fuchsia and gold cascade must supersede earlier subdued bamboo on both interfaces");
 assert(customIconJs.includes('"book":') &&
   customIconJs.includes('menu:"book"') &&
