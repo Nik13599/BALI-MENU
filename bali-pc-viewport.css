@@ -485,3 +485,34 @@
     border-color:rgba(255,255,255,.12)!important;
   }
 }
+
+/* v89 — Desktop home: cards take the former calendar heading's space.
+   Do not add a blank header row: the poster strip spans the original
+   heading+cards tracks, keeping one identical gap above/below the strip. */
+@media (min-width:1180px) {
+  body.bali-guest-theme #homeSection .bali-pc-events-title {
+    display:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-events-panel {
+    /* Track 1: BALI PRIVILEGE; tracks 2–3 combined: taller event posters.
+       The panel/outer grid gaps both use --bali-pc-gap. */
+    grid-template-rows:minmax(0,1.13fr) minmax(0,.15fr) minmax(0,1fr)!important;
+    row-gap:var(--bali-pc-gap)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-events {
+    grid-row:2 / 4!important;
+    align-self:stretch!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    margin:0!important;
+    padding:0 2px 3px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-events>.bali-home-event-card {
+    align-self:stretch!important;
+    height:100%!important;
+    max-height:100%!important;
+  }
+}
