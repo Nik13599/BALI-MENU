@@ -82,6 +82,27 @@ service cloud.firestore {
     }
 
 
+    // BALI PRIVILEGE: visitors may query ONLY published offers.
+    // Drafts and editing are restricted to verified staff admins.
+    function validPromotion(data) {
+      return data.keys().hasAll(['title','description','imageUrl','destination','buttonText','sort','published','updatedAt'])
+        && data.keys().hasOnly(['title','description','imageUrl','destination','buttonText','sort','published','updatedAt'])
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 100
+        && data.description is string && data.description.size() >= 1 && data.description.size() <= 260
+        && data.imageUrl is string && data.imageUrl.size() <= 2048
+        && (data.imageUrl == '' || data.imageUrl.matches('^https://.+'))
+        && data.destination in ['none','menu','events','contacts']
+        && data.buttonText is string && data.buttonText.size() <= 35
+        && data.sort is int && data.sort >= 0 && data.sort <= 100000
+        && data.published is bool
+        && data.updatedAt == request.time;
+    }
+    match /promotions/{promotionId} {
+      allow get, list: if isAdmin() || resource.data.published == true;
+      allow create, update: if isAdmin() && validPromotion(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
     // Публичная барная карта — только для ознакомления. Никогда не участвует
     // в предзаказах: отдельная коллекция, запись только с ролью администратора.
     function validBarMenuItem(data) {
