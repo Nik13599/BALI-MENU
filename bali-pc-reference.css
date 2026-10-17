@@ -805,3 +805,11 @@
     body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials a{padding:5px 2px}
   }
 }
+
+/* v75: the fixed sidebar map CTA ends level with the homepage Menu card. */
+@media(min-width:1180px){
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-sidebar-contacts{
+    margin-top:auto!important;
+    margin-bottom:var(--bali-contact-menu-alignment,0px)!important;
+  }
+}
