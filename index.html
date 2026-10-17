@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BALI MENU — Предзаказы</title>
+    <title>Bali</title>
     <meta name="description"
-        content="BALI — меню и предварительные заказы к вашему столику.">
+        content="Bali — события, меню, предзаказы и контакты ночного клуба в Минске.">
     <meta name="robots" content="noindex, nofollow">
     <link rel="stylesheet" href="styles.css?v=20261017-12">
     <link rel="stylesheet" href="auth.css">
@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="header-modern.css?v=20261017-22">
     <link rel="stylesheet" href="menu-categories.css?v=20261017-23">
     <link rel="stylesheet" href="event-interests.css?v=20261017-26">
+    <link rel="stylesheet" href="bali-pages.css?v=20261017-27">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -25,26 +26,46 @@
       ТЕСТОВЫЙ ЗАПУСК: предзаказы будут сохраняться в Firestore после публикации новых правил.
       Заказы не оплачиваются онлайн и требуют подтверждения администратора.
     </div>
-    <!-- Header -->
+    <!-- BALI: минимальная шапка с профилем -->
     <header class="header">
-        <div class="container header-content">
-            <div class="logo">
-                <span class="logo-icon">✦</span>
-                <span class="logo-text">BALI MENU</span>
-            </div>
-            <nav class="nav">
-                <a href="#menu" class="nav-link active" id="menuNavBtn">Меню</a>
-                <button type="button" class="nav-link events-nav-btn" id="eventsNavBtn" aria-controls="eventsSection" aria-pressed="false">События</button>
-                <button type="button" class="account-btn" id="myOrdersBtn">Мои заказы</button>
-                <button type="button" class="account-btn" id="accountBtn">Войти / Регистрация</button>
-                <button class="cart-btn" id="cartBtn">
-                    <span class="cart-icon">🛒</span>
-                    <span class="cart-count" id="cartCount">0</span>
-                </button>
-            </nav>
-        </div>
+      <div class="container header-content">
+        <a href="#home" class="logo" id="homeBrandBtn" aria-label="BALI — на главную">
+          <span class="logo-icon" aria-hidden="true">✦</span>
+          <span class="logo-text">BALI</span>
+        </a>
+        <button type="button" class="account-btn" id="accountBtn" aria-label="Открыть личный кабинет">Кабинет</button>
+      </div>
     </header>
 
+    <!-- Главная: три центральных действия -->
+    <section class="bali-home" id="homeSection" aria-labelledby="homeHeading">
+      <div class="container bali-home-inner">
+        <div class="bali-home-mark" aria-hidden="true">✦</div>
+        <p class="bali-home-eyebrow">MINSK · NIGHT CLUB</p>
+        <h1 id="homeHeading">BALI</h1>
+        <p class="bali-home-subtitle">Ночь начинается здесь</p>
+        <div class="bali-home-actions" aria-label="Разделы BALI">
+          <button type="button" id="eventsNavBtn" class="bali-home-action" aria-controls="eventsSection">
+            <span class="bali-home-action-symbol" aria-hidden="true">✧</span>
+            <span class="bali-home-action-copy"><strong>Ближайшие события</strong><small id="homeNextEvent">Афиши и календарь вечеринок</small></span>
+            <span class="bali-home-action-arrow" aria-hidden="true">↗</span>
+          </button>
+          <button type="button" id="menuNavBtn" class="bali-home-action" aria-controls="menuPage" aria-label="Открыть меню">
+            <span class="bali-home-action-symbol" aria-hidden="true">▦</span>
+            <span class="bali-home-action-copy"><strong>Меню</strong><small>Блюда и предзаказы к столику</small></span>
+            <span class="bali-home-action-arrow" aria-hidden="true">↗</span>
+          </button>
+          <button type="button" id="contactsNavBtn" class="bali-home-action" aria-controls="contactsSection">
+            <span class="bali-home-action-symbol" aria-hidden="true">⌁</span>
+            <span class="bali-home-action-copy"><strong>Контакты</strong><small>Где нас найти и как связаться</small></span>
+            <span class="bali-home-action-arrow" aria-hidden="true">↗</span>
+          </button>
+        </div>
+        <p class="bali-home-footnote">Минск · Кирова, 13</p>
+      </div>
+    </section>
+
+    <div id="menuPage" hidden>
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
@@ -69,13 +90,23 @@
         </div>
     </section>
 
-    <!-- Category Filter -->
+    <!-- Корзина и мои заказы доступны внутри меню, не в верхней шапке. -->
     <section class="categories">
-        <div class="container">
-            <div class="category-buttons" id="categoryFilter">
-                <button class="category-btn active" data-category="all">Всё меню</button>
-            </div>
+      <div class="container">
+        <div class="bali-menu-toolbar">
+          <span class="bali-menu-toolbar-title">Категории</span>
+          <div class="bali-menu-tools">
+            <button type="button" class="bali-orders-shortcut" id="myOrdersBtn">Мои заказы</button>
+            <button type="button" class="cart-btn" id="cartBtn" aria-label="Открыть корзину">
+              <span class="cart-icon" aria-hidden="true">🛒</span>
+              <span class="cart-count" id="cartCount">0</span>
+            </button>
+          </div>
         </div>
+        <div class="category-buttons" id="categoryFilter">
+          <button class="category-btn active" data-category="all">Всё меню</button>
+        </div>
+      </div>
     </section>
 
     <!-- Menu Items -->
@@ -91,6 +122,8 @@
             </div>
         </div>
     </section>
+
+    </div><!-- /menuPage -->
 
     <!-- Ближайшие события: автоматически по возрастанию даты -->
     <section class="events-section" id="eventsSection" aria-labelledby="eventsHeadingGuest" hidden>
@@ -110,6 +143,34 @@
         <div id="eventsGrid" class="events-grid" aria-live="polite">Загружаем события...</div>
       </div>
     </section>
+
+    <!-- Контакты клуба -->
+    <section class="bali-contacts" id="contactsSection" aria-labelledby="contactsHeading" hidden>
+      <div class="container bali-contacts-inner">
+        <p class="bali-home-eyebrow">BALI · MINSK</p>
+        <h2 id="contactsHeading">Контакты</h2>
+        <p class="bali-contacts-lead">Мы рядом, когда нужно забронировать столик или уточнить детали вечера.</p>
+        <div class="bali-contact-cards">
+          <a class="bali-contact-card" href="tel:+375296700300">
+            <span class="contact-symbol" aria-hidden="true">☎</span>
+            <span><small>БРОНИРОВАНИЕ СТОЛОВ</small><strong>+375 (29) 670-03-00</strong></span><span aria-hidden="true">↗</span>
+          </a>
+          <a class="bali-contact-card" href="https://yandex.by/maps/org/bali_night_club/104137822369/" target="_blank" rel="noopener noreferrer">
+            <span class="contact-symbol" aria-hidden="true">⌖</span>
+            <span><small>АДРЕС</small><strong>Минск, ул. Кирова, 13</strong></span><span aria-hidden="true">↗</span>
+          </a>
+          <a class="bali-contact-card" href="https://t.me/baliclubminsk" target="_blank" rel="noopener noreferrer">
+            <span class="contact-symbol" aria-hidden="true">✈</span>
+            <span><small>НОВОСТИ И АНОНСЫ</small><strong>Telegram · BALI</strong></span><span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Плавающая кнопка возврата на главную из разделов -->
+    <button type="button" id="homeFloatingBtn" class="bali-floating-home" aria-label="Вернуться на главную" hidden>
+      <span aria-hidden="true">⌂</span><span>На главную</span>
+    </button>
 
     <!-- Shopping Cart Sidebar -->
     <div class="cart-sidebar" id="cartSidebar">
@@ -154,6 +215,7 @@
             <button class="auth-btn" type="button" id="authGoogleBtn">Войти через Google</button>
             <button class="auth-outline-btn" type="button" id="authSignOutBtn" hidden>Выйти из аккаунта</button>
           </div>
+          <button type="button" id="accountMyOrdersBtn" class="bali-account-orders-link">Мои заказы →</button>
           <form id="authProfileForm" hidden>
             <div class="form-group">
               <label for="authName">Имя *</label>
@@ -269,7 +331,7 @@
     </div>
 
     <script src="firebase-config.js?v=20261017-10"></script>
-    <script src="app.js?v=20261017-26"></script>
+    <script src="app.js?v=20261017-27"></script>
     <script type="module" src="auth.js?v=20261017-16"></script>
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>
     <script type="module" src="orders-firestore.js?v=20261017-10"></script>
