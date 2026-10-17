@@ -596,3 +596,17 @@
   font-size:11px!important;line-height:1.5!important;
   margin:0!important;color:#a6afb2!important;
 }
+
+/* v98: identical compact informational notice in bar, hookah and tea */
+#menuPage #baliHookahContent .bali-bar-intro,
+#menuPage #baliTeaContent .bali-bar-intro{
+ display:block!important;margin:0 0 9px!important;padding:0 0 8px!important;
+ border-bottom:1px solid rgba(255,255,255,.08);
+}
+#menuPage #baliHookahContent .bali-bar-intro :is(.bali-bar-label,h2),
+#menuPage #baliTeaContent .bali-bar-intro :is(.bali-bar-label,h2){display:none!important}
+#menuPage #baliHookahContent .bali-bar-intro p,
+#menuPage #baliTeaContent .bali-bar-intro p{
+ font-size:11px!important;line-height:1.5!important;
+ margin:0!important;color:#a6afb2!important;
+}
