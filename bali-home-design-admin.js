@@ -5,6 +5,7 @@ import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.
 import {getFirestore,doc,collection,getDoc,onSnapshot,setDoc,deleteDoc,serverTimestamp}
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {compressImage} from "./image-compressor.js";
+import {makeImageVariants} from "./bali-design-variants.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const db=getFirestore(app),auth=getAuth(app),el=id=>document.getElementById(id);
 const aboutForm=el("baliHomeAboutForm"),merchForm=el("baliHomeMerchForm");
@@ -33,11 +34,14 @@ if(aboutForm&&merchForm){
     }
   }
   setAccess(false);
+  const aboutVariants=makeImageVariants("baliHomeAbout","design-about",message=>say("baliHomeAboutStatus",message));
+  const merchVariants=makeImageVariants("baliHomeMerch","design-merch",message=>say("baliHomeMerchFeedback",message));
   function resetMerch(){
     merchFileSerial++;merchImage="";merchProcessing=false;merchForm.reset();
     el("baliHomeMerchId").value="";el("baliHomeMerchPrice").value="0";
     el("baliHomeMerchSort").value="100";el("baliHomeMerchSave").textContent="Сохранить товар";
     preview("baliHomeMerchPreview","","Фото товара 3:2");
+    merchVariants.set();
   }
   function setAbout(data){
     aboutFileSerial++;
@@ -48,7 +52,8 @@ if(aboutForm&&merchForm){
     aboutImage=values.aboutImageUrl?.startsWith("data:image/webp;base64,")?values.aboutImageUrl:"";
     el("baliHomeAboutImageUrl").value=values.aboutImageUrl?.startsWith("https://")?values.aboutImageUrl:"";
     el("baliHomeAboutFile").value="";
-    preview("baliHomeAboutPreview",values.aboutImageUrl||"","Фото клуба 1:1");
+    preview("baliHomeAboutPreview",values.aboutImageUrl||"","Фото клуба ПК 9:14");
+    aboutVariants.set({tablet:values.aboutImageTabletUrl,mobile:values.aboutImageMobileUrl});
   }
   async function fileChange(file,kind,isAbout){
     if(!file)return;
@@ -97,18 +102,21 @@ if(aboutForm&&merchForm){
   }
   aboutForm.addEventListener("submit",async e=>{
     e.preventDefault();
-    if(!authorized||aboutProcessing){say("baliHomeAboutStatus","Подождите окончания обработки фотографии или войдите как администратор.");return;}
+    if(!authorized||aboutProcessing||aboutVariants.busy()){say("baliHomeAboutStatus","Подождите окончания обработки фотографии или войдите как администратор.");return;}
     const aboutTitle=el("baliHomeAboutTitle").value.trim();
     const aboutSubtitle=el("baliHomeAboutSubtitle").value.trim();
     const aboutDescription=el("baliHomeAboutDescription").value.trim();
     const aboutImageUrl=aboutImage||el("baliHomeAboutImageUrl").value.trim();
-    if(!aboutTitle||!aboutSubtitle||!aboutDescription||!validImage(aboutImageUrl)){
+    const versions=aboutVariants.read();
+    if(!aboutTitle||!aboutSubtitle||!aboutDescription||!validImage(aboutImageUrl)||!aboutVariants.valid()){
       say("baliHomeAboutStatus","Заполните тексты и проверьте изображение.");return;
     }
     const button=el("baliHomeAboutSave");button.disabled=true;
     say("baliHomeAboutStatus","Сохраняем блок «О клубе»…");
     try{
-      await setDoc(aboutRef,{aboutTitle,aboutSubtitle,aboutDescription,aboutImageUrl,updatedAt:serverTimestamp()});
+      await setDoc(aboutRef,{aboutTitle,aboutSubtitle,aboutDescription,aboutImageUrl,
+        aboutImageTabletUrl:versions.tablet,aboutImageMobileUrl:versions.mobile,
+        updatedAt:serverTimestamp()});
       say("baliHomeAboutStatus","Сохранено. Карточка клуба обновлена на сайте.");
     }catch(error){
       say("baliHomeAboutStatus",error.code==="permission-denied"
@@ -128,6 +136,7 @@ if(aboutForm&&merchForm){
     merchImage=item.imageUrl.startsWith("data:image/webp;base64,")?item.imageUrl:"";
     el("baliHomeMerchImageUrl").value=item.imageUrl.startsWith("https://")?item.imageUrl:"";
     preview("baliHomeMerchPreview",item.imageUrl,"Фото товара 3:2");
+    merchVariants.set({tablet:item.imageTabletUrl,mobile:item.imageMobileUrl});
     el("baliHomeMerchSave").textContent="Сохранить изменения";
     merchForm.scrollIntoView({block:"start",behavior:"smooth"});
     say("baliHomeMerchFeedback","Редактирование товара: "+item.name);
@@ -161,7 +170,7 @@ if(aboutForm&&merchForm){
   el("baliHomeMerchReset").addEventListener("click",()=>{resetMerch();say("baliHomeMerchFeedback","Новый товар.");});
   merchForm.addEventListener("submit",async e=>{
     e.preventDefault();
-    if(!authorized||merchProcessing){say("baliHomeMerchFeedback","Дождитесь обработки фотографии или войдите как администратор.");return;}
+    if(!authorized||merchProcessing||merchVariants.busy()){say("baliHomeMerchFeedback","Дождитесь обработки фотографии или войдите как администратор.");return;}
     const name=el("baliHomeMerchName").value.trim();
     const description=el("baliHomeMerchDescription").value.trim();
     const status=el("baliHomeMerchStatus").value;
@@ -169,9 +178,10 @@ if(aboutForm&&merchForm){
     const sort=Number(el("baliHomeMerchSort").value);
     const published=el("baliHomeMerchPublished").checked;
     const imageUrl=merchImage||el("baliHomeMerchImageUrl").value.trim();
+    const versions=merchVariants.read();
     if(name.length<2||name.length>95||description.length>180||!["soon","available"].includes(status)||
        !Number.isFinite(price)||price<0||price>20000||
-       !Number.isInteger(sort)||sort<0||sort>100000||!validImage(imageUrl)||
+       !Number.isInteger(sort)||sort<0||sort>100000||!validImage(imageUrl)||!merchVariants.valid()||
        (status==="available"&&price<=0)){
       say("baliHomeMerchFeedback","Проверьте название, цену, фото и сортировку. Для товара в продаже цена должна быть больше нуля.");return;
     }
@@ -180,7 +190,8 @@ if(aboutForm&&merchForm){
     const button=el("baliHomeMerchSave");button.disabled=true;
     say("baliHomeMerchFeedback","Сохраняем товар…");
     try{
-      await setDoc(ref,{name,description,imageUrl,status,price,sort,published,updatedAt:serverTimestamp()});
+      await setDoc(ref,{name,description,imageUrl,imageTabletUrl:versions.tablet,
+        imageMobileUrl:versions.mobile,status,price,sort,published,updatedAt:serverTimestamp()});
       resetMerch();say("baliHomeMerchFeedback",published?"Товар опубликован.":"Черновик сохранён.");
     }catch(error){say("baliHomeMerchFeedback",error.code==="permission-denied"
       ?"Недостаточно прав. Опубликуйте обновлённые Firestore Rules."
