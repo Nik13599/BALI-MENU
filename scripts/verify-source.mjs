@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-37"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-38"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -99,7 +99,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-37'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-38'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
@@ -356,4 +356,31 @@ assert(app.includes('const fitStorySlides=()=>') &&
   app.includes('(track.clientHeight-14)*9/16') &&
   app.includes('observer.observe(track)'),
   "Stories must size from measured available height");
+// v38: fixed mobile app shell, horizontal carousels, isolated vertical list.
+const mobileStatic=source("bali-mobile-static.css");
+assert(html.includes('bali-mobile-static.css?v=20261017-38') &&
+  html.indexOf('bali-mobile-static.css?v=20261017-38') >
+  html.indexOf('bali-redesign.css?v=20261017-37'), "Fixed viewport overrides must load last");
+assert(mobileStatic.includes('body > #homeSection') &&
+  mobileStatic.includes('body > #eventsSection') &&
+  mobileStatic.includes('body > #menuPage') &&
+  mobileStatic.includes('body > #profileSection'), "All four guest pages need a fixed height");
+assert(mobileStatic.includes('body > #menuPage {display:flex!important') &&
+  mobileStatic.includes('#menuPage .menu-section') &&
+  mobileStatic.includes('overflow-y:auto!important') &&
+  mobileStatic.includes('touch-action:pan-y'), "Only the menu product list should scroll vertically");
+assert(mobileStatic.includes('#homeEventCarousel') &&
+  mobileStatic.includes('touch-action:pan-x') &&
+  mobileStatic.includes('#eventsSection #eventsGrid'), "Event posters should swipe only horizontally");
+assert(mobileStatic.includes('#menuPage .category-buttons') &&
+  mobileStatic.includes('overflow-x:auto!important'), "Existing menu category chips must swipe horizontally");
+assert(mobileStatic.includes('body > #homeSection[hidden]') &&
+  mobileStatic.includes('body > #menuPage[hidden]') &&
+  mobileStatic.includes('body > #profileSection[hidden]') &&
+  mobileStatic.includes('body > #eventsSection[hidden]'), "Inactive pages must stay hidden under fixed-height rules");
+assert(app.includes('function initHomeCarouselSizing()') &&
+  app.includes('new ResizeObserver(fit).observe(track)') &&
+  app.includes('menuSection.scrollTo({top:0,behavior:"instant"})'), "Carousel layout and category scrolling should stay within their own panels");
+assert((mobileStatic.match(/\\{/g)||[]).length === (mobileStatic.match(/\\}/g)||[]).length,
+  "Static mobile stylesheet brace mismatch");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
