@@ -110,6 +110,12 @@
     replaceAll(".events-carousel-hint > span:first-child","arrow-left");
     replaceAll(".events-carousel-hint > span:last-child","arrow-right");
     replaceAll(".close-cart,.close-modal,.dialog-close,.remove-item","x");
+    document.querySelectorAll(".close-cart,.close-modal,.dialog-close").forEach(btn=>{
+      if(!btn.hasAttribute("aria-label"))btn.setAttribute("aria-label","Закрыть");
+    });
+    document.querySelectorAll(".remove-item").forEach(btn=>{
+      if(!btn.hasAttribute("aria-label"))btn.setAttribute("aria-label","Удалить позицию");
+    });
     replaceAll(".success-icon","check");
     replaceAll(".btn-icon","arrow-right");
     // Admin: same line system, distinct role-specific symbols.
