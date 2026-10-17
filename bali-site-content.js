@@ -68,7 +68,7 @@ function apply(data){
     }
   }else if(floor)floor.textContent="3-й этаж · Яндекс Карты ↗";
   const phone=one(".bali-pc-contact-phone");
-  const phoneHref=typeof data.phoneHref==="string"&&/^tel:\\+?[0-9]{5,22}$/.test(data.phoneHref)
+  const phoneHref=typeof data.phoneHref==="string"&&/^tel:\+?[0-9]{5,22}$/.test(data.phoneHref)
     ?data.phoneHref:"tel:+375296700300";
   if(phone)phone.href=phoneHref;
   const digits=phoneHref.replace(/[^0-9]/g,"");
@@ -96,7 +96,7 @@ function apply(data){
   if(typeof data.tiktokUrl==="string"&&data.tiktokUrl){
     try{
       const parsed=new URL(data.tiktokUrl);
-      if(parsed.protocol==="https:"&&/^(www\\.)?tiktok\\.com$/i.test(parsed.hostname))
+      if(parsed.protocol==="https:"&&/^(www\.)?tiktok\.com$/i.test(parsed.hostname))
         tiktokUrl=parsed.href;
     }catch{}
   }
