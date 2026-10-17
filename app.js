@@ -262,7 +262,7 @@ function renderHomeEvents() {
     if(!track)return;
     const today=minskDateToday();
     const upcoming=availableEvents
-        .filter(e=>/^\\d{4}-\\d{2}-\\d{2}$/.test(e?.date||"")&&e.date>=today)
+        .filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date||"")&&e.date>=today)
         .sort((a,b)=>a.date.localeCompare(b.date))
         .filter(e=>!showOnlyPlannedEvents||guestInterestDates.has(e.date));
     for(const btn of document.querySelectorAll("[data-home-events-view]")) {
