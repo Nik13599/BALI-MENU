@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="bali-admin-bar.css?v=20261017-65">
   <link rel="stylesheet" href="bali-admin-cards.css?v=20261017-82">
   <link rel="stylesheet" href="bali-design-studio.css?v=20261017-84">
-  <link rel="stylesheet" href="bali-home-placeholder-admin.css?v=20261018-91">
+  <link rel="stylesheet" href="bali-home-placeholder-admin.css?v=20261018-92">
 
 </head>
 <body class="bali-admin-theme">
@@ -351,9 +351,6 @@
               <label>Основная надпись на изображении
                 <input id="baliPlaceholderPosterTitle" type="text" minlength="1" maxlength="40" value="SECRET" required>
               </label>
-              <label>Маленькая надпись над заголовком
-                <input id="baliPlaceholderKicker" type="text" minlength="1" maxlength="42" value="BALI NIGHT CLUB" required>
-              </label>
               <div class="double">
                 <label>Заголовок внизу
                   <input id="baliPlaceholderFooterTitle" type="text" minlength="1" maxlength="52" value="СКОРО В BALI" required>
@@ -364,14 +361,14 @@
               </div>
               <div class="bali-placeholder-poster-upload">
                 <strong>Изображение · 900 × 1200 px · 3:4</strong>
-                <small>По умолчанию используется фирменная афиша SECRET. Загрузите собственную картинку JPG/PNG/WebP или укажите HTTPS-ссылку. Изображение автоматически сжимается в WebP.</small>
+                <small>По умолчанию — чёрный фон с надписью SECRET. При желании можно загрузить собственную картинку JPG/PNG/WebP или добавить HTTPS-ссылку. Картинка автоматически сжимается в WebP.</small>
                 <label>Загрузить картинку
                   <input type="file" id="baliPlaceholderImageFile" accept="image/png,image/jpeg,image/webp,image/heic,image/heif">
                 </label>
                 <label>Или ссылка на изображение
                   <input type="url" id="baliPlaceholderImageUrl" maxlength="2048" placeholder="https://...">
                 </label>
-                <button type="button" id="baliPlaceholderResetImage">Вернуть картинку SECRET</button>
+                <button type="button" id="baliPlaceholderResetImage">Вернуть чёрный фон</button>
               </div>
               <div class="double">
                 <label>Цвет акцентов
@@ -392,10 +389,8 @@
               <article id="baliPlaceholderAdminPreview" class="bali-placeholder-preview-card"
                        aria-label="Предпросмотр заглушки ближайшего мероприятия">
                 <div class="bali-placeholder-preview-art" id="baliPlaceholderPreviewArt">
-                  <img id="baliPlaceholderPreviewImage" src="assets/bali-secret-placeholder.svg"
-                       alt="Изображение заглушки SECRET">
+                  <img id="baliPlaceholderPreviewImage" alt="Пользовательское изображение заглушки" hidden>
                   <div class="bali-placeholder-preview-overlay">
-                    <span id="baliPlaceholderPreviewKicker">BALI NIGHT CLUB</span>
                     <strong id="baliPlaceholderPreviewTitle">SECRET</strong>
                   </div>
                 </div>
@@ -404,7 +399,7 @@
                   <span id="baliPlaceholderPreviewFooterSubtitle">Совсем скоро узнаете</span>
                 </div>
               </article>
-              <p class="hint">Изображение и надписи одинаковые у всех заглушек. Они исчезают сами, когда вы добавляете реальные мероприятия.</p>
+              <p class="hint">Чёрное поле SECRET и нижние надписи имеют тот же размер и отступы, что обычная карточка мероприятия. Все заглушки одинаковые и исчезают по мере добавления реальных событий.</p>
             </div>
           </div>
         </section>
@@ -897,7 +892,7 @@
 <script type="module" src="bali-menu-visibility.js?v=20261017-72"></script>
 <script type="module" src="bali-admin-promos.js?v=20261017-79"></script>
 <script type="module" src="bali-home-design-admin.js?v=20261017-79"></script>
-<script type="module" src="bali-home-placeholder-admin.js?v=20261018-91"></script>
+<script type="module" src="bali-home-placeholder-admin.js?v=20261018-92"></script>
 <script type="module" src="admin-orders.js?v=20261017-20"></script>
 <script type="module" src="admin-clients.js?v=20261017-20"></script>
 <script src="admin-dashboard.js?v=20261017-84" defer></script>
