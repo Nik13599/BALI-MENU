@@ -267,7 +267,19 @@ function switchBaliMenuMode(nextMode) {
     // The administrator controls visibility, not product existence.
     const available=baliMenuSectionKeys.filter(key=>baliVisibleMenuSections[key]);
     const mode=available.includes(nextMode)?nextMode:(available[0]||null);
+    const changedMode=baliActiveMenuMode!==mode;
     baliActiveMenuMode=mode;
+    window.BaliActiveMenuMode=mode;
+    if(changedMode){
+        const search=document.getElementById("baliMenuSearch");
+        if(search)search.value="";
+        baliMenuSearchText="";
+    }
+    document.querySelectorAll("#baliSharedCategories [data-menu-filter]").forEach(filter=>{
+        filter.hidden=filter.dataset.menuFilter!==mode;
+    });
+    const shared=document.getElementById("baliSharedMenuControls");
+    if(shared)shared.hidden=!mode;
     const panels={
         kitchen:"baliKitchenContent",
         bar:"baliBarContent",
@@ -292,6 +304,10 @@ function switchBaliMenuMode(nextMode) {
     const dock=document.getElementById("baliCartDock");
     if(dock)dock.hidden=document.body.dataset.baliPage!=="menu"||mode!=="kitchen";
     if(mode!=="kitchen"&&typeof closeCart==="function")closeCart();
+    if(changedMode){
+        if(mode==="kitchen")displayMenuItems(menuItems);
+        window.dispatchEvent(new CustomEvent("bali:menu-mode-changed",{detail:{mode}}));
+    }
 }
 
 function navigateGuestPage(page,{replace=false}={}) {
