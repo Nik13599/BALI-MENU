@@ -268,6 +268,16 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
     attachEventListeners();
     initStickyCategories();
+    // При наступлении следующего дня по Минску прошедшие события
+    // исчезают из «Моих планов» даже без перезагрузки страницы.
+    let shownDay=minskDateToday();
+    window.setInterval(()=>{
+        const today=minskDateToday();
+        if(today!==shownDay){
+            shownDay=today;
+            renderUpcomingEvents();
+        }
+    },60000);
 });
 
 // Высота шапки меняется при переходе между телефоном/планшетом/ПК.
