@@ -118,10 +118,10 @@ assert(html.includes('id="baliSharedMenuControls"') &&
   app.includes('bali:menu-mode-changed') &&
   barPublic.includes('search?.addEventListener("input"') &&
   barPublic.includes('current.term') &&
-  extraMenus.includes('search?.addEventListener("input"') &&
-  extraMenus.includes('state.term') &&
+  source("bali-extra-menus.js").includes('search?.addEventListener("input"') &&
+  source("bali-extra-menus.js").includes('state.term') &&
   !barPublic.includes('addToCart(') &&
-  !extraMenus.includes('addToCart('),
+  !source("bali-extra-menus.js").includes('addToCart('),
   "Every device and all four menu maps must share identical category/search layout without food preorders in other maps");
 const liveStudio=source("bali-design-studio.js");
 const studioCss=source("bali-design-studio.css");
