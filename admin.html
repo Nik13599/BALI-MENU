@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="bali-theme.css?v=20261017-60">
   <link rel="stylesheet" href="bali-lime-neutral.css?v=20261017-62">
   <link rel="stylesheet" href="bali-admin-bar.css?v=20261017-65">
-  <link rel="stylesheet" href="bali-admin-cards.css?v=20261017-67">
+  <link rel="stylesheet" href="bali-admin-cards.css?v=20261017-72">
 
 </head>
 <body class="bali-admin-theme">
@@ -163,6 +163,39 @@
           <button type="button" data-bali-catalog-tab="hookah" role="tab" aria-selected="false" aria-controls="baliAdminHookahPane">Кальянная карта</button>
           <button type="button" data-bali-catalog-tab="tea" role="tab" aria-selected="false" aria-controls="baliAdminTeaPane">Чайная карта</button>
         </div>
+        <section class="bali-catalog-visibility card" aria-labelledby="baliCatalogVisibilityTitle">
+          <div class="bali-catalog-visibility-heading">
+            <div>
+              <div class="eyebrow">ПОКАЗ НА САЙТЕ</div>
+              <h3 id="baliCatalogVisibilityTitle">Видимость разделов меню</h3>
+              <p>Включайте и временно скрывайте кнопки у посетителей. Товары, цены и содержимое карт не удаляются. Редакторы остаются доступными.</p>
+            </div>
+            <span class="tag">Управление публикацией</span>
+          </div>
+          <div class="bali-catalog-visibility-grid" role="group" aria-label="Публикация карт для гостей">
+            <label class="bali-visibility-option">
+              <span class="bali-visibility-label"><strong>Меню кухни</strong><small data-bali-visibility-state="kitchen">Показывается гостям</small></span>
+              <input type="checkbox" data-bali-visibility-toggle="kitchen" role="switch" aria-label="Показывать меню кухни" checked disabled>
+              <span class="bali-visibility-track" aria-hidden="true"></span>
+            </label>
+            <label class="bali-visibility-option">
+              <span class="bali-visibility-label"><strong>Барная карта</strong><small data-bali-visibility-state="bar">Показывается гостям</small></span>
+              <input type="checkbox" data-bali-visibility-toggle="bar" role="switch" aria-label="Показывать барную карту" checked disabled>
+              <span class="bali-visibility-track" aria-hidden="true"></span>
+            </label>
+            <label class="bali-visibility-option">
+              <span class="bali-visibility-label"><strong>Кальянная карта</strong><small data-bali-visibility-state="hookah">Показывается гостям</small></span>
+              <input type="checkbox" data-bali-visibility-toggle="hookah" role="switch" aria-label="Показывать кальянную карту" checked disabled>
+              <span class="bali-visibility-track" aria-hidden="true"></span>
+            </label>
+            <label class="bali-visibility-option">
+              <span class="bali-visibility-label"><strong>Чайная карта</strong><small data-bali-visibility-state="tea">Показывается гостям</small></span>
+              <input type="checkbox" data-bali-visibility-toggle="tea" role="switch" aria-label="Показывать чайную карту" checked disabled>
+              <span class="bali-visibility-track" aria-hidden="true"></span>
+            </label>
+          </div>
+          <p id="baliVisibilityStatus" class="status" role="status" aria-live="polite">Загружаем настройки видимости…</p>
+        </section>
         <div id="baliAdminKitchenPane" class="bali-admin-catalog-pane" role="tabpanel">
         <div class="menu-actions-bar">
           <button type="button" id="addCategoryBtn" class="category-add-btn">+ Новая категория</button>
@@ -534,6 +567,7 @@
 <script type="module" src="admin-firestore.js?v=20261017-46"></script>
 <script type="module" src="bali-admin-bar.js?v=20261017-65"></script>
 <script type="module" src="bali-admin-cards.js?v=20261017-66"></script>
+<script type="module" src="bali-menu-visibility.js?v=20261017-72"></script>
 <script type="module" src="bali-admin-promos.js?v=20261017-67"></script>
 <script type="module" src="admin-orders.js?v=20261017-20"></script>
 <script type="module" src="admin-clients.js?v=20261017-20"></script>
