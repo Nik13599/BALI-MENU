@@ -151,7 +151,7 @@ assert(admin.includes('bali-design-studio.css?v=20261017-84') &&
 // v87 PC viewport is a fixed full-width, full-height 3-column dashboard.
 // Other desktop pages must not scroll down; only product lists scroll.
 const viewportCss=source("bali-pc-viewport.css");
-assert(html.includes('bali-pc-viewport.css?v=20261017-87') &&
+assert(html.includes('bali-pc-viewport.css?v=20261018-88') &&
   viewportCss.includes('@media (min-width:1180px)') &&
   viewportCss.includes('--bali-pc-side:clamp(195px,15vw,640px)') &&
   viewportCss.includes('--bali-pc-gap:clamp(11px,1vw,42px)') &&
@@ -169,6 +169,11 @@ assert(html.includes('bali-pc-viewport.css?v=20261017-87') &&
   viewportCss.includes('overflow-y:auto!important') &&
   viewportCss.includes('body.bali-guest-theme #eventsSection,') &&
   viewportCss.includes('body.bali-guest-theme #profileSection,') &&
+  viewportCss.includes('v88 — Unified graphite-free PC centre') &&
+  viewportCss.includes('background:#080b11!important') &&
+  viewportCss.includes('background-image:none!important') &&
+  viewportCss.includes('body.bali-guest-theme #homeSection .bali-home-events-panel::before') &&
+  viewportCss.includes('body.bali-guest-theme #homeSection .bali-home-menu-banner') &&
   viewportCss.includes('body.bali-guest-theme #contactsSection,'),
   "Desktop approved dashboard must fit the full viewport and preserve only catalog/horizontal event scrolling");
 const barAdmin=source("bali-admin-bar.js");
