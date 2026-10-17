@@ -876,3 +876,66 @@
     color:var(--bt-primary,#b9ff51)!important;
   }
 }
+
+/* v79: larger About BALI card after removing two narrow right-rail links. */
+@media(min-width:1180px){
+  body.bali-guest-theme #homeSection .bali-pc-right-rail{
+    display:grid!important;
+    grid-template-rows:minmax(400px,3.4fr) minmax(180px,1.15fr)!important;
+    align-content:stretch!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about{grid-row:1!important;min-height:0!important}
+  body.bali-guest-theme #homeSection .bali-pc-merch{grid-row:2!important;min-height:0!important}
+  body.bali-guest-theme #homeSection .bali-pc-about>summary{padding-top:64px}
+  body.bali-guest-theme #homeSection .bali-pc-about[open]>summary{
+    min-height:175px!important;height:175px!important;
+  }
+}
+.bali-pc-about-picture,.bali-pc-merch-picture{
+  position:absolute;inset:0;width:100%;height:100%;z-index:0;
+  overflow:hidden;pointer-events:none;
+}
+.bali-pc-about-picture img,.bali-pc-merch-picture img{
+  display:block;width:100%;height:100%;object-fit:cover;object-position:center;
+}
+.bali-pc-about-picture img[hidden],.bali-pc-merch-picture img[hidden]{display:none!important}
+.bali-pc-about summary,.bali-pc-merch{isolation:isolate}
+.bali-pc-about summary:after{
+  content:"";position:absolute;inset:0;z-index:1;
+  background:linear-gradient(180deg,rgba(0,0,0,.10),rgba(0,0,0,.14) 35%,rgba(0,0,0,.88));
+  pointer-events:none;
+}
+.bali-pc-about summary .bali-pc-about-logo,
+.bali-pc-about summary strong,
+.bali-pc-about summary small,
+.bali-pc-about summary .bali-pc-round-arrow{
+  z-index:2;position:relative;
+}
+.bali-pc-about summary .bali-pc-about-logo,
+.bali-pc-about summary .bali-pc-round-arrow{position:absolute}
+.bali-pc-about.has-photo .bali-pc-about-logo{opacity:.43}
+.bali-pc-merch:before{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,rgba(3,6,9,.7),rgba(3,6,9,.20),rgba(3,6,9,.62));
+}
+.bali-pc-merch-info{
+  position:relative;z-index:2;
+  display:grid;gap:4px;max-width:87%;
+}
+.bali-pc-merch-info>strong,.bali-pc-merch-info>small{display:block}
+.bali-pc-merch-kicker{
+  color:var(--bt-text,#d8ff9f);
+  font:730 9px/1.2 Manrope,sans-serif;
+  letter-spacing:.15em;
+}
+.bali-pc-merch-desc{font:500 10px/1.4 Manrope,sans-serif;color:#d1d5d6}
+.bali-pc-merch-controls{
+  position:absolute;right:11px;bottom:12px;z-index:3;
+  display:flex;align-items:center;gap:5px;
+}
+.bali-pc-merch-controls[hidden]{display:none!important}
+.bali-pc-merch-controls span{font:600 10px Manrope,sans-serif;color:#fff;margin-right:5px}
+.bali-pc-merch-controls button{
+  width:27px;height:27px;border:1px solid rgba(255,255,255,.35);
+  border-radius:50%;color:#fff;background:rgba(0,0,0,.28);cursor:pointer;
+}
