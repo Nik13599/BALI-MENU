@@ -32,3 +32,21 @@ button.primary{background:#d8bb83;border:0;color:#171b28;font-weight:700}button:
 .seed-row strong { font-size: 14px; font-weight: 600; }
 .seed-row small { display: block; margin-top: 4px; line-height: 1.5; color: #aebad0; font-size: 12px; }
 .seed-row > span { white-space: nowrap; color: #e9cd97; font-weight: 700; font-size: 14px; }
+
+/* Очередь предзаказов BALI */
+.admin-order-card { border:1px solid #3e4768; background:#111a32; padding:19px; margin-bottom:12px;border-radius:13px }
+.admin-order-card h3 { overflow-wrap:anywhere; font-size:17px; color:#edce93;margin:0 0 9px }
+.admin-order-card p {overflow-wrap:anywhere; color:#ced7e8}
+.admin-order-card .admin-line-item {margin:3px 0 3px 10px;font-size:14px}
+.admin-order-card .row-actions {margin-top:15px}
+#ordersDateFilter {min-width:180px}
+@media print {
+  body {background:#fff!important;color:#000!important}
+  body > :not(main) {display:none!important}
+  main.layout > :not(#adminView){display:none!important}
+  main.layout #adminView > :not(#orderPrintSheet){display:none!important}
+  #orderPrintSheet {display:block!important;background:#fff;color:#000;font:13px/1.5 Arial,sans-serif;padding:12mm}
+  #orderPrintSheet table {width:100%;border-collapse:collapse}
+  #orderPrintSheet th,#orderPrintSheet td {border:1px solid #555;padding:6px;text-align:left}
+  #orderPrintSheet h1,#orderPrintSheet h2,#orderPrintSheet p{color:#000!important}
+}
