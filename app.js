@@ -316,7 +316,9 @@ function renderHomeEvents() {
     const upcoming=availableEvents
         .filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date||"")&&e.date>=today)
         .sort((a,b)=>a.date.localeCompare(b.date))
-        .filter(e=>!showOnlyPlannedEvents||guestInterestDates.has(e.date));
+        .filter(e=>!showOnlyPlannedEvents||guestInterestDates.has(e.date))
+        // The FULL events calendar remains unlimited; only the homepage is capped.
+        .slice(0,window.matchMedia("(max-width:767px)").matches?3:5);
     for(const btn of document.querySelectorAll("[data-home-events-view]")) {
         const active=(btn.dataset.homeEventsView==="planned")===showOnlyPlannedEvents;
         btn.classList.toggle("is-current",active);
@@ -1094,6 +1096,9 @@ function updateCartUI() {
     const dockCount=document.getElementById("baliDockCount");
     if(dockTotal)dockTotal.textContent=`${total.toFixed(2)} BYN`;
     if(dockCount)dockCount.textContent=String(totalItems);
+    window.dispatchEvent(new CustomEvent("bali:cart-changed",{
+        detail:{count:totalItems,total}
+    }));
 }
 
 function createCartItemHTML(item) {
