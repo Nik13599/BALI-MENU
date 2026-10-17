@@ -219,6 +219,20 @@ function routeFromLocation() {
     const hash=window.location.hash.slice(1).toLowerCase();
     return BALI_GUEST_PAGES.has(hash)?hash:"home";
 }
+// iOS Safari may restore the document's vertical offset after the SPA layout
+// has been mounted. Reset only the page's Y position; never modify X or
+// carousel scrollLeft, so horizontal event swipes remain unaffected.
+function resetGuestVerticalPosition(page) {
+    const root=document.scrollingElement||document.documentElement;
+    if(root)root.scrollTop=0;
+    document.documentElement.scrollTop=0;
+    document.body.scrollTop=0;
+    if(page==="home"){
+        const home=document.querySelector("#homeSection .bali-home-inner");
+        if(home)home.scrollTop=0;
+    }
+}
+
 function renderGuestPage(page,{scroll=true}={}) {
     const selected=BALI_GUEST_PAGES.has(page)?page:"home";
     const sections={
@@ -244,7 +258,7 @@ function renderGuestPage(page,{scroll=true}={}) {
     if(selected!=="menu" && typeof closeCart==="function")closeCart();
     if(selected==="events")renderUpcomingEvents();
     if(selected==="home")renderHomeEvents();
-    if(scroll)window.scrollTo({top:0,behavior:"instant"});
+    if(scroll)resetGuestVerticalPosition(selected);
 }
 function navigateGuestPage(page,{replace=false}={}) {
     const selected=BALI_GUEST_PAGES.has(page)?page:"home";
@@ -651,10 +665,27 @@ document.addEventListener('DOMContentLoaded', () => {
     attachEventListeners();
     initStickyCategories();
     initEventCarousel();
-    renderGuestPage(routeFromLocation(),{scroll:false});
+    renderGuestPage(routeFromLocation());
+    // Safari can reapply saved scroll positions once layout/fonts become ready.
+    // Do a second Y-only reset after the first painted frame.
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        resetGuestVerticalPosition(routeFromLocation());
+    }));
     // Возврат смартфона/браузера переключает разделы приложения.
     window.addEventListener("popstate",()=>renderGuestPage(routeFromLocation()));
     window.addEventListener("hashchange",()=>renderGuestPage(routeFromLocation()));
+    // pageshow also fires when restored from the back-forward cache on iPhone.
+    window.addEventListener("pageshow",()=>{
+        renderGuestPage(routeFromLocation());
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{
+            resetGuestVerticalPosition(routeFromLocation());
+        }));
+    });
+    // Tab restoration can be delayed until after the page is visible again.
+    document.addEventListener("visibilitychange",()=>{
+        if(document.visibilityState!=="visible")return;
+        resetGuestVerticalPosition(routeFromLocation());
+    });
     // При наступлении следующего дня по Минску прошедшие события
     // исчезают из «Моих планов» даже без перезагрузки страницы.
     let shownDay=minskDateToday();
