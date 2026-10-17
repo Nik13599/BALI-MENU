@@ -1,8 +1,9 @@
-/* BALI PRIVILEGE — editor for independently published homepage offers. */
+/* BALI PRIVILEGE · published, manually curated slides with local-image upload. */
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,collection,doc,getDoc,onSnapshot,setDoc,deleteDoc,serverTimestamp}
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {compressImage} from "./image-compressor.js";
 
 const el=id=>document.getElementById(id);
 const form=el("baliPromoForm"),list=el("baliPromoList"),status=el("baliPromoStatus");
@@ -10,31 +11,75 @@ if(form&&list&&status){
   const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
   const auth=getAuth(app),db=getFirestore(app),records=new Map();
   const collator=new Intl.Collator("ru",{numeric:true,sensitivity:"base"});
-  let canEdit=false,unsubscribe=null,serial=0;
+  let canEdit=false,unsubscribe=null,serial=0,selectedImage="",processing=false,imageSerial=0;
   const say=message=>{status.textContent=message;};
+  const save=el("baliPromoSave");
+  const preview=el("baliPromoImagePreview");
+  const urlInput=el("baliPromoImage");
+  const fileInput=el("baliPromoImageFile");
+  const validImage=value=>value===""||
+    (value.startsWith("https://")&&value.length<=2048)||
+    (value.startsWith("data:image/webp;base64,")&&value.length<=155000);
   function node(tag,cls,label){
     const n=document.createElement(tag);
     if(cls)n.className=cls;
     if(label!==undefined)n.textContent=label;
     return n;
   }
+  function showPreview(image){
+    preview.replaceChildren();
+    if(validImage(image)&&image){
+      const element=node("img");element.src=image;element.alt="Предпросмотр баннера BALI PRIVILEGE";
+      preview.append(element);
+    }else preview.append(node("span","","Предпросмотр баннера 8:3"));
+  }
   function clear(){
+    imageSerial++;
+    selectedImage="";
+    processing=false;
     form.reset();
     el("baliPromoId").value="";
     el("baliPromoSort").value="100";
-    el("baliPromoSave").textContent="Сохранить предложение";
+    save.textContent="Сохранить предложение";
+    showPreview("");
   }
+  fileInput.addEventListener("change",async()=>{
+    const file=fileInput.files?.[0];
+    if(!file)return;
+    const serial=++imageSerial;
+    processing=true;save.disabled=true;say("Подготавливаем баннер 8:3…");
+    try{
+      const result=await compressImage(file,"design-hero");
+      if(serial!==imageSerial)return;
+      selectedImage=result;urlInput.value="";showPreview(result);
+      say("Баннер обработан и готов к сохранению. Формат 8:3.");
+    }catch(error){
+      if(serial===imageSerial)say(error.message||"Не удалось обработать баннер.");
+    }finally{
+      if(serial===imageSerial){processing=false;save.disabled=false;}
+    }
+  });
+  urlInput.addEventListener("input",()=>{
+    imageSerial++;selectedImage="";fileInput.value="";showPreview(urlInput.value.trim());
+  });
+  el("baliPromoRemoveImage").addEventListener("click",()=>{
+    imageSerial++;selectedImage="";urlInput.value="";fileInput.value="";showPreview("");
+    say("Изображение очищено в форме. Сохраните предложение, чтобы применить изменение.");
+  });
   el("baliPromoReset").addEventListener("click",()=>{clear();say("Форма очищена.");});
   function edit(item){
+    clear();
     el("baliPromoId").value=item.id;
     el("baliPromoTitle").value=item.title;
     el("baliPromoDescription").value=item.description;
-    el("baliPromoImage").value=item.imageUrl;
+    selectedImage=item.imageUrl.startsWith("data:image/")?item.imageUrl:"";
+    urlInput.value=item.imageUrl.startsWith("https://")?item.imageUrl:"";
+    showPreview(item.imageUrl);
     el("baliPromoDestination").value=item.destination;
     el("baliPromoButton").value=item.buttonText;
     el("baliPromoSort").value=item.sort;
     el("baliPromoPublished").checked=item.published;
-    el("baliPromoSave").textContent="Сохранить изменения";
+    save.textContent="Сохранить изменения";
     form.scrollIntoView({behavior:"smooth",block:"start"});
     say("Редактирование: "+item.title);
   }
@@ -42,23 +87,23 @@ if(form&&list&&status){
     list.replaceChildren();
     const sorted=[...records.values()].sort((a,b)=>a.sort-b.sort||collator.compare(a.title,b.title));
     if(!sorted.length){
-      list.append(node("p","hint","Предложений пока нет. Добавьте первое и опубликуйте его."));
+      list.append(node("p","hint","Предложений пока нет. Добавьте первый баннер и опубликуйте его."));
       return;
     }
     for(const item of sorted){
       const row=node("div","bali-promo-item");
-      if(item.imageUrl.startsWith("https://")){
-        const preview=node("img","bali-promo-preview");
-        preview.loading="lazy";preview.src=item.imageUrl;preview.alt="";
-        row.append(preview);
+      if(validImage(item.imageUrl)&&item.imageUrl){
+        const picture=node("img","bali-promo-preview");
+        picture.loading="lazy";picture.src=item.imageUrl;picture.alt="";
+        row.append(picture);
       }
       const info=node("div","bali-promo-copy");
       info.append(node("strong","",item.title),
         node("small","",item.published?"Опубликовано":"Черновик"),
         node("p","",item.description));
       const controls=node("div","bali-promo-actions");
-      const e=node("button","","Изменить");e.type="button";
-      e.addEventListener("click",()=>edit(item));
+      const editButton=node("button","","Изменить");editButton.type="button";
+      editButton.addEventListener("click",()=>edit(item));
       const remove=node("button","","Удалить");remove.type="button";
       remove.addEventListener("click",async()=>{
         if(!canEdit||!confirm("Удалить предложение «"+item.title+"»?"))return;
@@ -67,37 +112,33 @@ if(form&&list&&status){
           await deleteDoc(doc(db,"promotions",item.id));
           if(el("baliPromoId").value===item.id)clear();
           say("Предложение удалено.");
-        }catch(err){say("Не удалось удалить: "+(err.code||"ошибка"));}
+        }catch(error){say("Не удалось удалить: "+(error.code||"ошибка"));}
         finally{remove.disabled=false;}
       });
-      controls.append(e,remove);row.append(info,controls);list.append(row);
+      controls.append(editButton,remove);row.append(info,controls);list.append(row);
     }
   }
   form.addEventListener("submit",async event=>{
     event.preventDefault();
     if(!canEdit){say("Необходимы активные права администратора.");return;}
+    if(processing){say("Подождите, изображение ещё обрабатывается.");return;}
     const title=el("baliPromoTitle").value.trim();
     const description=el("baliPromoDescription").value.trim();
-    const imageUrl=el("baliPromoImage").value.trim();
+    const imageUrl=selectedImage||urlInput.value.trim();
     const destination=el("baliPromoDestination").value;
     const buttonText=el("baliPromoButton").value.trim();
     const sort=Number(el("baliPromoSort").value);
     const published=el("baliPromoPublished").checked;
     if(title.length<2||title.length>100||!description||description.length>260
-       ||imageUrl.length>2048||(imageUrl&&!imageUrl.startsWith("https://"))
-       ||!["none","events","menu","contacts"].includes(destination)
+       ||!validImage(imageUrl)||!["none","events","menu","contacts"].includes(destination)
        ||buttonText.length>35||!Number.isInteger(sort)||sort<0||sort>100000){
-      say("Проверьте заголовок, описание, HTTPS-ссылку, кнопку и сортировку.");return;
+      say("Проверьте заголовок, описание, HTTPS-ссылку или картинку, кнопку и сортировку.");return;
     }
     const id=el("baliPromoId").value;
-    const reference=id?doc(db,"promotions",id):doc(collection(db,"promotions"));
-    const save=el("baliPromoSave");
+    const ref=id?doc(db,"promotions",id):doc(collection(db,"promotions"));
     save.disabled=true;say("Сохраняем предложение...");
     try{
-      await setDoc(reference,{
-        title,description,imageUrl,destination,buttonText,sort,published,
-        updatedAt:serverTimestamp()
-      });
+      await setDoc(ref,{title,description,imageUrl,destination,buttonText,sort,published,updatedAt:serverTimestamp()});
       clear();say(published?"Предложение опубликовано.":"Черновик сохранён.");
     }catch(error){
       say(error.code==="permission-denied"
@@ -125,11 +166,12 @@ if(form&&list&&status){
              &&Number.isInteger(i.sort))records.set(d.id,i);
         }
         draw();say("Предложений: "+records.size+". Изменения синхронизируются с сайтом.");
-      },err=>say(err.code==="permission-denied"
+      },error=>say(error.code==="permission-denied"
         ?"Нет доступа к promotions. Необходимо опубликовать Firestore Rules."
-        :"Не удалось загрузить предложения: "+(err.code||"ошибка")));
+        :"Не удалось загрузить предложения: "+(error.code||"ошибка")));
     }catch(error){
       if(run===serial)say("Не удалось проверить доступ: "+(error.code||"ошибка"));
     }
   });
+  showPreview("");
 }
