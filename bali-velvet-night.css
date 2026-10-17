@@ -1,0 +1,477 @@
+/* BALI v55 — VELVET NIGHT / ELECTRIC ROSE / CHAMPAGNE GOLD.
+   High-contrast polished nightclub direction after the rejected grey-green palette.
+   Keep warm white body text, luminous jewel accents only where users act. */
+:root{
+  --bali-luxe-night:#090811;
+  --bali-luxe-surface:#17121f;
+  --bali-luxe-elevated:#241a2b;
+  --bali-luxe-wine:#4d203e;
+  --bali-luxe-wine-light:#84345d;
+  --bali-luxe-ivory:#f9f5fa;
+  --bali-luxe-muted:#bcb2c2;
+  --bali-luxe-champagne:#efc778;
+  --bali-luxe-gold-light:#f7d99e;
+  --bali-luxe-line:rgba(244,177,222,.24);
+  --bali-luxe-soft-shadow:0 11px 28px rgba(0,0,0,.38);
+  --bali-v55-pink:#ff4ba5;
+  --bali-v55-magenta:#f33190;
+  --bali-v55-violet:#9a4dc3;
+  --bali-v55-gold:#f0bf66;
+  --bali-v55-white:#fff7fd;
+  --bali-v55-ink:#0a0710;
+}
+body.bali-guest-theme {
+  --primary-color:#efbf69;
+  --primary-dark:#d9a64c;
+  --secondary-color:#973e83;
+  --accent-color:#ef3f99;
+  --success-color:#68bd98;
+  --warning-color:#f4c775;
+  --error-color:#ff6a84;
+  --info-color:#af8fe7;
+  --bg-primary:#090811;
+  --bg-secondary:#18111f;
+  --bg-tertiary:#24182a;
+  --text-primary:#fff6fb;
+  --text-secondary:#c8bbc9;
+  --text-muted:#9e90a1;
+  --border-color:rgba(245,184,220,.23);
+  --bali-ui-bg:#090811;
+  --bali-ui-panel:#17121e;
+  --bali-ui-gold:#f0c977;
+  --bali-ui-pink:#ff4ba5;
+  --bali-ui-border:rgba(255,149,214,.28);
+  color:var(--bali-v55-white)!important;
+  background:#090811!important;
+}
+body.bali-guest-theme::before{
+  background:
+    radial-gradient(ellipse at 80% 0,rgba(158,26,111,.22),transparent 44%),
+    radial-gradient(ellipse at 0 85%,rgba(81,35,110,.16),transparent 46%),
+    #090811!important;
+}
+body.bali-guest-theme .header,
+body.bali-guest-theme[data-bali-page="home"] .header{
+  background:rgba(11,8,19,.97)!important;
+  border-bottom:1px solid rgba(244,166,215,.28)!important;
+  box-shadow:0 4px 16px rgba(0,0,0,.17)!important;
+}
+body.bali-guest-theme .header .logo .logo-text {
+  color:#fff9ff!important;
+  -webkit-text-fill-color:#fff9ff!important;
+}
+body.bali-guest-theme .header .logo .logo-text small{
+  color:#f4c77c!important;
+}
+body.bali-guest-theme .header #accountBtn{
+  color:#f7cd88!important;
+}
+body.bali-guest-theme .bali-preview-banner,
+body.bali-guest-theme[data-bali-page="home"] .bali-preview-banner{
+  background:linear-gradient(90deg,#211322,#2b152a,#211322)!important;
+  color:#e8cbd6!important;
+  border-color:rgba(226,133,186,.26)!important;
+}
+body.bali-guest-theme .bali-bottom-nav{
+  background:rgba(13,9,22,.98)!important;
+  border-top:1px solid rgba(241,144,203,.32)!important;
+  box-shadow:0 -9px 24px rgba(0,0,0,.30)!important;
+}
+body.bali-guest-theme .bali-bottom-nav button{
+  color:#b8a6bb!important;
+}
+body.bali-guest-theme .bali-bottom-nav button.active{
+  color:#ffc778!important;
+  text-shadow:0 0 13px rgba(247,116,187,.19)!important;
+}
+body.bali-guest-theme .bali-bottom-nav button.active::after{
+  background:linear-gradient(90deg,transparent,#f0c26f,transparent)!important;
+  height:2px!important;
+  opacity:1!important;
+}
+/* Home: luxurious velvet borders, saturated hero menu, original real event photos. */
+body.bali-guest-theme #homeSection{
+  background:
+    radial-gradient(ellipse at 45% 0,rgba(134,27,100,.18),transparent 59%),
+    #090811!important;
+}
+body.bali-guest-theme #homeSection .bali-home-events-panel,
+body.bali-guest-theme #homeSection .bali-home-contacts-card{
+  background:linear-gradient(155deg,#221328,#150f1c 65%,#12101a)!important;
+  border:1px solid rgba(236,129,196,.36)!important;
+  box-shadow:0 9px 23px rgba(0,0,0,.32),inset 0 1px rgba(255,245,255,.065)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-events-panel::before,
+body.bali-guest-theme #homeSection .bali-home-contacts-card::before{
+  background:linear-gradient(90deg,transparent,rgba(249,185,223,.60),rgba(252,204,124,.38),transparent)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-calendar-row{
+  background:linear-gradient(180deg,rgba(238,62,153,.085),rgba(0,0,0,0))!important;
+  border-bottom-color:rgba(234,130,187,.17)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-calendar-row button{
+  background:#28172e!important;
+  border:1px solid rgba(229,153,198,.31)!important;
+  color:#efe1ef!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #homeSection .bali-home-calendar-row .is-current{
+  background:linear-gradient(130deg,#642749,#3a1a39)!important;
+  border-color:rgba(255,107,184,.74)!important;
+  color:#fff6fd!important;
+  box-shadow:inset 0 1px rgba(255,212,237,.12),0 0 14px rgba(230,57,142,.13)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-calendar-btn{
+  color:#f9cd91!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-card{
+  background:#1a1022!important;
+  border-color:rgba(248,117,194,.52)!important;
+  box-shadow:0 8px 19px rgba(0,0,0,.37),0 0 10px rgba(236,54,153,.11)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-info{
+  background:linear-gradient(150deg,#26172b,#160f1d)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-poster-wrap{
+  border-color:rgba(248,127,197,.48)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-info h3{
+  color:#fff7fd!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-hours,
+body.bali-guest-theme #eventsSection .bali-event-hours{
+  color:#f6c777!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-description,
+body.bali-guest-theme #eventsSection .bali-event-description{
+  color:#decddd!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-count{
+  color:#bca9bd!important;
+}
+body.bali-guest-theme #homeSection .bali-home-heart:not(.is-liked){
+  background:rgba(20,8,24,.48)!important;
+  border-color:rgba(255,248,252,.62)!important;
+  color:#fffaff!important;
+}
+body.bali-guest-theme #homeSection .bali-home-heart.is-liked{
+  background:rgba(99,14,36,.86)!important;
+  border-color:#ff7894!important;
+  color:#ff335d!important;
+}
+body.bali-guest-theme #homeSection .bali-home-heart.is-liked svg{
+  fill:#ff335d!important;
+  stroke:#ff335d!important;
+}
+/* Showcase menu: rich cherry/velvet gradient, no flat dull green. */
+body.bali-guest-theme #homeSection .bali-home-menu-banner{
+  background:
+    radial-gradient(ellipse at 9% 45%,rgba(255,110,197,.34),transparent 48%),
+    radial-gradient(ellipse at 88% 12%,rgba(239,140,74,.15),transparent 44%),
+    linear-gradient(105deg,#6e2451 0%,#401b43 51%,#21152d 100%)!important;
+  border:1px solid rgba(255,135,202,.64)!important;
+  box-shadow:0 9px 24px rgba(0,0,0,.30),inset 0 1px rgba(255,231,249,.15)!important;
+}
+body.bali-guest-theme #homeSection .bali-menu-banner-icon{
+  background:linear-gradient(145deg,#a13972,#4e2050)!important;
+  border:1px solid rgba(254,186,227,.49)!important;
+  color:#fff1db!important;
+}
+body.bali-guest-theme #homeSection .bali-home-menu-banner strong{
+  color:#fff9fd!important;
+  text-shadow:0 1px 3px rgba(0,0,0,.22)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-menu-banner small{
+  color:#f1cfdf!important;
+}
+body.bali-guest-theme #homeSection .bali-menu-banner-arrow{
+  color:#ffd48e!important;
+}
+body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-social-btn{
+  background:linear-gradient(140deg,#351d39,#24172b)!important;
+  color:#f7d499!important;
+  border-color:rgba(248,151,201,.43)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.055)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map{
+  background:linear-gradient(130deg,#392036,#26182b)!important;
+  color:#fff1ef!important;
+  border-color:rgba(250,161,206,.43)!important;
+}
+body.bali-guest-theme #homeSection .bali-yandex-pin{
+  color:#f66b95!important;
+}
+body.bali-guest-theme #homeSection .bali-home-contacts-heading span{
+  color:#dac3d6!important;
+}
+body.bali-guest-theme #homeSection .bali-home-contacts-heading i{
+  background:#e9b56f!important;
+  box-shadow:0 0 7px rgba(241,190,99,.22)!important;
+}
+/* Events: vibrant frame with premium champagne-gold CTAs. */
+body.bali-guest-theme #eventsSection{
+  background:radial-gradient(ellipse at 50% 2%,rgba(125,32,98,.2),transparent 65%),#090811!important;
+}
+body.bali-guest-theme #eventsSection .events-view-button{
+  background:#26172d!important;
+  color:#e9d9e9!important;
+  border-color:rgba(242,146,199,.32)!important;
+}
+body.bali-guest-theme #eventsSection .events-view-button.active{
+  background:linear-gradient(125deg,#622646,#382040)!important;
+  color:#fff2fa!important;
+  border-color:rgba(255,120,190,.77)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.09)!important;
+}
+body.bali-guest-theme #eventsSection .events-topbar .events-eyebrow,
+body.bali-guest-theme #eventsSection .events-carousel-position{
+  color:#f2cd90!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+  background:#160e1b!important;
+  border-color:rgba(243,118,191,.42)!important;
+  box-shadow:0 8px 23px rgba(0,0,0,.31)!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active{
+  border-color:rgba(255,90,179,.86)!important;
+  box-shadow:0 0 15px rgba(245,61,158,.24),0 10px 25px rgba(0,0,0,.44)!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body{
+  background:linear-gradient(145deg,#261629,#120e19)!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions{
+  background:linear-gradient(180deg,rgba(20,12,26,0),#140e1c 23%)!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions .event-want-to-go,
+body.bali-guest-theme #menuPage .add-to-cart-btn,
+body.bali-guest-theme .checkout-btn,
+body.bali-guest-theme .submit-order-btn{
+  background:linear-gradient(145deg,#ffe3a6,#ebae53)!important;
+  color:#23160a!important;
+  border:1px solid rgba(255,223,151,.75)!important;
+  box-shadow:inset 0 1px rgba(255,250,229,.53)!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions .event-go-to-menu{
+  background:linear-gradient(145deg,#592b52,#341a39)!important;
+  color:#fff2fa!important;
+  border:1px solid rgba(250,166,216,.57)!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-preorder-badge{
+  background:rgba(17,23,20,.86)!important;
+  color:#c9f0d7!important;
+  border-color:rgba(122,207,156,.40)!important;
+}
+/* Menu: premium readable cards, saturated selections and clear affordances. */
+body.bali-guest-theme #menuPage{
+  background:#0b0813!important;
+}
+body.bali-guest-theme #menuPage .categories{
+  background:#170f20!important;
+  border-bottom:1px solid rgba(243,131,197,.31)!important;
+}
+body.bali-guest-theme #menuPage .category-btn{
+  background:#28192f!important;
+  color:#e7d8e5!important;
+  border:1px solid rgba(231,157,200,.30)!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #menuPage .category-btn.active{
+  background:linear-gradient(110deg,#713253,#45203e)!important;
+  color:#fff1f9!important;
+  border:1px solid rgba(253,117,180,.73)!important;
+  box-shadow:0 0 11px rgba(223,59,135,.12)!important;
+}
+body.bali-guest-theme #menuPage .bali-menu-search-field{
+  background:#231629!important;
+  color:#edc9dd!important;
+  border-color:rgba(246,159,209,.37)!important;
+}
+body.bali-guest-theme #menuPage .menu-item{
+  background:linear-gradient(135deg,#23172a,#18131f)!important;
+  border-color:rgba(227,142,197,.30)!important;
+  box-shadow:0 5px 16px rgba(0,0,0,.18)!important;
+}
+body.bali-guest-theme #menuPage .menu-item-price{
+  color:#f6ca7a!important;
+}
+body.bali-guest-theme #menuPage .menu-item-description{
+  color:#c6b7c7!important;
+}
+body.bali-guest-theme #menuPage .menu-quantity-btn{
+  background:#34213b!important;
+  color:#ffebf7!important;
+  border-color:rgba(241,151,209,.43)!important;
+}
+body.bali-guest-theme .bali-cart-dock{
+  background:linear-gradient(120deg,#ffd894,#ebad51)!important;
+  color:#211507!important;
+  border:1px solid rgba(255,224,172,.70)!important;
+  box-shadow:0 6px 21px rgba(0,0,0,.36)!important;
+}
+body.bali-guest-theme #baliDockCount{
+  background:#46243a!important;
+  color:#fff1d4!important;
+}
+/* Account, contact details and overlays are no longer washed-out. */
+body.bali-guest-theme .bali-profile-page{
+  background:radial-gradient(ellipse at 73% 15%,rgba(122,36,103,.21),transparent 58%),#090811!important;
+}
+body.bali-guest-theme .bali-profile-card{
+  background:linear-gradient(140deg,#291b2d,#17121d)!important;
+  border-color:rgba(240,137,194,.40)!important;
+  box-shadow:0 10px 25px rgba(0,0,0,.32)!important;
+}
+body.bali-guest-theme .bali-profile-avatar{
+  background:linear-gradient(135deg,#793858,#422444)!important;
+  border-color:#eabd7c!important;
+  color:#ffe8b4!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme .bali-profile-action{
+  background:#2e1c32!important;
+  color:#f6eaf2!important;
+  border-color:rgba(239,143,196,.33)!important;
+}
+body.bali-guest-theme .bali-profile-action > span{
+  color:#f2c779!important;
+}
+body.bali-guest-theme .bali-logout > span{
+  color:#ffa6b7!important;
+}
+body.bali-guest-theme .modal-content,
+body.bali-guest-theme .cart-sidebar{
+  background:#211629!important;
+  border-color:rgba(231,148,195,.37)!important;
+}
+body.bali-guest-theme .modal-content input,
+body.bali-guest-theme .modal-content textarea,
+body.bali-guest-theme .modal-content select{
+  background:#2f2035!important;
+  color:#fff6fa!important;
+  border-color:rgba(228,156,205,.36)!important;
+}
+body.bali-guest-theme .bali-contact-card{
+  background:#27192d!important;
+  border-color:rgba(241,147,198,.37)!important;
+}
+body.bali-guest-theme .bali-contact-card .contact-symbol{
+  color:#f6c984!important;
+}
+/* Admin: brighter, focused and legible but without nightclub glare in data tables. */
+body.bali-admin-theme{
+  --surface:#201622;
+  --surface-2:#2b1c31;
+  --border:rgba(244,158,213,.30);
+  --ink:#fff2fa;
+  --muted:#c9b5c5;
+  --gold:#edc17c;
+  --gold-strong:#ffe0a5;
+  --focus:#ff84c1;
+  background:#110d17!important;
+  color:#f7eff7!important;
+}
+.bali-admin-theme .topbar{
+  background:#211324!important;
+  border-color:rgba(237,129,191,.40)!important;
+}
+.bali-admin-theme .brand-mark{
+  background:#5b2947!important;
+  color:#ffe5b1!important;
+  border-color:rgba(248,169,211,.65)!important;
+}
+.bali-admin-theme .brand span,
+.bali-admin-theme .login-logo{
+  color:#f8c87a!important;
+}
+.bali-admin-theme .admin-sidebar{
+  background:linear-gradient(170deg,#25162b,#17121e)!important;
+  border-color:rgba(232,138,195,.33)!important;
+}
+.bali-admin-theme .admin-tab{
+  color:#d0bfd0!important;
+}
+.bali-admin-theme .admin-tab.active{
+  background:linear-gradient(110deg,#673050,#392441)!important;
+  color:#fff1f9!important;
+  border-color:rgba(255,125,196,.67)!important;
+}
+.bali-admin-theme .admin-tab:hover:not(:disabled){
+  background:#38203c!important;
+}
+.bali-admin-theme .card,
+.bali-admin-theme .stat-card{
+  background:#271a2d!important;
+  border-color:rgba(226,143,191,.32)!important;
+}
+.bali-admin-theme .stat-card-attention{
+  background:#372334!important;
+  border-color:rgba(255,176,116,.43)!important;
+}
+.bali-admin-theme .eyebrow,
+.bali-admin-theme .stat-card-attention .stat-value{
+  color:#f5cd8c!important;
+}
+.bali-admin-theme button.primary{
+  background:linear-gradient(130deg,#ffe2a3,#efb85f)!important;
+  color:#21160b!important;
+  border-color:#f8d48e!important;
+}
+.bali-admin-theme button.primary:hover:not(:disabled){
+  background:#ffe9bd!important;
+  border-color:#ffe9bd!important;
+}
+.bali-admin-theme .tag{
+  background:#37263a!important;
+  border-color:rgba(229,143,199,.37)!important;
+  color:#f0d4e6!important;
+}
+.bali-admin-theme input:not([type="checkbox"]),
+.bali-admin-theme textarea,
+.bali-admin-theme select{
+  background:#312138!important;
+  border-color:rgba(230,149,201,.43)!important;
+  color:#fff6fb!important;
+}
+.bali-admin-theme .dialog-header,
+.bali-admin-theme .dialog-actions{
+  background:#27192e!important;
+  border-color:rgba(234,143,196,.34)!important;
+}
+.bali-admin-theme .admin-form-dialog,
+.bali-admin-theme dialog{
+  background:#25182b!important;
+  color:#f9ebf5!important;
+  border-color:rgba(236,154,210,.4)!important;
+}
+.bali-admin-theme .dialog-close{
+  color:#ffe5f3!important;
+  background:#402442!important;
+  border-color:rgba(234,156,204,.43)!important;
+}
+.bali-admin-theme .online-dot{
+  background:#60c89a!important;
+  box-shadow:0 0 7px rgba(80,209,143,.24)!important;
+}
+/* Keep keyboard focus, visual clarity and fixed layout on all screens. */
+.bali-guest-theme :is(button,a,input,textarea,select):focus-visible,
+.bali-admin-theme :is(button,a,input,textarea,select):focus-visible{
+  outline:2px solid #ffb6d8!important;
+  outline-offset:2px!important;
+}
+@media(hover:hover){
+  body.bali-guest-theme #homeSection .bali-home-menu-banner:hover{
+    filter:brightness(1.10)!important;
+    border-color:rgba(255,180,221,.85)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-social-btn:hover{
+    background:#4a2549!important;
+    border-color:#ff91cf!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .bali-guest-theme *,
+  .bali-admin-theme *{
+    animation-duration:.01ms!important;
+    transition-duration:.01ms!important;
+  }
+}
