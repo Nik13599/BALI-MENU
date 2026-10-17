@@ -151,7 +151,7 @@ assert(admin.includes('bali-design-studio.css?v=20261017-84') &&
 // v87 PC viewport is a fixed full-width, full-height 3-column dashboard.
 // Other desktop pages must not scroll down; only product lists scroll.
 const viewportCss=source("bali-pc-viewport.css");
-assert(html.includes('bali-pc-viewport.css?v=20261018-88') &&
+assert(html.includes('bali-pc-viewport.css?v=20261018-90') &&
   viewportCss.includes('@media (min-width:1180px)') &&
   viewportCss.includes('--bali-pc-side:clamp(195px,15vw,640px)') &&
   viewportCss.includes('--bali-pc-gap:clamp(11px,1vw,42px)') &&
@@ -176,6 +176,22 @@ assert(html.includes('bali-pc-viewport.css?v=20261018-88') &&
   viewportCss.includes('body.bali-guest-theme #homeSection .bali-home-menu-banner') &&
   viewportCss.includes('body.bali-guest-theme #contactsSection,'),
   "Desktop approved dashboard must fit the full viewport and preserve only catalog/horizontal event scrolling");
+// Only the PC HOME teaser is padded to five slots. The actual calendar
+// receives no invented event objects, RSVP buttons, or coming-soon entries.
+const homeTeaser=app.slice(app.indexOf('function renderHomeEvents()'),app.indexOf('function renderUpcomingEvents()'));
+assert(homeTeaser.includes('const isPcHome=window.matchMedia("(min-width:1180px)").matches') &&
+  homeTeaser.includes('Math.max(0,5-upcoming.length)') &&
+  homeTeaser.includes('bali-home-event-card bali-home-event-placeholder') &&
+  homeTeaser.includes('Мы готовим для вас что-то интересное') &&
+  homeTeaser.includes('Совсем скоро узнаете') &&
+  homeTeaser.includes('if(!upcoming.length&&!isPcHome)') &&
+  !app.slice(app.indexOf('function renderUpcomingEvents()')).includes('bali-home-event-placeholder') &&
+  viewportCss.includes('v89 — Desktop home: cards take the former calendar heading') &&
+  viewportCss.includes('v90 — Five balanced HOME event slots') &&
+  viewportCss.includes('grid-template-columns:repeat(5,minmax(0,1fr))!important') &&
+  viewportCss.includes('body.bali-guest-theme #homeSection .bali-pc-events-title {') &&
+  viewportCss.includes('body.bali-guest-theme #homeSection #homeEventCarousel>.bali-home-event-placeholder'),
+  "PC HOME only must display five slots and extend posters; full calendar stays real-only.");
 const barAdmin=source("bali-admin-bar.js");
 const barAdminCss=source("bali-admin-bar.css");
 assert(html.includes('id="baliMenuModeSwitch"') &&
@@ -568,7 +584,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-85"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261018-90"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -580,7 +596,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-85'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261018-90'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-67'), "Guest profile label code should load without old cache");
