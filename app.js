@@ -856,12 +856,15 @@ async function loadConfig() {
 function attachEventListeners() {
     document.getElementById("baliMenuModeSwitch")?.addEventListener("click",async event=>{
         const tab=event.target.closest("button[data-bali-menu-mode]");
-        if(!tab)return;
+        if(!tab||tab.hidden||tab.disabled)return;
         const mode=tab.dataset.baliMenuMode;
+        if(mode===baliActiveMenuMode)return;
         if(mode==="bar"||mode==="hookah"){
-            // No restricted contents become visible until age is confirmed.
-            switchBaliMenuMode("kitchen");
-            if(!await window.BaliAgeGate?.confirm?.())return;
+            // NEVER activate restricted lists before an explicit YES.
+            let permitted=false;
+            try{permitted=Boolean(await window.BaliAgeGate?.confirm?.());}
+            catch(error){console.warn("BALI age gate:",error);}
+            if(!permitted){switchBaliMenuMode("kitchen");return;}
         }
         switchBaliMenuMode(mode);
     });
