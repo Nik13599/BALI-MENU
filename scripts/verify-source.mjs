@@ -49,7 +49,7 @@ assert(firebaseJson.firestore.rules === "firestore.rules", "Missing Firestore ru
 assert(firebaseJson.hosting.public === ".", "Unexpected Firebase Hosting public directory");
 const admin = source("admin.html");
 const customIconJs=source("bali-icon-atelier.js");
-const premiumCss=source("bali-obsidian-premium.css");
+const obsidianCss=source("bali-obsidian-premium.css");
 assert(html.includes('bali-obsidian-premium.css?v=20261017-57') &&
   admin.includes('bali-obsidian-premium.css?v=20261017-57') &&
   html.indexOf('bali-obsidian-premium.css?v=20261017-57') >
@@ -66,19 +66,19 @@ assert(html.includes('class="bali-guest-theme"') &&
   admin.includes('content="#080b11"') &&
   html.includes('family=Manrope') && admin.includes('family=Manrope'),
   "Premium layout classes, display theme and consistent contemporary typography required");
-assert(premiumCss.includes("/* BALI / OBSIDIAN v57") &&
-  premiumCss.includes("--bali-obsidian:#080b11") &&
-  premiumCss.includes("--bali-cobalt:#7585ff") &&
-  premiumCss.includes("--bali-ice:#f5f7ff") &&
-  premiumCss.includes("body.bali-guest-theme #homeSection .bali-home-menu-banner") &&
-  premiumCss.includes("body.bali-guest-theme #homeSection .bali-home-heart.is-liked") &&
-  premiumCss.includes("body.bali-guest-theme #eventsSection #eventsGrid>.event-card") &&
-  premiumCss.includes("body.bali-guest-theme #menuPage .category-btn.active") &&
-  premiumCss.includes("body.bali-guest-theme .bali-profile-card") &&
-  premiumCss.includes(".bali-admin-theme .admin-tab.active") &&
-  premiumCss.includes(".bali-admin-theme button.primary"),
+assert(obsidianCss.includes("/* BALI / OBSIDIAN v57") &&
+  obsidianCss.includes("--bali-obsidian:#080b11") &&
+  obsidianCss.includes("--bali-cobalt:#7585ff") &&
+  obsidianCss.includes("--bali-ice:#f5f7ff") &&
+  obsidianCss.includes("body.bali-guest-theme #homeSection .bali-home-menu-banner") &&
+  obsidianCss.includes("body.bali-guest-theme #homeSection .bali-home-heart.is-liked") &&
+  obsidianCss.includes("body.bali-guest-theme #eventsSection #eventsGrid>.event-card") &&
+  obsidianCss.includes("body.bali-guest-theme #menuPage .category-btn.active") &&
+  obsidianCss.includes("body.bali-guest-theme .bali-profile-card") &&
+  obsidianCss.includes(".bali-admin-theme .admin-tab.active") &&
+  obsidianCss.includes(".bali-admin-theme button.primary"),
   "Unified obsidian cobalt premium palette must cover all website and admin surfaces");
-assert(premiumCss.includes(".bali-icon-slot .bali-custom-icon") &&
+assert(obsidianCss.includes(".bali-icon-slot .bali-custom-icon") &&
   html.includes('bali-icon-atelier.js?v=20261017-53') &&
   admin.includes('bali-icon-atelier.js?v=20261017-53'),
   "Every designer vector icon must retain its local SVG sizing and handlers");
