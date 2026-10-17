@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="bali-theme.css?v=20261017-60">
   <link rel="stylesheet" href="bali-lime-neutral.css?v=20261017-62">
   <link rel="stylesheet" href="bali-admin-bar.css?v=20261017-65">
+  <link rel="stylesheet" href="bali-admin-cards.css?v=20261017-66">
 
 </head>
 <body class="bali-admin-theme">
@@ -156,6 +157,13 @@
           <button type="button" id="addMenuBtn" class="primary">+ Добавить блюдо</button>
         </div>
 
+        <div class="bali-admin-catalog-tabs" role="tablist" aria-label="Выбор карты меню">
+          <button type="button" class="is-active" data-bali-catalog-tab="kitchen" role="tab" aria-selected="true" aria-controls="baliAdminKitchenPane">Меню кухни</button>
+          <button type="button" data-bali-catalog-tab="bar" role="tab" aria-selected="false" aria-controls="baliAdminBarPane">Барная карта</button>
+          <button type="button" data-bali-catalog-tab="hookah" role="tab" aria-selected="false" aria-controls="baliAdminHookahPane">Кальянная карта</button>
+          <button type="button" data-bali-catalog-tab="tea" role="tab" aria-selected="false" aria-controls="baliAdminTeaPane">Чайная карта</button>
+        </div>
+        <div id="baliAdminKitchenPane" class="bali-admin-catalog-pane" role="tabpanel">
         <div class="menu-actions-bar">
           <button type="button" id="addCategoryBtn" class="category-add-btn">+ Новая категория</button>
           <span class="hint">Сначала создайте категорию, затем выберите её при добавлении блюда.</span>
@@ -179,7 +187,22 @@
           <div id="menuList" class="scroll-list category-catalog">Загрузка...</div>
         </section>
 
-        <details class="card bali-admin-bar-editor" id="baliAdminBarSection">
+
+        <details class="card import-panel">
+          <summary><span>Импорт меню с фотографии</span><span class="hint">18 позиций · 5 разделов</span></summary>
+          <div class="import-body">
+            <p class="hint">Проверьте позиции и цены перед добавлением. Импорт не перезаписывает уже существующие товары.</p>
+            <div id="seedPreview" class="seed-preview" aria-live="polite"></div>
+            <div class="actions">
+              <button type="button" class="primary" id="seedImportBtn">Добавить отсутствующие позиции</button>
+              <span class="hint">Позиции с совпадающими ID будут пропущены.</span>
+            </div>
+            <p id="seedImportStatus" class="status" role="status" aria-live="polite"></p>
+          </div>
+        </details>
+        </div><!-- /baliAdminKitchenPane -->
+        <div id="baliAdminBarPane" class="bali-admin-catalog-pane" role="tabpanel" hidden>
+          <details class="card bali-admin-bar-editor" id="baliAdminBarSection" open>
           <summary><strong>Барная карта · ознакомление</strong><span class="hint">Напитки, категории, объёмы и цены · без предзаказа</span></summary>
           <div class="bali-admin-bar-body">
             <p class="hint">Добавляйте реальные цены барной карты. Каждая позиция может содержать одну или две порции — например, 50 мл и 750 мл. Категории группируются автоматически. Гостям показываются только строки с ценами; оформление предзаказа недоступно.</p>
@@ -217,19 +240,13 @@
             <p class="hint">Если Firebase отклоняет сохранение с ошибкой permission-denied, необходимо опубликовать актуальный файл <a href="https://github.com/Nik13599/BALI-MENU/blob/main/firestore.rules" target="_blank" rel="noopener noreferrer">firestore.rules</a> в консоли Firebase. Блюда кухни при этом остаются отдельными.</p>
           </div>
         </details>
-
-        <details class="card import-panel">
-          <summary><span>Импорт меню с фотографии</span><span class="hint">18 позиций · 5 разделов</span></summary>
-          <div class="import-body">
-            <p class="hint">Проверьте позиции и цены перед добавлением. Импорт не перезаписывает уже существующие товары.</p>
-            <div id="seedPreview" class="seed-preview" aria-live="polite"></div>
-            <div class="actions">
-              <button type="button" class="primary" id="seedImportBtn">Добавить отсутствующие позиции</button>
-              <span class="hint">Позиции с совпадающими ID будут пропущены.</span>
-            </div>
-            <p id="seedImportStatus" class="status" role="status" aria-live="polite"></p>
-          </div>
-        </details>
+        </div>
+        <div id="baliAdminHookahPane" class="bali-admin-catalog-pane" role="tabpanel" hidden>
+          <section class="card bali-admin-extra-editor" id="baliAdminHookahEditor" aria-label="Редактор кальянной карты"></section>
+        </div>
+        <div id="baliAdminTeaPane" class="bali-admin-catalog-pane" role="tabpanel" hidden>
+          <section class="card bali-admin-extra-editor" id="baliAdminTeaEditor" aria-label="Редактор чайной карты"></section>
+        </div>
       </section>
 
       <section class="admin-panel" id="adminEventsPanel" data-admin-panel="events" aria-labelledby="eventsHeading" hidden>
@@ -485,6 +502,7 @@
 <script src="firebase-config.js?v=20261017-8"></script>
 <script type="module" src="admin-firestore.js?v=20261017-46"></script>
 <script type="module" src="bali-admin-bar.js?v=20261017-65"></script>
+<script type="module" src="bali-admin-cards.js?v=20261017-66"></script>
 <script type="module" src="admin-orders.js?v=20261017-20"></script>
 <script type="module" src="admin-clients.js?v=20261017-20"></script>
 <script src="admin-dashboard.js?v=20261017-58" defer></script>
