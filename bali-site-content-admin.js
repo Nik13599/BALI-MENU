@@ -14,7 +14,7 @@ if(host){
     calendarPreviewTitle:"BALI календарь",calendarPageTitle:"BALI КАЛЕНДАРЬ",
     menuPageTitle:"BALI МЕНЮ",menuBannerTitle:"Меню",menuBannerCta:"Посмотреть меню",
     contactHeading:"Контактная информация",phoneText:"+375 29 670-03-00",
-    phoneHref:"tel:+375296700300",telegramChatUrl:"https://t.me/ilya_cv",
+    phoneHref:"tel:+375296700300",telegramChatUrl:"https://t.me/BALI_MINSK",
     telegramUrl:"https://t.me/baliclubminsk",tiktokUrl:"",
     instagramUrl:"https://www.instagram.com/baliminsk/",
     findHeading:"Как нас найти",addressText:"Минск, ул. Кирова, 13",
