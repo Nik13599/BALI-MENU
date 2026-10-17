@@ -12,9 +12,9 @@ const firebase = initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth = getAuth(firebase);
 const db = getFirestore(firebase);
 const $ = (id) => document.getElementById(id);
-const menu = new Map(), events = new Map();
+const menu = new Map(), events = new Map(), categories = new Map();
 const renderStatus = (id, text) => { $(id).textContent = text; };
-let unsubMenu = null, unsubEvents = null, authorized = false;
+let unsubMenu = null, unsubEvents = null, unsubCategories = null, authorized = false;
 
 function showSeedPreview() {
   const preview = $("seedPreview");
@@ -79,6 +79,149 @@ $("seedImportBtn").addEventListener("click", async () => {
   }
 });
 
+
+/* Категории хранятся в categories/{детерминированный ID}.
+   Для старого меню названия категорий также выводятся из товаров. */
+const categoryCollator = new Intl.Collator("ru");
+const canonicalCategory = name => String(name||"").normalize("NFKC").trim().replace(/\s+/g," ");
+const categoryKey = name => canonicalCategory(name).toLocaleLowerCase("ru");
+const categoryDocId = name => "c-"+Array.from(categoryKey(name),c=>c.codePointAt(0).toString(16)).join("-");
+let activeMenuEdit = null;
+function allCategories() {
+  const byName = new Map();
+  for(const cat of categories.values()){
+    if(typeof cat.name!=="string")continue;
+    const name=canonicalCategory(cat.name);
+    if(name)byName.set(categoryKey(name),{name,sort:Number(cat.sort)||100,id:cat.id||""});
+  }
+  for(const item of menu.values()){
+    const name=canonicalCategory(item.category);
+    const key=categoryKey(name);
+    if(name && !byName.has(key))byName.set(key,{name,sort:100,id:""});
+  }
+  return [...byName.values()].sort((a,b)=>a.sort-b.sort||categoryCollator.compare(a.name,b.name));
+}
+function selectedCategory() { return $("menuCategory").value; }
+function renderCategorySelector(preferred=selectedCategory()) {
+  const select=$("menuCategory");
+  select.replaceChildren(new Option("Выберите категорию",""));
+  for(const category of allCategories())select.add(new Option(category.name,category.name));
+  if(preferred && ![...select.options].some(o=>o.value===preferred))select.add(new Option(preferred,preferred));
+  select.value=preferred || "";
+}
+function renderCategoryManager() {
+  const parent=$("categoryList");
+  parent.replaceChildren();
+  const names=allCategories();
+  $("categoryCount").textContent=String(names.length);
+  for(const cat of names){
+    const count=[...menu.values()].filter(item=>categoryKey(item.category)===categoryKey(cat.name)).length;
+    const pill=document.createElement("div");
+    pill.className="category-pill";
+    const label=document.createElement("span");
+    label.textContent=cat.name;
+    const number=document.createElement("span");
+    number.className="category-pill-count";
+    number.textContent=count+" поз.";
+    pill.append(label,number);
+    // Категорию можно удалить только если нет товаров, использующих её.
+    if(cat.id && count===0) {
+      const remove=document.createElement("button");
+      remove.type="button";
+      remove.className="category-delete-btn";
+      remove.textContent="Удалить";
+      remove.addEventListener("click",async()=>{
+        if(!authorized||!confirm("Удалить пустую категорию «"+cat.name+"»?"))return;
+        try {
+          await deleteDoc(doc(db,"categories",cat.id));
+          renderStatus("categoryStatus","Категория удалена.");
+        }catch(e){renderStatus("categoryStatus","Не удалось удалить категорию: "+(e.code||"unknown"));}
+      });
+      pill.append(remove);
+    }
+    parent.append(pill);
+  }
+  if(!names.length)parent.textContent="Категорий пока нет. Создайте первую категорию.";
+  renderCategorySelector();
+}
+function openProductDialog(item=null){
+  if(!authorized)return;
+  $("menuForm").reset();
+  renderStatus("menuStatus","");
+  activeMenuEdit=item ? Number(item.id) : null;
+  $("menuDialogHeading").textContent=item?"Изменить блюдо":"Добавить блюдо";
+  $("menuId").value=item?item.id:Math.max(100,...[...menu.values()].map(x=>Number(x.id)||0))+1;
+  $("menuName").value=item?.name||"";
+  $("menuPrice").value=item?.price??"";
+  $("menuDescription").value=item?.description||"";
+  $("menuSort").value=item?.sort??100;
+  $("menuImage").value=item?.image_url||"";
+  $("menuAvailable").checked=item?.available??true;
+  renderCategorySelector(item?.category||"");
+  $("menuDialog").showModal();
+  $("menuName").focus();
+}
+function closeProductDialog(){
+  if($("categoryDialog").open)$("categoryDialog").close();
+  if($("menuDialog").open)$("menuDialog").close();
+}
+function openCategoryDialog(){
+  if(!authorized)return;
+  $("categoryForm").reset();
+  $("categorySort").value=100;
+  renderStatus("categoryDialogStatus","");
+  $("categoryDialog").showModal();
+  $("categoryName").focus();
+}
+$("addMenuBtn").addEventListener("click",()=>openProductDialog());
+$("addCategoryBtn").addEventListener("click",openCategoryDialog);
+$("newCategoryFromProduct").addEventListener("click",openCategoryDialog);
+$("closeMenuDialog").addEventListener("click",closeProductDialog);
+$("closeCategoryDialog").addEventListener("click",()=> $("categoryDialog").close());
+$("cancelCategoryDialog").addEventListener("click",()=> $("categoryDialog").close());
+$("clearMenu").addEventListener("click",closeProductDialog);
+for (const id of ["menuDialog","categoryDialog"]) {
+  const dialog=$(id);
+  dialog.addEventListener("click",event=>{
+    if(event.target===dialog)dialog.close();
+  });
+}
+$("categoryForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  if(!authorized)return;
+  const name=canonicalCategory($("categoryName").value);
+  const sort=Number($("categorySort").value);
+  if(name.length<2||name.length>60||!Number.isInteger(sort)||sort<0||sort>100000) {
+    renderStatus("categoryDialogStatus","Проверьте название и порядок категории.");return;
+  }
+  const existing=allCategories().find(x=>categoryKey(x.name)===categoryKey(name));
+  if(existing){
+    renderStatus("categoryDialogStatus","Такая категория уже существует: "+existing.name);
+    return;
+  }
+  const btn=event.currentTarget.querySelector('[type="submit"]');
+  btn.disabled=true;
+  renderStatus("categoryDialogStatus","Сохраняем категорию...");
+  try{
+    const ref=doc(db,"categories",categoryDocId(name));
+    await runTransaction(db,async tx=>{
+      const current=await tx.get(ref);
+      if(current.exists())throw new Error("Категория уже создана другим администратором.");
+      tx.set(ref,{name,sort,updatedAt:serverTimestamp()});
+    });
+    categories.set(ref.id,{id:ref.id,name,sort});
+    renderCategoryManager();
+    menuRender();
+    $("menuCategory").value=name;
+    $("categoryDialog").close();
+    renderStatus("categoryStatus","Категория «"+name+"» добавлена.");
+  }catch(e){
+    renderStatus("categoryDialogStatus",e.code==="permission-denied"
+      ?"Firestore не разрешает создавать категории. Опубликуйте новые firestore.rules из GitHub в Firebase."
+      :"Ошибка: "+(e.message||e.code||"unknown"));
+  }finally{btn.disabled=false;}
+});
+
 function createEntry(title, subtitle, onEdit, onDelete) {
   const row = document.createElement("div");
   row.className = "entry";
@@ -102,37 +245,51 @@ function createEntry(title, subtitle, onEdit, onDelete) {
 }
 
 function menuRender() {
-  const list = $("menuList");
+  const list=$("menuList");
+  const wasOpen=new Map([...list.querySelectorAll(".menu-category-group")]
+    .map(node=>[node.dataset.category,node.open]));
   list.replaceChildren();
-  for (const item of [...menu.values()].sort((a,b) => a.sort-b.sort || a.name.localeCompare(b.name,"ru"))) {
-    list.append(createEntry(
-      item.name + " — " + item.price.toFixed(2) + " BYN",
-      "ID "+item.id+" · "+item.category+" · "+(item.available ? "В наличии" : "Недоступно"),
-      () => {
-        $("menuId").value = item.id;
-        $("menuId").readOnly = true;
-        $("menuName").value = item.name;
-        $("menuCategory").value = item.category;
-        $("menuDescription").value = item.description;
-        $("menuPrice").value = item.price;
-        $("menuSort").value = item.sort;
-        $("menuImage").value = item.image_url;
-        $("menuAvailable").checked = item.available;
-        window.dispatchEvent(new CustomEvent("bali:admin:edit-menu"));
-        $("menuForm").scrollIntoView({behavior:"smooth",block:"center"});
-      },
-      async () => {
-        if (!confirm("Удалить «"+item.name+"»? Это действие нельзя отменить.")) return;
-        try {
-          await deleteDoc(doc(db,"menu",String(item.id)));
-          renderStatus("menuStatus","Товар удалён.");
-        } catch (error) {
-          renderStatus("menuStatus","Ошибка удаления: "+(error.code || "unknown"));
-        }
-      }
-    ));
+  const products=[...menu.values()].sort((a,b)=>a.sort-b.sort||categoryCollator.compare(a.name,b.name));
+  const buckets=new Map();
+  for(const c of allCategories())buckets.set(categoryKey(c.name),{category:c.name,items:[]});
+  for(const item of products){
+    const key=categoryKey(item.category);
+    if(!buckets.has(key))buckets.set(key,{category:item.category,items:[]});
+    buckets.get(key).items.push(item);
   }
-  if (!menu.size) list.textContent = "Каталог пока пуст. Добавьте первый товар.";
+  for(const [key,bucket] of buckets){
+    if(!bucket.items.length)continue;
+    const group=document.createElement("details");
+    group.className="menu-category-group";
+    group.dataset.category=key;
+    group.open=wasOpen.has(key)?wasOpen.get(key):true;
+    const summary=document.createElement("summary");
+    summary.className="menu-category-title";
+    const name=document.createElement("strong");name.textContent=bucket.category;
+    const count=document.createElement("span");count.className="category-group-count";
+    count.textContent=bucket.items.length+" поз.";
+    summary.append(name,count);
+    const rows=document.createElement("div");
+    rows.className="menu-category-rows";
+    for(const item of bucket.items){
+      rows.append(createEntry(
+        item.name+" — "+Number(item.price).toFixed(2)+" BYN",
+        "ID "+item.id+" · "+(item.available?"В наличии":"Недоступно"),
+        ()=>openProductDialog(item),
+        async()=>{
+          if(!confirm("Удалить «"+item.name+"»? Это действие нельзя отменить."))return;
+          try{await deleteDoc(doc(db,"menu",String(item.id)));renderStatus("categoryStatus","Товар удалён.");}
+          catch(e){renderStatus("categoryStatus","Не удалось удалить товар: "+(e.code||"unknown"));}
+        }
+      ));
+    }
+    group.append(summary,rows);
+    list.append(group);
+  }
+  if(!products.length)list.textContent="Каталог пока пуст. Нажмите «Добавить блюдо».";
+  $("menuResultCount").textContent=String(products.length);
+  renderCategoryManager();
+  window.dispatchEvent(new CustomEvent("bali:admin:catalog-rendered"));
 }
 
 function eventRender() {
@@ -172,34 +329,52 @@ function clearEvent() {
   $("eventDateAdmin").readOnly=false;
   $("eventOpen").checked=true;
 }
-$("clearMenu").addEventListener("click", clearMenu);
+
 $("clearEvent").addEventListener("click", clearEvent);
 
-$("menuForm").addEventListener("submit", async (event) => {
+$("menuForm").addEventListener("submit",async event=>{
   event.preventDefault();
-  if (!authorized) return;
+  if(!authorized)return;
   const id=Number($("menuId").value),price=Number($("menuPrice").value),sort=Number($("menuSort").value);
-  if(!Number.isSafeInteger(id) || id<1 || !Number.isFinite(price) || price<0 ||
-     !Number.isInteger(sort) || sort<0) {
-    renderStatus("menuStatus","Проверьте ID, цену и сортировку.");return;
+  const category=canonicalCategory($("menuCategory").value);
+  if(!Number.isSafeInteger(id)||id<1||!Number.isFinite(price)||price<0||
+     !Number.isInteger(sort)||sort<0||sort>100000||!allCategories().some(c=>c.name===category)){
+    renderStatus("menuStatus","Проверьте цену, сортировку и выберите существующую категорию.");return;
   }
   const url=$("menuImage").value.trim();
-  if (url && !/^https:\/\/[^ ]+$/.test(url)) {
+  if(url&&!/^https:\/\/[^ ]+$/.test(url)){
     renderStatus("menuStatus","Фотография должна иметь HTTPS-ссылку.");return;
   }
   const data={
-    id,name:$("menuName").value.trim(),category:$("menuCategory").value.trim(),
+    id,name:$("menuName").value.trim(),category,
     description:$("menuDescription").value.trim(),price,image_url:url,
     available:$("menuAvailable").checked,sort,updatedAt:serverTimestamp()
   };
   const button=event.currentTarget.querySelector('[type="submit"]');
   button.disabled=true;
   renderStatus("menuStatus","Сохраняем товар...");
-  try {
-    await setDoc(doc(db,"menu",String(id)),data);
-    clearMenu();renderStatus("menuStatus","Товар сохранён в Firestore.");
-  } catch(e){renderStatus("menuStatus","Не удалось сохранить товар: "+(e.code || "unknown"));}
-  finally{button.disabled=false;}
+  try{
+    const ref=doc(db,"menu",String(id));
+    if(activeMenuEdit===null){
+      // Не перезаписываем другой товар при одновременной работе администраторов.
+      await runTransaction(db,async tx=>{
+        const old=await tx.get(ref);
+        if(old.exists())throw new Error("ID уже занят. Закройте карточку и добавьте товар заново.");
+        tx.set(ref,data);
+      });
+    }else{
+      if(activeMenuEdit!==id)throw new Error("ID товара не должен изменяться.");
+      await setDoc(ref,data);
+    }
+    const savedName=data.name;
+    closeProductDialog();
+    clearMenu();
+    renderStatus("categoryStatus","Товар «"+savedName+"» сохранён.");
+  }catch(e){
+    renderStatus("menuStatus",e.code==="permission-denied"
+      ?"Firestore запретил сохранение. Проверьте правила доступа и права администратора."
+      :"Не удалось сохранить товар: "+(e.message||e.code||"unknown"));
+  }finally{button.disabled=false;}
 });
 
 $("eventForm").addEventListener("submit",async (event)=>{
@@ -240,6 +415,7 @@ function showLoginIdentity(user) {
 async function checkAdminAccess(user) {
   if(unsubMenu){unsubMenu();unsubMenu=null;}
   if(unsubEvents){unsubEvents();unsubEvents=null;}
+  if(unsubCategories){unsubCategories();unsubCategories=null;}
   authorized=false;
   $("adminView").hidden=true;
   $("loginView").hidden=false;
@@ -268,6 +444,18 @@ async function checkAdminAccess(user) {
     $("adminEmail").textContent=user.email||"";
     $("adminView").hidden=false;
     $("loginView").hidden=true;
+    unsubCategories=onSnapshot(collection(db,"categories"),snap=>{
+      categories.clear();
+      for(const d of snap.docs)categories.set(d.id,{...d.data(),id:d.id});
+      renderCategoryManager();
+      menuRender();
+    },error=>{
+      renderStatus("categoryStatus",
+        error.code==="permission-denied"
+          ?"Чтобы создавать отдельные категории, опубликуйте обновлённые правила Firestore."
+          :"Категории не загружены: "+(error.code||"unknown"));
+      renderCategoryManager();
+    });
     unsubMenu=onSnapshot(collection(db,"menu"),snap=>{
       menu.clear();
       for(const d of snap.docs){const x=d.data();if(typeof x.name==="string"&&Number.isFinite(x.price))menu.set(d.id,x);}
