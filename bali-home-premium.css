@@ -388,3 +388,35 @@
     transition:none;
   }
 }
+
+/* Keep operational testing notice legible, but visually secondary. */
+body[data-bali-page="home"] .header{
+  border-bottom:1px solid rgba(236,194,133,.12);
+  background:#07080c;
+}
+body[data-bali-page="home"] .bali-preview-banner{
+  color:#b6a68e;
+  background:linear-gradient(90deg,#171419,#1b1616,#171419);
+  border-bottom:1px solid rgba(236,194,133,.13);
+  text-align:center;
+  box-shadow:none;
+  font-weight:500;
+  letter-spacing:.005em;
+}
+body[data-bali-page="home"] .bali-bottom-nav{
+  border-top:1px solid rgba(233,194,136,.21);
+  background:rgba(5,7,12,.98);
+}
+@media(max-width:767px){
+  body[data-bali-page="home"] .bali-preview-banner{
+    padding:4px 10px;
+    font-size:clamp(9px,2.1vw,10px);
+    line-height:1.25;
+    max-height:36px;
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    line-clamp:2;
+    overflow:hidden;
+  }
+}
