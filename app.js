@@ -1032,10 +1032,14 @@ function createMenuItemHTML(item) {
     const id = Number(item.id);
     const price = Number(item.price) || 0;
     if (!Number.isSafeInteger(id) || id < 0 || price < 0) return '';
+    // Empty or invalid images have no DOM node and reserve zero card space.
+    const imageSource=String(item.image_url||"").trim();
+    const safeImage=imageSource?safeImageUrl(imageSource):"";
+    const withImage=Boolean(imageSource&&safeImage!=="https://placehold.co/400x200?text=BALI");
     return `
-        <div class="menu-item ${unavailable ? 'unavailable' : ''}" data-id="${id}">
-            <img src="${safeImageUrl(item.image_url)}"
-                alt="${escapeHTML(item.name)}" class="menu-item-image">
+        <div class="menu-item ${unavailable ? 'unavailable' : ''} ${withImage ? '' : 'menu-item--no-image'}" data-id="${id}">
+            ${withImage ? `<img src="${safeImage}"
+                alt="${escapeHTML(item.name)}" class="menu-item-image">` : ''}
             <div class="menu-item-content">
                 <span class="menu-item-category">${escapeHTML(item.category)}</span>
                 <div class="menu-item-header">
@@ -1058,6 +1062,16 @@ function createMenuItemHTML(item) {
         </div>
     `;
 }
+
+// If an uploaded/remote photo is unavailable, collapse the image area just
+// like an item without a picture. Captures image-load errors on new cards too.
+elements.menuGrid?.addEventListener("error",event=>{
+    const image=event.target;
+    if(!(image instanceof HTMLImageElement)||!image.matches(".menu-item-image"))return;
+    const item=image.closest(".menu-item");
+    image.remove();
+    item?.classList.add("menu-item--no-image");
+},true);
 
 function showLoading() {
     elements.menuGrid.innerHTML = `
