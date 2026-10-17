@@ -250,3 +250,22 @@
 :root[data-bali-theme="lime"] body.bali-admin-theme .hint{
   color:#bec0c5!important;
 }
+
+/* v62 — The address icon is one clean lime location silhouette.
+   No Yandex-red tile and no white pin centre. Theme color remains dynamic. */
+#homeSection .bali-home-contacts-card .bali-yandex-pin{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  color:var(--bt-text)!important;
+}
+#homeSection .bali-home-contacts-card .bali-yandex-pin::before,
+#homeSection .bali-home-contacts-card .bali-yandex-pin::after{
+  content:none!important;
+  display:none!important;
+}
+#homeSection .bali-home-contacts-card .bali-yandex-pin svg{
+  display:block;
+  fill:currentColor;
+}
