@@ -600,3 +600,15 @@ button, a, input, select, textarea, summary,
   }
   #myOrdersBtn,.header-content .events-nav-btn,.header-content .nav-link{font-size:10px}
 }
+
+@media(min-width:768px) and (max-width:1199px){
+  .header-content{
+    grid-template-columns:minmax(0,1fr) minmax(0,.6fr) auto auto;
+    grid-template-areas:"brand brand account cart" "menu events orders orders";
+  }
+  .header-content .nav-link{grid-area:menu}
+  .header-content .events-nav-btn{grid-area:events;justify-self:start;text-align:center;min-height:39px}
+  #myOrdersBtn{grid-area:orders;justify-self:end}
+  #accountBtn{grid-area:account}
+  #cartBtn{grid-area:cart}
+}
