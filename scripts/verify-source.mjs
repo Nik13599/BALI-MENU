@@ -54,14 +54,22 @@ const themeClient=source("bali-theme.js");
 const themeCss=source("bali-theme.css");
 
 const neutralLimeCss=source("bali-lime-neutral.css");
+assert(html.includes('class="bali-yandex-pin"') &&
+  !html.includes('<circle cx="12" cy="12" r="4.25" fill="white"/>') &&
+  neutralLimeCss.includes('#homeSection .bali-home-contacts-card .bali-yandex-pin{') &&
+  neutralLimeCss.includes('background:transparent!important;') &&
+  neutralLimeCss.includes('border-radius:0!important;') &&
+  neutralLimeCss.includes('color:var(--bt-text)!important;'),
+  "The home address icon must be a solid theme-colored pin, without red tile or white centre");
+
 assert(html.includes('data-bali-theme="lime"') &&
   admin.includes('data-bali-theme="lime"') &&
   html.includes('history.scrollRestoration="manual"') &&
-  html.includes('bali-lime-neutral.css?v=20261017-61') &&
-  admin.includes('bali-lime-neutral.css?v=20261017-61') &&
-  html.indexOf('bali-lime-neutral.css?v=20261017-61') >
+  html.includes('bali-lime-neutral.css?v=20261017-62') &&
+  admin.includes('bali-lime-neutral.css?v=20261017-62') &&
+  html.indexOf('bali-lime-neutral.css?v=20261017-62') >
   html.indexOf('bali-theme.css?v=20261017-60') &&
-  admin.indexOf('bali-lime-neutral.css?v=20261017-61') >
+  admin.indexOf('bali-lime-neutral.css?v=20261017-62') >
   admin.indexOf('bali-theme.css?v=20261017-60'),
   "LIME neutral skin and manual Safari scroll restoration must be loaded after base styles");
 assert(app.includes('function resetGuestVerticalPosition(page)') &&
