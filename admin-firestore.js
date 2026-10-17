@@ -259,7 +259,7 @@ $("categoryForm").addEventListener("submit",async event=>{
   }finally{btn.disabled=false;}
 });
 
-function createEntry(title, subtitle, onEdit, onDelete) {
+function createEntry(title, subtitle, onEdit, onDelete, imageUrl="") {
   const row = document.createElement("div");
   row.className = "entry";
   const info = document.createElement("div");
@@ -268,6 +268,13 @@ function createEntry(title, subtitle, onEdit, onDelete) {
   const caption = document.createElement("small");
   caption.textContent = subtitle;
   info.append(name, caption);
+  if(imageUrl && (/^https:\/\//.test(imageUrl)||isImageDataUri(imageUrl))) {
+    const preview=document.createElement("img");
+    preview.className="admin-list-thumbnail";
+    preview.src=imageUrl;
+    preview.alt="";
+    row.append(preview);
+  }
   const controls = document.createElement("div");
   controls.className = "row-actions";
   for (const [label, fn] of [["Изменить", onEdit], ["Удалить", onDelete]]) {
@@ -317,7 +324,8 @@ function menuRender() {
           if(!confirm("Удалить «"+item.name+"»? Это действие нельзя отменить."))return;
           try{await deleteDoc(doc(db,"menu",String(item.id)));renderStatus("categoryStatus","Товар удалён.");}
           catch(e){renderStatus("categoryStatus","Не удалось удалить товар: "+(e.code||"unknown"));}
-        }
+        },
+        item.image_url
       ));
     }
     group.append(summary,rows);
@@ -352,7 +360,8 @@ function eventRender() {
         if(!confirm("Удалить мероприятие "+event.date+"?"))return;
         try { await deleteDoc(doc(db,"events",event.date));renderStatus("eventStatus","Мероприятие удалено."); }
         catch(e){renderStatus("eventStatus","Ошибка: "+(e.code || "unknown"));}
-      }
+      },
+      event.poster_url||""
     ));
   }
   if (!events.size) list.textContent="Мероприятия пока не добавлены.";
