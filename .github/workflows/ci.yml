@@ -28,6 +28,7 @@ jobs:
           node --input-type=module --check < admin-orders.js
           node --input-type=module --check < admin-clients.js
           node --input-type=module --check < image-compressor.js
+          node --input-type=module --check < event-interests.js
           node --check admin-dashboard.js
           node --check admin.js
           node --check track.js
