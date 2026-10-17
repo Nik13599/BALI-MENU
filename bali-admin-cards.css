@@ -105,3 +105,98 @@
   .bali-catalog-visibility-heading{display:block}
   .bali-catalog-visibility-heading>.tag{display:inline-block;margin-top:10px}
 }
+
+/* v79 Home Design: clear designer specs, local uploads and previews. */
+.bali-design-overview{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:11px;margin:10px 0 20px;
+}
+.bali-design-overview>div{
+  display:grid;gap:6px;padding:18px 14px;
+  border:1px solid rgba(255,255,255,.13);border-radius:14px;background:#1c2025
+}
+.bali-design-overview strong{color:#f3f4f5;font:750 13px Manrope,sans-serif}
+.bali-design-overview span{color:var(--bt-text,#d8ff9f);font:650 12px Manrope,sans-serif}
+.bali-design-view-site{
+  display:flex;align-items:center;padding:12px 15px;
+  border:1px solid var(--bt-border,#b2ef5f);border-radius:10px;
+  color:var(--bt-text,#d8ff9f);font:650 12px Manrope,sans-serif;text-decoration:none;
+}
+.bali-design-about-editor,.bali-design-merch-editor,.bali-promo-editor{
+  margin:0 0 24px; padding:clamp(16px,2vw,24px);overflow:hidden;
+}
+.bali-design-spec{
+  display:grid;grid-template-columns:112px minmax(0,1fr);
+  align-items:center;gap:18px;padding:15px;margin:13px 0 22px;
+  background:#20252a;border:1px solid rgba(255,255,255,.11);border-radius:13px;
+}
+.bali-design-spec-art{
+  display:grid;place-items:center;aspect-ratio:9/14;
+  max-height:110px;border:1px dashed var(--bt-border,#b2ef5f);
+  background:linear-gradient(120deg,#28352a,#10171a);border-radius:7px;
+  color:var(--bt-text,#d8ff9f);font:750 11px Manrope,sans-serif;text-align:center;padding:5px;
+}
+.bali-design-spec-art-hero{aspect-ratio:8/3;max-height:none}
+.bali-design-spec-art-landscape{aspect-ratio:3/2;max-height:100px}
+.bali-design-spec>div:nth-child(2){display:grid;gap:8px}
+.bali-design-spec strong{font:730 13px Manrope,sans-serif;color:#f4f5f5}
+.bali-design-spec small{font:500 12px/1.6 Manrope,sans-serif;color:#aab1b8}
+.bali-design-form{display:grid;gap:15px;max-width:900px}
+.bali-design-form label,.bali-promo-form label{display:grid;gap:6px;color:#e2e6e7;font:650 12px Manrope,sans-serif}
+.bali-design-form :is(input,select,textarea),
+.bali-promo-form :is(input,select,textarea){
+  width:100%;min-height:41px;box-sizing:border-box;
+  border-radius:9px;border:1px solid rgba(255,255,255,.18);
+  background:#242931;color:#fff;font:500 13px Manrope,sans-serif;
+  padding:9px 10px;
+}
+.bali-design-form :is(input[type=checkbox],input[type=file]),
+.bali-promo-form input[type=file]{accent-color:var(--bt-primary,#b9ff51)}
+.bali-design-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.bali-design-upload{
+  display:grid;gap:10px;
+  padding:14px;border:1px solid rgba(255,255,255,.14);
+  border-radius:12px;background:#1c2025;
+}
+.bali-design-upload button,.bali-design-variant button{
+  justify-self:start;padding:8px 12px;border:1px solid rgba(255,255,255,.17);
+  background:#2c3037;border-radius:8px;color:#dbe0e1;font:650 11px Manrope,sans-serif;cursor:pointer;
+}
+.bali-design-image-preview{
+  display:grid;place-items:center;position:relative;overflow:hidden;
+  width:min(360px,100%);aspect-ratio:3/2;
+  border:1px dashed rgba(255,255,255,.2);border-radius:10px;
+  background:#12161a;color:#b2bbc0;font:600 12px Manrope,sans-serif;
+}
+.bali-design-image-preview-square{aspect-ratio:9/14;max-width:210px}
+.bali-design-image-preview img{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.bali-design-variant-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+  margin:12px 0;
+}
+.bali-design-variant{
+  display:grid;gap:10px;min-width:0;padding:14px;
+  border:1px solid rgba(255,255,255,.13);border-radius:12px;background:#191e23;
+}
+.bali-design-variant>strong{color:var(--bt-text,#d8ff9f);font:720 13px Manrope,sans-serif}
+.bali-design-variant .bali-design-image-preview{max-width:180px}
+.bali-design-publication{display:flex!important;align-items:center;gap:10px!important}
+.bali-design-publication input{width:18px!important;min-height:18px!important}
+.bali-design-merch-list{display:grid;gap:10px;margin-top:20px}
+.bali-design-merch-entry{
+  display:flex;align-items:center;gap:13px;padding:11px;
+  border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#1d2227;
+}
+.bali-design-merch-entry img{width:80px;height:69px;object-fit:cover;border-radius:7px}
+.bali-design-merch-entry-info{flex:1;min-width:0;display:grid;gap:4px}
+.bali-design-merch-entry-info strong{font:740 13px Manrope,sans-serif;color:#fff}
+.bali-design-merch-entry-info small,.bali-design-merch-entry-info span{font:560 11px Manrope,sans-serif;color:#b7c2c6}
+.bali-design-merch-entry-actions{display:flex;gap:7px;flex-wrap:wrap}
+.bali-design-merch-entry-actions button{padding:8px;border-radius:7px;background:#2b3236;border:1px solid #3d4649;color:#fff;cursor:pointer}
+@media(max-width:760px){
+  .bali-design-overview{grid-template-columns:1fr}
+  .bali-design-variant-grid,.bali-design-form-grid{grid-template-columns:1fr}
+  .bali-design-spec{grid-template-columns:85px minmax(0,1fr);gap:9px;padding:10px}
+  .bali-design-merch-entry{flex-wrap:wrap}
+  .bali-design-merch-entry-actions{width:100%}
+}
