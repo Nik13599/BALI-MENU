@@ -468,3 +468,116 @@
     min-height:42px!important;
   }
 }
+
+/* v85 — ONE shared category strip and search on kitchen, bar, hookah and tea.
+   The entire top (title, tabs, categories and search) remains unchanged
+   on desktop, tablet and phone; only the contents beneath it switch. */
+#menuPage .bali-shared-menu-controls{
+  display:flex!important;
+  flex:0 0 auto!important;
+  flex-direction:column!important;
+  min-width:0!important;
+  width:100%!important;
+  gap:0!important;
+}
+#menuPage .bali-shared-menu-controls[hidden]{display:none!important}
+#menuPage .bali-shared-menu-controls .categories{
+  display:block!important;
+  width:100%!important;
+  position:relative!important;
+  inset:auto!important;
+  min-height:45px!important;
+  flex:0 0 auto!important;
+  padding:0!important;
+  margin:0!important;
+  background:transparent!important;
+}
+#menuPage .bali-shared-menu-controls .categories .container{
+  width:100%!important;max-width:none!important;
+  padding-inline:clamp(13px,2.4vw,35px)!important;
+  margin:0!important;box-sizing:border-box;
+}
+#menuPage #baliSharedCategories .bali-shared-category-filter{
+  display:flex!important;
+  align-items:center!important;
+  flex-flow:row nowrap!important;
+  gap:clamp(6px,.8vw,12px)!important;
+  min-height:43px!important;
+  width:100%!important;max-width:none!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  overscroll-behavior-x:contain;
+  scrollbar-width:thin;
+  margin:0!important;
+  padding:0 0 3px!important;
+}
+#menuPage #baliSharedCategories .bali-shared-category-filter[hidden]{
+  display:none!important;
+}
+#menuPage #baliSharedCategories .bali-bar-filter,
+#menuPage #baliSharedCategories .category-btn{
+  flex:0 0 auto!important;
+  white-space:nowrap!important;
+  min-height:35px!important;
+  line-height:1.2!important;
+  padding:7px 12px!important;
+  margin:0!important;
+  border-radius:9px!important;
+  font-size:clamp(10px,.85vw,12px)!important;
+}
+#menuPage #baliSharedCategories .bali-bar-filter.is-active{
+  background:var(--bt-primary,#b9ff51)!important;
+  color:var(--bt-on-primary,#10131a)!important;
+  border-color:var(--bt-primary,#b9ff51)!important;
+}
+#menuPage .bali-shared-menu-controls .bali-menu-search{
+  display:block!important;
+  width:100%!important;max-width:none!important;
+  box-sizing:border-box!important;
+  flex:0 0 auto!important;
+  margin:5px 0 8px!important;
+  padding-inline:clamp(13px,2.4vw,35px)!important;
+}
+#menuPage .bali-shared-menu-controls .bali-menu-search-field{width:100%!important;max-width:none!important}
+#menuPage .bali-bar-content{
+  padding-top:clamp(8px,1.2vw,18px)!important;
+}
+#menuPage .bali-bar-content .bali-bar-intro{
+  display:none!important;
+}
+#menuPage .bali-bar-list{
+  margin-top:0!important;
+}
+@media(min-width:1180px){
+  body.bali-guest-theme #menuPage .bali-shared-menu-controls{
+    padding-top:0!important;
+  }
+  body.bali-guest-theme #menuPage .bali-shared-menu-controls .categories{
+    position:relative!important;
+  }
+  body.bali-guest-theme #menuPage .bali-bar-content{
+    overflow-y:auto!important;
+    flex:1 1 auto!important;
+    min-height:0!important;
+  }
+  body.bali-guest-theme #menuPage .bali-kitchen-content{
+    flex:1 1 auto!important;
+    min-height:0!important;
+  }
+}
+@media(max-width:767px){
+  #menuPage .bali-shared-menu-controls .categories{
+    min-height:44px!important;
+  }
+  #menuPage #baliSharedCategories .bali-bar-filter,
+  #menuPage #baliSharedCategories .category-btn{
+    font-size:11px!important;
+    min-height:36px!important;
+    padding:7px 11px!important;
+  }
+  #menuPage .bali-shared-menu-controls .bali-menu-search{
+    margin:6px 0 9px!important;
+  }
+  #menuPage .bali-bar-content{
+    padding:10px 13px 95px!important;
+  }
+}
