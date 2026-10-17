@@ -73,11 +73,27 @@ service cloud.firestore {
         && data.updatedAt == request.time;
     }
 
+    // Section switches only control public navigation/visibility.
+    // Products stay intact and remain writable only by administrators.
+    function validMenuVisibility(data) {
+      return data.keys().hasAll(['sections','updatedAt'])
+        && data.keys().hasOnly(['sections','updatedAt'])
+        && data.sections is map
+        && data.sections.keys().hasAll(['kitchen','bar','hookah','tea'])
+        && data.sections.keys().hasOnly(['kitchen','bar','hookah','tea'])
+        && data.sections.kitchen is bool
+        && data.sections.bar is bool
+        && data.sections.hookah is bool
+        && data.sections.tea is bool
+        && data.updatedAt == request.time;
+    }
+
     match /settings/{settingId} {
-      allow get: if settingId == 'appearance';
+      allow get: if settingId in ['appearance','menuVisibility'];
       allow list: if false;
-      allow create, update: if settingId == 'appearance'
-        && isAdmin() && validAppearance(request.resource.data);
+      allow create, update: if isAdmin()
+        && ((settingId == 'appearance' && validAppearance(request.resource.data))
+            || (settingId == 'menuVisibility' && validMenuVisibility(request.resource.data)));
       allow delete: if false;
     }
 
