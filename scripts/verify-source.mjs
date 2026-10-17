@@ -94,7 +94,7 @@ const dashboardCss = source("admin-dashboard.css");
 const dashboardJs = source("admin-dashboard.js");
 assert(admin.includes('id="adminOrdersPanel"') && admin.includes('id="adminMenuPanel"') && admin.includes('id="adminEventsPanel"'), "Admin must have separate Orders, Menu and Events workspaces");
 assert(admin.includes('data-admin-tab="orders"') && admin.includes('data-admin-tab="menu"') && admin.includes('data-admin-tab="events"'), "Admin navigation tabs missing");
-assert(admin.includes('admin-dashboard.css?v=20261017-15') && admin.includes('admin-dashboard.js?v=20261017-15'), "Updated dashboard files must be loaded");
+assert(admin.includes('admin-dashboard.css?v=20261017-18') && admin.includes('admin-dashboard.js?v=20261017-18'), "Updated dashboard files must be loaded");
 assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes('.admin-sidebar'), "Mobile dashboard navigation CSS missing");
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
@@ -108,4 +108,19 @@ assert(responsive.includes('grid-template-areas:') && responsive.includes('"bran
 assert(responsive.includes('#accountBtn::before') && responsive.includes("data:image/svg+xml"), "Mobile account must show the person icon");
 assert(responsive.includes('touch-action: manipulation'), "Double-tap zoom must be disabled while pinch zoom stays available");
 assert(auth.includes('profile ? profile.name : "Профиль"'), "Mobile cabinet button must display signed-in name");
+const adminCategoryIds = [
+  "addMenuBtn","addCategoryBtn","menuDialog","categoryDialog",
+  "menuForm","menuCategory","newCategoryFromProduct","categoryForm",
+  "categoryName","categoryList","menuList","menuSearch"
+];
+for(const id of adminCategoryIds)
+  assert(admin.includes('id="' + id + '"'), "Admin category/product UI missing " + id);
+assert(admin.includes('<select id="menuCategory" required>'), "Product category must be selected from saved options");
+assert(admin.includes('id="menuDialog"') && admin.includes('id="categoryDialog"'), "Product and category editors must be popup dialogs");
+assert(adminClient.includes('collection(db,"categories")') && adminClient.includes('categoryDocId(name)'), "Category collection persistence missing");
+assert(adminClient.includes('menu-category-group') && adminClient.includes('openProductDialog(item)'), "Catalog must group products by category and edit via modal");
+assert(adminClient.includes('closeProductDialog();') && adminClient.includes('await setDoc(ref,data)'), "Saving edits must close the product dialog");
+assert(rules.includes('match /categories/{categoryId}') && rules.includes('validCategory(request.resource.data)'), "Category write permissions must be admin-only");
+assert(dashboardJs.includes('group.querySelectorAll(".entry")'), "Category groups must be searchable");
+assert(dashboardCss.includes('.admin-form-dialog') && dashboardCss.includes('.menu-category-group'), "Modal and categorized catalog styles missing");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
