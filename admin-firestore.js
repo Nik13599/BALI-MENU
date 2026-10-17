@@ -1,5 +1,6 @@
 // BALI MENU: администратор через Google Auth + вручную назначенный admins/{uid}.
 import { BALI_MENU_SEED } from "./menu-seed.js?v=20261017-9";
+import { compressImage } from "./image-compressor.js?v=20261017-20";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
@@ -15,6 +16,38 @@ const $ = (id) => document.getElementById(id);
 const menu = new Map(), events = new Map(), categories = new Map();
 const renderStatus = (id, text) => { $(id).textContent = text; };
 let unsubMenu = null, unsubEvents = null, unsubCategories = null, authorized = false;
+let pendingProductImage = "", pendingEventPoster = "";
+function imagePreview(id,src){
+  const img=$(id);
+  if(!img)return;
+  img.hidden=!src;
+  if(src)img.src=src;
+  else img.removeAttribute("src");
+}
+function isImageDataUri(str){
+  return /^data:image\/webp;base64,[A-Za-z0-9+/=]+$/.test(String(str||""));
+}
+$("menuImageFile").addEventListener("change",async event=>{
+  const file=event.target.files?.[0];
+  if(!file)return;
+  renderStatus("menuStatus","Подготавливаем квадратное фото...");
+  try{
+    pendingProductImage=await compressImage(file,"product");
+    imagePreview("menuImagePreview",pendingProductImage);
+    renderStatus("menuStatus","Фото обработано: 1:1, WebP. Нажмите «Сохранить товар».");
+  }catch(error){pendingProductImage="";imagePreview("menuImagePreview","");renderStatus("menuStatus",error.message);}
+});
+$("eventPosterFile").addEventListener("change",async event=>{
+  const file=event.target.files?.[0];
+  if(!file)return;
+  renderStatus("eventStatus","Подготавливаем афишу...");
+  try{
+    pendingEventPoster=await compressImage(file,"poster");
+    imagePreview("eventPosterPreview",pendingEventPoster);
+    renderStatus("eventStatus","Афиша готова. Нажмите «Сохранить мероприятие».");
+  }catch(error){pendingEventPoster="";imagePreview("eventPosterPreview","");renderStatus("eventStatus",error.message);}
+});
+
 
 function showSeedPreview() {
   const preview = $("seedPreview");
@@ -155,7 +188,11 @@ function openProductDialog(item=null){
   $("menuPrice").value=item?.price??"";
   $("menuDescription").value=item?.description||"";
   $("menuSort").value=item?.sort??100;
-  $("menuImage").value=item?.image_url||"";
+  pendingProductImage="";
+  $("menuImageFile").value="";
+  const existingImage=item?.image_url||"";
+  $("menuImage").value=isImageDataUri(existingImage)?"":existingImage;
+  imagePreview("menuImagePreview",existingImage);
   $("menuAvailable").checked=item?.available??true;
   renderCategorySelector(item?.category||"");
   $("menuDialog").showModal();
@@ -305,6 +342,9 @@ function eventRender() {
         $("eventTitle").value=event.title;
         $("eventCutoff").value=event.cutoff;
         $("eventOpen").checked=event.preorderEnabled;
+        pendingEventPoster="";
+        $("eventPosterFile").value="";
+        imagePreview("eventPosterPreview",event.poster_url||"");
         window.dispatchEvent(new CustomEvent("bali:admin:edit-event"));
         $("eventForm").scrollIntoView({behavior:"smooth",block:"center"});
       },
@@ -319,12 +359,16 @@ function eventRender() {
 }
 
 function clearMenu() {
+  pendingProductImage="";
+  imagePreview("menuImagePreview","");
   $("menuForm").reset();
   $("menuId").readOnly=false;
   $("menuSort").value=100;
   $("menuAvailable").checked=true;
 }
 function clearEvent() {
+  pendingEventPoster="";
+  imagePreview("eventPosterPreview","");
   $("eventForm").reset();
   $("eventDateAdmin").readOnly=false;
   $("eventOpen").checked=true;
@@ -341,8 +385,11 @@ $("menuForm").addEventListener("submit",async event=>{
      !Number.isInteger(sort)||sort<0||sort>100000||!allCategories().some(c=>c.name===category)){
     renderStatus("menuStatus","Проверьте цену, сортировку и выберите существующую категорию.");return;
   }
-  const url=$("menuImage").value.trim();
-  if(url&&!/^https:\/\/[^ ]+$/.test(url)){
+  const url=pendingProductImage ||
+    $("menuImage").value.trim() ||
+    (activeMenuEdit!==null && isImageDataUri(menu.get(String(activeMenuEdit))?.image_url)
+      ? menu.get(String(activeMenuEdit)).image_url : "");
+  if(url&&!/^https:\/\/[^ ]+$/.test(url)&&!isImageDataUri(url)){
     renderStatus("menuStatus","Фотография должна иметь HTTPS-ссылку.");return;
   }
   const data={
@@ -396,6 +443,7 @@ $("eventForm").addEventListener("submit",async (event)=>{
     await setDoc(doc(db,"events",date),{
       date, title, cutoff, preorderEnabled:$("eventOpen").checked,
       closesAt: Timestamp.fromDate(closesAt),
+      poster_url: pendingEventPoster || events.get(date)?.poster_url || "",
       updatedAt:serverTimestamp()
     });
     clearEvent();renderStatus("eventStatus","Мероприятие сохранено.");
