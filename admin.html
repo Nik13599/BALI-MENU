@@ -210,6 +210,11 @@
                 <button id="clearEvent" type="button">Сбросить</button>
               </div>
               <p id="eventStatus" class="status" role="status" aria-live="polite"></p>
+              <p id="eventRulesHelp" class="hint" hidden>
+                <a href="https://github.com/Nik13599/BALI-MENU/blob/main/firestore.rules" target="_blank" rel="noopener noreferrer">Скопировать актуальные правила с GitHub</a>
+                → <a href="https://console.firebase.google.com/project/bali-menu-5a48b/firestore/rules" target="_blank" rel="noopener noreferrer">открыть Firebase Rules и нажать Publish</a>.
+                Не удаляйте коллекции и документы Firestore.
+              </p>
             </form>
           </section>
           <section class="card catalog-list-card">
@@ -321,7 +326,7 @@
 </main>
 
 <script src="firebase-config.js?v=20261017-8"></script>
-<script type="module" src="admin-firestore.js?v=20261017-20"></script>
+<script type="module" src="admin-firestore.js?v=20261017-24"></script>
 <script type="module" src="admin-orders.js?v=20261017-20"></script>
 <script type="module" src="admin-clients.js?v=20261017-20"></script>
 <script src="admin-dashboard.js?v=20261017-20" defer></script>
