@@ -13,6 +13,7 @@ const BALI_API_CONFIGURED = /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/e
 let menuItems = [];
 let cart = [];
 let currentCategory = 'all';
+let baliMenuSearchText = '';
 let availableEvents = [];
 let guestInterestDates=new Set();
 let showOnlyPlannedEvents=false;
@@ -130,6 +131,7 @@ function initEventCarousel() {
 window.addEventListener('bali:interests',({detail})=>{
     guestInterestDates=new Set(detail?.dates||[]);
     renderUpcomingEvents();
+    renderHomeEvents();
 });
 window.addEventListener('bali:interests-error',({detail})=>{
     const status=document.getElementById("eventsInterestStatus");
@@ -190,13 +192,14 @@ window.addEventListener('bali:events', ({ detail }) => {
     populateEvents();
     renderUpcomingEvents();
     updateHomeNextEvent();
+    renderHomeEvents();
 });
 window.addEventListener('bali:events-error', () => {
     const select = document.getElementById('eventSelect');
     if (select) select.innerHTML = '<option value="">Не удалось загрузить мероприятия</option>';
 });
 // Клиентские разделы BALI: URL/история браузера работают без перезагрузки.
-const BALI_GUEST_PAGES = new Set(["home","menu","events","contacts"]);
+const BALI_GUEST_PAGES = new Set(["home","menu","events","profile","contacts"]);
 function routeFromLocation() {
     const hash=window.location.hash.slice(1).toLowerCase();
     return BALI_GUEST_PAGES.has(hash)?hash:"home";
@@ -205,18 +208,27 @@ function renderGuestPage(page,{scroll=true}={}) {
     const selected=BALI_GUEST_PAGES.has(page)?page:"home";
     const sections={
         home:"homeSection", menu:"menuPage",
-        events:"eventsSection", contacts:"contactsSection"
+        events:"eventsSection", profile:"profileSection", contacts:"contactsSection"
     };
     for(const [name,id] of Object.entries(sections)) {
         const section=document.getElementById(id);
         if(section)section.hidden=name!==selected;
     }
     const back=document.getElementById("homeFloatingBtn");
-    if(back)back.hidden=selected==="home";
+    if(back)back.hidden=true;
+    for(const button of document.querySelectorAll("[data-bali-nav]")){
+        const active=button.dataset.baliNav===selected;
+        button.classList.toggle("active",active);
+        if(active)button.setAttribute("aria-current","page");
+        else button.removeAttribute("aria-current");
+    }
+    const dock=document.getElementById("baliCartDock");
+    if(dock)dock.hidden=selected!=="menu";
     document.body.dataset.baliPage=selected;
     // Корзина не остаётся открытой при переходе из меню.
     if(selected!=="menu" && typeof closeCart==="function")closeCart();
     if(selected==="events")renderUpcomingEvents();
+    if(selected==="home")renderHomeEvents();
     if(scroll)window.scrollTo({top:0,behavior:"instant"});
 }
 function navigateGuestPage(page,{replace=false}={}) {
@@ -244,6 +256,70 @@ function updateHomeNextEvent() {
             .format(new Date(next.date+"T12:00:00+03:00"))+" · "+next.title
         : "Афиши и календарь вечеринок";
 }
+
+function renderHomeEvents() {
+    const track=document.getElementById("homeEventCarousel");
+    if(!track)return;
+    const today=minskDateToday();
+    const upcoming=availableEvents
+        .filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date||"")&&e.date>=today)
+        .sort((a,b)=>a.date.localeCompare(b.date))
+        .filter(e=>!showOnlyPlannedEvents||guestInterestDates.has(e.date));
+    for(const btn of document.querySelectorAll("[data-home-events-view]")) {
+        const active=(btn.dataset.homeEventsView==="planned")===showOnlyPlannedEvents;
+        btn.classList.toggle("is-current",active);
+        btn.setAttribute("aria-pressed",String(active));
+    }
+    track.replaceChildren();
+    if(!upcoming.length){
+        const p=document.createElement("p");
+        p.className="bali-home-event-empty";
+        p.textContent=showOnlyPlannedEvents?"В ваших планах пока нет мероприятий.":"Афиши ближайших мероприятий пока не опубликованы.";
+        track.append(p);
+        document.getElementById("homeEventPosition").textContent="";
+        return;
+    }
+    for(const event of upcoming){
+        const card=document.createElement("button");
+        card.type="button";
+        card.className="bali-home-event-card";
+        const img=document.createElement("img");
+        img.src=safeImageUrl(event.poster_url);
+        img.alt="Афиша "+event.title;
+        img.loading="lazy";
+        const title=document.createElement("strong");
+        title.textContent=event.title;
+        const date=document.createElement("time");
+        date.dateTime=event.date;
+        date.textContent=new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"short",timeZone:"Europe/Minsk"})
+            .format(new Date(event.date+"T12:00:00+03:00"));
+        card.append(img,date,title);
+        card.addEventListener("click",()=>{
+            showOnlyPlannedEvents=false;
+            navigateGuestPage("events");
+            requestAnimationFrame(()=>{
+                const target=document.querySelector('#eventsGrid .event-card[data-event-date="'+event.date+'"]');
+                if(target)centerEventCard(document.getElementById("eventsGrid"),target,true);
+            });
+        });
+        track.append(card);
+    }
+    track.scrollLeft=0;
+    updateHomeEventPosition();
+}
+function updateHomeEventPosition(){
+    const track=document.getElementById("homeEventCarousel");
+    const indicator=document.getElementById("homeEventPosition");
+    if(!track||!indicator)return;
+    const cards=[...track.querySelectorAll(".bali-home-event-card")];
+    if(!cards.length){indicator.textContent="";return;}
+    const active=cards.reduce((best,card,i)=>{
+        const delta=Math.abs(card.getBoundingClientRect().left-track.getBoundingClientRect().left);
+        return delta<best.delta?{delta,index:i}:best;
+    },{delta:Infinity,index:0}).index;
+    indicator.textContent=String(active+1).padStart(2,"0")+" / "+String(cards.length).padStart(2,"0");
+}
+
 function renderUpcomingEvents() {
     const grid=document.getElementById("eventsGrid");
     if(!grid)return;
@@ -281,11 +357,22 @@ function renderUpcomingEvents() {
         const card=document.createElement("article");
         card.className="event-card";
         card.dataset.eventDate=event.date;
+        const posterWrap=document.createElement("div");
+        posterWrap.className="bali-event-poster-wrap";
         const poster=document.createElement("img");
         poster.className="event-poster";
         poster.alt="Афиша: "+event.title;
         poster.loading="lazy";
         poster.src=safeImageUrl(event.poster_url);
+        posterWrap.append(poster);
+        const dateBadge=document.createElement("time");
+        dateBadge.className="bali-event-date-badge";
+        dateBadge.dateTime=event.date;
+        const parts=new Intl.DateTimeFormat("ru-RU",{timeZone:"Europe/Minsk",day:"numeric",month:"short",weekday:"short"})
+          .formatToParts(new Date(event.date+"T12:00:00+03:00"));
+        const part=key=>parts.find(x=>x.type===key)?.value||"";
+        dateBadge.innerHTML="<strong>"+part("day")+"</strong><span>"+part("month").toUpperCase()+"</span><small>"+part("weekday").toUpperCase()+"</small>";
+        posterWrap.append(dateBadge);
         const body=document.createElement("div");
         body.className="event-card-body";
         const date=document.createElement("time");
@@ -299,7 +386,14 @@ function renderUpcomingEvents() {
         const preorder=document.createElement("span");
         preorder.className="event-preorder-state";
         const open=event.preorderEnabled===true&&event.closesAt?.toDate?.()>new Date();
-        preorder.textContent=open?"Предзаказ открыт":"Информация о мероприятии";
+        preorder.textContent=open?"Предзаказ открыт":"Предзаказ пока закрыт";
+        preorder.classList.toggle("is-open",open);
+        if(open){
+            const openBadge=document.createElement("span");
+            openBadge.className="bali-event-preorder-badge";
+            openBadge.textContent="● Предзаказ открыт";
+            posterWrap.append(openBadge);
+        }
         const interested=document.createElement("p");
         interested.className="event-interest-count";
         const count=Number.isSafeInteger(event.interestCount)&&event.interestCount>=0?event.interestCount:0;
@@ -331,7 +425,7 @@ function renderUpcomingEvents() {
                 planBtn.textContent=label;
             }
         });
-        body.append(date,name,preorder,interested,planBtn,message);
+        body.append(name,date,preorder,interested,planBtn,message);
         if(open){
             const button=document.createElement("button");
             button.type="button";
@@ -344,7 +438,7 @@ function renderUpcomingEvents() {
             });
             body.append(button);
         }
-        card.append(poster,body);
+        card.append(posterWrap,body);
         grid.append(card);
     }
     const restoreIndex=changedView?0:Math.max(0,upcoming.findIndex(e=>e.date===previousDate));
@@ -495,6 +589,43 @@ async function loadConfig() {
 }
 
 function attachEventListeners() {
+    for(const nav of document.querySelectorAll("[data-bali-nav]")){
+        nav.addEventListener("click",()=>navigateGuestPage(nav.dataset.baliNav));
+    }
+    document.getElementById("baliCartDock")?.addEventListener("click",openCart);
+    document.getElementById("baliMenuSearch")?.addEventListener("input",event=>{
+        baliMenuSearchText=String(event.target.value||"").trim().toLocaleLowerCase("ru-RU");
+        displayMenuItems(menuItems);
+    });
+    document.getElementById("homeEventCarousel")?.addEventListener("scroll",updateHomeEventPosition,{passive:true});
+    for(const button of document.querySelectorAll("[data-home-events-view]")){
+        button.addEventListener("click",()=>{
+            showOnlyPlannedEvents=button.dataset.homeEventsView==="planned";
+            renderHomeEvents();
+        });
+    }
+    document.getElementById("profileMyOrdersBtn")?.addEventListener("click",()=>void openMyOrders());
+    document.getElementById("profileMyPlansBtn")?.addEventListener("click",()=>{
+        showOnlyPlannedEvents=true;
+        navigateGuestPage("events");
+    });
+    document.getElementById("profileDataBtn")?.addEventListener("click",()=>window.BaliAuth?.open());
+    document.getElementById("profileLogoutBtn")?.addEventListener("click",()=>{
+        if(window.BaliAuth?.isRegistered())document.getElementById("authSignOutBtn")?.click();
+        else window.BaliAuth?.open();
+    });
+    window.addEventListener("bali:auth-state",({detail})=>{
+        const name=document.getElementById("baliProfileName");
+        const phone=document.getElementById("baliProfilePhone");
+        const email=document.getElementById("baliProfileEmail");
+        const avatar=document.querySelector(".bali-profile-avatar");
+        const logout=document.getElementById("profileLogoutBtn");
+        if(name)name.textContent=detail?.name||"Гость BALI";
+        if(phone)phone.textContent=detail?.phone||"Войдите в личный кабинет";
+        if(email)email.textContent=detail?.email||"";
+        if(avatar)avatar.textContent=(detail?.name||"B").trim().slice(0,1).toLocaleUpperCase("ru-RU");
+        if(logout)logout.hidden=!detail?.signedIn;
+    });
     document.getElementById("menuNavBtn")?.addEventListener("click",event=>{
         event.preventDefault();showGuestSection("menu");
     });
@@ -593,9 +724,13 @@ function displayMenuItems(items) {
     // Даже при «Всё меню» карточки организованы внутри своих категорий.
     // Порядок категорий следует порядку первого появления в каталоге,
     // порядок блюд внутри каждой категории сохраняется из Firestore.
-    const filteredItems = currentCategory === 'all'
+    const categoryItems = currentCategory === 'all'
         ? items
         : items.filter(item => item.category === currentCategory);
+    const filteredItems = baliMenuSearchText
+        ? categoryItems.filter(item=>[item.name,item.description,item.category]
+          .some(value=>String(value||"").toLocaleLowerCase("ru-RU").includes(baliMenuSearchText)))
+        : categoryItems;
     const groups = new Map();
     for (const item of filteredItems) {
         const name = String(item.category || 'Другие блюда').trim() || 'Другие блюда';
@@ -779,6 +914,10 @@ function updateCartUI() {
     // Update total
     const total = calculateTotal();
     elements.totalAmount.textContent = `${total.toFixed(2)} BYN`;
+    const dockTotal=document.getElementById("baliDockTotal");
+    const dockCount=document.getElementById("baliDockCount");
+    if(dockTotal)dockTotal.textContent=`${total.toFixed(2)} BYN`;
+    if(dockCount)dockCount.textContent=String(totalItems);
 }
 
 function createCartItemHTML(item) {
