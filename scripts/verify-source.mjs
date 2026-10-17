@@ -295,7 +295,9 @@ assert(admin.includes('id="eventDescription"') &&
   admin.includes('id="eventStartTime"') && admin.includes('id="eventEndTime"') &&
   admin.includes('admin-firestore.js?v=20261017-46'),
   "Event description, start and end time must be configurable in the admin form");
-assert(adminClient.includes('description, startTime, endTime, preorderEnabled:') &&
+assert(adminClient.includes('payload.description=description') &&
+  adminClient.includes('payload.startTime=startTime') &&
+  adminClient.includes('payload.endTime=endTime') &&
   adminClient.includes('$("eventStartTime").value=event.startTime||""') &&
   adminClient.includes('$("eventEndTime").value=event.endTime||""'),
   "Event timing and description must persist and load when editing");
