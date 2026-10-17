@@ -1,0 +1,122 @@
+/* BALI v65 — admin editor for information-only bar prices. */
+.bali-admin-bar-editor{margin-top:18px;overflow:hidden}
+.bali-admin-bar-editor>summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  cursor:pointer;
+  padding:15px 18px;
+  list-style-position:inside;
+  font-size:15px;
+  font-weight:720;
+  color:#f4f4f4;
+}
+.bali-admin-bar-editor>summary .hint{
+  font-size:11px;
+  font-weight:450;
+  color:#a8adb3;
+}
+.bali-admin-bar-editor .bali-admin-bar-body{
+  padding:4px 18px 18px;
+  display:grid;
+  gap:17px;
+}
+.bali-admin-bar-form{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:13px;
+}
+.bali-admin-bar-form label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:0;
+  color:#d6d8da;
+  font-size:12px;
+  line-height:1.25;
+  font-weight:610;
+}
+.bali-admin-bar-form input{
+  width:100%;
+  min-width:0;
+  margin:0;
+  min-height:44px;
+  border:1px solid rgba(255,255,255,.17);
+  border-radius:9px;
+  background:#25282c;
+  color:#f6f6f6;
+  padding:9px 12px;
+  font:550 13px/1.3 inherit;
+}
+.bali-admin-bar-form input:focus-visible{
+  outline:2px solid var(--bt-border,#b9ff51);
+  outline-offset:1px;
+}
+.bali-admin-bar-buttons{
+  display:flex;
+  align-items:flex-end;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.bali-admin-bar-buttons button{
+  min-height:43px;
+}
+.bali-admin-bar-items{
+  display:grid;
+  gap:17px;
+}
+.bali-admin-bar-group{
+  display:grid;
+  gap:6px;
+}
+.bali-admin-bar-group h4{
+  margin:0 0 4px;
+  color:var(--bt-text,#d8ff9f);
+  font-size:14px;
+  font-weight:730;
+}
+.bali-admin-bar-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:11px 0;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.bali-admin-bar-info{
+  display:grid;
+  min-width:0;
+  gap:4px;
+}
+.bali-admin-bar-info strong{
+  color:#f3f3f3;
+  font-size:13px;
+  overflow-wrap:anywhere;
+}
+.bali-admin-bar-info small{
+  color:#abb0b5;
+  font-size:11px;
+  line-height:1.4;
+}
+.bali-admin-bar-row-actions{
+  display:flex;
+  gap:7px;
+  align-items:center;
+  flex:0 0 auto;
+}
+.bali-admin-bar-row-actions button{
+  background:#272a2f;
+  color:#ededee;
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:8px;
+  font-size:11px;
+  padding:9px 10px;
+  cursor:pointer;
+}
+.bali-admin-bar-row-actions button:hover{border-color:var(--bt-stroke)}
+@media(max-width:690px){
+  .bali-admin-bar-form{grid-template-columns:1fr}
+  .bali-admin-bar-editor>summary{flex-wrap:wrap}
+  .bali-admin-bar-row{align-items:flex-start;flex-direction:column}
+}
