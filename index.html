@@ -26,7 +26,7 @@
     <link rel="stylesheet" href="bali-theme.css?v=20261017-60">
     <link rel="stylesheet" href="bali-lime-neutral.css?v=20261017-62">
     <link rel="stylesheet" href="bali-desktop-fullwidth.css?v=20261017-64">
-    <link rel="stylesheet" href="bali-bar-menu.css?v=20261017-72">
+    <link rel="stylesheet" href="bali-bar-menu.css?v=20261017-80">
     <link rel="stylesheet" href="bali-pc-reference.css?v=20261017-79">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -216,10 +216,10 @@
 
     <!-- Переключатель разделов меню. Бар — только информация, без заказа. -->
     <div class="bali-menu-mode-switch" id="baliMenuModeSwitch" role="group" aria-label="Выберите раздел меню">
-      <button type="button" class="bali-menu-mode-btn is-active" data-bali-menu-mode="kitchen" aria-pressed="true">Меню кухни</button>
-      <button type="button" class="bali-menu-mode-btn" data-bali-menu-mode="bar" aria-pressed="false">Барная карта</button>
-      <button type="button" class="bali-menu-mode-btn" data-bali-menu-mode="hookah" aria-pressed="false">Кальянная карта</button>
-      <button type="button" class="bali-menu-mode-btn" data-bali-menu-mode="tea" aria-pressed="false">Чайная карта</button>
+      <button type="button" class="bali-menu-mode-btn is-active" data-bali-menu-mode="kitchen" aria-pressed="true" aria-label="Меню кухни" title="Меню кухни"><span class="bali-menu-mode-icon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="24" cy="24" r="12"/><circle cx="24" cy="24" r="7.5"/><path d="M7 9v10m4-10v10M5 9v10c0 3 2 5 4 5v15M39 9v30m0-30c-4 3-5 7-5 13h5"/></svg></span><span class="bali-menu-mode-label">Меню кухни</span></button>
+      <button type="button" class="bali-menu-mode-btn" data-bali-menu-mode="bar" aria-pressed="false" aria-label="Барная карта" title="Барная карта"><span class="bali-menu-mode-icon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 15h34L24 32 7 15Z"/><path d="M24 32v10m-9 0h18M27 15 37 5"/><circle cx="15" cy="11" r="3"/></svg></span><span class="bali-menu-mode-label">Барная карта</span></button>
+      <button type="button" class="bali-menu-mode-btn" data-bali-menu-mode="hookah" aria-pressed="false" aria-label="Кальянная карта" title="Кальянная карта"><span class="bali-menu-mode-icon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6h12l-2 6h-8l-2-6Zm6 6v12m-10 0h20m-10 0v3"/><path d="M18 27c-1 3-3 5-3 8 0 5 4 8 9 8s9-3 9-8c0-3-2-5-3-8H18Z"/><path d="M30 21h5c5 0 7 3 7 7s-2 6-5 6h-3m8-6v-7m-2 0h4"/></svg></span><span class="bali-menu-mode-label">Кальянная карта</span></button>
+      <button type="button" class="bali-menu-mode-btn" data-bali-menu-mode="tea" aria-pressed="false" aria-label="Чайная карта" title="Чайная карта"><span class="bali-menu-mode-icon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 14h17c5 3 6 12 2 19H10c-4-7-3-16-1-19Z"/><path d="M13 14c0-4 2-6 6-6s6 2 6 6M16 8h6M29 18c8-2 9 8 2 9M9 22l-5 5 6 2"/><path d="M33 30h9v5a5 5 0 0 1-9 0v-5Zm9 2h3v3c0 2-2 3-3 3m-10 4h13"/></svg></span><span class="bali-menu-mode-label">Чайная карта</span></button>
     </div>
     <p id="baliMenuUnavailableNotice" class="bali-menu-unavailable" hidden>Все разделы меню временно скрыты администратором. Попробуйте зайти позже.</p>
     <div id="baliKitchenContent" class="bali-kitchen-content">
