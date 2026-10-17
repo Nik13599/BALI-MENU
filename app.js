@@ -382,6 +382,21 @@ function renderUpcomingEvents() {
         }).format(new Date(event.date+"T12:00:00+03:00"));
         const name=document.createElement("h3");
         name.textContent=event.title;
+        // These are the actual start/end fields entered by the administrator.
+        // The preorder cutoff is intentionally NOT used as an event end time.
+        const times=document.createElement("p");
+        times.className="bali-event-hours";
+        const validTime=/^([01]\\d|2[0-3]):[0-5]\\d$/;
+        const startTime=String(event.startTime||"");
+        const endTime=String(event.endTime||"");
+        times.textContent=validTime.test(startTime)&&validTime.test(endTime)
+            ?startTime+"–"+endTime
+            :"Время уточняется";
+        const description=document.createElement("p");
+        description.className="bali-event-description";
+        description.textContent=typeof event.description==="string"
+            ?event.description.trim().slice(0,600):"";
+        description.hidden=!description.textContent;
         const preorder=document.createElement("span");
         preorder.className="event-preorder-state";
         const open=event.preorderEnabled===true&&event.closesAt?.toDate?.()>new Date();
@@ -424,7 +439,7 @@ function renderUpcomingEvents() {
                 planBtn.textContent=label;
             }
         });
-        body.append(name,date,preorder,interested,planBtn,message);
+        body.append(name,date,times,description,preorder,interested,planBtn,message);
         if(open){
             const button=document.createElement("button");
             button.type="button";
