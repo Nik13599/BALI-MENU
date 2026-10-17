@@ -24,6 +24,8 @@ jobs:
           node --input-type=module --check < menu-firestore.js
           node --input-type=module --check < admin-firestore.js
           node --input-type=module --check < menu-seed.js
+          node --input-type=module --check < orders-firestore.js
+          node --input-type=module --check < admin-orders.js
           node --check admin.js
           node --check track.js
           node --check firebase-config.js
