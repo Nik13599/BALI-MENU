@@ -341,3 +341,77 @@ button.primary:hover:not(:disabled){background:#ffdfaa;border-color:#ffdfaa}
 @media print {
   .admin-form-dialog{display:none!important}
 }
+
+/* BALI admin v20: customer CRM, order edit popup and local image previews. */
+.admin-sidebar{max-height:calc(100dvh - 98px);overflow-y:auto}
+.client-list{display:grid;gap:10px}
+.client-entry{
+  display:flex;align-items:center;justify-content:space-between;gap:13px;
+  background:#1c2536;border:1px solid #39445b;border-radius:12px;padding:14px;
+}
+.client-entry-info{min-width:0;flex:1}
+.client-entry strong{display:block;font-size:14px;overflow-wrap:anywhere}
+.client-entry small{display:block;color:#aebad0;font-size:12px;overflow-wrap:anywhere;margin-top:4px}
+.client-entry button{min-height:38px;font-size:12px;white-space:nowrap}
+.client-more{
+  justify-self:center;min-height:40px;color:#e8c58b;border-color:#806d4d;
+  margin:13px auto 5px;
+}
+.client-history-card{margin-top:17px}
+.client-history-list{display:grid;gap:11px}
+.client-history-order{
+  background:#161f2e;padding:15px;border:1px solid #3e4a62;border-radius:12px;
+}
+.client-history-order h4{font-size:14px;color:#f2d4a1;margin:0 0 8px;overflow-wrap:anywhere}
+.client-history-order p{color:#c7d0df;font-size:12px;margin:5px 0;line-height:1.45}
+.client-history-order strong{display:block;font-size:14px;margin:10px 0}
+.client-history-order button{min-height:37px;font-size:12px}
+.client-history-order small{color:#e5ae89}
+.admin-archive-toggle{display:flex;align-items:center;gap:7px;font-size:12px;white-space:nowrap;margin:0 0 12px}
+.admin-archive-toggle input{width:17px;height:17px;margin:0;accent-color:#e3bc80}
+.admin-order-card .row-actions{display:flex;flex-wrap:wrap}
+.admin-order-card button.danger-action{border-color:#80505d;color:#f0b3bc}
+.order-edit-dialog{width:min(760px,calc(100vw - 28px))}
+.order-edit-add{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-bottom:13px}
+.order-edit-add select{min-width:0}
+.order-edit-add button{min-height:43px;padding:10px 12px}
+.order-edit-lines{display:grid;gap:8px}
+.order-edit-line{
+  display:grid;grid-template-columns:minmax(0,1fr) 80px auto;gap:9px;
+  align-items:center;padding:11px;border-radius:10px;background:#151c2a;border:1px solid #3b4660;
+}
+.order-edit-product{min-width:0}
+.order-edit-product strong{display:block;overflow-wrap:anywhere;font-size:13px;line-height:1.3}
+.order-edit-product small{color:#aab6c7;display:block;font-size:11px;margin-top:3px}
+.order-edit-line input{min-width:0;width:100%;margin:0;min-height:42px;text-align:center}
+.order-edit-line button{min-height:42px;padding:7px 11px;font-size:12px}
+.edit-order-total{display:flex;justify-content:space-between;gap:8px;border-top:1px solid #414961;padding:15px 0 5px;margin-top:16px;color:#d6dbe6}
+.edit-order-total strong{white-space:nowrap;color:#f3d497}
+.image-upload-area{
+  border:1px dashed #6b5c48;border-radius:12px;padding:14px;
+  margin:8px 0 16px;background:#272736;
+}
+.image-upload-area label{font-size:13px;color:#f1d5a4;margin-bottom:7px}
+.image-upload-area input{font-size:13px;padding:11px 8px}
+.image-upload-area .hint{margin-top:9px;font-size:12px}
+.image-preview{display:block;max-width:100%;object-fit:cover;background:#303748;margin:13px auto 0;border-radius:10px;border:1px solid #50596e}
+.image-preview[hidden]{display:none}
+.square-preview{width:170px;aspect-ratio:1/1}
+.poster-preview{width:170px;aspect-ratio:4/5}
+.admin-list-thumbnail{width:56px;height:56px;flex-shrink:0;object-fit:cover;border:1px solid #566078;border-radius:9px;margin-right:8px}
+@media(max-width:760px){
+ .admin-sidebar{max-height:none}
+ .admin-tabs{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .admin-tab{font-size:11px;gap:3px;padding:8px 3px;min-height:43px}
+ .tab-icon{font-size:13px}
+ .client-entry{flex-direction:column;align-items:stretch;gap:8px;padding:12px}
+ .client-entry button{align-self:start}
+ .client-history-order{padding:12px}
+ .admin-list-thumbnail{width:43px;height:43px;margin-right:3px}
+ .order-edit-add{grid-template-columns:minmax(0,1fr)}
+ .order-edit-add button{width:100%}
+ .order-edit-line{grid-template-columns:minmax(0,1fr) 59px auto;gap:5px;padding:8px}
+ .order-edit-line input{min-height:38px}
+ .order-edit-line button{font-size:11px;padding:7px;min-height:38px}
+ .order-edit-dialog{width:100%}
+}
