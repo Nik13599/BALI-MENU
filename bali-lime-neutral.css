@@ -207,3 +207,46 @@
     min-height:0;
   }
 }
+
+/* Final cobalt leftovers: even dark-navy page tints become neutral ink. */
+:root[data-bali-theme="lime"] body.bali-guest-theme #eventsSection,
+:root[data-bali-theme="lime"] body.bali-guest-theme #menuPage,
+:root[data-bali-theme="lime"] body.bali-guest-theme .bali-profile-page{
+  background:transparent!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme #eventsSection .bali-event-actions .event-go-to-menu{
+  background:#292c32!important;
+  color:#f4f4f4!important;
+  border-color:rgba(255,255,255,.17)!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme .close-cart,
+:root[data-bali-theme="lime"] body.bali-guest-theme .close-modal{
+  background:#2b2e34!important;
+  border-color:rgba(255,255,255,.15)!important;
+  color:#e9e9e9!important;
+}
+:root[data-bali-theme="lime"] body.bali-guest-theme .bali-cart-dock{
+  background:var(--bt-primary)!important;
+  color:var(--bt-on-primary)!important;
+}
+:root[data-bali-theme="lime"] body.bali-admin-theme .brand-mark{
+  background:#2a2d33!important;
+  color:var(--bt-text)!important;
+  border-color:rgba(255,255,255,.14)!important;
+}
+:root[data-bali-theme="lime"] body.bali-admin-theme .admin-tab:hover:not(:disabled),
+:root[data-bali-theme="lime"] body.bali-admin-theme .stat-card-attention,
+:root[data-bali-theme="lime"] body.bali-admin-theme .dialog-header,
+:root[data-bali-theme="lime"] body.bali-admin-theme .dialog-actions,
+:root[data-bali-theme="lime"] body.bali-admin-theme .dialog-close{
+  background:#25282d!important;
+  border-color:rgba(255,255,255,.15)!important;
+}
+:root[data-bali-theme="lime"] body.bali-admin-theme .admin-tab.active{
+  background:var(--bt-tint)!important;
+  border-color:var(--bt-stroke)!important;
+}
+:root[data-bali-theme="lime"] body.bali-admin-theme .bali-theme-preset small,
+:root[data-bali-theme="lime"] body.bali-admin-theme .hint{
+  color:#bec0c5!important;
+}
