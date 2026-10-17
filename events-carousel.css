@@ -178,3 +178,24 @@ body[data-bali-page="events"]{overflow-y:hidden}
 @media(prefers-reduced-motion:reduce){
   #eventsSection #eventsGrid{scroll-behavior:auto}
 }
+
+/* Место под плавающую кнопку «На главную»: действия карточки не перекрываются. */
+#eventsSection{
+  padding-bottom:max(74px,env(safe-area-inset-bottom));
+}
+@media(max-width:767px){
+  #eventsSection{
+    padding-bottom:max(65px,env(safe-area-inset-bottom));
+  }
+}
+@media(max-height:600px){
+  #eventsSection #eventsGrid>.event-card{
+    grid-template-columns:minmax(90px,36%) minmax(0,1fr);
+    grid-template-rows:minmax(0,1fr);
+  }
+  #eventsSection #eventsGrid>.event-card>.event-card-body{
+    overflow-y:auto;
+    scrollbar-width:thin;
+    overscroll-behavior:contain;
+  }
+}
