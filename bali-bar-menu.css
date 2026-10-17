@@ -275,3 +275,31 @@
     font-size:clamp(11px,3.5vw,13px);
   }
 }
+
+/* v72: respect editor visibility flags despite author display:flex rules. */
+#menuPage #baliMenuModeSwitch .bali-menu-mode-btn[hidden]{display:none!important}
+#menuPage .bali-menu-unavailable{
+  max-width:720px;
+  width:calc(100% - 24px);
+  margin:clamp(15px,2vw,28px) auto;
+  padding:20px;
+  box-sizing:border-box;
+  color:#c4c8cb;
+  font:590 13px/1.6 Manrope,Inter,sans-serif;
+  text-align:center;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:12px;
+  background:#181b1f;
+}
+#menuPage .bali-menu-unavailable[hidden]{display:none!important}
+@media(min-width:768px){
+  #menuPage .bali-menu-mode-switch{
+    display:flex!important;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+  #menuPage .bali-menu-mode-btn{
+    flex:0 1 190px;
+    width:min(190px,100%);
+  }
+}
