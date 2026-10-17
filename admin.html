@@ -21,7 +21,7 @@
     <p id="loginIdentity" class="hint" role="status"></p>
     <p id="adminUid" class="hint"></p>
     <p id="loginStatus" class="status" role="status" aria-live="polite"></p>
-    <p class="hint">Версия админ-панели: 17.10.2026-9</p>
+    <p class="hint">Версия админ-панели: 17.10.2026-10</p>
   </section>
   <section id="adminView" hidden>
     <div class="heading">
@@ -39,6 +39,18 @@
       </div>
       <p id="seedImportStatus" class="status" role="status" aria-live="polite"></p>
     </section>
+    <section class="card">
+      <div class="heading">
+        <h2>Предзаказы гостей</h2>
+        <label>Дата мероприятия
+          <select id="ordersDateFilter"><option value="">Все даты</option></select>
+        </label>
+      </div>
+      <p class="hint">Новые заказы появляются автоматически. Подтверждённые заказы нельзя изменять со стороны гостя. Кнопка «Печать» открывает стандартную печать браузера.</p>
+      <p id="ordersAdminStatus" class="status" role="status" aria-live="polite"></p>
+      <div id="ordersAdminList">Ожидаем входа администратора...</div>
+    </section>
+    <section id="orderPrintSheet" hidden aria-hidden="true"></section>
     <div class="columns">
       <section class="card">
         <h2>Добавить или изменить товар</h2>
@@ -83,6 +95,7 @@
   </section>
 </main>
 <script src="firebase-config.js?v=20261017-8"></script>
-<script type="module" src="admin-firestore.js?v=20261017-9"></script>
+<script type="module" src="admin-firestore.js?v=20261017-10"></script>
+<script type="module" src="admin-orders.js?v=20261017-10"></script>
 </body>
 </html>
