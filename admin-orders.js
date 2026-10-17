@@ -129,6 +129,9 @@ async function subscribe(user){
         if(gen!==generation)return;
         orders=mapped.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
         renderDates();renderOrders();
+        window.dispatchEvent(new CustomEvent("bali:admin:orders",{detail:{
+          count:orders.length, pending:orders.filter(x=>x.status==="pending").length
+        }}));
         setStatus("Загружено предзаказов: "+orders.length+
           " (последние 100; более старые пока не отображаются).");
       }catch(error){if(gen===generation)setStatus("Не удалось загрузить состав заказов: "+(error.code||"unknown"));}
