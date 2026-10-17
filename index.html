@@ -125,19 +125,9 @@
         </div>
     </section>
 
-    <!-- Корзина и мои заказы доступны внутри меню, не в верхней шапке. -->
+    <!-- Меню начинается с категорий: заказ в Профиле, корзина закреплена снизу. -->
     <section class="categories">
       <div class="container">
-        <div class="bali-menu-toolbar">
-          <span class="bali-menu-toolbar-title">Меню BALI</span>
-          <div class="bali-menu-tools">
-            <button type="button" class="bali-orders-shortcut" id="myOrdersBtn">Мои заказы</button>
-            <button type="button" class="cart-btn" id="cartBtn" aria-label="Открыть корзину">
-              <span class="cart-icon" aria-hidden="true">🛒</span>
-              <span class="cart-count" id="cartCount">0</span>
-            </button>
-          </div>
-        </div>
         <div class="category-buttons" id="categoryFilter">
           <button class="category-btn active" data-category="all">Всё меню</button>
         </div>
@@ -413,7 +403,7 @@
     </div>
 
     <script src="firebase-config.js?v=20261017-10"></script>
-    <script src="app.js?v=20261017-46"></script>
+    <script src="app.js?v=20261017-48"></script>
     <script type="module" src="auth.js?v=20261017-16"></script>
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>
     <script type="module" src="orders-firestore.js?v=20261017-28"></script>
