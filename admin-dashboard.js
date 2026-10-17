@@ -89,4 +89,5 @@
   // Редактирование ранее добавленного товара/мероприятия всегда открывает нужный раздел.
   window.addEventListener("bali:admin:edit-menu",()=>activate("menu",false));
   window.addEventListener("bali:admin:edit-event",()=>activate("events",false));
+  window.addEventListener("bali:admin:navigate",({detail})=>activate(detail.section,false));
 })();
