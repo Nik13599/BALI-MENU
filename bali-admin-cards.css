@@ -1,0 +1,42 @@
+/* v66 · dedicated tabs in "Меню и цены" */
+.bali-admin-catalog-tabs{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;
+  margin:17px 0 22px;padding:7px;border:1px solid rgba(255,255,255,.10);
+  border-radius:15px;background:#171b1e
+}
+.bali-admin-catalog-tabs button{
+  min-width:0;min-height:53px;padding:10px 12px;border-radius:11px;
+  border:1px solid rgba(255,255,255,.11);background:#25282e;
+  color:#d4d8dc;font:700 13px/1.25 Manrope,sans-serif;
+  white-space:normal;cursor:pointer;transition:background .15s,border-color .15s
+}
+.bali-admin-catalog-tabs button[aria-selected="true"]{
+  color:var(--bt-on-primary,#10131a)!important;
+  background:var(--bt-primary,#b9ff51)!important;
+  border-color:var(--bt-primary,#b9ff51)!important;
+  box-shadow:0 0 17px var(--bt-tint,rgba(185,255,81,.1))
+}
+.bali-admin-catalog-tabs button:hover:not([aria-selected="true"]){background:#30343b}
+.bali-admin-catalog-pane[hidden]{display:none!important}
+#baliAdminBarPane>.bali-admin-bar-editor{margin:0}
+#baliAdminBarPane>.bali-admin-bar-editor>summary{display:none}
+#baliAdminBarPane>.bali-admin-bar-editor .bali-admin-bar-body{padding:20px;gap:17px}
+.bali-admin-extra-editor{padding:20px;min-height:260px}
+.bali-admin-extra-head{margin-bottom:19px}
+.bali-admin-extra-head h3{font-size:23px;font-weight:780;color:#f8f8f8;margin:0 0 7px}
+.bali-admin-extra-head p{margin:0;color:#aeb3bc;font-size:13px;line-height:1.5}
+.bali-admin-extra-editor .bali-admin-bar-form{margin-bottom:18px}
+.bali-admin-extra-editor .bali-admin-bar-items{margin-top:22px}
+.bali-admin-extra-editor .bali-admin-bar-buttons{align-items:center}
+.bali-admin-extra-editor .bali-admin-bar-buttons button{min-height:44px}
+.bali-admin-extra-editor .bali-admin-bar-row-actions{display:flex;gap:7px}
+.bali-admin-extra-editor .bali-admin-bar-row-actions button{padding:8px 11px;font-size:12px}
+@media(max-width:850px){
+  .bali-admin-catalog-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .bali-admin-catalog-tabs button{min-height:48px}
+}
+@media(max-width:550px){
+  .bali-admin-extra-editor{padding:14px}
+  .bali-admin-extra-editor .bali-admin-bar-form{grid-template-columns:1fr}
+  .bali-admin-extra-editor .bali-admin-bar-row{align-items:flex-start;flex-direction:column}
+}
