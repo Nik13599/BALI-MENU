@@ -149,7 +149,13 @@ function friendlyError(error) {
   return (errors[code] || "Не удалось выполнить действие в Firebase.") + " [код: " + code + "]";
 }
 
-els.button.addEventListener("click", show);
+els.button.addEventListener("click", () => {
+  // On desktop, registered guests manage their account in the persistent
+  // header dropdown. Guests who are not registered still open the login dialog.
+  if (profile && window.matchMedia("(min-width:1180px)").matches &&
+      window.BaliDesktopProfile?.toggle()) return;
+  show();
+});
 els.close.addEventListener("click", hide);
 els.signOut.addEventListener("click", async () => {
   if (!auth) return;
