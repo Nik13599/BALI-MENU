@@ -1568,3 +1568,74 @@ body {
     .menu-item-description { font-size: 9px; }
     .add-to-cart-btn { font-size: 9px; }
 }
+
+
+/* Селектор количества прямо над кнопкой добавления в корзину. */
+.menu-purchase-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    width: 100%;
+    margin-top: auto;
+    min-width: 0;
+}
+.menu-quantity {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(22px, 0.85fr) minmax(0, 1fr);
+    gap: 3px;
+    width: 100%;
+    align-items: center;
+}
+.menu-quantity-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    min-height: 33px;
+    padding: 0;
+    border: 1px solid rgba(222, 192, 137, .5);
+    border-radius: 7px;
+    background: #242c49;
+    color: #f5dfb4;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background .15s ease, border-color .15s ease;
+}
+.menu-quantity-btn:hover:not(:disabled),
+.menu-quantity-btn:focus-visible {
+    background: #404663;
+    border-color: #e9ca93;
+}
+.menu-quantity-btn:disabled { opacity: .4; cursor: not-allowed; }
+.menu-quantity-value {
+    display: block;
+    min-width: 0;
+    text-align: center;
+    color: #fff;
+    font-weight: 750;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+}
+.menu-purchase-controls .add-to-cart-btn { margin: 0; }
+.menu-purchase-controls .add-to-cart-btn.menu-add-success {
+    background: #2d855c;
+    box-shadow: 0 0 12px rgba(45, 133, 92, .35);
+}
+@media (max-width: 1024px) {
+    .menu-quantity-btn { min-height: 30px; font-size: 18px; }
+    .menu-quantity-value { font-size: 13px; }
+}
+@media (max-width: 767px) {
+    .menu-purchase-controls { gap: 5px; }
+    .menu-quantity { gap: 2px; grid-template-columns: minmax(0,1fr) minmax(17px,.72fr) minmax(0,1fr); }
+    .menu-quantity-btn { min-height: 26px; border-radius: 5px; font-size: 16px; }
+    .menu-quantity-value { font-size: 12px; }
+}
+@media (max-width: 360px) {
+    .menu-quantity-btn { min-height: 25px; }
+    .menu-quantity-value { font-size: 11px; }
+}
