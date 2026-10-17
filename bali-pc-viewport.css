@@ -665,3 +665,38 @@
     color:var(--bali-secret-accent,#b9ff51)!important;
   }
 }
+
+/* v92 — Minimal PC HOME placeholders: pure black SECRET cover, with the
+   exact same title/time layout used by real event cards beside it. */
+@media (min-width:1180px) {
+  body.bali-guest-theme #homeSection .bali-home-placeholder-poster {
+    background:#000!important;
+    background-color:#000!important;
+    background-image:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-placeholder-poster>.bali-home-placeholder-overlay {
+    background:transparent!important;
+    gap:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-placeholder-kicker{
+    display:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-placeholder-info{
+    /* Match .bali-home-event-info: 32% footer, 8px 11px, 4px gap. */
+    flex:0 0 32%!important;
+    justify-content:flex-start!important;
+    padding:8px 11px!important;
+    gap:4px!important;
+    background:var(--bali-placeholder-footer,#12171c)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-placeholder-info h3{
+    font-size:clamp(13px,1vw,17px)!important;
+    line-height:1.14!important;
+    margin:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-placeholder-info .bali-home-event-hours{
+    font-size:11px!important;
+    line-height:1.15!important;
+    margin:0!important;
+  }
+}
