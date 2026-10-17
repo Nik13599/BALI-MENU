@@ -474,10 +474,18 @@ $("eventForm").addEventListener("submit",async (event)=>{
   renderStatus("eventStatus","Сохраняем мероприятие...");
   try{
     const payload={
-      date, title, cutoff, description, startTime, endTime, preorderEnabled:$("eventOpen").checked,
+      date, title, cutoff, preorderEnabled:$("eventOpen").checked,
       closesAt: Timestamp.fromDate(closesAt),
       updatedAt:serverTimestamp()
     };
+    // Leave absent metadata absent on older events to preserve edits under
+    // previously deployed Firestore Rules. New metadata requires v46 Rules.
+    const saved=events.get(date)||{};
+    if(description || Object.hasOwn(saved,"description"))payload.description=description;
+    if((startTime&&endTime) || Object.hasOwn(saved,"startTime") || Object.hasOwn(saved,"endTime")){
+      payload.startTime=startTime;
+      payload.endTime=endTime;
+    }
     // Старые документы без афиши не должны записывать лишнее пустое поле.
     // Для настоящих афиш необходимы опубликованные Firebase Rules с poster_url.
     if(poster)payload.poster_url=poster;
@@ -488,8 +496,8 @@ $("eventForm").addEventListener("submit",async (event)=>{
   }catch(e){
     if(e.code==="permission-denied"){
       renderStatus("eventStatus",poster
-        ?"Firebase отклонил сохранение афиши (permission-denied). Опубликуйте последние Firestore Rules: в них должно быть разрешено поле poster_url. Затем повторите сохранение."
-        :"Firebase отклонил сохранение мероприятия (permission-denied). Проверьте, что роль администратора активна, а актуальные Firestore Rules опубликованы.");
+        ?"Firebase отклонил сохранение мероприятия (permission-denied). Опубликуйте последние Firestore Rules с полями афиши, описания и времени. Затем повторите."
+        :"Firebase отклонил сохранение мероприятия (permission-denied). Проверьте права администратора и опубликуйте актуальные Firestore Rules для полей времени и описания.");
       if(help)help.hidden=false;
     }else{
       renderStatus("eventStatus","Не удалось сохранить мероприятие: "+(e.message||e.code||"unknown"));
