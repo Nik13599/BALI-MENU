@@ -21,6 +21,7 @@
     "phone":'<path d="M6.1 3.8h3l1.25 4-2 1.8c1.05 2.35 2.45 3.75 4.8 4.8l1.8-2 4 1.25v3a2 2 0 0 1-2.2 2 16 16 0 0 1-12.6-12.6 2 2 0 0 1 1.95-2.25Z"/>',
     "send":'<path d="m3 11.2 18-8.2-6.9 18-2.7-7.7L3 11.2Z"/><path d="M11.4 13.3 21 3"/>',
     "spark":'<path d="m12 2.5 2.25 7.25L21.5 12l-7.25 2.25L12 21.5l-2.25-7.25L2.5 12l7.25-2.25L12 2.5Z"/>',
+    "palette":'<path d="M12 3a9 9 0 0 0 0 18h1.4a2.15 2.15 0 0 0 1.6-3.6 1.25 1.25 0 0 1 1.05-2.05h1.8A4.15 4.15 0 0 0 22 11.2 8.6 8.6 0 0 0 12 3Z"/><circle cx="7.5" cy="12" r=".65" fill="currentColor" stroke="none"/><circle cx="10" cy="7.5" r=".65" fill="currentColor" stroke="none"/><circle cx="16" cy="8.5" r=".65" fill="currentColor" stroke="none"/>',
     "diamond":'<path d="m12 2.8 8.7 9.2L12 21.2 3.3 12 12 2.8Z"/><path d="M8.5 12h7M12 8.5v7"/>',
     "check":'<path d="m4.7 12.2 5 4.9 9.6-10.2"/>',
     "x":'<path d="m5 5 14 14M19 5 5 19"/>',
@@ -122,7 +123,7 @@
     replaceAll(".brand-mark,.login-logo","diamond");
     replaceAll(".admin-tab .tab-icon",el=>{
       const tab=el.closest("[data-admin-tab]")?.dataset.adminTab;
-      return {orders:"ticket",clients:"users",menu:"book",events:"calendar"}[tab]||"diamond";
+      return {orders:"ticket",clients:"users",menu:"book",events:"calendar",appearance:"palette"}[tab]||"diamond";
     });
     replaceAll(".topbar-site > span:last-child","external");
     addPrefix("#addMenuBtn,#addCategoryBtn,#addEventBtn,#newCategoryFromProduct,#editOrderAddBtn","plus");
