@@ -83,21 +83,21 @@ assert(barCss.includes('@media(max-width:767px)') &&
 // PC-only improvements: menu tabs and calendar title align with the top of the
 // BALI sidebar logo; six fully functional cards per dish row; fading event edges.
 assert(html.includes('bali-pc-reference.css?v=20261017-81') &&
-  pcReferenceCss.includes('v81 — Desktop menu/calendar') &&
-  pcReferenceCss.includes('padding-top:21px!important') &&
-  pcReferenceCss.includes('body.bali-guest-theme #menuPage #baliMenuModeSwitch') &&
-  pcReferenceCss.includes('grid-template-columns:repeat(6,minmax(0,1fr))!important') &&
-  pcReferenceCss.includes('body.bali-guest-theme #menuPage .menu-category-block .menu-purchase-controls') &&
-  pcReferenceCss.includes('grid-template-columns:1fr!important') &&
-  pcReferenceCss.includes('body.bali-guest-theme #eventsSection .events-topbar') &&
-  pcReferenceCss.includes('grid-template-columns:minmax(0,1fr) auto clamp(200px,18.5vw,280px)!important') &&
-  pcReferenceCss.includes('body.bali-guest-theme #eventsSection .events-topbar #eventsViewTabs') &&
-  pcReferenceCss.includes('grid-column:2!important') &&
-  pcReferenceCss.includes('--bali-calendar-edge-width:') &&
-  pcReferenceCss.includes('--bali-calendar-edge-opacity:') &&
-  pcReferenceCss.includes('-webkit-mask-image:linear-gradient(to right,') &&
-  pcReferenceCss.includes('scroll-behavior:smooth!important') &&
-  pcReferenceCss.includes('(prefers-reduced-motion:reduce)'),
+  source("bali-pc-reference.css").includes('v81 — Desktop menu/calendar') &&
+  source("bali-pc-reference.css").includes('padding-top:21px!important') &&
+  source("bali-pc-reference.css").includes('body.bali-guest-theme #menuPage #baliMenuModeSwitch') &&
+  source("bali-pc-reference.css").includes('grid-template-columns:repeat(6,minmax(0,1fr))!important') &&
+  source("bali-pc-reference.css").includes('body.bali-guest-theme #menuPage .menu-category-block .menu-purchase-controls') &&
+  source("bali-pc-reference.css").includes('grid-template-columns:1fr!important') &&
+  source("bali-pc-reference.css").includes('body.bali-guest-theme #eventsSection .events-topbar') &&
+  source("bali-pc-reference.css").includes('grid-template-columns:minmax(0,1fr) auto clamp(200px,18.5vw,280px)!important') &&
+  source("bali-pc-reference.css").includes('body.bali-guest-theme #eventsSection .events-topbar #eventsViewTabs') &&
+  source("bali-pc-reference.css").includes('grid-column:2!important') &&
+  source("bali-pc-reference.css").includes('--bali-calendar-edge-width:') &&
+  source("bali-pc-reference.css").includes('--bali-calendar-edge-opacity:') &&
+  source("bali-pc-reference.css").includes('-webkit-mask-image:linear-gradient(to right,') &&
+  source("bali-pc-reference.css").includes('scroll-behavior:smooth!important') &&
+  source("bali-pc-reference.css").includes('(prefers-reduced-motion:reduce)'),
   "PC menu/category grid and calendar heading, profile clearance and fade animation must be preserved");
 const barAdmin=source("bali-admin-bar.js");
 const barAdminCss=source("bali-admin-bar.css");
