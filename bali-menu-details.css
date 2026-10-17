@@ -1,0 +1,91 @@
+/* BALI v97 — opt-in dish details editor and guest details dialog. */
+.bali-admin-product-details{
+  display:grid;gap:12px;margin:13px 0 18px;
+  padding:13px 15px;border-radius:13px;
+  border:1px solid rgba(185,255,81,.23);background:#161e22;
+}
+.bali-admin-product-details .bali-product-details-toggle{
+  display:flex!important;align-items:center;gap:10px;
+  margin:0;color:#e5efdf;font:730 13px/1.4 Manrope,Inter,sans-serif;
+}
+.bali-admin-product-details .bali-product-details-toggle input{
+  flex:0 0 18px;min-width:18px;width:18px;height:18px;accent-color:#b9ff51;
+}
+.bali-admin-product-details .bali-product-details-fields{
+  display:grid;gap:13px;border-top:1px solid #344339;padding-top:14px
+}
+.bali-admin-product-details .bali-product-details-fields[hidden]{display:none!important}
+.bali-admin-product-details .bali-product-details-fields textarea{
+  min-height:105px;resize:vertical
+}
+#menuPage .menu-category-block .menu-item .menu-item-weight{
+  display:block;color:#aeb4b8;font:650 11px/1.35 Manrope,Inter,sans-serif;
+  overflow-wrap:anywhere
+}
+#menuPage .menu-category-block .menu-item .menu-details-btn{
+  flex:0 0 auto;margin:7px 0 0;width:100%;
+  min-height:34px;padding:7px 9px;
+  border:1px solid rgba(185,255,81,.38);
+  border-radius:9px;background:rgba(185,255,81,.09);
+  color:#caff83;font:750 clamp(10px,.85vw,12px)/1.2 Manrope,Inter,sans-serif;
+  cursor:pointer;transition:background .15s
+}
+#menuPage .menu-category-block .menu-item .menu-details-btn:hover{
+  border-color:#b9ff51;background:rgba(185,255,81,.16)
+}
+#menuPage .menu-category-block .menu-item .menu-details-btn:focus-visible{
+  outline:2px solid #caff83;outline-offset:3px
+}
+.bali-menu-details-dialog{
+  box-sizing:border-box;
+  width:min(590px,calc(100vw - 24px));max-width:none;
+  max-height:min(92dvh,880px);padding:0;margin:auto;
+  overflow:auto;overscroll-behavior:contain;
+  border:1px solid rgba(185,255,81,.35);
+  border-radius:17px;background:#12171c;color:#f3f6f2;
+  box-shadow:0 28px 95px rgba(0,0,0,.75);
+}
+.bali-menu-details-dialog::backdrop{background:rgba(0,0,0,.8);backdrop-filter:blur(5px)}
+.bali-menu-details-head{
+  position:sticky;top:0;z-index:2;display:flex;align-items:center;
+  justify-content:space-between;gap:10px;
+  padding:12px 17px;border-bottom:1px solid rgba(185,255,81,.18);
+  background:#192122;color:#d8ffac;
+  font:750 11px Manrope,Inter,sans-serif;letter-spacing:.1em
+}
+.bali-menu-details-head button{
+  display:grid;place-items:center;width:38px;height:38px;
+  border:1px solid #3d4c45;border-radius:9px;background:#24302b;
+  color:#f0f2ed;font-size:18px;cursor:pointer
+}
+.bali-menu-details-body{display:grid;gap:10px;padding:17px 20px 26px}
+.bali-menu-details-photo{
+  width:100%;max-height:310px;object-fit:cover;aspect-ratio:4/3;
+  border-radius:12px;margin-bottom:5px
+}
+.bali-menu-details-name{
+  margin:0;color:#fff;font:800 clamp(22px,2.4vw,30px)/1.17 Manrope,Inter,sans-serif;
+  overflow-wrap:anywhere
+}
+.bali-menu-details-price{
+  color:#d0ff88;font:800 19px/1.25 Manrope,Inter,sans-serif
+}
+.bali-menu-details-weight{
+  margin:0;color:#b2bdba;font:600 13px/1.5 Manrope,Inter,sans-serif
+}
+.bali-menu-details-label{
+  font:750 13px/1.3 Manrope,Inter,sans-serif;
+  margin:11px 0 0;color:#dfffbc
+}
+.bali-menu-details-copy{
+  white-space:pre-wrap;overflow-wrap:anywhere;margin:0;
+  font:500 13px/1.7 Manrope,Inter,sans-serif;color:#e4ebe7
+}
+@media(max-width:767px){
+  #menuPage .menu-category-block .menu-item .menu-details-btn{
+    min-height:31px;padding:5px 7px;font-size:10px;margin-top:5px
+  }
+  .bali-menu-details-dialog{max-height:92dvh}
+  .bali-menu-details-body{padding:13px 15px 24px}
+  .bali-menu-details-photo{max-height:220px}
+}
