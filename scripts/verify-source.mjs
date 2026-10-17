@@ -53,6 +53,37 @@ const customIconJs=source("bali-icon-atelier.js");
 const themeClient=source("bali-theme.js");
 const themeCss=source("bali-theme.css");
 
+const neutralLimeCss=source("bali-lime-neutral.css");
+assert(html.includes('data-bali-theme="lime"') &&
+  admin.includes('data-bali-theme="lime"') &&
+  html.includes('history.scrollRestoration="manual"') &&
+  html.includes('bali-lime-neutral.css?v=20261017-61') &&
+  admin.includes('bali-lime-neutral.css?v=20261017-61') &&
+  html.indexOf('bali-lime-neutral.css?v=20261017-61') >
+  html.indexOf('bali-theme.css?v=20261017-60') &&
+  admin.indexOf('bali-lime-neutral.css?v=20261017-61') >
+  admin.indexOf('bali-theme.css?v=20261017-60'),
+  "LIME neutral skin and manual Safari scroll restoration must be loaded after base styles");
+assert(app.includes('function resetGuestVerticalPosition(page)') &&
+  app.includes('document.scrollingElement||document.documentElement') &&
+  app.includes('document.documentElement.scrollTop=0') &&
+  app.includes('document.body.scrollTop=0') &&
+  app.includes('window.addEventListener("pageshow"') &&
+  app.includes('document.addEventListener("visibilitychange"') &&
+  app.includes('renderGuestPage(routeFromLocation());') &&
+  !app.includes('renderGuestPage(routeFromLocation(),{scroll:false})'),
+  "Restore first-open viewport at vertical top and protect iOS Safari back-forward history");
+assert(!/function resetGuestVerticalPosition\\(page\\) \\{[^}]*scrollLeft/s.test(app) &&
+  neutralLimeCss.includes(':root[data-bali-theme="lime"]') &&
+  neutralLimeCss.includes('body.bali-guest-theme #homeSection .bali-home-menu-banner') &&
+  neutralLimeCss.includes('background:#23252b!important') &&
+  neutralLimeCss.includes('body.bali-guest-theme #homeSection .bali-home-contacts-card') &&
+  neutralLimeCss.includes('body.bali-admin-theme .card') &&
+  neutralLimeCss.includes('background:transparent!important') &&
+  !neutralLimeCss.includes('scroll-snap-type:none'),
+  "Fix only vertical offset; remove blue panels in LIME without changing carousels");
+
+
 assert(themeClient.includes('const defaultSelection=()=>({theme:"lime",colors:clone(palettes.lime)})') &&
   themeClient.includes('let lastCustom=clone(palettes.lime)') &&
   themeClient.includes('const themeRef=doc(db,"settings","appearance")') &&
@@ -222,7 +253,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-52"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-61"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -234,7 +265,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-52'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-61'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
