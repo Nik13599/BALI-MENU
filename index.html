@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0c0d11">
     <title>Bali</title>
     <meta name="description"
         content="Bali — события, меню, предзаказы и контакты ночного клуба в Минске.">
@@ -20,13 +21,14 @@
     <link rel="stylesheet" href="bali-home-premium.css?v=20261017-49">
     <link rel="stylesheet" href="bali-event-square.css?v=20261017-50">
     <link rel="stylesheet" href="bali-home-stories.css?v=20261017-52">
+    <link rel="stylesheet" href="bali-atelier-theme.css?v=20261017-53">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 </head>
 
-<body>
+<body class="bali-guest-theme">
     <div class="bali-preview-banner" role="status">
       Тестовый режим · Предзаказы работают после публикации правил Firestore. Оплата онлайн недоступна, заказ подтверждает администратор.
     </div>
@@ -58,7 +60,7 @@
           <p id="homeInterestFeedback" class="bali-home-interest-feedback" role="status" aria-live="polite"></p>
         </section>
         <button type="button" id="menuNavBtn" class="bali-home-menu-banner" aria-controls="menuPage">
-          <span class="bali-menu-banner-icon" aria-hidden="true">♜</span>
+          <span class="bali-menu-banner-icon" aria-hidden="true">▥</span>
           <span><strong>Меню</strong><small>Барная карта и кухня</small></span>
           <span class="bali-menu-banner-arrow" aria-hidden="true">›</span>
         </button>
@@ -237,7 +239,7 @@
     <nav class="bali-bottom-nav" aria-label="Основная навигация">
       <button type="button" data-bali-nav="home" class="active" aria-current="page"><span class="bali-nav-glyph" aria-hidden="true">⌂</span><small>Главная</small></button>
       <button type="button" data-bali-nav="events"><span class="bali-nav-glyph" aria-hidden="true">▦</span><small>События</small></button>
-      <button type="button" data-bali-nav="menu"><span class="bali-nav-glyph" aria-hidden="true">♜</span><small>Меню</small></button>
+      <button type="button" data-bali-nav="menu"><span class="bali-nav-glyph" aria-hidden="true">▥</span><small>Меню</small></button>
       <button type="button" data-bali-nav="profile"><span class="bali-nav-glyph" aria-hidden="true">♙</span><small>Профиль</small></button>
     </nav>
     <button type="button" class="bali-cart-dock" id="baliCartDock" hidden>
@@ -414,6 +416,7 @@
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>
     <script type="module" src="orders-firestore.js?v=20261017-28"></script>
     <script type="module" src="event-interests.js?v=20261017-26"></script>
+    <script src="bali-icon-atelier.js?v=20261017-53" defer></script>
 </body>
 
 </html>

@@ -1,0 +1,425 @@
+/* BALI ATELIER · v53
+   A restrained luxury palette: charcoal, warm ivory, champagne and muted wine.
+   Low-glare fills, delicate hairlines, no flashing gradients or heavy neon glows. */
+:root{
+  --bali-luxe-night:#0c0d11;
+  --bali-luxe-surface:#15161b;
+  --bali-luxe-elevated:#1c1a20;
+  --bali-luxe-wine:#372630;
+  --bali-luxe-wine-light:#5a3c49;
+  --bali-luxe-ivory:#efebe5;
+  --bali-luxe-muted:#aaa8ae;
+  --bali-luxe-champagne:#c8ae86;
+  --bali-luxe-gold-light:#e1cda8;
+  --bali-luxe-line:rgba(206,184,151,.22);
+  --bali-luxe-soft-shadow:0 7px 22px rgba(0,0,0,.23);
+}
+/* Consistent proprietary outline symbols */
+.bali-icon-slot{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;flex-shrink:0}
+.bali-icon-slot .bali-custom-icon{display:block;flex:none;width:1.4rem;height:1.4rem;max-width:100%;max-height:100%;stroke:currentColor;fill:none}
+.bali-bottom-nav .bali-nav-glyph .bali-custom-icon{width:24px;height:24px}
+.bali-bottom-nav .bali-nav-glyph{display:flex;align-items:center;justify-content:center}
+.bali-menu-banner-icon .bali-custom-icon{width:clamp(29px,4.6vw,40px);height:clamp(29px,4.6vw,40px)}
+.bali-menu-banner-arrow .bali-custom-icon{width:24px;height:24px}
+.bali-home-calendar-btn > span .bali-custom-icon{width:20px;height:20px}
+.bali-profile-action > span .bali-custom-icon{width:23px;height:23px}
+.bali-profile-action > b .bali-custom-icon{width:18px;height:18px}
+.bali-cart-dock .bali-custom-icon{width:20px;height:20px}
+.bali-menu-search-field .bali-custom-icon{width:21px;height:21px}
+.bali-contact-card .contact-symbol .bali-custom-icon{width:23px;height:23px}
+.bali-contact-card > span:last-child .bali-custom-icon{width:16px;height:16px}
+.events-carousel-hint .bali-custom-icon{width:16px;height:16px}
+.feature-icon .bali-custom-icon,.events-info-icon .bali-custom-icon{width:23px;height:23px}
+.empty-icon .bali-custom-icon{width:48px;height:48px}
+.success-icon .bali-custom-icon{width:38px;height:38px}
+.btn-icon .bali-custom-icon{width:18px;height:18px}
+.close-cart .bali-custom-icon,.close-modal .bali-custom-icon,.dialog-close .bali-custom-icon,
+.remove-item .bali-custom-icon{width:19px;height:19px}
+.bali-icon-labeled{display:inline-flex!important;align-items:center;justify-content:center;gap:7px}
+.bali-icon-labeled > svg.bali-custom-icon{width:16px;height:16px}
+/* User app: minimal club-dark surfaces, even saturation, no bright orange. */
+body.bali-guest-theme{
+  --primary-color:#c8ae86;
+  --primary-dark:#b59a74;
+  --secondary-color:#5d4550;
+  --accent-color:#ae8b79;
+  --success-color:#87a892;
+  --warning-color:#d4af78;
+  --error-color:#db7782;
+  --info-color:#9b9bab;
+  --bg-primary:#0c0d11;
+  --bg-secondary:#16171d;
+  --bg-tertiary:#201e25;
+  --text-primary:#efebe5;
+  --text-secondary:#b0adb4;
+  --text-muted:#8d8b94;
+  --border-color:rgba(206,184,151,.19);
+  --shadow-glow:0 0 0 rgba(0,0,0,0);
+  color:var(--bali-luxe-ivory);
+  background:var(--bali-luxe-night)!important;
+}
+body.bali-guest-theme::before{
+  background:radial-gradient(ellipse at 52% 5%,rgba(84,56,68,.10),transparent 65%),#0c0d11!important;
+}
+.bali-guest-theme .header,
+body.bali-guest-theme[data-bali-page="home"] .header{
+  background:rgba(12,13,17,.98)!important;
+  border-bottom:1px solid rgba(205,181,144,.16)!important;
+  box-shadow:none!important;
+}
+.bali-guest-theme .header #accountBtn{
+  color:var(--bali-luxe-gold-light)!important;
+  text-shadow:none!important;
+}
+.bali-guest-theme .header .logo .logo-text{color:var(--bali-luxe-ivory)!important;-webkit-text-fill-color:var(--bali-luxe-ivory)!important}
+.bali-guest-theme .header .logo .logo-text small{color:#c7c0b6!important}
+body.bali-guest-theme .bali-bottom-nav{
+  background:rgba(13,14,18,.98)!important;
+  border-top:1px solid var(--bali-luxe-line)!important;
+  box-shadow:0 -6px 19px rgba(0,0,0,.20)!important;
+}
+.bali-guest-theme .bali-bottom-nav button{color:#9f9da5;text-shadow:none!important}
+.bali-guest-theme .bali-bottom-nav button.active{
+  color:var(--bali-luxe-gold-light)!important;
+  text-shadow:none!important;
+}
+.bali-guest-theme .bali-bottom-nav button.active::after{
+  background:var(--bali-luxe-champagne)!important;
+  opacity:.8;
+}
+.bali-guest-theme .bali-preview-banner,
+body.bali-guest-theme[data-bali-page="home"] .bali-preview-banner{
+  color:#bdb1a1;
+  background:#16151a!important;
+  border-bottom:1px solid rgba(198,170,134,.13);
+  box-shadow:none;
+}
+body.bali-guest-theme #homeSection{
+  background:radial-gradient(ellipse at 50% 0%,rgba(79,55,66,.10),transparent 69%),var(--bali-luxe-night)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-events-panel,
+body.bali-guest-theme #homeSection .bali-home-contacts-card{
+  background:linear-gradient(155deg,#19191e,#111217 88%)!important;
+  border:1px solid var(--bali-luxe-line)!important;
+  box-shadow:var(--bali-luxe-soft-shadow)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-events-panel::before,
+body.bali-guest-theme #homeSection .bali-home-contacts-card::before{
+  background:linear-gradient(90deg,transparent,rgba(206,179,136,.30),transparent)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-calendar-row{
+  background:rgba(255,255,255,.012)!important;
+  border-bottom:1px solid rgba(206,184,151,.08)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-calendar-row button{
+  background:#202027!important;
+  color:#cbc6c4!important;
+  border:1px solid rgba(206,184,151,.17)!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+}
+body.bali-guest-theme #homeSection .bali-home-calendar-row .is-current{
+  background:linear-gradient(125deg,#423137,#352b31)!important;
+  color:#f0dcc0!important;
+  border-color:rgba(202,164,117,.52)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-calendar-btn{color:var(--bali-luxe-gold-light)!important}
+body.bali-guest-theme #homeSection .bali-home-event-card{
+  background:#151319;
+  border-color:rgba(207,170,149,.31)!important;
+  box-shadow:0 6px 19px rgba(0,0,0,.26)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-info{
+  background:linear-gradient(155deg,#19171c,#121318)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-poster-wrap{
+  border-color:rgba(200,168,147,.28)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-hours,
+body.bali-guest-theme #eventsSection .bali-event-hours{
+  color:var(--bali-luxe-gold-light)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-description,
+body.bali-guest-theme #eventsSection .bali-event-description{
+  color:#c6c0c5!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-count{color:#a9a6ad}
+body.bali-guest-theme #homeSection .bali-home-heart{
+  border-color:rgba(238,232,229,.45);
+  background:rgba(15,15,20,.45);
+  color:#f0ebe8;
+}
+body.bali-guest-theme #homeSection .bali-home-heart.is-liked{color:#e4485e;border-color:rgba(221,88,105,.7);background:rgba(52,23,31,.72)}
+body.bali-guest-theme #homeSection .bali-home-heart.is-liked svg{fill:#e4485e;stroke:#e4485e}
+body.bali-guest-theme #homeSection .bali-home-menu-banner{
+  background:linear-gradient(112deg,#34252e,#241d25 55%,#18171d)!important;
+  border:1px solid rgba(209,181,149,.32)!important;
+  box-shadow:var(--bali-luxe-soft-shadow)!important;
+  filter:none!important;
+}
+body.bali-guest-theme #homeSection .bali-menu-banner-icon{
+  background:rgba(209,173,155,.095)!important;
+  border:1px solid rgba(212,180,146,.16);
+  color:var(--bali-luxe-gold-light)!important;
+}
+body.bali-guest-theme #homeSection .bali-menu-banner-arrow,
+body.bali-guest-theme #homeSection .bali-home-menu-banner small{
+  color:#c4b7b6!important;
+}
+body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-social-btn{
+  color:#d5bd9d!important;
+  border-color:rgba(202,174,141,.26)!important;
+  background:#1d1c23!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map{
+  color:#ede2d7!important;
+  background:#201d25!important;
+  border-color:rgba(201,175,144,.28)!important;
+}
+body.bali-guest-theme #homeSection .bali-yandex-pin{color:#b86973!important}
+/* Events page */
+body.bali-guest-theme #eventsSection{
+  background:radial-gradient(ellipse at 60% 0,rgba(79,53,66,.10),transparent 69%),#0c0d11!important;
+}
+body.bali-guest-theme #eventsSection .events-view-button{
+  background:#1c1c23!important;
+  border-color:var(--bali-luxe-line)!important;
+  color:#d1cbd0!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #eventsSection .events-view-button.active{
+  background:#342a31!important;
+  border-color:rgba(200,170,128,.52)!important;
+  color:var(--bali-luxe-gold-light)!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+  background:#131318!important;
+  border-color:rgba(201,164,161,.28)!important;
+  box-shadow:0 9px 20px rgba(0,0,0,.28)!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active{
+  border-color:rgba(206,164,144,.62)!important;
+  box-shadow:0 7px 21px rgba(0,0,0,.34)!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body{
+  background:linear-gradient(145deg,#19171d,#111116 85%)!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions{
+  background:linear-gradient(180deg,rgba(16,16,21,0),#101015 20%)!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions .event-want-to-go,
+body.bali-guest-theme #menuPage .add-to-cart-btn,
+body.bali-guest-theme .checkout-btn,
+body.bali-guest-theme .submit-order-btn{
+  background:linear-gradient(180deg,#d4bf9d,#bea17b)!important;
+  color:#201b17!important;
+  border:1px solid #c7ad88!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions .event-go-to-menu{
+  background:#24222a!important;
+  color:#e5d9cb!important;
+  border:1px solid rgba(215,192,166,.35)!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-preorder-badge{
+  background:rgba(21,25,24,.82)!important;
+  border-color:rgba(147,179,160,.29)!important;
+  color:#c1d4c7!important;
+}
+body.bali-guest-theme #eventsSection .event-interest-count{color:#b6b0b4!important}
+/* Catalog, categories, purchase and fixed cart */
+body.bali-guest-theme #menuPage{background:#0c0d11!important}
+body.bali-guest-theme #menuPage .categories{
+  background:rgba(14,15,19,.98)!important;
+  border-bottom:1px solid var(--bali-luxe-line)!important;
+}
+body.bali-guest-theme #menuPage .category-btn{
+  background:#1f1e24!important;
+  color:#d0c9cb!important;
+  border:1px solid rgba(202,179,149,.19)!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #menuPage .category-btn.active{
+  background:#3c3033!important;
+  color:#f0d8b3!important;
+  border-color:rgba(205,174,129,.58)!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #menuPage .bali-menu-search-field{
+  background:#1a1a20!important;
+  border-color:var(--bali-luxe-line)!important;
+  color:#bfb7b7!important;
+}
+body.bali-guest-theme #menuPage .menu-item{
+  background:linear-gradient(135deg,#1a1b20,#15161b)!important;
+  border-color:rgba(198,176,148,.17)!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #menuPage .menu-item-price{color:var(--bali-luxe-gold-light)!important}
+body.bali-guest-theme #menuPage .menu-item-description{color:#b5b0b5!important}
+body.bali-guest-theme #menuPage .menu-quantity-btn{
+  background:#26242c!important;
+  border-color:rgba(203,179,151,.28)!important;
+  color:#eee6dc!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme .bali-cart-dock{
+  background:linear-gradient(130deg,#d6c3a7,#bda17f)!important;
+  border-color:rgba(224,208,180,.68)!important;
+  color:#241d16!important;
+  box-shadow:0 6px 18px rgba(0,0,0,.32)!important;
+}
+body.bali-guest-theme #baliDockCount{background:#352a24!important;color:#f3e1c3!important}
+/* Profile and system modals */
+body.bali-guest-theme .bali-profile-page{
+  background:radial-gradient(ellipse at 68% 40%,rgba(105,74,65,.17),transparent 55%),#0d0d12!important;
+}
+body.bali-guest-theme .bali-profile-card{
+  background:linear-gradient(140deg,#221e23,#17161b)!important;
+  border-color:rgba(201,170,140,.24)!important;
+  box-shadow:var(--bali-luxe-soft-shadow)!important;
+}
+body.bali-guest-theme .bali-profile-avatar{
+  background:#2f292b!important;
+  border-color:#bda483!important;
+  color:#e5cfad!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme .bali-profile-action{
+  background:#222127!important;
+  border-color:var(--bali-luxe-line)!important;
+  color:#ebe5e0!important;
+}
+body.bali-guest-theme .bali-profile-action > span{color:#c8ae86!important}
+body.bali-guest-theme .bali-logout > span{color:#c98991!important}
+body.bali-guest-theme .modal-content,
+body.bali-guest-theme .cart-sidebar{
+  background:#1a1a20!important;
+  border-color:rgba(208,179,149,.25)!important;
+  box-shadow:0 12px 32px rgba(0,0,0,.42)!important;
+}
+body.bali-guest-theme .modal-content input,
+body.bali-guest-theme .modal-content textarea,
+body.bali-guest-theme .modal-content select{
+  background:#232229!important;
+  color:#f1ebe4!important;
+  border-color:rgba(207,181,149,.25)!important;
+}
+body.bali-guest-theme .close-cart,
+body.bali-guest-theme .close-modal{
+  color:#d6c9bc!important;
+  background:rgba(217,185,147,.09)!important;
+  border-color:rgba(217,185,147,.17)!important;
+}
+body.bali-guest-theme .success-icon{color:#b8c9bb!important}
+body.bali-guest-theme .bali-contact-card{background:#1a191f!important;border-color:rgba(201,177,146,.22)!important}
+body.bali-guest-theme .bali-contact-card .contact-symbol{color:var(--bali-luxe-gold-light)!important}
+/* Admin workspace: same identity, more neutral for prolonged use. */
+body.bali-admin-theme{
+  --surface:#17171c;
+  --surface-2:#202026;
+  --border:rgba(202,184,159,.20);
+  --ink:#ece8e2;
+  --muted:#aca9ad;
+  --gold:#c9af88;
+  --gold-strong:#e0c69c;
+  --focus:#c9af88;
+  background:#101115!important;
+  color:var(--ink);
+}
+.bali-admin-theme .topbar{
+  background:#16161b!important;
+  border-bottom:1px solid var(--bali-luxe-line)!important;
+  box-shadow:none!important;
+}
+.bali-admin-theme .topbar-brand{color:#edeae4}
+.bali-admin-theme .brand-mark{
+  color:#dec6a2!important;
+  background:#292326!important;
+  border:1px solid rgba(202,174,141,.39)!important;
+}
+.bali-admin-theme .login-logo{color:#d2b78c!important}
+.bali-admin-theme .login-logo .bali-custom-icon{width:38px;height:38px}
+.bali-admin-theme .admin-sidebar{
+  background:linear-gradient(165deg,#18181e,#131418)!important;
+  border-color:rgba(194,174,154,.16)!important;
+}
+.bali-admin-theme .admin-tab{
+  background:transparent!important;
+  color:#bcb8be!important;
+  border-color:transparent!important;
+}
+.bali-admin-theme .admin-tab.active{
+  background:#342b31!important;
+  color:#e8cfad!important;
+  border:1px solid rgba(207,175,135,.38)!important;
+}
+.bali-admin-theme .admin-tab:hover:not(:disabled){background:#2a252c!important}
+.bali-admin-theme .admin-tab .bali-custom-icon{width:20px;height:20px}
+.bali-admin-theme .topbar-site .bali-custom-icon{width:16px;height:16px}
+.bali-admin-theme .card,.bali-admin-theme .stat-card{
+  background:#1a1b20!important;
+  border:1px solid rgba(204,184,156,.19)!important;
+  box-shadow:none!important;
+}
+.bali-admin-theme .stat-card-attention{background:#282421!important;border-color:rgba(194,154,112,.31)!important}
+.bali-admin-theme .eyebrow,.bali-admin-theme .stat-card-attention .stat-value{color:#d2b990!important}
+.bali-admin-theme button.primary{
+  background:linear-gradient(145deg,#d8c2a0,#c6a983)!important;
+  color:#282119!important;
+  border:1px solid rgba(224,198,160,.6)!important;
+  box-shadow:none!important;
+}
+.bali-admin-theme button.primary:hover:not(:disabled){
+  background:#e0caa8!important;
+  border-color:#e0caa8!important;
+}
+.bali-admin-theme button:not(.primary),.bali-admin-theme .tag{box-shadow:none}
+.bali-admin-theme .tag{background:#25242b!important;border-color:rgba(199,179,153,.20)!important;color:#c5bfc3!important}
+.bali-admin-theme input:not([type="checkbox"]),.bali-admin-theme textarea,.bali-admin-theme select{
+  background:#24232a!important;
+  border-color:rgba(200,180,154,.24)!important;
+  color:#f1ede8!important;
+}
+.bali-admin-theme input:focus,.bali-admin-theme textarea:focus,.bali-admin-theme select:focus{
+  outline:1px solid rgba(219,186,145,.7)!important;
+  outline-offset:0;
+}
+.bali-admin-theme .dialog-header,.bali-admin-theme .dialog-actions{
+  background:#1b1a20!important;
+  border-color:rgba(203,184,156,.17)!important;
+}
+.bali-admin-theme .admin-form-dialog,.bali-admin-theme dialog{
+  background:#1a1a20!important;
+  color:#eae7e2!important;
+  border-color:rgba(206,184,153,.23)!important;
+}
+.bali-admin-theme .dialog-close{
+  color:#d5c9bd!important;
+  background:#29262c!important;
+  border-color:rgba(203,180,151,.23)!important;
+}
+.bali-admin-theme .online-dot{background:#7d9c88!important;box-shadow:none!important}
+/* Respect focus, accessibility and device sizes. */
+.bali-guest-theme :is(button,a,input,textarea,select):focus-visible,
+.bali-admin-theme :is(button,a,input,textarea,select):focus-visible{
+  outline:2px solid #d5b58a!important;
+  outline-offset:2px;
+}
+@media(pointer:coarse){
+  .bali-guest-theme .bali-social-btn,
+  .bali-guest-theme .bali-bottom-nav button,
+  .bali-admin-theme .admin-tab{
+    -webkit-tap-highlight-color:transparent;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .bali-guest-theme *, .bali-admin-theme *{
+    scroll-behavior:auto!important;
+    animation-duration:.01ms!important;
+    transition-duration:.01ms!important;
+  }
+}
