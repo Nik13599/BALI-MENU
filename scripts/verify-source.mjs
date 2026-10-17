@@ -51,6 +51,7 @@ const admin = source("admin.html");
 const customIconJs=source("bali-icon-atelier.js");
 
 const themeClient=source("bali-theme.js");
+const themeCss=source("bali-theme.css");
 
 assert(themeClient.includes('const defaultSelection=()=>({theme:"lime",colors:clone(palettes.lime)})') &&
   themeClient.includes('let lastCustom=clone(palettes.lime)') &&
@@ -68,7 +69,7 @@ assert(themeCss.includes('--bt-primary:#B9FF51;') &&
   !themeClient.includes('setProperty("--bg-'),
   "LIME SHADOW initial CSS must prevent cobalt flash and preserve fixed site background");
 
-const themeCss=source("bali-theme.css");
+
 
 assert(themeCss.includes('background:var(--bt-primary)!important') &&
   themeCss.includes('color:var(--bt-on-primary)!important') &&
