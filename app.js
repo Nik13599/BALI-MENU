@@ -262,13 +262,19 @@ function renderGuestPage(page,{scroll=true}={}) {
     if(scroll)resetGuestVerticalPosition(selected);
 }
 function switchBaliMenuMode(nextMode) {
-    // This is a VIEW only: the bar has no cart, quantity controls or checkout.
-    const mode=nextMode==="bar"?"bar":"kitchen";
+    // Only the kitchen offers online preorders. All other maps are informational.
+    const mode=["kitchen","bar","hookah","tea"].includes(nextMode)?nextMode:"kitchen";
     baliActiveMenuMode=mode;
-    const kitchen=document.getElementById("baliKitchenContent");
-    const bar=document.getElementById("baliBarContent");
-    if(kitchen)kitchen.hidden=mode!=="kitchen";
-    if(bar)bar.hidden=mode!=="bar";
+    const panels={
+        kitchen:"baliKitchenContent",
+        bar:"baliBarContent",
+        hookah:"baliHookahContent",
+        tea:"baliTeaContent"
+    };
+    for(const [section,id] of Object.entries(panels)){
+        const node=document.getElementById(id);
+        if(node)node.hidden=mode!==section;
+    }
     document.querySelectorAll("#baliMenuModeSwitch [data-bali-menu-mode]").forEach(button=>{
         const active=button.dataset.baliMenuMode===mode;
         button.classList.toggle("is-active",active);
@@ -276,7 +282,7 @@ function switchBaliMenuMode(nextMode) {
     });
     const dock=document.getElementById("baliCartDock");
     if(dock)dock.hidden=document.body.dataset.baliPage!=="menu"||mode!=="kitchen";
-    if(mode==="bar"&&typeof closeCart==="function")closeCart();
+    if(mode!=="kitchen"&&typeof closeCart==="function")closeCart();
 }
 
 function navigateGuestPage(page,{replace=false}={}) {
@@ -309,26 +315,19 @@ function renderHomeEvents() {
     const track=document.getElementById("homeEventCarousel");
     if(!track)return;
     const previousScroll=track.scrollLeft;
-    const view=showOnlyPlannedEvents?"planned":"all";
-    const preserveScroll=track.dataset.homeView===view;
-    track.dataset.homeView=view;
+    const preserveScroll=track.dataset.homeView==="all";
+    track.dataset.homeView="all";
     const today=minskDateToday();
     const upcoming=availableEvents
         .filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date||"")&&e.date>=today)
         .sort((a,b)=>a.date.localeCompare(b.date))
-        .filter(e=>!showOnlyPlannedEvents||guestInterestDates.has(e.date))
         // The FULL events calendar remains unlimited; only the homepage is capped.
         .slice(0,window.matchMedia("(max-width:767px)").matches?3:5);
-    for(const btn of document.querySelectorAll("[data-home-events-view]")) {
-        const active=(btn.dataset.homeEventsView==="planned")===showOnlyPlannedEvents;
-        btn.classList.toggle("is-current",active);
-        btn.setAttribute("aria-pressed",String(active));
-    }
     track.replaceChildren();
     if(!upcoming.length){
         const p=document.createElement("p");
         p.className="bali-home-event-empty";
-        p.textContent=showOnlyPlannedEvents?"В ваших планах пока нет мероприятий.":"Афиши ближайших мероприятий пока не опубликованы.";
+        p.textContent="Афиши ближайших мероприятий пока не опубликованы.";
         track.append(p);
         return;
     }
@@ -783,12 +782,6 @@ function attachEventListeners() {
         baliMenuSearchText=String(event.target.value||"").trim().toLocaleLowerCase("ru-RU");
         displayMenuItems(menuItems);
     });
-    for(const button of document.querySelectorAll("[data-home-events-view]")){
-        button.addEventListener("click",()=>{
-            showOnlyPlannedEvents=button.dataset.homeEventsView==="planned";
-            renderHomeEvents();
-        });
-    }
     document.getElementById("profileMyOrdersBtn")?.addEventListener("click",()=>void openMyOrders());
     document.getElementById("profileMyPlansBtn")?.addEventListener("click",()=>{
         showOnlyPlannedEvents=true;
