@@ -5,12 +5,12 @@
 @media (min-width:1180px) {
   :root {
     /* Sidebar + its trailing gutter = the starting X of main content. */
-    --bali-pc-side:clamp(195px,15vw,300px);
-    --bali-pc-gap:clamp(11px,1vw,20px);
-    --bali-pc-right:clamp(275px,20.7vw,450px);
-    --bali-pc-edge-right:clamp(15px,2vw,40px);
-    --bali-pc-edge-y:clamp(12px,2.55dvh,34px);
-    --bali-pc-sidebar-left:clamp(12px,2.1vw,42px);
+    --bali-pc-side:clamp(195px,15vw,640px);
+    --bali-pc-gap:clamp(11px,1vw,42px);
+    --bali-pc-right:clamp(275px,20.7vw,900px);
+    --bali-pc-edge-right:clamp(15px,2vw,85px);
+    --bali-pc-edge-y:clamp(12px,2.55dvh,90px);
+    --bali-pc-sidebar-left:clamp(12px,2.1vw,90px);
   }
   html {
     height:100%!important;
@@ -52,7 +52,7 @@
     flex:0 0 auto;
     max-width:100%;
     padding:11px 0 0!important;
-    font-size:clamp(23px,2.55vw,43px)!important;
+    font-size:clamp(23px,2.55vw,95px)!important;
     letter-spacing:clamp(.07em,.16vw,.15em)!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation {
@@ -60,7 +60,8 @@
     gap:clamp(4px,.65dvh,9px)!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button {
-    height:clamp(37px,5.6dvh,52px)!important;
+    height:clamp(37px,5.6dvh,120px)!important;
+    font-size:clamp(11px,.98vw,27px)!important;
     min-height:0!important;
     padding:6px 9px!important;
   }
@@ -168,12 +169,12 @@
     overflow:hidden;
   }
   body.bali-guest-theme #homeSection .bali-pc-hero-content h1 {
-    font-size:clamp(27px,3.15vw,59px)!important;
+    font-size:clamp(27px,3.15vw,134px)!important;
     line-height:1.04!important;
     overflow-wrap:anywhere;
   }
   body.bali-guest-theme #homeSection .bali-pc-hero-content p {
-    font-size:clamp(11px,1.03vw,17px)!important;
+    font-size:clamp(11px,1.03vw,44px)!important;
     line-height:1.38!important;
   }
   body.bali-guest-theme #homeSection .bali-pc-events-title {
@@ -188,7 +189,7 @@
     margin:0!important;
   }
   body.bali-guest-theme #homeSection .bali-pc-events-title h2 button {
-    font-size:clamp(17px,1.6vw,29px)!important;
+    font-size:clamp(17px,1.6vw,67px)!important;
     min-height:0!important;
     max-height:100%!important;
     line-height:1.1!important;
@@ -213,7 +214,7 @@
     height:100%!important;
     max-height:100%!important;
     min-height:0!important;
-    width:clamp(130px,13vw,230px)!important;
+    width:clamp(130px,13vw,550px)!important;
     flex-shrink:0!important;
   }
   body.bali-guest-theme #homeSection .bali-home-poster-wrap{
@@ -239,17 +240,17 @@
     overflow:hidden!important;
   }
   body.bali-guest-theme #homeSection .bali-home-menu-banner strong {
-    font-size:clamp(17px,1.45vw,27px)!important;
+    font-size:clamp(17px,1.45vw,60px)!important;
   }
   body.bali-guest-theme #homeSection .bali-menu-banner-icon {
     flex:0 0 auto!important;
-    width:clamp(40px,4.4vw,72px)!important;
-    height:clamp(40px,4.4vw,72px)!important;
+    width:clamp(40px,4.4vw,180px)!important;
+    height:clamp(40px,4.4vw,180px)!important;
     max-height:calc(100% - 2px)!important;
   }
   body.bali-guest-theme #homeSection .bali-pc-menu-cta {
     flex:0 0 auto;
-    font-size:clamp(10px,.75vw,13px)!important;
+    font-size:clamp(10px,.75vw,32px)!important;
     padding:clamp(7px,.8dvh,12px) clamp(9px,1.2vw,22px)!important;
   }
 
