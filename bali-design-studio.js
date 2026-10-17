@@ -1,0 +1,170 @@
+/* BALI v82 — actual website inside an editable responsive canvas.
+   The iframe executes the very same Firebase-backed index.html as visitors. */
+(() => {
+  "use strict";
+  const $=id=>document.getElementById(id);
+  const panel=$("adminDesignPanel");
+  const frame=$("baliDesignLiveFrame");
+  const stage=$("baliDesignScaledFrame");
+  const canvas=$("baliDesignCanvas");
+  if(!panel||!frame||!stage||!canvas)return;
+
+  const devices={
+    desktop:{width:1440,height:900,label:"ПК"},
+    tablet:{width:820,height:1180,label:"Планшет"},
+    phone:{width:390,height:844,label:"Телефон"}
+  };
+  const labels={
+    privilege:["BALI PRIVILEGE","Слайды, предложение клуба, кнопка, изображения 1600×600 / 1200×675 / 750×1000."],
+    about:["О клубе BALI","Название, описание, фото 900×1400 / 1200×900 / 900×1200."],
+    merch:["BALI MERCH","Несколько товаров, статусы продажи, цены и адаптивные фотографии."],
+    navigation:["Логотип и навигация","Тексты пунктов и собственные значки для кнопок."],
+    calendar:["BALI календарь","Заголовки календаря и ссылка на редактор мероприятий."],
+    menuBanner:["Большая кнопка «Меню»","Текст, подпись и собственный значок кнопки перехода."],
+    contacts:["Контактная информация","Телефон, Telegram, Instagram и Яндекс Карты."],
+    events:["Мероприятия","Действующие афиши, даты и информация из Firebase."],
+    catalog:["Каталог меню","Актуальные блюда и карты, категории, цены и доступность из Firebase."],
+    profile:["Профиль посетителя","Настройки профиля защищены учётными данными посетителя."]
+  };
+  let device="desktop",section="home",selected="privilege",skipClick=false;
+  const editors=[...panel.querySelectorAll("[data-design-editor]")];
+  const controlButtons=[...panel.querySelectorAll("[data-studio-device]")];
+  const pages=[...panel.querySelectorAll("[data-studio-page]")];
+  const status=$("baliStudioLoadStatus");
+  const label=$("baliStudioViewportLabel");
+  const focusSelectedInFrame=()=>{
+    let doc;
+    try{doc=frame.contentDocument;}catch{return;}
+    if(!doc)return;
+    doc.querySelectorAll("[data-bali-editor-selected]").forEach(node=>node.removeAttribute("data-bali-editor-selected"));
+    const targets={
+      privilege:".bali-pc-hero",about:".bali-pc-about",merch:".bali-pc-merch",
+      calendar:".bali-pc-events-title",menuBanner:"#menuNavBtn",
+      navigation:".bali-pc-navigation",contacts:".bali-pc-sidebar-contacts",
+      events:"#eventsGrid",catalog:"#menuPage",profile:".header #accountBtn"
+    };
+    const target=doc.querySelector(targets[selected]);
+    if(target&&target.getClientRects().length)target.setAttribute("data-bali-editor-selected","");
+  };
+  function chooseEditor(id){
+    if(!labels[id])return;
+    selected=id;
+    for(const item of editors)item.hidden=item.dataset.designEditor!==id;
+    const [title,description]=labels[id];
+    $("baliStudioInspectorTitle").textContent=title;
+    $("baliStudioInspectorHint").textContent=description;
+    focusSelectedInFrame();
+  }
+  function fit(){
+    const {width,height}=devices[device];
+    const available=Math.max(260,canvas.clientWidth-24);
+    const scale=Math.min(1,available/width);
+    // Keep the real media-query viewport; scale just its representation.
+    stage.style.width=Math.round(width*scale)+"px";
+    stage.style.height=Math.round(height*scale)+"px";
+    stage.style.setProperty("--bali-studio-scale",String(scale));
+    frame.style.width=width+"px";
+    frame.style.height=height+"px";
+    frame.style.transform="scale("+scale+")";
+    label.textContent=devices[device].label+" · "+width+" × "+height+" px · "+Math.round(scale*100)+"%";
+  }
+  function chooseDevice(name){
+    if(!devices[name])return;
+    device=name;
+    for(const button of controlButtons){
+      const active=button.dataset.studioDevice===name;
+      button.classList.toggle("active",active);
+      button.setAttribute("aria-pressed",String(active));
+    }
+    fit();
+  }
+  function choosePage(name){
+    if(!["home","events","menu"].includes(name))return;
+    section=name;
+    for(const button of pages){
+      const active=button.dataset.studioPage===name;
+      button.classList.toggle("active",active);
+      button.setAttribute("aria-pressed",String(active));
+    }
+    try{
+      const doc=frame.contentDocument;
+      const nav=doc?.querySelector('.bali-pc-navigation [data-bali-nav="'+name+'"]');
+      if(nav){
+        skipClick=true;
+        nav.click();
+        skipClick=false;
+      }
+    }catch(error){skipClick=false;console.warn("BALI studio preview navigation:",error);}
+    chooseEditor(name==="menu"?"catalog":name==="events"?"events":"privilege");
+  }
+  function selectionFrom(target){
+    if(!(target instanceof frame.contentWindow.Element))return null;
+    const ruleOrder=[
+      ["privilege",".bali-pc-hero"],
+      ["about",".bali-pc-about"],
+      ["merch",".bali-pc-merch"],
+      ["menuBanner","#menuNavBtn"],
+      ["calendar",".bali-pc-events-title, #eventsSection .events-topbar"],
+      ["events",".bali-home-event-card, #homeEventCarousel, #eventsGrid, .event-card"],
+      ["contacts",".bali-pc-sidebar-contacts, .bali-home-contacts-card, #contactsSection"],
+      ["navigation",".bali-pc-navigation, .bali-pc-brand"],
+      ["profile",".header #accountBtn, .bali-pc-profile-menu"],
+      ["catalog","#menuPage"]
+    ];
+    for(const [id,selector] of ruleOrder)if(target.closest(selector))return id;
+    return null;
+  }
+  function attachFrame(){
+    let doc;
+    try{doc=frame.contentDocument;}catch{
+      status.textContent="Предпросмотр недоступен: схема должна загружаться с того же сайта.";
+      return;
+    }
+    if(!doc)return;
+    if(doc.documentElement.dataset.baliStudioCapture)return;
+    doc.documentElement.dataset.baliStudioCapture="true";
+    const style=doc.createElement("style");
+    style.textContent=`
+      .bali-pc-hero:hover,.bali-pc-about:hover,.bali-pc-merch:hover,
+      #menuNavBtn:hover,.bali-pc-events-title:hover,.bali-pc-navigation:hover,
+      .bali-pc-sidebar-contacts:hover,.bali-home-event-card:hover,
+      .event-card:hover,#menuPage .menu-item:hover{
+        outline:3px solid rgba(185,255,81,.85)!important;
+        outline-offset:-3px!important;cursor:crosshair!important;
+      }
+      [data-bali-editor-selected]{
+        outline:3px solid #b9ff51!important;
+        outline-offset:-3px!important;
+      }
+    `;
+    doc.head.append(style);
+    doc.addEventListener("click",event=>{
+      if(skipClick)return;
+      const area=selectionFrom(event.target);
+      // The canvas is an editing surface, not an order checkout.
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if(area)chooseEditor(area);
+      else status.textContent="Выберите один из выделяемых блоков схемы. Для перехода между страницами используйте кнопки сверху.";
+    },true);
+    doc.addEventListener("submit",event=>{event.preventDefault();event.stopImmediatePropagation();},true);
+    status.textContent="Живая схема загружена: данные сайта обновляются через Firebase.";
+    focusSelectedInFrame();
+  }
+  frame.addEventListener("load",attachFrame);
+  for(const button of controlButtons)button.addEventListener("click",()=>chooseDevice(button.dataset.studioDevice));
+  for(const button of pages)button.addEventListener("click",()=>choosePage(button.dataset.studioPage));
+  panel.querySelectorAll("[data-design-admin-route]").forEach(button=>{
+    button.addEventListener("click",()=>window.dispatchEvent(new CustomEvent("bali:admin:navigate",{
+      detail:{section:button.dataset.designAdminRoute}
+    })));
+  });
+  const observer=new ResizeObserver(()=>fit());
+  observer.observe(canvas);
+  window.addEventListener("bali:admin:section",event=>{
+    if(event.detail.section==="design"){fit();attachFrame();}
+  });
+  chooseEditor("privilege");
+  chooseDevice("desktop");
+  window.BaliDesignStudio={select:chooseEditor,device:chooseDevice,page:choosePage};
+})();
