@@ -130,13 +130,13 @@ service cloud.firestore {
       return d.keys().hasAll([
           'brandTitle','brandSubtitle','navHomeText','navCalendarText','navMenuText',
           'navCartText','calendarPreviewTitle','calendarPageTitle','menuPageTitle','menuBannerTitle',
-          'menuBannerCta','contactHeading','phoneText','phoneHref','telegramUrl',
-          'instagramUrl','findHeading','addressText','addressFloor','mapUrl','icons','updatedAt'])
+          'menuBannerCta','contactHeading','phoneText','phoneHref','telegramChatUrl','telegramUrl',
+          'instagramUrl','tiktokUrl','findHeading','addressText','addressFloor','mapUrl','icons','updatedAt'])
         && d.keys().hasOnly([
           'brandTitle','brandSubtitle','navHomeText','navCalendarText','navMenuText',
           'navCartText','calendarPreviewTitle','calendarPageTitle','menuPageTitle','menuBannerTitle',
-          'menuBannerCta','contactHeading','phoneText','phoneHref','telegramUrl',
-          'instagramUrl','findHeading','addressText','addressFloor','mapUrl','icons','updatedAt'])
+          'menuBannerCta','contactHeading','phoneText','phoneHref','telegramChatUrl','telegramUrl',
+          'instagramUrl','tiktokUrl','findHeading','addressText','addressFloor','mapUrl','icons','updatedAt'])
         && d.brandTitle is string && d.brandTitle.size() >= 1 && d.brandTitle.size() <= 32
         && d.brandSubtitle is string && d.brandSubtitle.size() >= 1 && d.brandSubtitle.size() <= 35
         && d.navHomeText is string && d.navHomeText.size() >= 1 && d.navHomeText.size() <= 30
@@ -151,8 +151,11 @@ service cloud.firestore {
         && d.contactHeading is string && d.contactHeading.size() >= 1 && d.contactHeading.size() <= 55
         && d.phoneText is string && d.phoneText.size() >= 1 && d.phoneText.size() <= 32
         && d.phoneHref is string && d.phoneHref.matches('^tel:[+][0-9]{5,22}$')
+        && d.telegramChatUrl is string && d.telegramChatUrl.size() <= 250 && d.telegramChatUrl.matches('^https://.+')
         && d.telegramUrl is string && d.telegramUrl.size() <= 250 && d.telegramUrl.matches('^https://.+')
         && d.instagramUrl is string && d.instagramUrl.size() <= 250 && d.instagramUrl.matches('^https://.+')
+        && d.tiktokUrl is string && d.tiktokUrl.size() <= 250
+        && (d.tiktokUrl == '' || d.tiktokUrl.matches('^https://.+'))
         && d.findHeading is string && d.findHeading.size() >= 1 && d.findHeading.size() <= 50
         && d.addressText is string && d.addressText.size() >= 1 && d.addressText.size() <= 110
         && d.addressFloor is string && d.addressFloor.size() >= 1 && d.addressFloor.size() <= 80
