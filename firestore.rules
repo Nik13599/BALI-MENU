@@ -52,6 +52,36 @@ service cloud.firestore {
       allow list, create, update, delete: if false;
     }
 
+    // Только глобальная палитра доступна для публичного чтения.
+    // Записывать её могут только проверенные администраторы.
+    // Цвет фона не входит в настраиваемые поля.
+    function validAppearance(data) {
+      return data.keys().hasAll(['theme','colors','updatedAt'])
+        && data.keys().hasOnly(['theme','colors','updatedAt'])
+        && data.theme in ['cobalt','lime','white','custom']
+        && data.colors is map
+        && data.colors.keys().hasAll(['primary','secondary','text','border'])
+        && data.colors.keys().hasOnly(['primary','secondary','text','border'])
+        && data.colors.primary is string
+        && data.colors.primary.matches('^#[0-9A-Fa-f]{6}$')
+        && data.colors.secondary is string
+        && data.colors.secondary.matches('^#[0-9A-Fa-f]{6}$')
+        && data.colors.text is string
+        && data.colors.text.matches('^#[0-9A-Fa-f]{6}$')
+        && data.colors.border is string
+        && data.colors.border.matches('^#[0-9A-Fa-f]{6}$')
+        && data.updatedAt == request.time;
+    }
+
+    match /settings/{settingId} {
+      allow get: if settingId == 'appearance';
+      allow list: if false;
+      allow create, update: if settingId == 'appearance'
+        && isAdmin() && validAppearance(request.resource.data);
+      allow delete: if false;
+    }
+
+
     // Самостоятельные категории доступны для чтения/редактирования
     // только аккаунтам с вручную назначенной ролью администратора.
     function validCategory(data) {

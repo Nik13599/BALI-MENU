@@ -49,6 +49,65 @@ assert(firebaseJson.firestore.rules === "firestore.rules", "Missing Firestore ru
 assert(firebaseJson.hosting.public === ".", "Unexpected Firebase Hosting public directory");
 const admin = source("admin.html");
 const customIconJs=source("bali-icon-atelier.js");
+
+const themeClient=source("bali-theme.js");
+const themeCss=source("bali-theme.css");
+const dashboardClient=source("admin-dashboard.js");
+assert(html.includes('bali-theme.css?v=20261017-58') &&
+  admin.includes('bali-theme.css?v=20261017-58') &&
+  html.includes('bali-theme.js?v=20261017-58') &&
+  admin.includes('bali-theme.js?v=20261017-58') &&
+  html.indexOf('bali-theme.css?v=20261017-58') >
+  html.indexOf('bali-obsidian-premium.css?v=20261017-57') &&
+  admin.indexOf('bali-theme.css?v=20261017-58') >
+  admin.indexOf('bali-obsidian-premium.css?v=20261017-57'),
+  "Global accent CSS and realtime settings module must load last on both interfaces");
+assert(admin.includes('data-admin-tab="appearance"') &&
+  admin.includes('id="adminAppearancePanel"') &&
+  admin.includes('id="baliThemeForm"') &&
+  admin.includes('id="baliThemeSave"') &&
+  admin.includes('id="baliThemeCancel"') &&
+  admin.includes('id="baliThemeRulesHelp"') &&
+  ['cobalt','lime','white','custom'].every(x=>admin.includes('name="baliThemePreset" value="'+x+'"')) &&
+  ['Primary','Secondary','Text','Border'].every(x=>admin.includes('id="baliColor'+x+'"')&&admin.includes('id="baliColor'+x+'Hex"')) &&
+  dashboardClient.includes('appearance: ["Цветовая тема"'),
+  "Admin must provide three preset palettes, custom hex editing, preview and publish/revert controls");
+assert(themeClient.includes('const palettes=Object.freeze({') &&
+  themeClient.includes('cobalt:Object.freeze(') &&
+  themeClient.includes('lime:Object.freeze(') &&
+  themeClient.includes('white:Object.freeze(') &&
+  themeClient.includes('const themeRef=doc(db,"settings","appearance")') &&
+  themeClient.includes('onSnapshot(themeRef,') &&
+  themeClient.includes('await setDoc(themeRef,') &&
+  themeClient.includes('getDoc(doc(db,"admins",user.uid))') &&
+  themeClient.includes('updatedAt:serverTimestamp()') &&
+  themeClient.includes('const colorValid=/^#[0-9A-Fa-f]{6}$/') &&
+  themeClient.includes('contrastText(colors.primary)') &&
+  themeClient.includes('root.style.setProperty("--bt-primary"'),
+  "Color themes must sync globally with Firebase, validate manual HEX input and prevent unauthorized writes");
+assert(themeCss.includes("/* BALI v58") &&
+  themeCss.includes("body.bali-guest-theme #homeSection .bali-home-menu-banner") &&
+  themeCss.includes("body.bali-guest-theme #eventsSection .events-view-button.active") &&
+  themeCss.includes("body.bali-guest-theme #menuPage .category-btn.active") &&
+  themeCss.includes("body.bali-guest-theme .bali-profile-action") &&
+  themeCss.includes(".bali-admin-theme .admin-tab.active") &&
+  themeCss.includes("grid-template-columns:repeat(5,minmax(0,1fr))") &&
+  !themeClient.includes('setProperty("background') &&
+  !themeClient.includes('setProperty("--bg-'),
+  "Theme may change interactive accents only, leaving fixed background color unchanged");
+assert(rules.includes('match /settings/{settingId}') &&
+  rules.includes("allow get: if settingId == 'appearance'") &&
+  rules.includes('allow list: if false') &&
+  rules.includes('isAdmin() && validAppearance(request.resource.data)') &&
+  rules.includes("data.colors.keys().hasOnly(['primary','secondary','text','border'])") &&
+  rules.includes("data.theme in ['cobalt','lime','white','custom']") &&
+  rules.includes("data.updatedAt == request.time") &&
+  rules.includes('allow delete: if false'),
+  "Global palette document must allow public single-document reads and only admin writes with strict field validation");
+assert(customIconJs.includes('appearance:"palette"') &&
+  customIconJs.includes('menu:"book"'),
+  "Palette editor and open-book menu must use custom accessible SVG icons");
+
 const obsidianCss=source("bali-obsidian-premium.css");
 assert(html.includes('bali-obsidian-premium.css?v=20261017-57') &&
   admin.includes('bali-obsidian-premium.css?v=20261017-57') &&
@@ -79,8 +138,8 @@ assert(obsidianCss.includes("/* BALI / OBSIDIAN v57") &&
   obsidianCss.includes(".bali-admin-theme button.primary"),
   "Unified obsidian cobalt premium palette must cover all website and admin surfaces");
 assert(obsidianCss.includes(".bali-icon-slot .bali-custom-icon") &&
-  html.includes('bali-icon-atelier.js?v=20261017-53') &&
-  admin.includes('bali-icon-atelier.js?v=20261017-53'),
+  html.includes('bali-icon-atelier.js?v=20261017-58') &&
+  admin.includes('bali-icon-atelier.js?v=20261017-58'),
   "Every designer vector icon must retain its local SVG sizing and handlers");
 assert(customIconJs.includes('"book":') &&
   customIconJs.includes('menu:"book"') &&
@@ -137,7 +196,7 @@ const dashboardCss = source("admin-dashboard.css");
 const dashboardJs = source("admin-dashboard.js");
 assert(admin.includes('id="adminOrdersPanel"') && admin.includes('id="adminMenuPanel"') && admin.includes('id="adminEventsPanel"'), "Admin must have separate Orders, Menu and Events workspaces");
 assert(admin.includes('data-admin-tab="orders"') && admin.includes('data-admin-tab="menu"') && admin.includes('data-admin-tab="events"'), "Admin navigation tabs missing");
-assert(admin.includes('admin-dashboard.css?v=20261017-20') && admin.includes('admin-dashboard.js?v=20261017-20'), "Updated dashboard files must be loaded");
+assert(admin.includes('admin-dashboard.css?v=20261017-20') && admin.includes('admin-dashboard.js?v=20261017-58'), "Updated dashboard files must be loaded");
 assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes('.admin-sidebar'), "Mobile dashboard navigation CSS missing");
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
