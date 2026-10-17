@@ -14,6 +14,17 @@ let menuItems = [];
 let cart = [];
 let currentCategory = 'all';
 let availableEvents = [];
+let guestInterestDates=new Set();
+let showOnlyPlannedEvents=false;
+window.addEventListener('bali:interests',({detail})=>{
+    guestInterestDates=new Set(detail?.dates||[]);
+    renderUpcomingEvents();
+});
+window.addEventListener('bali:interests-error',({detail})=>{
+    const status=document.getElementById("eventsInterestStatus");
+    if(status)status.textContent=detail?.message||"Не удалось загрузить список выбранных событий.";
+});
+
 // Выбор количества на каждой карточке; не зависит от содержимого корзины.
 const menuQuantities = new Map();
 const MAX_MENU_QUANTITY = 50;
@@ -90,13 +101,24 @@ function renderUpcomingEvents() {
     if(!grid)return;
     grid.replaceChildren();
     const today=minskDateToday();
-    const upcoming=availableEvents
+    const allUpcoming=availableEvents
       .filter(e=>e?.date>=today&&/^\d{4}-\d{2}-\d{2}$/.test(e?.date||""))
       .sort((a,b)=>a.date.localeCompare(b.date));
+    const planned=allUpcoming.filter(e=>guestInterestDates.has(e.date));
+    const badge=document.getElementById("plannedEventsCount");
+    if(badge)badge.textContent=String(planned.length);
+    for(const button of document.querySelectorAll("[data-events-view]")) {
+        const active=(button.dataset.eventsView==="planned")===showOnlyPlannedEvents;
+        button.classList.toggle("active",active);
+        button.setAttribute("aria-pressed",String(active));
+    }
+    const upcoming=showOnlyPlannedEvents?planned:allUpcoming;
     if(!upcoming.length) {
         const empty=document.createElement("div");
         empty.className="events-empty";
-        empty.textContent="Ближайшие мероприятия пока не опубликованы.";
+        empty.textContent=showOnlyPlannedEvents
+            ?"В планах пока нет будущих мероприятий. Нажмите «Хочу пойти» на интересующем событии."
+            :"Ближайшие мероприятия пока не опубликованы.";
         grid.append(empty);
         return;
     }
@@ -122,7 +144,38 @@ function renderUpcomingEvents() {
         preorder.className="event-preorder-state";
         const open=event.preorderEnabled===true&&event.closesAt?.toDate?.()>new Date();
         preorder.textContent=open?"Предзаказ открыт":"Информация о мероприятии";
-        body.append(date,name,preorder);
+        const interested=document.createElement("p");
+        interested.className="event-interest-count";
+        const count=Number.isSafeInteger(event.interestCount)&&event.interestCount>=0?event.interestCount:0;
+        interested.textContent="Хочет пойти: "+count;
+        const planBtn=document.createElement("button");
+        planBtn.type="button";
+        planBtn.className="event-want-to-go"+(guestInterestDates.has(event.date)?" selected":"");
+        planBtn.setAttribute("aria-pressed",String(guestInterestDates.has(event.date)));
+        planBtn.textContent=guestInterestDates.has(event.date)?"✓ В моих планах · Убрать":"Хочу пойти";
+        const message=document.createElement("p");
+        message.className="event-interest-message";
+        message.setAttribute("role","status");
+        planBtn.addEventListener("click",async()=>{
+            if(!window.BaliInterests){
+                message.textContent="Подключение к Firebase ещё загружается. Попробуйте через несколько секунд.";
+                return;
+            }
+            planBtn.disabled=true;
+            const label=planBtn.textContent;
+            planBtn.textContent="Сохраняем...";
+            message.textContent="";
+            try{
+                const result=await window.BaliInterests.toggle(event.date);
+                if(result.loginRequired)message.textContent="Войдите в кабинет через Google для сохранения.";
+            }catch(error){
+                message.textContent=error.message||"Не удалось сохранить мероприятие.";
+            }finally{
+                planBtn.disabled=false;
+                planBtn.textContent=label;
+            }
+        });
+        body.append(date,name,preorder,interested,planBtn,message);
         if(open){
             const button=document.createElement("button");
             button.type="button";
@@ -263,6 +316,12 @@ function attachEventListeners() {
     });
     document.getElementById("eventsNavBtn")?.addEventListener("click",()=>{
         showGuestSection("events");renderUpcomingEvents();
+    });
+    document.getElementById("eventsViewTabs")?.addEventListener("click",event=>{
+        const button=event.target.closest("button[data-events-view]");
+        if(!button)return;
+        showOnlyPlannedEvents=button.dataset.eventsView==="planned";
+        renderUpcomingEvents();
     });
 
     const eventSelect = document.getElementById('eventSelect');
