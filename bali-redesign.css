@@ -215,7 +215,7 @@ body[data-bali-page="events"]{overflow-y:hidden}
     height:100dvh!important;min-height:0!important;
     max-height:100dvh!important;overflow:hidden!important;
     display:flex;flex-direction:column;
-    padding-bottom:0!important;overscroll-behavior:none;
+    padding-bottom:calc(58px + env(safe-area-inset-bottom))!important;overscroll-behavior:none;
   }
   .bali-preview-banner{flex:0 0 auto;padding:3px 7px;font-size:9px;line-height:1.16;max-height:41px;overflow:hidden}
   .header{flex:0 0 auto}
@@ -389,4 +389,11 @@ body[data-bali-page="events"]{overflow-y:hidden}
   .bali-home-contacts-card .bali-yandex-map{height:28px;min-height:28px}
   .bali-home-story-note{font-size:9px;margin:2px 0 4px}
   #eventsSection .event-interest-count{display:none}
+}
+
+/* Allow the on-screen keyboard to use normal viewport adjustment without losing app navigation. */
+@media(max-width:767px){
+  #menuPage .menu-section:focus-within{scroll-behavior:auto}
+  .bali-home-events,.bali-home-event-card{touch-action:pan-x pan-y!important}
+  .bali-profile-page[hidden],#menuPage[hidden],#eventsSection[hidden],#homeSection[hidden]{display:none!important}
 }
