@@ -4,13 +4,15 @@
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBatch,
-  serverTimestamp,query,limit,orderBy} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+  serverTimestamp,runTransaction,query,limit,orderBy} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 let unsubOrders=null,unsubMenu=null,generation=0,authorized=false,orders=[],catalog=[];
 let editOrder=null,editLines=[],originalIds=new Set();
 const statuses={pending:"Ожидает подтверждения",confirmed:"Подтверждён",completed:"Выполнен",cancelled:"Отменён"};
 const fmt=n=>Number(n||0).toFixed(2)+" BYN";
+const orderLabel = o => Number.isInteger(o.orderNumber)
+  ? String(o.orderNumber).padStart(2,"0") : o.id;
 const setStatus=text=>{$("ordersAdminStatus").textContent=text;};
 function node(tag,text="",cls=""){
   const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e;
@@ -31,7 +33,7 @@ function printOrder(o){
   const area=$("orderPrintSheet");
   area.replaceChildren();
   for(const [tag,line] of [
-    ["h1","BALI — ПРЕДЗАКАЗ"],["h2","№ "+o.id],
+    ["h1","BALI — ПРЕДЗАКАЗ"],["h2","№ "+orderLabel(o)],
     ["p","Дата: "+o.eventDate+" · Статус: "+(statuses[o.status]||o.status)],
     ["p","Столик: "+(o.tableNumber||"—")+" · Бронь: "+(o.bookingId||"—")],
     ["p","Гость: "+o.customerName+" · "+o.customerPhone],["p",o.email]
@@ -54,7 +56,7 @@ function printOrder(o){
 window.addEventListener("afterprint",()=>{$("orderPrintSheet").hidden=true;});
 async function setOrderStatus(o,status) {
   ensureAdmin();
-  if(!confirm("Изменить статус заказа № "+o.id+" на «"+statuses[status]+"»?"))return;
+  if(!confirm("Изменить статус заказа № "+orderLabel(o)+" на «"+statuses[status]+"»?"))return;
   setStatus("Сохраняем статус...");
   try {
     await updateDoc(doc(db,"orders",o.id),{status,updatedAt:serverTimestamp()});
@@ -64,8 +66,8 @@ async function setOrderStatus(o,status) {
 async function archiveOrder(o,archive=true) {
   ensureAdmin();
   if(!confirm(archive
-    ?"Убрать заказ № "+o.id+" в архив? Заказ отменится, но история гостя сохранится."
-    :"Вернуть заказ № "+o.id+" из архива? Его статус останется «Отменён»."))return;
+    ?"Убрать заказ № "+orderLabel(o)+" в архив? Заказ отменится, но история гостя сохранится."
+    :"Вернуть заказ № "+orderLabel(o)+" из архива? Его статус останется «Отменён»."))return;
   try {
     await updateDoc(doc(db,"orders",o.id),
       archive?{archived:true,status:"cancelled",updatedAt:serverTimestamp()}
@@ -83,7 +85,7 @@ function renderOrders(){
   }
   for(const o of shown){
     const card=node("article","","admin-order-card");
-    card.append(node("h3","№ "+o.id+" · "+statuses[o.status]+(o.archived?" · Архив":"")));
+    card.append(node("h3","№ "+orderLabel(o)+" · "+statuses[o.status]+(o.archived?" · Архив":"")));
     card.append(node("p",o.eventDate+" · "+(o.tableNumber?"Столик "+o.tableNumber:"Бронь "+o.bookingId)));
     card.append(node("p",o.customerName+" · "+o.customerPhone+" · "+o.email));
     for(const line of o.items)card.append(node("p",line.name+" × "+line.quantity+" — "+fmt(line.unitPrice*line.quantity),"admin-line-item"));
@@ -177,7 +179,7 @@ async function openEditor(id){
     editOrder=o;
     editLines=o.items.map(x=>({...x}));
     originalIds=new Set(o.items.map(x=>String(x.id)));
-    $("orderEditTitle").textContent="Заказ № "+o.id;
+    $("orderEditTitle").textContent="Заказ № "+orderLabel(o);
     $("editOrderDate").value=o.eventDate;
     $("editOrderStatus").value=o.status;
     $("editOrderName").value=o.customerName;
@@ -236,16 +238,42 @@ $("orderEditForm").addEventListener("submit",async event=>{
       line.name=data.name;
       line.unitPrice=data.price;
     }
-    const batch=writeBatch(db);
-    batch.update(ref,{eventDate,customerName,customerPhone,tableNumber,bookingId,notes,status,updatedAt:serverTimestamp()});
     const present=new Set(editLines.map(x=>String(x.id)));
-    for(const id of originalIds)if(!present.has(id))batch.delete(doc(ref,"items",id));
-    for(const line of touched)batch.set(doc(ref,"items",String(line.id)),{
-      id:line.id,name:line.name,unitPrice:line.unitPrice,quantity:line.quantity
-    });
-    await batch.commit();
+    const dateChanged=eventDate!==fresh.data().eventDate;
+    let assignedNumber=null;
+    if(dateChanged) {
+      const counterRef=doc(db,"orderCounters",eventDate);
+      // Атомарно: новая дата означает новый порядковый номер этой даты.
+      assignedNumber=await runTransaction(db,async tx=>{
+        const latest=await tx.get(ref);
+        const counter=await tx.get(counterRef);
+        if(!latest.exists() || latest.data().archived
+            || latest.data().eventDate===eventDate
+            || (oldTimestamp && latest.data().updatedAt?.toMillis?.()!==oldTimestamp))
+          throw new Error("Заказ изменился. Откройте его заново.");
+        const next=(counter.exists()?counter.data().count:0)+1;
+        if(!Number.isSafeInteger(next)||next>999999)throw new Error("Счётчик заказов переполнен.");
+        tx.set(counterRef,{date:eventDate,count:next,lastOrderId:editOrder.id,updatedAt:serverTimestamp()});
+        tx.update(ref,{eventDate,orderNumber:next,customerName,customerPhone,
+          tableNumber,bookingId,notes,status,updatedAt:serverTimestamp()});
+        for(const id of originalIds)if(!present.has(id))tx.delete(doc(ref,"items",id));
+        for(const line of touched)tx.set(doc(ref,"items",String(line.id)),{
+          id:line.id,name:line.name,unitPrice:line.unitPrice,quantity:line.quantity
+        });
+        return next;
+      });
+      editOrder.orderNumber=assignedNumber;
+    } else {
+      const batch=writeBatch(db);
+      batch.update(ref,{customerName,customerPhone,tableNumber,bookingId,notes,status,updatedAt:serverTimestamp()});
+      for(const id of originalIds)if(!present.has(id))batch.delete(doc(ref,"items",id));
+      for(const line of touched)batch.set(doc(ref,"items",String(line.id)),{
+        id:line.id,name:line.name,unitPrice:line.unitPrice,quantity:line.quantity
+      });
+      await batch.commit();
+    }
     $("orderEditDialog").close();
-    setStatus("Изменения заказа № "+editOrder.id+" сохранены. Итого: "+fmt(total(editLines)));
+    setStatus("Изменения заказа № "+orderLabel(editOrder)+" сохранены. Итого: "+fmt(total(editLines)));
   }catch(e){
     $("orderEditStatus").textContent=e.code==="permission-denied"
       ?"Firebase запретил изменение. Опубликуйте последние правила Firestore."
