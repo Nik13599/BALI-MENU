@@ -92,18 +92,13 @@ assert(premiumAtelierCss.includes("--bali-luxe-night:#0c0d11") &&
   premiumAtelierCss.includes(".bali-admin-theme"),
   "All app sections and admin should use the same muted premium color system");
 assert(premiumAtelierCss.includes("/* BALI v54 • BASALT / BAMBOO / VOLCANO") &&
-  premiumAtelierCss.includes("--bali-basalt:#0d100e") &&
-  premiumAtelierCss.includes("--bali-bamboo:#9eae8a") &&
-  premiumAtelierCss.includes("--bali-leaf:#2a382d") &&
-  premiumAtelierCss.includes("--bali-ember:#aa6750") &&
   premiumAtelierCss.includes("body.bali-guest-theme #menuPage .category-btn.active") &&
-  premiumAtelierCss.includes("body.bali-guest-theme #homeSection .bali-home-menu-banner") &&
-  premiumAtelierCss.includes("body.bali-guest-theme .bali-bottom-nav") &&
-  premiumAtelierCss.includes("body.bali-admin-theme") &&
   premiumAtelierCss.includes(".bali-admin-theme .admin-tab.active") &&
-  html.includes('<meta name="theme-color" content="#0d100e">') &&
-  admin.includes('<meta name="theme-color" content="#0d100e">'),
-  "Bamboo, leafy basalt and subtle volcanic ember colors required on mobile, tablet, desktop and admin");
+  velvetCss.includes("body.bali-guest-theme #menuPage .category-btn.active") &&
+  velvetCss.includes(".bali-admin-theme .admin-tab.active") &&
+  html.includes('<meta name="theme-color" content="#090811">') &&
+  admin.includes('<meta name="theme-color" content="#090811">'),
+  "New velvet fuchsia and gold cascade must supersede earlier subdued bamboo on both interfaces");
 assert(customIconJs.includes('"book":') &&
   customIconJs.includes('menu:"book"') &&
   customIconJs.includes('replaceAll(".bali-menu-banner-icon","book")') &&
