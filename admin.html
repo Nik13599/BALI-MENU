@@ -297,6 +297,37 @@
             <div id="eventList" class="scroll-list">Загрузка...</div>
           </section>
         </div>
+        <section class="card bali-promo-editor" id="baliPromoEditor">
+          <div class="card-heading"><h3>BALI PRIVILEGE · Спецпредложения</h3><span class="tag">Главная страница ПК</span></div>
+          <p class="hint">Добавляйте настоящие предложения клуба. Опубликованные карточки автоматически сменяются в большом баннере. Неопубликованные предложения посетителям не показываются.</p>
+          <form id="baliPromoForm" class="bali-promo-form">
+            <input type="hidden" id="baliPromoId">
+            <label>Заголовок предложения *<input id="baliPromoTitle" required minlength="2" maxlength="100" placeholder="Название предложения"></label>
+            <label>Описание *<textarea id="baliPromoDescription" required maxlength="260" rows="3" placeholder="Условия предложения без вымышленных цен и обещаний"></textarea></label>
+            <label>Изображение (HTTPS-адрес)<input id="baliPromoImage" type="url" maxlength="2048" placeholder="https://..."></label>
+            <div class="double">
+              <label>Куда ведёт кнопка
+                <select id="baliPromoDestination">
+                  <option value="none">Без кнопки</option>
+                  <option value="events">Календарь событий</option>
+                  <option value="menu">Меню</option>
+                  <option value="contacts">Контакты клуба</option>
+                </select>
+              </label>
+              <label>Надпись на кнопке<input id="baliPromoButton" type="text" maxlength="35" placeholder="Подробнее"></label>
+            </div>
+            <div class="double">
+              <label>Порядок показа<input type="number" id="baliPromoSort" min="0" max="100000" step="1" value="100" required></label>
+              <label class="check bali-promo-checkbox"><input type="checkbox" id="baliPromoPublished"><span>Опубликовать для гостей</span></label>
+            </div>
+            <div class="actions">
+              <button type="submit" class="primary" id="baliPromoSave">Сохранить предложение</button>
+              <button type="button" id="baliPromoReset">Очистить</button>
+            </div>
+            <p class="status" role="status" aria-live="polite" id="baliPromoStatus">Проверяем права администратора…</p>
+          </form>
+          <div id="baliPromoList" class="bali-promo-list" aria-live="polite"></div>
+        </section>
       </section>
 
       <section class="admin-panel" id="adminAppearancePanel" data-admin-panel="appearance" aria-labelledby="appearanceHeading" hidden>
@@ -503,6 +534,7 @@
 <script type="module" src="admin-firestore.js?v=20261017-46"></script>
 <script type="module" src="bali-admin-bar.js?v=20261017-65"></script>
 <script type="module" src="bali-admin-cards.js?v=20261017-66"></script>
+<script type="module" src="bali-admin-promos.js?v=20261017-67"></script>
 <script type="module" src="admin-orders.js?v=20261017-20"></script>
 <script type="module" src="admin-clients.js?v=20261017-20"></script>
 <script src="admin-dashboard.js?v=20261017-58" defer></script>
