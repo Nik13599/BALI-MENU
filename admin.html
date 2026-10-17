@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#10121a">
   <title>BALI — Панель управления</title>
   <link rel="stylesheet" href="admin-catalog.css?v=3">
-  <link rel="stylesheet" href="admin-dashboard.css?v=20261017-18">
+  <link rel="stylesheet" href="admin-dashboard.css?v=20261017-20">
 </head>
 <body>
 <header class="topbar">
@@ -40,6 +40,9 @@
         <button type="button" class="admin-tab active" data-admin-tab="orders" aria-selected="true" aria-controls="adminOrdersPanel">
           <span class="tab-icon" aria-hidden="true">◈</span><span>Предзаказы</span>
           <span class="tab-count" id="sidebarPendingCount" hidden>0</span>
+        </button>
+        <button type="button" class="admin-tab" data-admin-tab="clients" aria-selected="false" aria-controls="adminClientsPanel">
+          <span class="tab-icon" aria-hidden="true">♙</span><span>Клиенты</span>
         </button>
         <button type="button" class="admin-tab" data-admin-tab="menu" aria-selected="false" aria-controls="adminMenuPanel">
           <span class="tab-icon" aria-hidden="true">▦</span><span>Меню и цены</span>
@@ -107,6 +110,30 @@
         <div class="order-queue" id="ordersAdminList">Ожидаем входа администратора...</div>
       </section>
 
+      <section class="admin-panel" id="adminClientsPanel" data-admin-panel="clients" aria-labelledby="clientsHeading" hidden>
+        <div class="section-heading">
+          <div><div class="eyebrow">КЛИЕНТСКАЯ БАЗА</div>
+            <h2 id="clientsHeading">Гости и история заказов</h2>
+            <p>Профили клиентов, контактные данные и все предзаказы выбранного гостя.</p>
+          </div>
+        </div>
+        <section class="card">
+          <div class="card-heading"><h3>Клиенты</h3><span class="tag" id="clientCount">0</span></div>
+          <label for="clientSearch">Поиск по имени, телефону и email</label>
+          <input id="clientSearch" type="search" placeholder="Введите имя, телефон или email" autocomplete="off">
+          <p class="hint">Доступ только администраторам. Личные данные не отображаются публично.</p>
+          <p id="clientsAdminStatus" class="status" aria-live="polite"></p>
+          <div id="clientList" class="client-list" aria-live="polite">Загрузка базы клиентов...</div>
+        </section>
+        <section class="card client-history-card" id="clientHistoryCard" hidden>
+          <div class="card-heading"><h3 id="clientHistoryHeading">История клиента</h3>
+            <button type="button" id="closeClientHistory">Закрыть</button></div>
+          <p id="clientHistorySummary" class="hint"></p>
+          <p id="clientHistoryStatus" class="status" role="status"></p>
+          <div id="clientHistoryList" class="client-history-list"></div>
+        </section>
+      </section>
+
       <section class="admin-panel" id="adminMenuPanel" data-admin-panel="menu" aria-labelledby="menuHeading" hidden>
         <div class="section-heading">
           <div>
@@ -170,6 +197,12 @@
               <label>Дата мероприятия <input type="date" id="eventDateAdmin" required></label>
               <label>Название мероприятия <input id="eventTitle" minlength="2" maxlength="150" placeholder="Например, BALI ICE NIGHT" required></label>
               <label>Закрыть предзаказы в (по Минску) <input id="eventCutoff" type="time"></label>
+              <div class="image-upload-area">
+                <label for="eventPosterFile">Афиша мероприятия (загрузить JPG/PNG/WebP)</label>
+                <input type="file" id="eventPosterFile" accept="image/*">
+                <img id="eventPosterPreview" class="image-preview poster-preview" alt="Предпросмотр афиши" hidden>
+                <p class="hint">Афиша автоматически подгоняется под формат 4:5.</p>
+              </div>
               <label class="check availability-toggle"><input id="eventOpen" type="checkbox" checked><span>Разрешить предзаказы</span></label>
               <div class="actions">
                 <button type="submit" class="primary">Сохранить мероприятие</button>
@@ -188,6 +221,44 @@
     <section id="orderPrintSheet" hidden aria-hidden="true"></section>
   </section>
 
+
+  <dialog id="orderEditDialog" class="admin-form-dialog order-edit-dialog" aria-labelledby="orderEditTitle">
+    <div class="dialog-header">
+      <div><span class="eyebrow">РЕДАКТИРОВАНИЕ ПРЕДЗАКАЗА</span><h2 id="orderEditTitle">Заказ</h2></div>
+      <button type="button" id="closeOrderEdit" class="dialog-close" aria-label="Закрыть">✕</button>
+    </div>
+    <form id="orderEditForm" class="dialog-form">
+      <div class="double">
+        <label>Дата мероприятия<input type="date" id="editOrderDate" required></label>
+        <label>Статус
+          <select id="editOrderStatus">
+            <option value="pending">Ожидает подтверждения</option>
+            <option value="confirmed">Подтверждён</option>
+            <option value="completed">Выполнен</option>
+            <option value="cancelled">Отменён</option>
+          </select>
+        </label>
+      </div>
+      <div class="double">
+        <label>Столик<input id="editOrderTable" maxlength="20" placeholder="Например, 12"></label>
+        <label>ID бронирования<input id="editOrderBooking" maxlength="60" placeholder="Например, BALI-456"></label>
+      </div>
+      <label>Пожелания к заказу<textarea id="editOrderNotes" maxlength="500"></textarea></label>
+      <div class="card-heading"><h3>Состав заказа</h3><span class="hint">Добавьте блюда из каталога</span></div>
+      <div class="order-edit-add">
+        <select id="editOrderAddProduct"><option value="">Выберите блюдо</option></select>
+        <button type="button" id="editOrderAddBtn">+ Добавить</button>
+      </div>
+      <div id="editOrderLines" class="order-edit-lines"></div>
+      <p class="edit-order-total">Итого: <strong id="editOrderTotal">0.00 BYN</strong></p>
+      <p class="hint">Удаление заказа выполняется через архивирование: история клиента остаётся доступной.</p>
+      <p id="orderEditStatus" class="status" role="status" aria-live="polite"></p>
+      <div class="dialog-actions">
+        <button type="button" id="cancelOrderEdit">Отмена</button>
+        <button type="submit" class="primary">Сохранить изменения</button>
+      </div>
+    </form>
+  </dialog>
   <dialog id="menuDialog" class="admin-form-dialog" aria-labelledby="menuDialogHeading">
     <div class="dialog-header">
       <div><span class="eyebrow">КАРТОЧКА ТОВАРА</span><h2 id="menuDialogHeading">Добавить блюдо</h2></div>
@@ -208,6 +279,12 @@
       </div>
       <label>Описание и состав <textarea id="menuDescription" maxlength="800" placeholder="Состав, вес и дополнительные сведения"></textarea></label>
       <label>Ссылка на фотографию (HTTPS)<input id="menuImage" type="url" placeholder="https://..."></label>
+      <div class="image-upload-area">
+        <label for="menuImageFile">Или загрузить фотографию с устройства (квадрат 1:1)</label>
+        <input type="file" id="menuImageFile" accept="image/*">
+        <img id="menuImagePreview" class="image-preview square-preview" alt="Предпросмотр блюда" hidden>
+        <p class="hint">Фото автоматически обрезается по центру до 1:1 и сжимается.</p>
+      </div>
       <div class="double">
         <label>Порядок сортировки<input id="menuSort" type="number" min="0" max="100000" step="1" value="100" required></label>
         <label class="check availability-toggle"><input id="menuAvailable" type="checkbox" checked><span>В наличии</span></label>
@@ -239,8 +316,9 @@
 </main>
 
 <script src="firebase-config.js?v=20261017-8"></script>
-<script type="module" src="admin-firestore.js?v=20261017-18"></script>
-<script type="module" src="admin-orders.js?v=20261017-15"></script>
-<script src="admin-dashboard.js?v=20261017-18" defer></script>
+<script type="module" src="admin-firestore.js?v=20261017-20"></script>
+<script type="module" src="admin-orders.js?v=20261017-20"></script>
+<script type="module" src="admin-clients.js?v=20261017-20"></script>
+<script src="admin-dashboard.js?v=20261017-20" defer></script>
 </body>
 </html>
