@@ -533,3 +533,244 @@ body[data-bali-page="events"]{overflow-y:hidden}
 @media(prefers-reduced-motion:reduce){
   #eventsSection #eventsGrid>.event-card{transition:none;will-change:auto}
 }
+
+/* BALI v36 — Instagram Stories-подобная композиция.
+   В одном ряду название календаря и две вкладки; внизу две строки.
+   Ширина вертикального слайда вычисляется от доступной высоты (9:16). */
+#eventsSection .events-topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex:0 0 auto;
+  flex-wrap:nowrap;
+  gap:8px;
+  min-width:0;
+  margin:0 0 9px;
+  padding:0;
+}
+#eventsSection .events-topbar .events-heading{
+  display:flex;
+  align-items:center;
+  flex:0 1 auto;
+  min-width:0;
+  margin:0;
+}
+#eventsSection .events-topbar .events-eyebrow{
+  color:#ebcc95;
+  font-size:clamp(11px,1.6vw,14px);
+  font-weight:850;
+  line-height:1.2;
+  margin:0;
+  padding:0;
+  letter-spacing:.09em;
+  white-space:nowrap;
+}
+#eventsSection .events-topbar .events-view-tabs{
+  display:flex;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:flex-end;
+  gap:5px;
+  width:auto;
+  margin:0;
+  padding:3px;
+  border:1px solid rgba(227,194,141,.2);
+  border-radius:12px;
+  background:rgba(27,35,53,.86);
+  box-shadow:none;
+}
+#eventsSection .events-topbar .events-view-button{
+  display:flex;
+  flex:0 0 auto;
+  min-width:0;
+  min-height:35px;
+  margin:0;
+  padding:7px 12px;
+  gap:5px;
+  border-radius:9px;
+  font-size:11px;
+  line-height:1.2;
+  font-weight:800;
+  white-space:nowrap;
+}
+#eventsSection .events-topbar #plannedEventsCount{
+  min-width:17px;
+  height:17px;
+  border-radius:10px;
+  font-size:10px;
+  padding:0 4px;
+}
+#eventsSection .events-carousel-shell{gap:4px}
+#eventsSection #eventsGrid{
+  --bali-event-slide-width: min(82vw,390px);
+  height:100%;
+  align-items:center;
+  scroll-snap-type:x mandatory;
+  padding-block:5px;
+  gap:11px;
+}
+#eventsSection #eventsGrid>.event-card{
+  flex:0 0 var(--bali-event-slide-width);
+  width:var(--bali-event-slide-width);
+  height:100%;
+  max-height:100%;
+  aspect-ratio:9 / 16;
+  border-radius:18px;
+  scroll-snap-align:center;
+  transform:scale(.85);
+  opacity:.55;
+  filter:saturate(.75);
+  transition:transform .36s cubic-bezier(.19,.82,.2,1),
+             opacity .36s ease,filter .36s ease,
+             border-color .36s ease,box-shadow .36s ease;
+}
+#eventsSection #eventsGrid>.event-card.is-neighbor{
+  transform:scale(.88);
+  opacity:.72;
+}
+#eventsSection #eventsGrid>.event-card.is-active{
+  transform:scale(1);
+  opacity:1;
+  filter:none;
+}
+#eventsSection #eventsGrid>.event-card>.event-poster{
+  flex:1 1 auto;
+  height:0;
+  width:100%;
+  min-height:0;
+  object-fit:contain;
+}
+#eventsSection #eventsGrid>.event-card>.event-card-body{
+  flex:0 0 auto;
+  min-height:0;
+  gap:6px;
+  padding:10px 12px 12px;
+}
+#eventsSection .events-info-panel{
+  min-height:0;
+  padding:7px 11px;
+  gap:8px;
+  margin-top:6px;
+}
+#eventsSection .events-info-icon{
+  width:28px;height:28px;flex-basis:28px;
+  font-size:14px;
+  border-radius:8px;
+}
+#eventsSection .events-info-content p{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  line-clamp:2;
+  overflow:hidden;
+  font-size:11px;
+  font-weight:500;
+  line-height:1.32;
+  margin:0;
+  color:#bac5d5;
+}
+#eventsSection .events-info-content strong{
+  display:inline;
+  font-size:inherit;
+  font-weight:850;
+  color:#efd4a5;
+}
+@media(max-width:767px){
+  #eventsSection{padding-top:7px}
+  #eventsSection .events-topbar{gap:5px;margin-bottom:7px}
+  #eventsSection .events-topbar .events-eyebrow{
+    font-size:10px;
+    letter-spacing:.02em;
+  }
+  #eventsSection .events-topbar .events-view-tabs{
+    display:flex;
+    grid-template-columns:none;
+    width:auto;
+    flex:0 0 auto;
+    padding:3px;
+    gap:3px;
+    margin:0;
+  }
+  #eventsSection .events-topbar .events-view-button{
+    width:auto;
+    flex:0 0 auto;
+    min-height:35px;
+    padding:6px 7px;
+    gap:4px;
+    font-size:10px;
+  }
+  #eventsSection .events-topbar #plannedEventsCount{
+    height:16px;min-width:16px;font-size:9px;padding:0 3px;
+  }
+  #eventsSection #eventsGrid{
+    --bali-event-slide-width: 77vw;
+    gap:11px;
+    padding:5px max(9px,calc((100% - var(--bali-event-slide-width))/2));
+    scroll-padding-inline:max(9px,calc((100% - var(--bali-event-slide-width))/2));
+  }
+  #eventsSection #eventsGrid>.event-card{
+    flex-basis:var(--bali-event-slide-width);
+    width:var(--bali-event-slide-width);
+    aspect-ratio:9 / 16;
+    border-radius:15px;
+  }
+  #eventsSection #eventsGrid>.event-card>.event-card-body{
+    padding:9px 11px 10px;
+    gap:5px;
+  }
+  #eventsSection .event-card h3{font-size:15px}
+  #eventsSection .event-card-date,
+  #eventsSection .event-preorder-state,
+  #eventsSection .event-interest-count{font-size:11px}
+  #eventsSection .event-want-to-go,
+  #eventsSection .event-go-to-menu{
+    min-height:38px;
+    padding:7px 8px;
+    font-size:11px;
+  }
+  #eventsSection .events-info-panel{
+    margin-top:4px;
+    padding:6px 9px;
+    gap:7px;
+    min-height:0;
+  }
+  #eventsSection .events-info-icon{
+    width:25px;height:25px;flex-basis:25px;font-size:13px;
+  }
+  #eventsSection .events-info-content p{
+    font-size:10px;
+    line-height:1.3;
+    -webkit-line-clamp:2;
+    line-clamp:2;
+  }
+}
+@media(max-width:359px){
+  #eventsSection .events-topbar .events-eyebrow{font-size:9px}
+  #eventsSection .events-topbar .events-view-button{font-size:9px;padding-inline:5px}
+  #eventsSection .events-info-content p{font-size:9.5px}
+}
+@media(max-height:700px){
+  #eventsSection .events-topbar{margin-bottom:4px}
+  #eventsSection .events-topbar .events-view-button{min-height:31px}
+  #eventsSection .events-info-panel{margin-top:3px;padding-block:5px}
+  #eventsSection #eventsGrid>.event-card>.event-card-body{gap:4px;padding:7px 9px}
+  #eventsSection .event-want-to-go,
+  #eventsSection .event-go-to-menu{min-height:33px;padding:6px 8px}
+}
+@media(max-height:600px){
+  #eventsSection #eventsGrid>.event-card{
+    display:flex;
+    flex-direction:column;
+    grid-template-columns:none;
+    grid-template-rows:none;
+  }
+  #eventsSection #eventsGrid>.event-card>.event-poster{
+    width:100%;height:0;flex:1 1 auto;object-fit:contain;
+  }
+  #eventsSection #eventsGrid>.event-card>.event-card-body{
+    width:100%;height:auto;overflow:visible;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #eventsSection #eventsGrid>.event-card{transition:none}
+}
