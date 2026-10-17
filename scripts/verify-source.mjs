@@ -87,7 +87,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261017-39"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261017-44"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -99,7 +99,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261017-39'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261017-44'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-16'), "Guest profile label code should load without old cache");
@@ -287,6 +287,20 @@ assert(app.includes("menuSection.scrollTop = 0") &&
   app.includes('if(window.matchMedia("(max-width:767px)").matches)return;'),
   "Mobile category change must scroll the product list without hijacking gestures");
 const approvedCss=source("bali-redesign.css");
+const adaptiveCss=approvedCss;
+assert(adaptiveCss.includes("/* BALI v44") &&
+  adaptiveCss.includes("@media (min-width:768px)") &&
+  adaptiveCss.includes("@media (min-width:768px) and (max-width:1199px)") &&
+  adaptiveCss.includes("@media (min-width:1200px)") &&
+  adaptiveCss.includes("@media (min-width:768px) and (max-height:720px)") &&
+  adaptiveCss.includes("#menuPage .menu-section{") &&
+  adaptiveCss.includes("overflow-y:auto!important") &&
+  adaptiveCss.includes(".bali-home .bali-home-inner{"),
+  "Phone/tablet/desktop breakpoints need viewport fitting, fixed category/cart and catalog scroll");
+assert(app.includes("const rounded=Math.max(96,Math.floor(width));") &&
+  app.includes("(track.clientHeight-14)*9/16"),
+  "Event slide sizing must respond to viewport height and never force old 155px minimum");
+
 assert(approvedCss.includes("/* BALI v42") &&
   approvedCss.includes("height:86%!important") &&
   approvedCss.includes("aspect-ratio:9/16") &&
@@ -307,8 +321,8 @@ assert(approvedCss.includes("/* BALI v41: compact event calendar above its tabs;
   approvedCss.includes("#eventsSection .events-topbar .events-heading{") &&
   approvedCss.includes("#eventsSection .event-interest-count{display:block!important"),
   "Events should show compact calendar, slightly shorter stories and all event details");
-assert(html.includes('bali-redesign.css?v=20261017-43') &&
-  html.indexOf('bali-redesign.css?v=20261017-43') >
+assert(html.includes('bali-redesign.css?v=20261017-44') &&
+  html.indexOf('bali-redesign.css?v=20261017-44') >
     html.indexOf('events-carousel.css?v=20261017-36'),
   "Approved mobile visual override must load last");
 assert(html.includes('id="profileSection"') &&
