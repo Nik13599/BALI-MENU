@@ -151,7 +151,7 @@ assert(admin.includes('bali-design-studio.css?v=20261017-84') &&
 // v87 PC viewport is a fixed full-width, full-height 3-column dashboard.
 // Other desktop pages must not scroll down; only product lists scroll.
 const viewportCss=source("bali-pc-viewport.css");
-assert(html.includes('bali-pc-viewport.css?v=20261018-91') &&
+assert(html.includes('bali-pc-viewport.css?v=20261018-92') &&
   viewportCss.includes('@media (min-width:1180px)') &&
   viewportCss.includes('--bali-pc-side:clamp(195px,15vw,640px)') &&
   viewportCss.includes('--bali-pc-gap:clamp(11px,1vw,42px)') &&
@@ -200,9 +200,9 @@ assert(admin.includes('id="baliEventPlaceholderEditor"') &&
   admin.includes('id="baliEventPlaceholderForm"') &&
   admin.includes('id="baliPlaceholderImageFile"') &&
   admin.includes('id="baliPlaceholderPosterTitle"') &&
-  admin.includes('bali-home-placeholder-admin.js?v=20261018-91') &&
-  admin.includes('bali-home-placeholder-admin.css?v=20261018-91') &&
-  html.includes('bali-home-placeholder.js?v=20261018-91') &&
+  admin.includes('bali-home-placeholder-admin.js?v=20261018-92') &&
+  admin.includes('bali-home-placeholder-admin.css?v=20261018-92') &&
+  html.includes('bali-home-placeholder.js?v=20261018-92') &&
   placeholderAdmin.includes('doc(db,"settings","homeEventPlaceholder")') &&
   placeholderAdmin.includes('compressImage(upload,"design-placeholder")') &&
   placeholderAdmin.includes('getDoc(doc(db,"admins",user.uid))') &&
@@ -214,7 +214,21 @@ assert(admin.includes('id="baliEventPlaceholderEditor"') &&
   placeholderPublic.includes('onSnapshot(doc(db,"settings","homeEventPlaceholder")') &&
   placeholderPublic.includes('new CustomEvent("bali:home-placeholder")') &&
   app.includes('window.BaliHomePlaceholder||{') &&
-  app.includes('assets/bali-secret-placeholder.svg') &&
+  app.includes('if(settings.imageUrl){') &&
+  !homeTeaser.includes('assets/bali-secret-placeholder.svg') &&
+  !homeTeaser.includes('overlay.append(kicker,message)') &&
+  !admin.includes('id="baliPlaceholderKicker"') &&
+  !admin.includes('id="baliPlaceholderPreviewKicker"') &&
+  !placeholderAdmin.includes('baliPlaceholderPreviewKicker') &&
+  placeholderAdmin.includes('data.kicker="SECRET"') &&
+  placeholderAdmin.includes('image.hidden=!customPicture') &&
+  viewportCss.includes('v92 — Minimal PC HOME placeholders') &&
+  viewportCss.includes('background:#000!important') &&
+  viewportCss.includes('justify-content:flex-start!important') &&
+  viewportCss.includes('padding:8px 11px!important') &&
+  viewportCss.includes('font-size:clamp(13px,1vw,17px)!important') &&
+  viewportCss.includes('font-size:11px!important') &&
+  adminPlaceholderCss.includes('v92 — Default SECRET artwork is solid black') &&
   app.includes('window.addEventListener("bali:home-placeholder"') &&
   viewportCss.includes('v91 — Branded SECRET picture') &&
   viewportCss.includes('bali-home-placeholder-image') &&
@@ -616,7 +630,7 @@ assert(app.includes("menu-quantity-value") && app.includes("data-menu-action=\"m
   && app.includes("data-menu-action=\"plus\"") && app.includes("addToCart(itemId, quantity)"),
   "Product quantity controls must add selected number of items");
 assert(css.includes(".menu-quantity-btn"), "Quantity selector styles missing");
-assert(html.includes("app.js?v=20261018-91"), "Published app.js cache version must be current");
+assert(html.includes("app.js?v=20261018-92"), "Published app.js cache version must be current");
 assert(html.includes("styles.css?v=20261017-12"), "Published menu styles must be refreshed");
 assert(rules.includes("match /orders/{orderId}"), "Order Rules must exist before enabling order UI");
 const dashboardCss = source("admin-dashboard.css");
@@ -628,7 +642,7 @@ assert(dashboardCss.includes('@media(max-width:760px)') && dashboardCss.includes
 assert(dashboardJs.includes('adminPageTitle') && dashboardJs.includes('menuSearch'), "Dashboard navigation and menu search missing");
 assert(dashboardJs.includes('bali:admin:orders') && dashboardJs.includes('bali:admin:menu') && dashboardJs.includes('bali:admin:events'), "Dashboard realtime counters missing");
 assert(html.includes('responsive-menu.css?v=20261017-21'), "Guest mobile layout CSS cache version outdated");
-assert(html.includes('app.js?v=20261018-91'), "Guest cart code cache version outdated");
+assert(html.includes('app.js?v=20261018-92'), "Guest cart code cache version outdated");
 assert(responsive.includes('.cart-total > .total-amount') && responsive.includes('white-space:nowrap'), "Cart total must fit amount and BYN in one line");
 assert(app.includes('${total.toFixed(2)} BYN') && html.includes('<span>Итого:</span>'), "Cart total must use compact BYN format");
 assert(html.includes('auth.js?v=20261017-67'), "Guest profile label code should load without old cache");
