@@ -114,7 +114,10 @@ function initEventCarousel() {
         const width=Math.min(
             390,
             track.clientWidth*(mobile?.82:.40),
-            (track.clientHeight-14)*9/16
+            (track.clientHeight-14)*9/16,
+            // Reserve a readable information area and two pinned CTAs below
+            // the square image, including on small landscape devices.
+            Math.max(96,track.clientHeight-(mobile?185:195))
         );
         // On low-height phones and rotated tablets, the slide must fit inside
         // the available carousel height rather than imposing a fixed 155px width.
@@ -374,12 +377,6 @@ function renderUpcomingEvents() {
         posterWrap.append(dateBadge);
         const body=document.createElement("div");
         body.className="event-card-body";
-        const date=document.createElement("time");
-        date.className="event-card-date";
-        date.dateTime=event.date;
-        date.textContent=new Intl.DateTimeFormat("ru-RU",{
-            timeZone:"Europe/Minsk",day:"numeric",month:"long",year:"numeric",weekday:"long"
-        }).format(new Date(event.date+"T12:00:00+03:00"));
         const name=document.createElement("h3");
         name.textContent=event.title;
         // These are the actual start/end fields entered by the administrator.
@@ -439,7 +436,15 @@ function renderUpcomingEvents() {
                 planBtn.textContent=label;
             }
         });
-        body.append(name,date,times,description,preorder,interested,planBtn,message);
+        // Date appears once, in the badge over the square poster.
+        // The information can scroll independently when long; actions stay
+        // at the absolute bottom of the visible event card.
+        const details=document.createElement("div");
+        details.className="bali-event-info";
+        details.append(name,times,description,preorder,interested,message);
+        const actions=document.createElement("div");
+        actions.className="bali-event-actions";
+        actions.append(planBtn);
         if(open){
             const button=document.createElement("button");
             button.type="button";
@@ -448,10 +453,11 @@ function renderUpcomingEvents() {
             button.addEventListener("click",()=>{
                 showGuestSection("menu");
                 const menu=document.querySelector(".menu-section");
-                if(menu)menu.scrollIntoView({behavior:"smooth",block:"start"});
+                if(menu)menu.scrollTo({top:0,behavior:"instant"});
             });
-            body.append(button);
+            actions.append(button);
         }
+        body.append(details,actions);
         card.append(posterWrap,body);
         grid.append(card);
     }
