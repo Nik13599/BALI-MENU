@@ -767,3 +767,41 @@
 @media(max-width:1179px){
   .bali-pc-sidebar-contacts{display:none!important}
 }
+
+/* v74: Yandex directions stay at the physical bottom of the fixed PC sidebar. */
+@media(min-width:1180px){
+  body.bali-guest-theme>.bali-pc-sidebar{
+    display:flex!important;
+    flex-direction:column!important;
+    overflow-y:auto!important;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(185,255,81,.30) transparent;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-sidebar-contacts{
+    margin-top:auto!important;
+    padding-bottom:0!important;
+    flex:0 0 auto;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location{
+    margin-top:clamp(4px,1vh,11px)!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location>strong{
+    display:block!important;
+    font:800 clamp(15px,1.13vw,19px)/1.2 Manrope,Inter,sans-serif!important;
+    letter-spacing:.055em!important;
+    text-transform:uppercase!important;
+    color:#f6f6f3!important;
+    margin-bottom:4px;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location>a{
+    margin-bottom:0!important;
+    flex:0 0 auto;
+  }
+  @media(max-height:760px){
+    body.bali-guest-theme>.bali-pc-sidebar{gap:8px!important}
+    body.bali-guest-theme>.bali-pc-sidebar .bali-pc-sidebar-contacts{gap:7px!important}
+    body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-phone,
+    body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location>a{padding:7px 7px}
+    body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials a{padding:5px 2px}
+  }
+}
