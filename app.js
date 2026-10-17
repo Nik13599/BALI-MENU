@@ -77,7 +77,14 @@ function scrollEventCarousel(direction) {
 function initEventCarousel() {
     const track=document.getElementById("eventsGrid");
     if(!track)return;
-    track.addEventListener("scroll",updateEventCarouselPosition,{passive:true});
+    let eventFrame=0;
+    track.addEventListener("scroll",()=>{
+        if(eventFrame)return;
+        eventFrame=requestAnimationFrame(()=>{
+            eventFrame=0;
+            updateEventCarouselPosition();
+        });
+    },{passive:true});
     track.addEventListener("wheel",event=>{
         if(event.ctrlKey||Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
         const direction=Math.sign(event.deltaY);
@@ -257,6 +264,38 @@ function updateHomeNextEvent() {
         : "Афиши и календарь вечеринок";
 }
 
+
+// Make portrait previews fit the AVAILABLE height of their fixed grid cell.
+function initHomeCarouselSizing() {
+    const track=document.getElementById("homeEventCarousel");
+    if(!track)return;
+    let lastWidth=0;
+    const fit=()=>{
+        const height=track.clientHeight;
+        const width=track.clientWidth;
+        if(height<=0||width<=0)return;
+        if(!window.matchMedia("(max-width:767px)").matches) {
+            track.style.removeProperty("--bali-home-slide-width");
+            lastWidth=0;
+            return;
+        }
+        const slideWidth=Math.floor(Math.max(65,Math.min(190,width*.45,(height-3)*9/16)));
+        if(slideWidth===lastWidth)return;
+        const cards=[...track.querySelectorAll(".bali-home-event-card")];
+        const gap=Number.parseFloat(getComputedStyle(track).columnGap)||0;
+        const oldWidth=lastWidth||slideWidth;
+        const index=cards.length?Math.min(cards.length-1,
+            Math.max(0,Math.round(track.scrollLeft/(oldWidth+gap)))):0;
+        track.style.setProperty("--bali-home-slide-width",slideWidth+"px");
+        lastWidth=slideWidth;
+        if(cards.length)track.scrollLeft=index*(slideWidth+gap);
+        updateHomeEventPosition();
+    };
+    if(typeof ResizeObserver==="function")new ResizeObserver(fit).observe(track);
+    window.addEventListener("resize",fit,{passive:true});
+    requestAnimationFrame(fit);
+}
+
 function renderHomeEvents() {
     const track=document.getElementById("homeEventCarousel");
     if(!track)return;
@@ -313,10 +352,10 @@ function updateHomeEventPosition(){
     if(!track||!indicator)return;
     const cards=[...track.querySelectorAll(".bali-home-event-card")];
     if(!cards.length){indicator.textContent="";return;}
-    const active=cards.reduce((best,card,i)=>{
-        const delta=Math.abs(card.getBoundingClientRect().left-track.getBoundingClientRect().left);
-        return delta<best.delta?{delta,index:i}:best;
-    },{delta:Infinity,index:0}).index;
+    // Avoid repeated geometry reads of every card during a swipe.
+    const gap=Number.parseFloat(getComputedStyle(track).columnGap)||0;
+    const stride=cards[0].getBoundingClientRect().width+gap;
+    const active=stride>0?Math.min(cards.length-1,Math.max(0,Math.round(track.scrollLeft/stride))):0;
     indicator.textContent=String(active+1).padStart(2,"0")+" / "+String(cards.length).padStart(2,"0");
 }
 
@@ -528,6 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
     attachEventListeners();
     initStickyCategories();
     initEventCarousel();
+    initHomeCarouselSizing();
     renderGuestPage(routeFromLocation(),{scroll:false});
     // Возврат смартфона/браузера переключает разделы приложения.
     window.addEventListener("popstate",()=>renderGuestPage(routeFromLocation()));
@@ -596,8 +636,17 @@ function attachEventListeners() {
     document.getElementById("baliMenuSearch")?.addEventListener("input",event=>{
         baliMenuSearchText=String(event.target.value||"").trim().toLocaleLowerCase("ru-RU");
         displayMenuItems(menuItems);
+        document.querySelector("#menuPage .menu-section")?.scrollTo({top:0,behavior:"instant"});
     });
-    document.getElementById("homeEventCarousel")?.addEventListener("scroll",updateHomeEventPosition,{passive:true});
+    const homeTrack=document.getElementById("homeEventCarousel");
+    let homeFrame=0;
+    homeTrack?.addEventListener("scroll",()=>{
+        if(homeFrame)return;
+        homeFrame=requestAnimationFrame(()=>{
+            homeFrame=0;
+            updateHomeEventPosition();
+        });
+    },{passive:true});
     for(const button of document.querySelectorAll("[data-home-events-view]")){
         button.addEventListener("click",()=>{
             showOnlyPlannedEvents=button.dataset.homeEventsView==="planned";
@@ -817,16 +866,17 @@ function handleCategoryFilter(e) {
         item.setAttribute('aria-pressed', String(selected));
     }
     displayMenuItems(menuItems);
-    // После смены категории начало её списка появляется ниже двух
-    // закреплённых панелей, даже если гость нажал кнопку внизу страницы.
-    const menuSection = document.querySelector('.menu-section');
-    const header = document.querySelector('.header');
-    const sticky = document.querySelector('.categories');
-    if (menuSection) {
-        const y = window.scrollY + menuSection.getBoundingClientRect().top
-            - (header?.getBoundingClientRect().height || 0)
-            - (sticky?.getBoundingClientRect().height || 0) - 8;
-        window.scrollTo({top: Math.max(0, y), behavior: 'smooth'});
+    // On phones scroll only the food list, never the whole page/header.
+    const menuSection = document.querySelector("#menuPage .menu-section");
+    if (menuSection && window.matchMedia("(max-width:767px)").matches) {
+        menuSection.scrollTo({top:0,behavior:"instant"});
+    } else if(menuSection) {
+        const header=document.querySelector(".header");
+        const sticky=document.querySelector(".categories");
+        const y=window.scrollY+menuSection.getBoundingClientRect().top
+            -(header?.getBoundingClientRect().height||0)
+            -(sticky?.getBoundingClientRect().height||0)-8;
+        window.scrollTo({top:Math.max(0,y),behavior:"smooth"});
     }
 }
 
