@@ -14,6 +14,36 @@ let menuItems = [];
 let cart = [];
 let currentCategory = 'all';
 let availableEvents = [];
+// Выбор количества на каждой карточке; не зависит от содержимого корзины.
+const menuQuantities = new Map();
+const MAX_MENU_QUANTITY = 50;
+function selectedMenuQuantity(id) {
+    return menuQuantities.get(id) || 1;
+}
+function handleMenuGridClick(event) {
+    const button = event.target.closest('button[data-menu-action]');
+    if (!button || !elements.menuGrid.contains(button)) return;
+    const itemId = Number(button.dataset.id);
+    if (!Number.isSafeInteger(itemId) || itemId <= 0) return;
+    const product = menuItems.find(item => item.id === itemId && item.available);
+    if (!product) return;
+    const action = button.dataset.menuAction;
+    const quantity = selectedMenuQuantity(itemId);
+    if (action === 'add') {
+        addToCart(itemId, quantity);
+        return;
+    }
+    const next = Math.min(MAX_MENU_QUANTITY, Math.max(1, quantity + (action === 'plus' ? 1 : -1)));
+    menuQuantities.set(itemId, next);
+    const card = button.closest('.menu-item');
+    if (!card) return;
+    const output = card.querySelector('.menu-quantity-value');
+    if (output) output.textContent = String(next);
+    const minus = card.querySelector('[data-menu-action="minus"]');
+    const plus = card.querySelector('[data-menu-action="plus"]');
+    if (minus) minus.disabled = next <= 1;
+    if (plus) plus.disabled = next >= MAX_MENU_QUANTITY;
+}
 
 // Публичный каталог и календарь поступают из Firestore.
 window.addEventListener('bali:menu', ({ detail }) => {
@@ -145,6 +175,9 @@ function attachEventListeners() {
         document.getElementById('eventDate').value = eventSelect.value;
     });
 
+    // Управление количеством над кнопкой «В корзину» (на всех карточках меню).
+    elements.menuGrid.addEventListener('click', handleMenuGridClick);
+
     // Cart controls
     document.getElementById('cartBtn').addEventListener('click', openCart);
     document.getElementById('closeCart').addEventListener('click', closeCart);
@@ -221,13 +254,7 @@ function displayMenuItems(items) {
         .map(item => createMenuItemHTML(item))
         .join('');
 
-    // Attach add to cart listeners
-    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const itemId = parseInt(e.currentTarget.dataset.id);
-            addToCart(itemId);
-        });
-    });
+    // Кнопки обрабатываются централизованно через handleMenuGridClick.
 }
 
 function createMenuItemHTML(item) {
@@ -248,7 +275,14 @@ function createMenuItemHTML(item) {
                 <p class="menu-item-description">${escapeHTML(item.description)}</p>
                 ${unavailable
                     ? '<span class="unavailable-badge">Недоступно</span>'
-                    : `<button class="add-to-cart-btn" data-id="${id}">В корзину +</button>`
+                    : `<div class="menu-purchase-controls">
+                        <div class="menu-quantity" role="group" aria-label="Количество: ${escapeHTML(item.name)}">
+                            <button type="button" class="menu-quantity-btn" data-menu-action="minus" data-id="${id}" aria-label="Уменьшить количество: ${escapeHTML(item.name)}" ${selectedMenuQuantity(id) === 1 ? 'disabled' : ''}>−</button>
+                            <span class="menu-quantity-value" aria-live="polite">${selectedMenuQuantity(id)}</span>
+                            <button type="button" class="menu-quantity-btn" data-menu-action="plus" data-id="${id}" aria-label="Увеличить количество: ${escapeHTML(item.name)}" ${selectedMenuQuantity(id) === MAX_MENU_QUANTITY ? 'disabled' : ''}>+</button>
+                        </div>
+                        <button type="button" class="add-to-cart-btn" data-menu-action="add" data-id="${id}">В корзину</button>
+                    </div>`
                 }
             </div>
         </div>
@@ -294,31 +328,32 @@ function handleCategoryFilter(e) {
 // CART MANAGEMENT
 // ============================================
 
-function addToCart(itemId) {
+function addToCart(itemId, quantity = 1) {
     const item = menuItems.find(i => i.id === itemId);
     if (!item || !item.available) return;
-
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > MAX_MENU_QUANTITY) return;
     const existingItem = cart.find(i => i.id === itemId);
-
+    const amountAlreadyInCart = existingItem?.quantity || 0;
+    if (amountAlreadyInCart + quantity > MAX_MENU_QUANTITY) {
+        alert('Не более 50 единиц одного блюда в корзине. Сейчас в корзине: ' + amountAlreadyInCart + '.');
+        return;
+    }
     if (existingItem) {
-        existingItem.quantity++;
+        existingItem.quantity += quantity;
     } else {
         cart.push({
             id: item.id,
             name: item.name,
             price: item.price,
-            quantity: 1
+            quantity
         });
     }
-
     saveCart();
     updateCartUI();
-
-    // Brief animation feedback
-    const btn = document.querySelector(`[data-id="${itemId}"]`);
-    if (btn) {
-        btn.style.transform = 'scale(0.95)';
-        setTimeout(() => btn.style.transform = '', 100);
+    const button = elements.menuGrid.querySelector('.add-to-cart-btn[data-id="' + itemId + '"]');
+    if (button) {
+        button.classList.add('menu-add-success');
+        window.setTimeout(() => button.classList.remove('menu-add-success'), 280);
     }
 }
 
