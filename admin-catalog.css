@@ -16,3 +16,19 @@ button.primary{background:#d8bb83;border:0;color:#171b28;font-weight:700}button:
 .entry small{display:block;margin-top:5px;color:#b0bad0}.entry button{font-size:13px;padding:8px 12px}.row-actions{display:flex;gap:6px;flex-wrap:wrap}
 .entry strong{font-size:14px}.entry .disabled{color:#ffbfa6}
 @media(max-width:760px){.columns{grid-template-columns:1fr}.topbar{padding:18px}.layout{padding:0 12px}.card{padding:17px}.double{grid-template-columns:1fr}}
+
+.seed-preview {
+  max-height: 440px;
+  overflow-y: auto;
+  border: 1px solid #3a4464;
+  background: #131a33;
+  border-radius: 12px;
+  margin: 18px 0;
+  padding: 16px;
+}
+.seed-preview h3 { margin: 18px 0 9px; font-size: 16px; color: #e5c383; }
+.seed-preview h3:first-child { margin-top: 0; }
+.seed-row { display: flex; align-items: start; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid #333d5a; }
+.seed-row strong { font-size: 14px; font-weight: 600; }
+.seed-row small { display: block; margin-top: 4px; line-height: 1.5; color: #aebad0; font-size: 12px; }
+.seed-row > span { white-space: nowrap; color: #e9cd97; font-weight: 700; font-size: 14px; }
