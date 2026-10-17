@@ -82,7 +82,8 @@ service cloud.firestore {
         && data.price is number && data.price >= 0 && data.price <= 20000
         && data.image_url is string && data.image_url.size() <= 95000
         && (data.image_url == ''
-          || (data.image_url.size() <= 1000 && data.image_url.matches('^https://[^ ]+
+          || (data.image_url.size() <= 1000 && data.image_url.matches('^https://[^ ]+$'))
+          || data.image_url.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+$'))
         && data.available is bool
         && data.sort is int && data.sort >= 0 && data.sort <= 100000
         && data.updatedAt == request.time;
@@ -103,7 +104,10 @@ service cloud.firestore {
           data.poster_url is string
           && data.poster_url.size() <= 150000
           && (data.poster_url == ''
-            || (data.poster_url.size() <= 1000 && data.poster_url.matches('^https://[^ ]+
+            || (data.poster_url.size() <= 1000 && data.poster_url.matches('^https://[^ ]+$'))
+            || data.poster_url.matches('^data:image/webp;base64,[A-Za-z0-9+/=]+$'))
+        ))
+        && data.date == eventId
         && data.date is string
         && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
