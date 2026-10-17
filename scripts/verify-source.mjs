@@ -133,7 +133,7 @@ for (const id of ["adminClientsPanel","clientSearch","clientList","clientHistory
 }
 assert(admin.includes('admin-clients.js?v=20261017-20'), "Client CRM JS not loaded");
 assert(admin.includes('admin-orders.js?v=20261017-20'), "Staff order editor JS not loaded");
-assert(admin.includes('admin-firestore.js?v=20261017-20'), "Admin image upload JS not refreshed");
+assert(admin.includes('admin-firestore.js?v=20261017-24'), "Admin event fix must load without cache");
 assert(clientSource.includes('where("ownerUid","==",selected.uid)') && clientSource.includes('startAfter(lastOrder)'),
   "Client history needs owner-only paged retrieval");
 assert(orderAdminSource.includes('writeBatch(db)') && orderAdminSource.includes('archiveOrder') &&
@@ -185,4 +185,12 @@ assert(categoryCss.includes("overflow-x: auto") &&
 assert(categoryCss.includes("repeat(5, minmax(0, 1fr))") &&
   categoryCss.includes("repeat(3, minmax(0,1fr))") &&
   categoryCss.includes("repeat(2, minmax(0,1fr))"), "Grouped menu must keep desktop/tablet/mobile grids");
+assert(admin.includes('id="eventRulesHelp"') &&
+  admin.includes('https://console.firebase.google.com/project/bali-menu-5a48b/firestore/rules'),
+  "Event admin error must link to live Firestore rules");
+assert(adminClient.includes('if(poster)payload.poster_url=poster'),
+  "Event saves without a poster must omit the optional field");
+assert(adminClient.includes('e.code==="permission-denied"') &&
+  adminClient.includes("if(help)help.hidden=false"),
+  "Permission denial during event poster save must provide rule deployment guidance");
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
