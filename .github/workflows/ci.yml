@@ -36,6 +36,9 @@ jobs:
           node --input-type=module --check < bali-admin-promos.js
           node --input-type=module --check < bali-extra-menus.js
           node --input-type=module --check < bali-menu-visibility.js
+          node --input-type=module --check < bali-design-variants.js
+          node --input-type=module --check < bali-home-design-admin.js
+          node --input-type=module --check < bali-home-design.js
           node --check admin.js
           node --check track.js
           node --check firebase-config.js
