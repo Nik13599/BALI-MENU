@@ -103,7 +103,7 @@
       ["privilege",".bali-pc-hero"],
       ["about",".bali-pc-about"],
       ["merch",".bali-pc-merch"],
-      ["menuBanner","#menuNavBtn"],
+      ["menuBanner","#menuNavBtn, .bali-menu-heading-row"],
       ["calendar",".bali-pc-events-title, #eventsSection .events-topbar"],
       ["events",".bali-home-event-card, #homeEventCarousel, #eventsGrid, .event-card"],
       ["contacts",".bali-pc-sidebar-contacts, .bali-home-contacts-card, #contactsSection"],
