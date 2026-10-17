@@ -292,6 +292,11 @@ assert(approvedCss.includes("/* BALI v40: home screen begins immediately with th
   approvedCss.includes("height:40px;min-height:40px") &&
   approvedCss.includes("height:39px;min-height:39px"),
   "Home must have wider menu and moderately larger contact controls");
+assert(approvedCss.includes("/* BALI v41: compact event calendar above its tabs; shorter posters,") &&
+  approvedCss.includes("height:calc(100% - 18px)!important") &&
+  approvedCss.includes("#eventsSection .events-topbar .events-heading{") &&
+  approvedCss.includes("#eventsSection .event-interest-count{display:block!important"),
+  "Events should show compact calendar, slightly shorter stories and all event details");
 assert(html.includes('bali-redesign.css?v=20261017-40') &&
   html.indexOf('bali-redesign.css?v=20261017-40') >
     html.indexOf('events-carousel.css?v=20261017-36'),
@@ -352,7 +357,7 @@ assert(carouselCss.includes('font-size:16px') &&
   carouselCss.includes('min-height:41px') &&
   carouselCss.includes('.events-info-panel'), "Mobile detail labels, actions and info panel must be readable");
 assert(html.includes('class="events-topbar"') &&
-  html.includes('<h2 class="events-eyebrow" id="eventsHeadingGuest">BALI · КАЛЕНДАРЬ</h2>'),
+  html.includes('<h2 class="events-eyebrow" id="eventsHeadingGuest">BALI календарь</h2>'),
   "Bali Calendar must be the only visible title above Stories");
 assert(!html.includes('Ближайшие мероприятия по датам — от самого раннего к следующему.') &&
   !html.includes('id="eventsHeadingGuest">События</h2>'),
