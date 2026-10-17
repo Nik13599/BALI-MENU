@@ -58,4 +58,12 @@ assert(adminClient.includes('doc(db,"admins",user.uid)') && adminClient.includes
 assert(rules.includes('match /menu/{itemId}') && rules.includes('match /events/{eventId}'), "Firestore catalog rules missing");
 assert(rules.includes('allow create, update: if isAdmin()'), "Catalog writes must require admin role");
 assert((rules.match(/match \/\{document=\*\*\}/g) || []).length === 1, "Unexpected catch-all rules or corrupted rules");
-console.log("BALI source checks passed: " + ids.length + " required UI IDs + security checks.");
+const seedSource = source("menu-seed.js");
+const { BALI_MENU_SEED } = await import("data:text/javascript," + encodeURIComponent(seedSource));
+assert(BALI_MENU_SEED.length === 18, "Menu photo must contain 18 items");
+assert(new Set(BALI_MENU_SEED.map(item => item.id)).size === 18, "Menu IDs must be unique");
+assert(new Set(BALI_MENU_SEED.map(item => item.category)).size === 5, "Menu must contain five groups");
+assert(BALI_MENU_SEED.every(item => Number.isInteger(item.price) && item.price > 0), "Every product requires a positive BYN price");
+assert(admin.includes('id="seedImportBtn"') && admin.includes('id="seedPreview"'), "Menu import controls missing");
+assert(adminClient.includes('runTransaction(db') && adminClient.includes('current[i].exists()'), "Menu import must skip existing documents in a transaction");
+console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
