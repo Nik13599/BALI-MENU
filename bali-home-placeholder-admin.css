@@ -82,3 +82,31 @@
 @media(max-width:540px){
   .bali-placeholder-edit-form .double{grid-template-columns:1fr}
 }
+
+/* v92 — Default SECRET artwork is solid black, not a photo.
+   Footer typography and spacing mirror a published event's title and time. */
+.bali-placeholder-preview-art{
+  background:#000!important;
+  background-color:#000!important;
+  background-image:none!important;
+}
+.bali-placeholder-preview-art>img[hidden]{display:none!important}
+.bali-placeholder-preview-overlay{
+  background:transparent!important;
+  gap:0!important;
+}
+.bali-placeholder-preview-footer{
+  justify-content:flex-start!important;
+  padding:8px 11px!important;
+  gap:4px!important;
+}
+.bali-placeholder-preview-footer>strong{
+  margin:0!important;
+  font-size:clamp(13px,1vw,17px)!important;
+  line-height:1.14!important;
+}
+.bali-placeholder-preview-footer>span{
+  margin:0!important;
+  font-size:11px!important;
+  line-height:1.15!important;
+}
