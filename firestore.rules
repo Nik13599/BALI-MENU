@@ -52,6 +52,25 @@ service cloud.firestore {
       allow list, create, update, delete: if false;
     }
 
+    // Самостоятельные категории доступны для чтения/редактирования
+    // только аккаунтам с вручную назначенной ролью администратора.
+    function validCategory(data) {
+      return data.keys().hasAll(['name','sort','updatedAt'])
+        && data.keys().hasOnly(['name','sort','updatedAt'])
+        && data.name is string
+        && data.name.size() >= 2 && data.name.size() <= 60
+        && data.sort is int
+        && data.sort >= 0 && data.sort <= 100000
+        && data.updatedAt == request.time;
+    }
+
+    match /categories/{categoryId} {
+      allow get, list: if isAdmin();
+      allow create, update: if isAdmin()
+        && validCategory(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
     function validMenu(data) {
       return data.keys().hasAll(['id','name','category','description','price','image_url','available','sort','updatedAt'])
         && data.keys().hasOnly(['id','name','category','description','price','image_url','available','sort','updatedAt'])
