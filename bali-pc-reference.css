@@ -573,3 +573,116 @@
     background-color:var(--bt-primary,#B9FF51)!important;
   }
 }
+
+/* v71 · BALI calendar is the only event-list action; old three-filter
+   strip is gone. Preserve promotion hero on PC and mobile event carousel. */
+@media(min-width:1180px){
+  body.bali-guest-theme #homeSection .bali-home-inner{
+    grid-template-rows:
+      clamp(270px,33.5vh,345px)
+      40px
+      clamp(240px,26vh,278px)
+      93px 85px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-events-panel{
+    grid-row:1/4!important;
+    grid-template-rows:
+      clamp(270px,33.5vh,345px)
+      40px
+      clamp(240px,26vh,278px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-calendar-row{display:none!important}
+  body.bali-guest-theme #homeSection .bali-pc-hero{
+    display:flex!important;grid-row:1!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-events-title{grid-row:2!important}
+  body.bali-guest-theme #homeSection .bali-home-events{
+    grid-row:3!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-menu-banner{grid-row:4!important}
+  body.bali-guest-theme #homeSection .bali-home-contacts-card{grid-row:5!important}
+  body.bali-guest-theme #homeSection .bali-pc-right-rail{grid-row:1/6!important}
+  @media(max-height:710px){
+    body.bali-guest-theme #homeSection .bali-home-inner{
+      grid-template-rows:265px 40px 230px 93px 85px!important;
+    }
+    body.bali-guest-theme #homeSection .bali-home-events-panel{
+      grid-template-rows:265px 40px 230px!important;
+    }
+  }
+}
+#homeSection .bali-pc-events-title{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  flex:0 0 auto;
+  min-width:0;
+}
+#homeSection .bali-pc-events-title h2{
+  margin:0!important;
+  min-width:0;
+  font-size:inherit;
+}
+#homeSection .bali-pc-events-title h2 button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:12px;
+  min-height:40px;
+  padding:3px 0;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  color:#f7f7f7!important;
+  text-align:left;
+  font:750 clamp(19px,1.55vw,27px)/1.2 Manrope,Inter,sans-serif!important;
+  cursor:pointer;
+}
+#homeSection .bali-pc-events-title h2 button>span{
+  color:var(--bt-primary,#B9FF51)!important;
+  font-size:19px;
+  font-weight:600;
+  transition:transform .18s ease;
+}
+#homeSection .bali-pc-events-title h2 button:hover{color:var(--bt-text,#D8FF9F)!important}
+#homeSection .bali-pc-events-title h2 button:hover>span{transform:translate(3px,-2px)}
+@media(max-width:1179px){
+  #homeSection .bali-pc-events-title{
+    display:flex!important;
+    width:100%;
+    padding:7px clamp(13px,2vw,25px) 4px;
+    box-sizing:border-box;
+    margin:0;
+    justify-content:flex-start;
+    position:relative;
+    z-index:2;
+  }
+  #homeSection .bali-pc-events-title h2 button{
+    font-size:clamp(18px,3.2vw,25px)!important;
+    min-height:37px;
+  }
+  #homeSection .bali-home-calendar-row{display:none!important}
+  #homeSection .bali-home-events-panel{
+    display:flex!important;
+    flex-direction:column!important;
+    min-height:0!important;
+  }
+}
+@media(max-width:767px){
+  #homeSection .bali-home-inner{
+    grid-template-rows:minmax(0,1fr) auto auto!important;
+  }
+  #homeSection .bali-home-events-panel{
+    grid-row:1!important;
+  }
+  #homeSection .bali-home-events{
+    flex:1 1 0!important;
+    grid-row:auto!important;
+    min-height:0!important;
+    height:0!important;
+  }
+  #homeSection .bali-home-menu-banner{grid-row:2!important}
+  #homeSection .bali-home-contacts-card{grid-row:3!important}
+  #homeSection .bali-pc-events-title{padding:4px 12px 0}
+  #homeSection .bali-pc-events-title h2 button{font-size:19px!important}
+}
