@@ -343,7 +343,8 @@ function eventRender() {
     list.append(createEntry(
       event.date + " — " + event.title,
       (event.preorderEnabled ? "Приём включён" : "Приём выключен") +
-        (event.cutoff ? " · До " + event.cutoff + " по Минску" : ""),
+        (event.cutoff ? " · До " + event.cutoff + " по Минску" : "") +
+        " · Хочет пойти: " + (Number.isSafeInteger(event.interestCount)?event.interestCount:0),
       () => {
         $("eventDateAdmin").value=event.date;
         $("eventDateAdmin").readOnly=true;
@@ -465,7 +466,8 @@ $("eventForm").addEventListener("submit",async (event)=>{
     // Старые документы без афиши не должны записывать лишнее пустое поле.
     // Для настоящих афиш необходимы опубликованные Firebase Rules с poster_url.
     if(poster)payload.poster_url=poster;
-    await setDoc(doc(db,"events",date),payload);
+    // merge сохраняет interestCount при изменении афиши/названия администратором.
+    await setDoc(doc(db,"events",date),payload,{merge:true});
     clearEvent();
     renderStatus("eventStatus","Мероприятие сохранено.");
   }catch(e){
