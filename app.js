@@ -77,7 +77,15 @@ function scrollEventCarousel(direction) {
 function initEventCarousel() {
     const track=document.getElementById("eventsGrid");
     if(!track)return;
-    track.addEventListener("scroll",updateEventCarouselPosition,{passive:true});
+    // Scroll is native/composited; update active styles only once per paint frame.
+    let eventScrollFrame=0;
+    track.addEventListener("scroll",()=>{
+        if(eventScrollFrame)return;
+        eventScrollFrame=requestAnimationFrame(()=>{
+            eventScrollFrame=0;
+            updateEventCarouselPosition();
+        });
+    },{passive:true});
     track.addEventListener("wheel",event=>{
         // Don't hijack vertical gestures on mobile devices.
         if(window.matchMedia("(max-width:767px)").matches)return;
@@ -315,11 +323,16 @@ function updateHomeEventPosition(){
     if(!track||!indicator)return;
     const cards=[...track.querySelectorAll(".bali-home-event-card")];
     if(!cards.length){indicator.textContent="";return;}
-    const active=cards.reduce((best,card,i)=>{
-        const delta=Math.abs(card.getBoundingClientRect().left-track.getBoundingClientRect().left);
-        return delta<best.delta?{delta,index:i}:best;
-    },{delta:Infinity,index:0}).index;
-    indicator.textContent=String(active+1).padStart(2,"0")+" / "+String(cards.length).padStart(2,"0");
+    // The home posters share one width + gap, so a single measured slide
+    // is enough: no per-poster layout reads during horizontal swiping.
+    const slideWidth=cards[0].getBoundingClientRect().width;
+    const gap=parseFloat(getComputedStyle(track).columnGap)||0;
+    const stride=slideWidth+gap;
+    const active=stride>0
+        ?Math.min(cards.length-1,Math.max(0,Math.round(track.scrollLeft/stride)))
+        :0;
+    const position=String(active+1).padStart(2,"0")+" / "+String(cards.length).padStart(2,"0");
+    if(indicator.textContent!==position)indicator.textContent=position;
 }
 
 function renderUpcomingEvents() {
@@ -599,7 +612,16 @@ function attachEventListeners() {
         baliMenuSearchText=String(event.target.value||"").trim().toLocaleLowerCase("ru-RU");
         displayMenuItems(menuItems);
     });
-    document.getElementById("homeEventCarousel")?.addEventListener("scroll",updateHomeEventPosition,{passive:true});
+    // Avoid running geometry measurements for every touchmove on low-end phones.
+    const homeTrack=document.getElementById("homeEventCarousel");
+    let homeScrollFrame=0;
+    homeTrack?.addEventListener("scroll",()=>{
+        if(homeScrollFrame)return;
+        homeScrollFrame=requestAnimationFrame(()=>{
+            homeScrollFrame=0;
+            updateHomeEventPosition();
+        });
+    },{passive:true});
     for(const button of document.querySelectorAll("[data-home-events-view]")){
         button.addEventListener("click",()=>{
             showOnlyPlannedEvents=button.dataset.homeEventsView==="planned";
