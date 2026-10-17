@@ -199,3 +199,10 @@ body[data-bali-page="events"]{overflow-y:hidden}
 @media(prefers-reduced-motion:reduce){
   .bali-home-event-card,#eventsSection .event-card,.bali-profile-action{scroll-behavior:auto;transition:none!important}
 }
+
+/* Explicitly honor route/cart visibility above the visual overrides. */
+#homeSection[hidden],#baliCartDock[hidden],#profileLogoutBtn[hidden]{display:none!important}
+/* Keep overlays and account dialogs above the fixed navigation. */
+.overlay.active{z-index:1800}
+.modal.active{z-index:2002}
+.cart-sidebar.active{z-index:2003}
