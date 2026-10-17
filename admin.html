@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="bali-theme.css?v=20261017-60">
   <link rel="stylesheet" href="bali-lime-neutral.css?v=20261017-62">
   <link rel="stylesheet" href="bali-admin-bar.css?v=20261017-65">
-  <link rel="stylesheet" href="bali-admin-cards.css?v=20261017-72">
+  <link rel="stylesheet" href="bali-admin-cards.css?v=20261017-73">
 
 </head>
 <body class="bali-admin-theme">
@@ -58,6 +58,9 @@
         </button>
         <button type="button" class="admin-tab" data-admin-tab="events" aria-selected="false" aria-controls="adminEventsPanel">
           <span class="tab-icon" aria-hidden="true">▤</span><span>Мероприятия</span>
+        </button>
+        <button type="button" class="admin-tab" data-admin-tab="design" aria-selected="false" aria-controls="adminDesignPanel">
+          <span class="tab-icon" aria-hidden="true">▣</span><span>Дизайн главной</span>
         </button>
         <button type="button" class="admin-tab" data-admin-tab="appearance" aria-selected="false" aria-controls="adminAppearancePanel">
           <span class="tab-icon" aria-hidden="true">✦</span><span>Цветовая тема</span>
@@ -330,14 +333,98 @@
             <div id="eventList" class="scroll-list">Загрузка...</div>
           </section>
         </div>
+
+      </section>
+
+      <section class="admin-panel" id="adminDesignPanel" data-admin-panel="design" aria-labelledby="designHeading" hidden>
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">BALI / ОФОРМЛЕНИЕ САЙТА</div>
+            <h2 id="designHeading">Дизайн главной</h2>
+            <p>Изображения и тексты главного экрана ПК. Меняйте наполнение без правки кода и передавайте дизайнеру размеры карточек.</p>
+          </div>
+          <a href="index.html" target="_blank" rel="noopener noreferrer" class="bali-design-view-site">Открыть сайт ↗</a>
+        </div>
+        <div class="bali-design-overview">
+          <div><strong>BALI PRIVILEGE</strong><span>1600 × 600 px · 8:3</span></div>
+          <div><strong>О клубе BALI</strong><span>1000 × 1000 px · 1:1</span></div>
+          <div><strong>BALI MERCH</strong><span>1200 × 800 px · 3:2</span></div>
+        </div>
+        <section class="card bali-design-about-editor">
+          <div class="card-heading"><h3>О клубе BALI</h3><span class="tag">Правая колонка ПК</span></div>
+          <div class="bali-design-spec">
+            <div class="bali-design-spec-art bali-design-spec-art-square"><span>1000 × 1000</span></div>
+            <div><strong>Фото карточки — 1000 × 1000 px</strong><small>Квадратный макет 1:1. Изображение используется фоном карточки «О клубе»; края могут немного обрезаться. Заголовок, подпись и описание редактируются ниже.</small></div>
+          </div>
+          <form id="baliHomeAboutForm" class="bali-design-form">
+            <label>Название блока<input id="baliHomeAboutTitle" required maxlength="50" value="О клубе"></label>
+            <label>Подпись<input id="baliHomeAboutSubtitle" required maxlength="85" value="Атмосфера, музыка, люди"></label>
+            <label>Текст внутри раскрывающейся карточки<textarea id="baliHomeAboutDescription" required rows="3" maxlength="450">Ночной клуб BALI в Минске. Музыка, события и встречи в одной атмосфере.</textarea></label>
+            <div class="bali-design-upload">
+              <label>Загрузить фото клуба<input id="baliHomeAboutFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
+              <div class="bali-design-image-preview bali-design-image-preview-square" id="baliHomeAboutPreview"><span>Фото клуба 1:1</span></div>
+              <button type="button" id="baliHomeAboutRemoveImage">Убрать фото</button>
+            </div>
+            <label>Или HTTPS-ссылка на фото<input id="baliHomeAboutImageUrl" type="url" maxlength="2048" placeholder="https://..."></label>
+            <div class="actions"><button type="submit" class="primary" id="baliHomeAboutSave">Сохранить блок «О клубе»</button></div>
+            <p class="status" id="baliHomeAboutStatus" role="status" aria-live="polite">Проверяем доступ…</p>
+          </form>
+        </section>
+        <section class="card bali-design-merch-editor">
+          <div class="card-heading"><h3>BALI MERCH · Витрина</h3><span class="tag">Несколько товаров</span></div>
+          <p class="hint">Добавляйте любое количество карточек мерча, загружайте фотографии, указывайте наличие и цену. На главной карточки показываются по очереди. Черновики гостям не видны.</p>
+          <div class="bali-design-spec">
+            <div class="bali-design-spec-art bali-design-spec-art-landscape"><span>1200 × 800</span></div>
+            <div><strong>Фото мерча — 1200 × 800 px</strong><small>Формат 3:2, JPG / PNG / WebP до 15 МБ. Хорошо подходит для одежды и аксессуаров. Не размещайте мелкий текст в фото — название, статус и цену сайт покажет отдельно.</small></div>
+          </div>
+          <form id="baliHomeMerchForm" class="bali-design-form">
+            <input type="hidden" id="baliHomeMerchId">
+            <label>Название товара<input id="baliHomeMerchName" required minlength="2" maxlength="95" placeholder="Например, худи BALI"></label>
+            <label>Описание<textarea id="baliHomeMerchDescription" rows="2" maxlength="180" placeholder="Коротко о товаре"></textarea></label>
+            <div class="bali-design-form-grid">
+              <label>Статус
+                <select id="baliHomeMerchStatus">
+                  <option value="soon">Скоро в продаже</option>
+                  <option value="available">В продаже</option>
+                </select>
+              </label>
+              <label>Цена, BYN (для «В продаже»)<input id="baliHomeMerchPrice" type="number" min="0" max="20000" step="0.01" value="0"></label>
+            </div>
+            <div class="bali-design-form-grid">
+              <label>Порядок показа<input id="baliHomeMerchSort" type="number" min="0" max="100000" step="1" value="100" required></label>
+              <label class="check bali-design-publication"><input type="checkbox" id="baliHomeMerchPublished">Показывать на сайте</label>
+            </div>
+            <div class="bali-design-upload">
+              <label>Фото товара<input id="baliHomeMerchFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
+              <div class="bali-design-image-preview" id="baliHomeMerchPreview"><span>Фото товара 3:2</span></div>
+              <button type="button" id="baliHomeMerchRemoveImage">Убрать фото</button>
+            </div>
+            <label>Или HTTPS-ссылка на фото<input id="baliHomeMerchImageUrl" type="url" maxlength="2048" placeholder="https://..."></label>
+            <div class="actions">
+              <button type="submit" id="baliHomeMerchSave" class="primary">Сохранить товар</button>
+              <button type="button" id="baliHomeMerchReset">Новый товар</button>
+            </div>
+            <p class="status" id="baliHomeMerchStatus" role="status" aria-live="polite">Проверяем доступ…</p>
+          </form>
+          <div class="bali-design-merch-list" id="baliHomeMerchList" aria-live="polite"></div>
+        </section>
         <section class="card bali-promo-editor" id="baliPromoEditor">
           <div class="card-heading"><h3>BALI PRIVILEGE · Спецпредложения</h3><span class="tag">Главная страница ПК</span></div>
-          <p class="hint">Добавляйте настоящие предложения клуба. Опубликованные карточки автоматически сменяются в большом баннере. Неопубликованные предложения посетителям не показываются.</p>
+          <p class="hint">Каждое опубликованное предложение — отдельный слайд BALI PRIVILEGE. Переключаются автоматически; на сайте остаются ваши заголовки, описания и изображения.</p>
+          <div class="bali-design-spec bali-design-spec-wide">
+            <div class="bali-design-spec-art bali-design-spec-art-hero"><span>БАННЕР 1600 × 600</span></div>
+            <div><strong>BALI PRIVILEGE · 1600 × 600 px</strong><small>Соотношение 8:3. JPG / PNG / WebP до 15 МБ. При загрузке изображение автоматически подгоняется под формат. Текст лучше размещать в редакторе; важные детали картинки располагайте справа, не ближе 8% к краям. На ПК размер блока подстраивается под экран.</small></div>
+          </div>
           <form id="baliPromoForm" class="bali-promo-form">
             <input type="hidden" id="baliPromoId">
             <label>Заголовок предложения *<input id="baliPromoTitle" required minlength="2" maxlength="100" placeholder="Название предложения"></label>
             <label>Описание *<textarea id="baliPromoDescription" required maxlength="260" rows="3" placeholder="Условия предложения без вымышленных цен и обещаний"></textarea></label>
-            <label>Изображение (HTTPS-адрес)<input id="baliPromoImage" type="url" maxlength="2048" placeholder="https://..."></label>
+            <div class="bali-design-upload">
+              <label>Загрузить баннер с компьютера<input id="baliPromoImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
+              <div class="bali-design-image-preview" id="baliPromoImagePreview" aria-label="Предпросмотр баннера"><span>Предпросмотр баннера 8:3</span></div>
+              <button type="button" id="baliPromoRemoveImage">Убрать изображение</button>
+            </div>
+            <label>Или ссылка на изображение (HTTPS)<input id="baliPromoImage" type="url" maxlength="2048" placeholder="https://..."></label>
             <div class="double">
               <label>Куда ведёт кнопка
                 <select id="baliPromoDestination">
@@ -568,7 +655,8 @@
 <script type="module" src="bali-admin-bar.js?v=20261017-65"></script>
 <script type="module" src="bali-admin-cards.js?v=20261017-66"></script>
 <script type="module" src="bali-menu-visibility.js?v=20261017-72"></script>
-<script type="module" src="bali-admin-promos.js?v=20261017-67"></script>
+<script type="module" src="bali-admin-promos.js?v=20261017-73"></script>
+<script type="module" src="bali-home-design-admin.js?v=20261017-73"></script>
 <script type="module" src="admin-orders.js?v=20261017-20"></script>
 <script type="module" src="admin-clients.js?v=20261017-20"></script>
 <script src="admin-dashboard.js?v=20261017-58" defer></script>
