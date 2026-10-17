@@ -95,7 +95,35 @@ function initEventCarousel() {
         event.preventDefault();
         scrollEventCarousel(event.key==="ArrowRight"?1:-1);
     });
-    window.addEventListener("resize",updateEventCarouselPosition,{passive:true});
+    // Подгоняем слайд под вертикальную пропорцию сторис 9:16.
+    // Высота берётся из реального пространства между верхним меню и нижней панелью.
+    const fitStorySlides=()=>{
+        if(track.clientWidth<1||track.clientHeight<1)return;
+        const mobile=window.matchMedia("(max-width: 767px)").matches;
+        const width=Math.min(
+            390,
+            track.clientWidth*(mobile?.82:.40),
+            (track.clientHeight-14)*9/16
+        );
+        const rounded=Math.max(155,Math.floor(width));
+        const previous=track.style.getPropertyValue("--bali-event-slide-width");
+        if(previous===rounded+"px")return;
+        const active=carouselEventCards(track).find(card=>card.classList.contains("is-active"));
+        const activeDate=active?.dataset.eventDate;
+        track.style.setProperty("--bali-event-slide-width",rounded+"px");
+        requestAnimationFrame(()=>{
+            const cards=carouselEventCards(track);
+            const selected=cards.find(card=>card.dataset.eventDate===activeDate)||cards[0];
+            if(selected)centerEventCard(track,selected,false);
+            updateEventCarouselPosition();
+        });
+    };
+    if(typeof ResizeObserver==="function"){
+        const observer=new ResizeObserver(fitStorySlides);
+        observer.observe(track);
+    }
+    window.addEventListener("resize",fitStorySlides,{passive:true});
+    fitStorySlides();
     updateEventCarouselPosition();
 }
 
