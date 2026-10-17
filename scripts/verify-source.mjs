@@ -506,7 +506,7 @@ assert(rules.includes('allow list: if isAdmin();') && rules.includes('match /ord
   "Guest CRM privacy and admin access missing");
 assert(rules.includes("data.poster_url") && rules.includes("data:image/webp;base64") &&
   rules.includes("image_url.size() <= 95000"), "Secure compressed poster/product storage missing");
-assert(imageProcessor.includes('canvas.toDataURL("image/webp"') && imageProcessor.includes('const ratio=poster?4/5:1;'),
+assert(imageProcessor.includes('canvas.toDataURL("image/webp"') && imageProcessor.includes('const ratio=design?.ratio||(poster?4/5:1);'),
   "Image compression must create 1:1 dishes and 4:5 flyers");
 assert(adminClient.includes('compressImage(file,"product")') &&
   adminClient.includes('compressImage(file,"poster")'), "Image picker must upload to Firestore");
