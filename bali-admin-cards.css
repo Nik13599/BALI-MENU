@@ -40,3 +40,41 @@
   .bali-admin-extra-editor .bali-admin-bar-form{grid-template-columns:1fr}
   .bali-admin-extra-editor .bali-admin-bar-row{align-items:flex-start;flex-direction:column}
 }
+
+/* BALI PRIVILEGE promotion editor. */
+.bali-promo-editor{margin-top:23px;overflow:hidden}
+.bali-promo-editor>.hint{margin:2px 0 23px;line-height:1.6}
+.bali-promo-form{display:grid;gap:12px;max-width:850px}
+.bali-promo-form label{font-size:13px;font-weight:650;color:#e2e4e6}
+.bali-promo-form label input,
+.bali-promo-form label textarea,
+.bali-promo-form label select{
+  width:100%;min-height:43px;margin-top:8px;background:#26292f;
+  color:#fff;border:1px solid rgba(255,255,255,.19);border-radius:10px;
+  padding:10px 12px;box-sizing:border-box;font:500 13px Manrope,sans-serif
+}
+.bali-promo-form .double{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.bali-promo-form .bali-promo-checkbox{
+  display:flex;align-items:center;justify-content:flex-start;gap:10px;
+  padding:15px 0;margin:0;line-height:1.4
+}
+.bali-promo-form .bali-promo-checkbox input{
+  min-height:0;height:18px;width:18px;margin:0;flex:0 0 18px;accent-color:var(--bt-primary,#b9ff51)
+}
+.bali-promo-list{display:grid;gap:11px;margin-top:20px}
+.bali-promo-item{
+  display:flex;align-items:center;gap:14px;padding:12px;
+  border:1px solid rgba(255,255,255,.12);border-radius:13px;background:#1b1e22
+}
+.bali-promo-preview{width:88px;height:74px;object-fit:cover;border-radius:10px;flex:0 0 88px}
+.bali-promo-copy{flex:1;min-width:0;display:grid;gap:4px}
+.bali-promo-copy strong{font-size:13px;color:#f5f5f5}
+.bali-promo-copy small{font-size:11px;color:var(--bt-text,#d8ff9f)}
+.bali-promo-copy p{font-size:12px;line-height:1.45;color:#b4bac1;margin:0;overflow-wrap:anywhere}
+.bali-promo-actions{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.bali-promo-actions button{font-size:11px;min-height:35px;padding:7px 9px}
+@media(max-width:740px){
+  .bali-promo-form .double{grid-template-columns:1fr}
+  .bali-promo-item{flex-wrap:wrap}
+  .bali-promo-actions{width:100%}
+}
