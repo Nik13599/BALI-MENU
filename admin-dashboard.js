@@ -103,6 +103,34 @@
   panels.forEach(panel=>panel.setAttribute("role","tabpanel"));
   activate("overview",false);
 
+  // A prepared poster often already contains all its copy. One click removes
+  // browser-generated text; the original image and image variants stay intact.
+  const clearArtworkFields={
+    about:["baliHomeAboutTitle","baliHomeAboutSubtitle","baliHomeAboutDescription"],
+    merch:["baliHomeMerchName","baliHomeMerchDescription"],
+    privilege:["baliPromoTitle","baliPromoDescription"]
+  };
+  for(const button of document.querySelectorAll("[data-bali-clear-artwork-copy]")){
+    button.addEventListener("click",()=>{
+      const ids=clearArtworkFields[button.dataset.baliClearArtworkCopy];
+      if(!ids)return;
+      for(const id of ids){
+        const input=$(id);
+        if(!input||input.disabled)return;
+      }
+      for(const id of ids){
+        const input=$(id);
+        input.value="";
+        input.dispatchEvent(new Event("input",{bubbles:true}));
+      }
+      const status={
+        about:"baliHomeAboutStatus",
+        merch:"baliHomeMerchFeedback",
+        privilege:"baliPromoStatus"
+      }[button.dataset.baliClearArtworkCopy];
+      if(status&&$(status))$(status).textContent="Надписи очищены. Сохраните блок, чтобы показать только изображение.";
+    });
+  }
   $("adminReturnOverview")?.addEventListener("click",()=>activate("overview"));
   document.querySelectorAll("[data-admin-go]").forEach(button=>{
     button.addEventListener("click",()=>{
