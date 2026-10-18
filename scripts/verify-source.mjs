@@ -305,6 +305,7 @@ assert(html.includes('id="baliAgeGate"') &&
   "Bar and hookah require 18+ account-based confirmation; tea and hookah read-only notices display.");
 // v99: admin opt-in product "Подробнее" must never be published
 // without nonempty text; optional detail photo/grams may be absent.
+const adminClient=source("admin-firestore.js");
 const moreCss=source("bali-menu-details.css");
 assert(html.includes('id="baliMenuDetailsDialog"') &&
   html.includes('id="baliMenuDetailsTitle"') &&
@@ -684,7 +685,7 @@ assert(customIconJs.includes('"book":') &&
   "Menu must use a designed open book; icon controls must remain accessible");
 
 const menuClient = source("menu-firestore.js");
-const adminClient = source("admin-firestore.js");
+// adminClient was initialized above the menu-detail assertions.
 assert(html.includes('id="eventSelect"'), "Preorder event selection missing");
 assert(html.includes('id="bookingId"'), "Booking ID input missing");
 assert(html.includes('id="tableNumber"'), "Table number input missing");
