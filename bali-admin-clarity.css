@@ -1,0 +1,280 @@
+/* BALI Admin Clarity · layout only, no changes to Firestore or forms. */
+:root {
+  --admin-clarity-accent:var(--bt-primary,#b9ff51);
+  --admin-clarity-text:#f1f4f0;
+  --admin-clarity-muted:#aab6b4;
+  --admin-clarity-outline:rgba(220,235,225,.13);
+}
+.admin-sidebar {scrollbar-width:thin}
+.admin-nav-group {
+  margin:18px 13px 4px;
+  padding-top:9px;
+  border-top:1px solid var(--admin-clarity-outline);
+  color:#839190;
+  font:750 10px/1.5 Manrope,Inter,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.125em;
+}
+.admin-nav-group:first-child{margin-top:0;padding-top:0;border-top:0}
+body.bali-admin-theme .admin-tab {
+  min-height:45px;
+  border-radius:10px;
+  color:#d5dedc;
+  font-weight:650;
+  letter-spacing:0;
+}
+body.bali-admin-theme .admin-tab.active {
+  border-color:rgba(185,255,81,.28);
+  background:rgba(185,255,81,.10);
+  color:var(--admin-clarity-accent);
+  box-shadow:inset 3px 0 0 var(--admin-clarity-accent);
+}
+body.bali-admin-theme .admin-tab:hover:not(.active){
+  background:rgba(255,255,255,.06);
+}
+.admin-sidebar .sidebar-note {
+  display:block;
+  border-top:1px solid var(--admin-clarity-outline);
+  color:#8d9d9c;
+  font-size:11px;
+  line-height:1.65;
+}
+.admin-return-home {
+  flex-shrink:0;
+  color:#dce6e2;
+  background:#1b2427;
+  border:1px solid #3b494a;
+  padding:9px 11px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:750;
+  font-size:12px;
+}
+.admin-return-home:hover{background:#283233}
+.admin-overview-welcome{
+  margin-bottom:22px;
+  border-bottom:1px solid var(--admin-clarity-outline);
+  padding:0 2px 20px;
+}
+.admin-overview-welcome h2{
+  margin:7px 0 7px;
+  color:var(--admin-clarity-text);
+  font-size:clamp(22px,2.35vw,30px);
+  letter-spacing:-.035em;
+  line-height:1.2;
+}
+.admin-overview-welcome p{
+  margin:0;
+  color:var(--admin-clarity-muted);
+  font-size:13px;
+  line-height:1.7;
+  max-width:670px;
+}
+.admin-quick-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:13px;
+  margin-bottom:22px;
+}
+.admin-quick-card{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  padding:21px;
+  border:1px solid var(--admin-clarity-outline);
+  border-radius:17px;
+  background:linear-gradient(160deg,rgba(31,40,41,.95),rgba(18,24,29,.95));
+  box-shadow:0 4px 20px rgba(0,0,0,.09);
+  transition:border-color .16s,transform .16s;
+}
+.admin-quick-card:hover{
+  border-color:rgba(185,255,81,.37);
+  transform:translateY(-2px);
+}
+.admin-quick-symbol{
+  display:grid;
+  place-items:center;
+  margin-bottom:17px;
+  width:43px;height:43px;
+  border-radius:11px;
+  background:rgba(185,255,81,.09);
+  border:1px solid rgba(185,255,81,.2);
+  color:var(--admin-clarity-accent);
+  font-size:23px;
+}
+.admin-quick-card h3{
+  margin:0 0 7px;
+  color:var(--admin-clarity-text);
+  font-size:17px;
+  line-height:1.35;
+  font-weight:800;
+}
+.admin-quick-card p{
+  margin:0 0 21px;
+  color:var(--admin-clarity-muted);
+  font-size:12px;
+  line-height:1.65;
+  flex:1;
+}
+.admin-quick-card button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:7px;
+  min-height:41px;
+  width:100%;
+  background:#283230;
+  color:#edf5ed;
+  border:1px solid #46564d;
+  border-radius:9px;
+  padding:9px 12px;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:750;
+  text-align:left;
+  white-space:normal;
+}
+.admin-quick-card button:hover{background:#35423b;border-color:var(--admin-clarity-accent)}
+.admin-quick-chips{
+  margin-top:auto;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+}
+.admin-quick-chips button{min-height:36px;font-size:12px;padding:8px}
+.admin-workflow{
+  border:1px solid var(--admin-clarity-outline);
+  background:#161d22;
+  border-radius:15px;
+  padding:20px 23px;
+}
+.admin-workflow h3{margin:0 0 12px;font-size:17px;color:#e9efeb}
+.admin-workflow ol{
+  margin:0;
+  padding-left:22px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  column-gap:30px;
+  row-gap:12px;
+}
+.admin-workflow li{padding-left:3px;color:#acb8b4;font-size:12px;line-height:1.65}
+.admin-workflow li::marker{color:var(--admin-clarity-accent);font-weight:800}
+.admin-workflow li strong{color:#f3f7f0}
+.admin-preview-link{
+  display:inline-flex;
+  align-items:center;
+  margin-top:18px;
+  color:var(--admin-clarity-accent);
+  font-size:13px;
+  font-weight:750;
+}
+.admin-section-guide{
+  border:1px solid #344344;
+  border-radius:12px;
+  padding:0;
+  margin-bottom:23px;
+  background:#161e23;
+  color:#cbd8d1;
+}
+.admin-section-guide summary{
+  cursor:pointer;
+  padding:13px 16px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  list-style:none;
+  font:750 13px/1.5 Manrope,Inter,sans-serif;
+}
+.admin-section-guide summary::-webkit-details-marker{display:none}
+.admin-section-guide summary::after{
+  content:"▾";margin-left:auto;color:#aebeb4;transition:transform .16s
+}
+.admin-section-guide[open] summary::after{transform:rotate(180deg)}
+.admin-section-guide summary span{
+  display:grid;place-items:center;width:23px;height:23px;
+  border-radius:50%;border:1px solid #56725b;
+  color:var(--admin-clarity-accent);
+  font-size:13px;font-weight:800;
+}
+.admin-section-guide-text{padding:0 17px 14px;color:#bdcac4;font-size:12px;line-height:1.7}
+.admin-section-guide-text ol{margin:0;padding-left:28px}
+.admin-section-guide-text li{margin:0 0 6px}
+.admin-section-guide-text li::marker{color:var(--admin-clarity-accent)}
+body[data-bali-admin-section="overview"] .admin-section-guide{display:none!important}
+body[data-bali-admin-section="overview"] .admin-stats{margin-bottom:25px}
+body[data-bali-admin-section="clients"] .admin-stats,
+body[data-bali-admin-section="menu"] .admin-stats,
+body[data-bali-admin-section="events"] .admin-stats,
+body[data-bali-admin-section="appearance"] .admin-stats{display:none!important}
+@media(min-width:761px){
+  .admin-sidebar{max-height:calc(100dvh - 90px);overflow-y:auto}
+  .admin-quick-card-wide{grid-column:auto}
+}
+@media(max-width:1250px){
+  .admin-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  body.bali-admin-theme .admin-sidebar{
+    position:sticky!important;
+    top:60px!important;
+    z-index:35;
+    margin:0 -12px 8px!important;
+    padding:7px 12px 9px!important;
+    border-bottom:1px solid #35413e;
+    background:#10171b!important;
+    overflow:visible;
+  }
+  .admin-sidebar .sidebar-caption,.admin-nav-group,.admin-sidebar .sidebar-note{display:none!important}
+  body.bali-admin-theme .admin-tabs{
+    display:flex!important;
+    flex-flow:row nowrap!important;
+    overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-x:contain;
+    scrollbar-width:thin;
+    gap:7px!important;
+    padding:2px 0 7px;
+    scroll-snap-type:x proximity;
+  }
+  body.bali-admin-theme .admin-tab{
+    flex:0 0 auto!important;
+    width:auto!important;
+    max-width:none!important;
+    min-height:44px!important;
+    padding:8px 12px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    gap:6px!important;
+    font-size:12px!important;
+    white-space:nowrap;
+    scroll-snap-align:start;
+  }
+  body.bali-admin-theme .admin-tab.active{box-shadow:inset 0 -3px 0 var(--admin-clarity-accent)}
+  .admin-tab .tab-icon{font-size:17px!important}
+  .admin-tab .tab-count{display:inline-block;font-size:10px}
+  .admin-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .admin-quick-card{padding:17px}
+  .admin-quick-card h3{font-size:15px}
+  .admin-quick-card p{font-size:12px}
+  .admin-quick-symbol{width:37px;height:37px;margin-bottom:13px}
+  .admin-workflow ol{grid-template-columns:1fr}
+  .admin-return-home{font-size:11px;padding:7px 9px}
+  .admin-overview-welcome{padding-bottom:16px}
+}
+@media(max-width:540px){
+  .admin-quick-grid{grid-template-columns:1fr;gap:10px}
+  .admin-quick-card{padding:16px}
+  .admin-quick-card p{margin-bottom:15px}
+  .admin-workflow{padding:18px 16px}
+  .admin-section-guide summary{font-size:12px}
+  .toolbar-account{gap:6px}
+  .admin-return-home{order:-1}
+}
+@media(prefers-reduced-motion:reduce){
+  .admin-quick-card{transition:none}
+  .admin-quick-card:hover{transform:none}
+  .admin-section-guide summary::after{transition:none}
+}
+@media print {
+  .admin-overview,.admin-section-guide,.admin-return-home{display:none!important}
+}
