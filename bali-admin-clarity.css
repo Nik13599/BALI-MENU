@@ -305,3 +305,32 @@ body.bali-admin-theme .bali-clear-artwork-copy:disabled{
   opacity:.5;
   cursor:not-allowed;
 }
+
+
+/* Live measured size for the top BALI PRIVILEGE image; not an arbitrary fixed 8:3. */
+body.bali-admin-theme .bali-promo-geometry {
+  margin:10px 0 18px;
+  padding:12px 16px;
+  border:1px solid rgba(185,255,81,.38);
+  border-left:3px solid var(--bt-primary,#b9ff51);
+  border-radius:11px;
+  background:rgba(185,255,81,.07);
+  color:#eef6e7;
+  font:650 13px/1.65 Manrope,Inter,sans-serif;
+  overflow-wrap:anywhere;
+}
+body.bali-admin-theme #baliPromoImagePreview img,
+body.bali-admin-theme #baliPromoTabletPreview img,
+body.bali-admin-theme #baliPromoMobilePreview img {
+  object-fit:contain !important;
+  object-position:center !important;
+  background:#080b10;
+}
+body.bali-admin-theme .bali-promo-editor .bali-design-spec-art-hero {
+  min-height:50px;
+  max-height:110px;
+}
+body.bali-admin-theme .bali-promo-editor .bali-design-spec-art-hero>span {
+  overflow-wrap:anywhere;
+  font-size:12px;
+}
