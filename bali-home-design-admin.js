@@ -4,8 +4,8 @@ import {getApp,getApps,initializeApp} from "https://www.gstatic.com/firebasejs/1
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,collection,getDoc,onSnapshot,setDoc,deleteDoc,serverTimestamp}
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import {compressImage} from "./image-compressor.js?v=20261018-106";
-import {makeImageVariants} from "./bali-design-variants.js?v=20261018-106";
+import {compressImage} from "./image-compressor.js?v=20261018-107";
+import {makeImageVariants} from "./bali-design-variants.js?v=20261018-107";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const db=getFirestore(app),auth=getAuth(app),el=id=>document.getElementById(id);
 const aboutForm=el("baliHomeAboutForm"),merchForm=el("baliHomeMerchForm");
