@@ -140,7 +140,7 @@ if(aboutForm&&merchForm){
     merchVariants.set({tablet:item.imageTabletUrl,mobile:item.imageMobileUrl});
     el("baliHomeMerchSave").textContent="Сохранить изменения";
     merchForm.scrollIntoView({block:"start",behavior:"smooth"});
-    say("baliHomeMerchFeedback","Редактирование товара: "+item.name);
+    say("baliHomeMerchFeedback","Редактирование товара: "+(item.name||"Изображение без названия"));
   }
   function renderMerch(){
     const host=el("baliHomeMerchList");host.replaceChildren();
@@ -152,14 +152,14 @@ if(aboutForm&&merchForm){
         const img=make("img");img.src=item.imageUrl;img.alt="";img.loading="lazy";row.append(img);
       }
       const info=make("div","bali-design-merch-entry-info");
-      info.append(make("strong","",item.name),
+      info.append(make("strong","",item.name||"Изображение без названия"),
         make("small","",item.published?"Показывается":"Черновик"),
         make("span","",item.status==="available"?item.price.toFixed(2)+" BYN":"Скоро в продаже"));
       const buttons=make("div","bali-design-merch-entry-actions");
       const edit=make("button","","Изменить");edit.type="button";edit.addEventListener("click",()=>editMerch(item));
       const remove=make("button","","Удалить");remove.type="button";
       remove.addEventListener("click",async()=>{
-        if(!authorized||!confirm("Удалить «"+item.name+"»?"))return;
+        if(!authorized||!confirm("Удалить «"+(item.name||"Изображение без названия")+"»?"))return;
         remove.disabled=true;
         try{await deleteDoc(doc(db,"merch",item.id));if(el("baliHomeMerchId").value===item.id)resetMerch();}
         catch(error){say("baliHomeMerchFeedback","Ошибка удаления: "+(error.code||"неизвестная"));}
