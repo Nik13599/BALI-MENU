@@ -198,6 +198,21 @@
     focusSelectedInFrame();
   }
   frame.addEventListener("load",attachFrame);
+  const desktopPreset=$("baliPromoViewportPreset");
+  desktopPreset?.addEventListener("change",()=>{
+    const size=desktopPreset.value;
+    if(size==="current"){
+      devices.desktop.width=Math.max(1180,Math.round(window.innerWidth));
+      devices.desktop.height=Math.max(600,Math.round(window.innerHeight));
+    }else if(/^\\d{4}x\\d{3,4}$/.test(size)){
+      const [width,height]=size.split("x").map(Number);
+      if(width>=1180&&height>=600&&width<=3840&&height<=2160){
+        devices.desktop.width=width;
+        devices.desktop.height=height;
+      }
+    }
+    chooseDevice("desktop");
+  });
   for(const button of controlButtons)button.addEventListener("click",()=>chooseDevice(button.dataset.studioDevice));
   for(const button of pages)button.addEventListener("click",()=>choosePage(button.dataset.studioPage));
   panel.querySelectorAll("[data-design-admin-route]").forEach(button=>{
