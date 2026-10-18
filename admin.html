@@ -627,6 +627,15 @@
             <div class="bali-design-spec-art bali-design-spec-art-hero"><span>РАЗМЕР БЛОКА — НИЖЕ</span></div>
             <div><strong>BALI PRIVILEGE · размер зависит от экрана</strong><small>Блок меняет ширину и высоту при изменении размера окна ПК. Число 1600×600 не является точным для всех экранов. Используйте фактические размеры области в предпросмотре справа. Готовые надписи на фото не обрезаются: весь рисунок сохраняется.</small></div>
           </div>
+          <label class="bali-promo-viewport-choice">Для какого окна ПК готовите макет?
+            <select id="baliPromoViewportPreset" aria-label="Размер окна ПК для расчёта баннера">
+              <option value="1440x900">ПК 1440 × 900 (эталон предпросмотра)</option>
+              <option value="current">Мой текущий экран</option>
+              <option value="1920x1080">ПК 1920 × 1080</option>
+              <option value="1792x852">ПК 1792 × 852</option>
+              <option value="1366x768">ПК 1366 × 768</option>
+            </select>
+          </label>
           <p id="baliPromoRealSize" class="bali-promo-geometry" role="status" aria-live="polite">Определяем точные размеры верхнего баннера в предпросмотре…</p>
           <form id="baliPromoForm" class="bali-promo-form">
             <input type="hidden" id="baliPromoId">
