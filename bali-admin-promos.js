@@ -44,6 +44,7 @@ if(form&&list&&status){
     }else preview.append(node("span","","Предпросмотр баннера без обрезки"));
   }
   function clear(){
+    saveFeedback="";
     imageSerial++;
     selectedImage="";
     processing=false;
