@@ -36,6 +36,8 @@ if(aboutImage){
       imageUrl:v.aboutImageUrl,tabletUrl:v.aboutImageTabletUrl,mobileUrl:v.aboutImageMobileUrl
     });
     const card=document.querySelector(".bali-pc-about");
+    const summary=card?.querySelector("summary");
+    if(summary)summary.setAttribute("aria-label",(v.aboutTitle?.trim()||"О клубе BALI")+". Открыть подробности");
     const hasArtwork=validImage(v.aboutImageUrl);
     card?.classList.toggle("has-photo",hasArtwork);
     card?.classList.toggle("is-image-only",hasArtwork&&
