@@ -605,7 +605,7 @@ assert(admin.includes('data-admin-tab="appearance"') &&
   admin.includes('id="baliThemeRulesHelp"') &&
   ['cobalt','lime','white','custom'].every(x=>admin.includes('name="baliThemePreset" value="'+x+'"')) &&
   ['Primary','Secondary','Text','Border'].every(x=>admin.includes('id="baliColor'+x+'"')&&admin.includes('id="baliColor'+x+'Hex"')) &&
-  dashboardClient.includes('appearance: ["Цветовая тема"'),
+  dashboardClient.includes('appearance: ["Цвета сайта"'),
   "Admin must provide three preset palettes, custom hex editing, preview and publish/revert controls");
 assert(themeClient.includes('const palettes=Object.freeze({') &&
   themeClient.includes('cobalt:Object.freeze(') &&
