@@ -26,7 +26,7 @@ export async function compressImage(file,kind="product") {
   };
   const design=designPresets[kind];
   const maxChars=design?.maxChars||(poster?145000:90000);
-  const ratio=design?.ratio||(poster?4/5:1);
+  let ratio=design?.ratio||(poster?4/5:1);
   const url=URL.createObjectURL(file);
   let image;
   try {
@@ -39,6 +39,10 @@ export async function compressImage(file,kind="product") {
   }finally{URL.revokeObjectURL(url);}
   const iw=image.naturalWidth,ih=image.naturalHeight;
   if(!iw||!ih)throw new Error("У изображения нет доступных размеров.");
+  // Do not add black letterbox bands inside a designer-prepared Privilege banner.
+  // Use its native aspect. The website will display the whole image (contain),
+  // and the admin live preview reports the exact target dimensions to designers.
+  if(kind==="design-hero"||kind.startsWith("design-hero-"))ratio=iw/ih;
   // Product images are centered square, event posters 4:5; homepage artwork uses designer-sized ratios.
   let cropWidth,cropHeight;
   if(iw/ih > ratio){cropHeight=ih;cropWidth=ih*ratio;}
