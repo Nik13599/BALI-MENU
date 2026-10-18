@@ -970,17 +970,20 @@ assert(homeStoriesCss.includes("aspect-ratio:1/1") &&
   homeStoriesCss.includes("touch-action:pan-x pan-y"),
   "Home events should show square artwork and a clear-to-red accessible heart while preserving horizontal swipes");
 assert(app.includes('const card=document.createElement("article");') &&
-  app.includes('heart.setAttribute("aria-pressed",String(liked))') &&
-  app.includes('window.BaliInterests.toggle(event.date)') &&
+  app.includes('function toggleGuestInterest(date,message)') &&
+  app.includes('window.BaliInterests.toggle(date)') &&
   app.includes('click.stopPropagation()') &&
-  app.includes('syncHeart(guestInterestDates.has(event.date))') &&
+  app.includes('void toggleGuestInterest(event.date,document.getElementById("homeInterestFeedback"))') &&
+  app.includes('function syncInterestVisuals(){') &&
   app.includes('requestAnimationFrame(()=>{\n            track.scrollLeft='),
   "Home RSVP hearts must persist through Firebase and not activate the event overlay or reset carousel scroll");
 assert(html.includes('id="homeInterestFeedback"') &&
   app.includes('getElementById("homeInterestFeedback")') &&
   app.includes('result?.loginRequired') &&
-  app.includes('heart.disabled=true') &&
-  app.includes('heart.disabled=false'),
+  app.includes('pendingInterestDates.add(date)') &&
+  app.includes('pendingInterestDates.delete(date)') &&
+  app.includes('setInterestSelection(date,previous)') &&
+  app.includes('heart.disabled=waiting'),
   "Home hearts need login, pending-operation and save-error feedback");
 
 assert(html.includes('<section class="bali-home-events-panel"') &&
