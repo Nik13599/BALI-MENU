@@ -21,13 +21,25 @@ const aboutImage=el("baliPcAboutImage");
 if(aboutImage){
   onSnapshot(doc(db,"settings","homeDesign"),snap=>{
     const v=snap.exists()?snap.data():{};
-    if(typeof v.aboutTitle==="string"&&v.aboutTitle.trim())el("baliPcAboutTitle").textContent=v.aboutTitle;
-    if(typeof v.aboutSubtitle==="string"&&v.aboutSubtitle.trim())el("baliPcAboutSubtitle").textContent=v.aboutSubtitle;
-    if(typeof v.aboutDescription==="string"&&v.aboutDescription.trim())el("baliPcAboutDescription").textContent=v.aboutDescription;
+    // Empty Firestore copy is intentional: do not restore hard-coded overlay labels.
+    for(const [id,field] of [
+      ["baliPcAboutTitle","aboutTitle"],
+      ["baliPcAboutSubtitle","aboutSubtitle"],
+      ["baliPcAboutDescription","aboutDescription"]
+    ]){
+      const element=el(id);
+      if(!element||typeof v[field]!=="string")continue;
+      element.textContent=v[field];
+      element.hidden=!v[field].trim();
+    }
     setPicture(aboutImage,el("baliPcAboutTabletSource"),el("baliPcAboutMobileSource"),{
       imageUrl:v.aboutImageUrl,tabletUrl:v.aboutImageTabletUrl,mobileUrl:v.aboutImageMobileUrl
     });
-    document.querySelector(".bali-pc-about")?.classList.toggle("has-photo",validImage(v.aboutImageUrl));
+    const card=document.querySelector(".bali-pc-about");
+    const hasArtwork=validImage(v.aboutImageUrl);
+    card?.classList.toggle("has-photo",hasArtwork);
+    card?.classList.toggle("is-image-only",hasArtwork&&
+      !v.aboutTitle?.trim()&&!v.aboutSubtitle?.trim()&&!v.aboutDescription?.trim());
   },error=>{if(error.code!=="permission-denied")console.warn("BALI home About:",error.code);});
 }
 const merchImage=el("baliPcMerchImage");
@@ -45,18 +57,24 @@ if(merchImage){
       title.textContent="BALI MERCH";state.textContent="Скоро в продаже";
       description.hidden=true;description.textContent="";
       setPicture(merchImage,el("baliPcMerchTabletSource"),el("baliPcMerchMobileSource"),{});
+      parent?.classList.remove("has-photo","is-image-only");
       controls.hidden=true;return;
     }
+    const hasArtwork=validImage(item.imageUrl);
+    const imageOnly=hasArtwork&&!item.name.trim()&&!item.description.trim();
     title.textContent=item.name;
+    title.hidden=!item.name.trim();
     state.textContent=item.status==="available"?money.format(item.price)+" BYN":"Скоро в продаже";
-    description.textContent=item.description;description.hidden=!item.description;
+    state.hidden=imageOnly;
+    description.textContent=item.description;description.hidden=!item.description.trim();
     setPicture(merchImage,el("baliPcMerchTabletSource"),el("baliPcMerchMobileSource"),{
       imageUrl:item.imageUrl,tabletUrl:item.imageTabletUrl,mobileUrl:item.imageMobileUrl
     });
-    merchImage.alt="Фотография товара "+item.name;
+    merchImage.alt=item.name?"Фотография товара "+item.name:"Изображение BALI MERCH";
     controls.hidden=products.length<2;
     counter.textContent=String(index+1).padStart(2,"0")+" / "+String(products.length).padStart(2,"0");
-    parent?.classList.toggle("has-photo",validImage(item.imageUrl));
+    parent?.classList.toggle("has-photo",hasArtwork);
+    parent?.classList.toggle("is-image-only",imageOnly);
   }
   function shift(step){
     if(products.length<2)return;
@@ -77,6 +95,7 @@ if(merchImage){
     const prev=products[index]?.id;
     products=snapshot.docs.map(d=>({id:d.id,...d.data()})).filter(x=>
       typeof x.name==="string"&&typeof x.description==="string"&&
+      (x.name.trim().length>=2||x.name.trim()==="")&&
       typeof x.imageUrl==="string"&&["soon","available"].includes(x.status)&&
       typeof x.price==="number"&&Number.isInteger(x.sort)&&x.published===true)
       .sort((a,b)=>a.sort-b.sort||collator.compare(a.name,b.name));
