@@ -73,8 +73,8 @@ if(form&&list&&status){
   function edit(item){
     clear();
     el("baliPromoId").value=item.id;
-    el("baliPromoTitle").value=item.title;
-    el("baliPromoDescription").value=item.description;
+    el("baliPromoTitle").value=item.title??"";
+    el("baliPromoDescription").value=item.description??"";
     selectedImage=item.imageUrl.startsWith("data:image/")?item.imageUrl:"";
     urlInput.value=item.imageUrl.startsWith("https://")?item.imageUrl:"";
     showPreview(item.imageUrl);
@@ -134,10 +134,11 @@ if(form&&list&&status){
     const buttonText=el("baliPromoButton").value.trim();
     const sort=Number(el("baliPromoSort").value);
     const published=el("baliPromoPublished").checked;
-    if(title.length<2||title.length>100||!description||description.length>260
+    if((title.length!==0&&title.length<2)||title.length>100||description.length>260
        ||!validImage(imageUrl)||!variants.valid()||!["none","events","menu","contacts"].includes(destination)
-       ||buttonText.length>35||!Number.isInteger(sort)||sort<0||sort>100000){
-      say("Проверьте заголовок, описание, HTTPS-ссылку или картинку, кнопку и сортировку.");return;
+       ||buttonText.length>35||!Number.isInteger(sort)||sort<0||sort>100000||
+       !(title||description||imageUrl)){
+      say("Загрузите изображение или добавьте текст; проверьте адрес изображения, кнопку и сортировку.");return;
     }
     const id=el("baliPromoId").value;
     const ref=id?doc(db,"promotions",id):doc(collection(db,"promotions"));
