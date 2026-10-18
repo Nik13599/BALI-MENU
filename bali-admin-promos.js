@@ -4,7 +4,7 @@ import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.
 import {getFirestore,collection,doc,getDoc,onSnapshot,setDoc,deleteDoc,serverTimestamp}
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {compressImage} from "./image-compressor.js?v=20261018-106";
-import {makeImageVariants} from "./bali-design-variants.js";
+import {makeImageVariants} from "./bali-design-variants.js?v=20261018-106";
 
 const el=id=>document.getElementById(id);
 const form=el("baliPromoForm"),list=el("baliPromoList"),status=el("baliPromoStatus");
