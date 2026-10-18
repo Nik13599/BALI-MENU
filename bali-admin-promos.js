@@ -13,7 +13,15 @@ if(form&&list&&status){
   const auth=getAuth(app),db=getFirestore(app),records=new Map();
   const collator=new Intl.Collator("ru",{numeric:true,sensitivity:"base"});
   let canEdit=false,unsubscribe=null,serial=0,selectedImage="",processing=false,imageSerial=0;
+  let saving=false,saveFeedback="";
   const say=message=>{status.textContent=message;};
+  const writeError=error=>{
+    const code=error?.code||"unknown";
+    if(code==="permission-denied")return "Firebase не разрешил сохранить предложение (permission-denied). Проверьте опубликованные правила Firestore для promotions и активную роль администратора.";
+    if(code==="resource-exhausted"||code==="invalid-argument")return "Ошибка данных ("+code+"). Проверьте размер баннера и допустимые значения полей.";
+    if(code==="unavailable"||code==="deadline-exceeded")return "Нет связи с Firebase ("+code+"). Попробуйте сохранить ещё раз.";
+    return "Ошибка сохранения ("+code+"): "+String(error?.message||"Неизвестная ошибка").slice(0,220);
+  };
   const save=el("baliPromoSave");
   const preview=el("baliPromoImagePreview");
   const urlInput=el("baliPromoImage");
@@ -142,16 +150,17 @@ if(form&&list&&status){
     }
     const id=el("baliPromoId").value;
     const ref=id?doc(db,"promotions",id):doc(collection(db,"promotions"));
-    save.disabled=true;say("Сохраняем предложение...");
+    saving=true;saveFeedback="";save.disabled=true;say("Сохраняем предложение в Firebase…");
     try{
       await setDoc(ref,{title,description,imageUrl,imageTabletUrl:versions.tablet,
         imageMobileUrl:versions.mobile,destination,buttonText,sort,published,updatedAt:serverTimestamp()});
-      clear();say(published?"Предложение опубликовано.":"Черновик сохранён.");
+      clear();saveFeedback=published?"Предложение опубликовано и сохранено в Firebase.":"Черновик сохранён в Firebase.";
+      say(saveFeedback);
     }catch(error){
-      say(error.code==="permission-denied"
-        ?"Нет доступа. Опубликуйте новые firestore.rules и проверьте роль администратора."
-        :"Не удалось сохранить: "+(error.code||"ошибка"));
-    }finally{save.disabled=false;}
+      saveFeedback=writeError(error);
+      say(saveFeedback);
+      console.warn("BALI PRIVILEGE save failed:",error?.code||"unknown");
+    }finally{saving=false;save.disabled=false;}
   });
   onAuthStateChanged(auth,async user=>{
     const run=++serial;
@@ -172,7 +181,7 @@ if(form&&list&&status){
              &&typeof i.buttonText==="string"&&typeof i.published==="boolean"
              &&Number.isInteger(i.sort))records.set(d.id,i);
         }
-        draw();say("Предложений: "+records.size+". Изменения синхронизируются с сайтом.");
+        draw();if(!saving&&!saveFeedback)say("Предложений: "+records.size+". Данные синхронизированы с Firebase.");
       },error=>say(error.code==="permission-denied"
         ?"Нет доступа к promotions. Необходимо опубликовать Firestore Rules."
         :"Не удалось загрузить предложения: "+(error.code||"ошибка")));
