@@ -113,12 +113,14 @@ service cloud.firestore {
         'aboutImageTabletUrl','aboutImageMobileUrl','updatedAt'])
         && d.keys().hasOnly(['aboutTitle','aboutSubtitle','aboutDescription','aboutImageUrl',
           'aboutImageTabletUrl','aboutImageMobileUrl','updatedAt'])
-        && d.aboutTitle is string && d.aboutTitle.size() >= 1 && d.aboutTitle.size() <= 50
-        && d.aboutSubtitle is string && d.aboutSubtitle.size() >= 1 && d.aboutSubtitle.size() <= 85
-        && d.aboutDescription is string && d.aboutDescription.size() >= 1 && d.aboutDescription.size() <= 450
+        && d.aboutTitle is string && d.aboutTitle.size() <= 50
+        && d.aboutSubtitle is string && d.aboutSubtitle.size() <= 85
+        && d.aboutDescription is string && d.aboutDescription.size() <= 450
         && validDesignImage(d.aboutImageUrl, 125000)
         && validDesignImage(d.aboutImageTabletUrl, 125000)
         && validDesignImage(d.aboutImageMobileUrl, 125000)
+        && (d.aboutTitle.size() > 0 || d.aboutSubtitle.size() > 0 ||
+          d.aboutDescription.size() > 0 || d.aboutImageUrl.size() > 0)
         && d.updatedAt == request.time;
     }
     function validMerch(d) {
@@ -126,7 +128,7 @@ service cloud.firestore {
         'status','price','sort','published','updatedAt'])
         && d.keys().hasOnly(['name','description','imageUrl','imageTabletUrl','imageMobileUrl',
           'status','price','sort','published','updatedAt'])
-        && d.name is string && d.name.size() >= 2 && d.name.size() <= 95
+        && d.name is string && (d.name.size() == 0 || (d.name.size() >= 2 && d.name.size() <= 95))
         && d.description is string && d.description.size() <= 180
         && validDesignImage(d.imageUrl, 125000)
         && validDesignImage(d.imageTabletUrl, 125000)
@@ -136,6 +138,7 @@ service cloud.firestore {
         && (d.status == 'soon' || d.price > 0)
         && d.sort is int && d.sort >= 0 && d.sort <= 100000
         && d.published is bool
+        && (d.name.size() > 0 || d.description.size() > 0 || d.imageUrl.size() > 0)
         && d.updatedAt == request.time;
     }
 
@@ -234,8 +237,8 @@ service cloud.firestore {
     function validPromotion(data) {
       return data.keys().hasAll(['title','description','imageUrl','imageTabletUrl','imageMobileUrl','destination','buttonText','sort','published','updatedAt'])
         && data.keys().hasOnly(['title','description','imageUrl','imageTabletUrl','imageMobileUrl','destination','buttonText','sort','published','updatedAt'])
-        && data.title is string && data.title.size() >= 2 && data.title.size() <= 100
-        && data.description is string && data.description.size() >= 1 && data.description.size() <= 260
+        && data.title is string && (data.title.size() == 0 || (data.title.size() >= 2 && data.title.size() <= 100))
+        && data.description is string && data.description.size() <= 260
         && validDesignImage(data.imageUrl, 155000)
         && validDesignImage(data.imageTabletUrl, 155000)
         && validDesignImage(data.imageMobileUrl, 155000)
@@ -243,6 +246,7 @@ service cloud.firestore {
         && data.buttonText is string && data.buttonText.size() <= 35
         && data.sort is int && data.sort >= 0 && data.sort <= 100000
         && data.published is bool
+        && (data.title.size() > 0 || data.description.size() > 0 || data.imageUrl.size() > 0)
         && data.updatedAt == request.time;
     }
     match /promotions/{promotionId} {
