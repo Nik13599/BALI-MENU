@@ -46,7 +46,7 @@ body.bali-guest-theme #homeSection .bali-pc-hero.has-artwork .bali-pc-hero-conte
   z-index:2 !important;
   position:relative !important;
 }
-body.bali-guest-theme #homeSection .bali-pc-hero.is-image-only .bali-pc-hero-content:has(#baliPcOfferAction[hidden]) {
+body.bali-guest-theme #homeSection .bali-pc-hero.is-image-only.has-no-action .bali-pc-hero-content {
   display:none !important;
 }
 body.bali-guest-theme #homeSection .bali-pc-hero.has-artwork .bali-pc-hero-controls {
@@ -111,5 +111,9 @@ body.bali-guest-theme #homeSection #baliPcMerchState[hidden],
 body.bali-guest-theme #homeSection #baliPcMerchDescription[hidden],
 body.bali-guest-theme #homeSection #baliPcOfferTitle[hidden],
 body.bali-guest-theme #homeSection #baliPcOfferDescription[hidden] {
+  display:none !important;
+}
+
+body.bali-guest-theme #homeSection .bali-pc-hero .bali-pc-hero-controls[hidden] {
   display:none !important;
 }
