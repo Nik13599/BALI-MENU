@@ -278,3 +278,30 @@ body[data-bali-admin-section="appearance"] .admin-stats{display:none!important}
 @media print {
   .admin-overview,.admin-section-guide,.admin-return-home{display:none!important}
 }
+
+/* Image-only upload workflow: keep the one-click control distinct from Save. */
+body.bali-admin-theme .bali-clear-artwork-copy {
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  width:fit-content;
+  max-width:100%;
+  min-height:39px;
+  padding:9px 13px;
+  border:1px solid rgba(185,255,81,.28);
+  border-radius:10px;
+  background:rgba(185,255,81,.08);
+  color:#d7f9bb;
+  cursor:pointer;
+  font:700 12px/1.5 Manrope,Inter,sans-serif;
+  white-space:normal;
+  text-align:center;
+}
+body.bali-admin-theme .bali-clear-artwork-copy:hover:not(:disabled){
+  background:rgba(185,255,81,.15);
+  border-color:rgba(185,255,81,.55);
+}
+body.bali-admin-theme .bali-clear-artwork-copy:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
