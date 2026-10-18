@@ -52,7 +52,18 @@ export async function compressImage(file,kind="product") {
     canvas.height=Math.round(width/ratio);
     const ctx=canvas.getContext("2d",{alpha:false});
     if(!ctx)throw new Error("Браузер не смог обработать фотографию.");
-    ctx.drawImage(image,sx,sy,cropWidth,cropHeight,0,0,canvas.width,canvas.height);
+    if(design&&kind!=="design-icon"){
+      // Creative posters can contain essential text and logos near the edges.
+      // Fit all their pixels into the target aspect ratio instead of cropping.
+      const scale=Math.min(canvas.width/iw,canvas.height/ih);
+      const drawWidth=iw*scale,drawHeight=ih*scale;
+      ctx.fillStyle="#080b10";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(image,0,0,iw,ih,
+        (canvas.width-drawWidth)/2,(canvas.height-drawHeight)/2,drawWidth,drawHeight);
+    }else{
+      ctx.drawImage(image,sx,sy,cropWidth,cropHeight,0,0,canvas.width,canvas.height);
+    }
     for(const quality of [.82,.68,.52,.38]){
       const encoded=canvas.toDataURL("image/webp",quality);
       if(!encoded.startsWith("data:image/webp;base64,"))
