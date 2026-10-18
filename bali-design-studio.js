@@ -15,7 +15,7 @@
     phone:{width:390,height:844,label:"Телефон"}
   };
   const labels={
-    privilege:["BALI PRIVILEGE","Слайды, предложение клуба, кнопка, изображения 1600×600 / 1200×675 / 750×1000."],
+    privilege:["BALI PRIVILEGE","Загрузите макет с пропорциями, указанными по фактическому размеру блока ниже. Размер зависит от экрана."],
     about:["О клубе BALI","Название, описание, фото 900×1400 / 1200×900 / 900×1200."],
     merch:["BALI MERCH","Несколько товаров, статусы продажи, цены и адаптивные фотографии."],
     navigation:["Логотип и навигация","Тексты пунктов и собственные значки для кнопок."],
@@ -32,6 +32,37 @@
   const pages=[...panel.querySelectorAll("[data-studio-page]")];
   const status=$("baliStudioLoadStatus");
   const label=$("baliStudioViewportLabel");
+  const heroSizing=$("baliPromoRealSize");
+  let heroSizeObserver=null;
+  function reportArtworkSize(){
+    if(!heroSizing)return;
+    let liveDoc;
+    try{liveDoc=frame.contentDocument;}catch{return;}
+    const element=liveDoc?.querySelector(".bali-pc-hero");
+    const bounds=element?.getBoundingClientRect();
+    if(!bounds||bounds.width<2||bounds.height<2){
+      heroSizing.textContent=device==="desktop"
+        ?"Ждём загрузку живого предпросмотра ПК, чтобы измерить баннер…"
+        :"На "+(device==="tablet"?"планшете":"телефоне")+" этот баннер в текущей компоновке не показывается. Его размер здесь не задаётся.";
+      return;
+    }
+    const width=Math.round(bounds.width);
+    const height=Math.round(bounds.height);
+    // 2x source pixels for sharp raster artwork, with the exact live aspect.
+    const ratio=(width/height).toFixed(3);
+    heroSizing.textContent="Размер блока в предпросмотре "+devices[device].width+"×"+devices[device].height+
+      ": "+width+" × "+height+" px (пропорция "+ratio+":1). "+
+      "Готовьте баннер точно "+width*2+" × "+height*2+" px для этого экрана (2× для чёткости). "+
+      "На других мониторах пропорции немного меняются — сайт вписывает изображение без обрезки.";
+    const sample=panel.querySelector(".bali-promo-editor .bali-design-spec-art-hero");
+    if(sample){
+      sample.style.aspectRatio=width+" / "+height;
+      const name=sample.querySelector("span");
+      if(name)name.textContent=width+" × "+height+" px";
+    }
+    const preview=$("baliPromoImagePreview");
+    if(preview)preview.style.aspectRatio=width+" / "+height;
+  }
   const focusSelectedInFrame=()=>{
     let doc;
     try{doc=frame.contentDocument;}catch{return;}
@@ -67,6 +98,7 @@
     frame.style.height=height+"px";
     frame.style.transform="scale("+scale+")";
     label.textContent=devices[device].label+" · "+width+" × "+height+" px · "+Math.round(scale*100)+"%";
+    requestAnimationFrame(reportArtworkSize);
   }
   function chooseDevice(name){
     if(!devices[name])return;
@@ -121,6 +153,13 @@
       return;
     }
     if(!doc)return;
+    heroSizeObserver?.disconnect();
+    const liveHero=doc.querySelector(".bali-pc-hero");
+    if(liveHero&&typeof ResizeObserver!=="undefined"){
+      heroSizeObserver=new ResizeObserver(reportArtworkSize);
+      heroSizeObserver.observe(liveHero);
+    }
+    requestAnimationFrame(reportArtworkSize);
     if(doc.documentElement.dataset.baliStudioCapture)return;
     doc.documentElement.dataset.baliStudioCapture="true";
     const style=doc.createElement("style");
