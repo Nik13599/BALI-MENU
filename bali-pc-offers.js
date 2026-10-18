@@ -25,7 +25,7 @@ if(image&&title&&description&&counter&&action&&hero){
     const tablet=validImage(offer?.imageTabletUrl)?offer.imageTabletUrl:primary;
     const mobile=validImage(offer?.imageMobileUrl)?offer.imageMobileUrl:primary;
     if(primary){
-      image.src=primary;image.alt="Иллюстрация к предложению «"+offer.title+"»";
+      image.src=primary;image.alt=offer?.title?"Иллюстрация к предложению «"+offer.title+"»":"Баннер BALI PRIVILEGE";
     }else{image.removeAttribute("src");image.alt="";}
     if(tabletSource){
       if(tablet)tabletSource.srcset=tablet;
@@ -37,7 +37,7 @@ if(image&&title&&description&&counter&&action&&hero){
     }
   }
   function validOffer(v){
-    return typeof v?.title==="string"&&v.title.trim().length>=2&&
+    return typeof v?.title==="string"&&(v.title.trim().length===0||v.title.trim().length>=2)&&
       typeof v.description==="string"&&typeof v.imageUrl==="string"&&
       ["none","menu","events","contacts"].includes(v.destination)&&
       typeof v.buttonText==="string"&&Number.isInteger(v.sort)&&v.published===true;
@@ -47,13 +47,21 @@ if(image&&title&&description&&counter&&action&&hero){
     if(!offer){
       setPoster(null);
       title.textContent="BALI PRIVILEGE";
+      title.hidden=false;
       description.textContent=fallbackText;
+      description.hidden=false;
+      hero.classList.remove("has-artwork","is-image-only");
       counter.textContent="— / —";
       action.hidden=true;
     }else{
       setPoster(offer);
+      const hasArtwork=validImage(offer.imageUrl);
       title.textContent=offer.title;
+      title.hidden=!offer.title.trim();
       description.textContent=offer.description;
+      description.hidden=!offer.description.trim();
+      hero.classList.toggle("has-artwork",hasArtwork);
+      hero.classList.toggle("is-image-only",hasArtwork&&!offer.title.trim()&&!offer.description.trim());
       counter.textContent=String(index+1).padStart(2,"0")+" / "+String(offers.length).padStart(2,"0");
       action.hidden=offer.destination==="none";
       if(!action.hidden)action.firstChild.textContent=offer.buttonText||"Подробнее ";
