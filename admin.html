@@ -536,6 +536,7 @@
             <label>Название блока (необязательно)<input id="baliHomeAboutTitle" maxlength="50" value="О клубе" placeholder="Оставьте пустым, если надпись уже на изображении"></label>
             <label>Подпись (необязательно)<input id="baliHomeAboutSubtitle" maxlength="85" value="Атмосфера, музыка, люди" placeholder="Можно оставить пустой"></label>
             <label>Текст внутри раскрывающейся карточки (необязательно)<textarea id="baliHomeAboutDescription" rows="3" maxlength="450" placeholder="Можно оставить пустым">Ночной клуб BALI в Минске. Музыка, события и встречи в одной атмосфере.</textarea></label>
+            <button type="button" class="bali-clear-artwork-copy" data-bali-clear-artwork-copy="about">Очистить все надписи — оставить только изображение</button>
             <div class="bali-design-upload">
               <label>Фото «О клубе» для ПК — 900×1400<input id="baliHomeAboutFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
               <div class="bali-design-image-preview bali-design-image-preview-square" id="baliHomeAboutPreview"><span>Фото ПК 9:14</span></div>
@@ -574,6 +575,7 @@
             <input type="hidden" id="baliHomeMerchId">
             <label>Название товара (необязательно при наличии фото)<input id="baliHomeMerchName" minlength="2" maxlength="95" placeholder="Название можно разместить на фотографии"></label>
             <label>Описание (необязательно)<textarea id="baliHomeMerchDescription" rows="2" maxlength="180" placeholder="Коротко о товаре"></textarea></label>
+            <button type="button" class="bali-clear-artwork-copy" data-bali-clear-artwork-copy="merch">Очистить надписи — оставить только фотографию</button>
             <div class="bali-design-form-grid">
               <label>Статус
                 <select id="baliHomeMerchStatus">
@@ -629,6 +631,7 @@
             <input type="hidden" id="baliPromoId">
             <label>Заголовок (необязательно при наличии баннера)<input id="baliPromoTitle" minlength="2" maxlength="100" placeholder="Если заголовок уже на баннере — не заполняйте"></label>
             <label>Описание (необязательно)<textarea id="baliPromoDescription" maxlength="260" rows="3" placeholder="Если текст уже на баннере — не заполняйте"></textarea></label>
+            <button type="button" class="bali-clear-artwork-copy" data-bali-clear-artwork-copy="privilege">Очистить заголовок и описание — оставить только баннер</button>
             <div class="bali-design-upload">
               <label>Баннер для ПК — 1600×600<input id="baliPromoImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
               <div class="bali-design-image-preview" id="baliPromoImagePreview" aria-label="Предпросмотр баннера"><span>Предпросмотр баннера 8:3</span></div>
