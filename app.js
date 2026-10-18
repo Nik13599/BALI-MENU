@@ -293,7 +293,31 @@ window.addEventListener('bali:menu', ({ detail }) => {
 });
 window.addEventListener('bali:menu-error', () => showError('Не удалось загрузить меню из Firestore. Проверьте правила доступа.'));
 window.addEventListener('bali:events', ({ detail }) => {
-    availableEvents = detail.events;
+    const incoming=detail.events||[];
+    // An RSVP transaction changes interestCount, not the poster or event data.
+    // Keep the existing carousels mounted so the heart responds without a jump.
+    const unchangedPosters=availableEvents.length===incoming.length&&
+        availableEvents.every((previous,i)=>{
+            const next=incoming[i];
+            if(previous.date!==next?.date)return false;
+            const publicFields=({interestCount,...other})=>other;
+            return JSON.stringify(publicFields(previous))===JSON.stringify(publicFields(next));
+        });
+    availableEvents=incoming;
+    if(unchangedPosters){
+        const counts=new Map(incoming.map(event=>[event.date,
+            Number.isSafeInteger(event.interestCount)&&event.interestCount>=0?event.interestCount:0]));
+        for(const [selector,countClass] of [
+            ["#homeEventCarousel .bali-home-event-card[data-event-date]",".bali-home-event-count"],
+            ["#eventsGrid .event-card[data-event-date]",".event-interest-count"]
+        ]){
+            for(const card of document.querySelectorAll(selector)){
+                const label=card.querySelector(countClass);
+                if(label)label.textContent="Хочет пойти: "+(counts.get(card.dataset.eventDate)||0);
+            }
+        }
+        return;
+    }
     populateEvents();
     renderUpcomingEvents();
     updateHomeNextEvent();
