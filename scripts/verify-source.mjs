@@ -150,7 +150,7 @@ assert(admin.includes('bali-design-studio.css?v=20261017-84') &&
   admin.includes('data-studio-device="tablet"') &&
   admin.includes('data-studio-device="phone"') &&
   admin.includes('data-site-field="menuPageTitle"') &&
-  /bali-site-content\\.js\\?v=20261018-\\d+/.test(html) &&
+  html.includes('bali-site-content.js?v=20261018-') &&
   liveStudio.includes('frame.contentDocument') &&
   liveStudio.includes('selectionFrom(target)') &&
   liveStudio.includes('fit()') &&
