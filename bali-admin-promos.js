@@ -85,7 +85,7 @@ if(form&&list&&status){
     el("baliPromoPublished").checked=item.published;
     save.textContent="Сохранить изменения";
     form.scrollIntoView({behavior:"smooth",block:"start"});
-    say("Редактирование: "+item.title);
+    say("Редактирование: "+(item.title||"Баннер без заголовка"));
   }
   function draw(){
     list.replaceChildren();
@@ -102,15 +102,15 @@ if(form&&list&&status){
         row.append(picture);
       }
       const info=node("div","bali-promo-copy");
-      info.append(node("strong","",item.title),
+      info.append(node("strong","",item.title||"Баннер без заголовка"),
         node("small","",item.published?"Опубликовано":"Черновик"),
-        node("p","",item.description));
+        ...(item.description?[node("p","",item.description)]:[]));
       const controls=node("div","bali-promo-actions");
       const editButton=node("button","","Изменить");editButton.type="button";
       editButton.addEventListener("click",()=>edit(item));
       const remove=node("button","","Удалить");remove.type="button";
       remove.addEventListener("click",async()=>{
-        if(!canEdit||!confirm("Удалить предложение «"+item.title+"»?"))return;
+        if(!canEdit||!confirm("Удалить предложение «"+(item.title||"Баннер без заголовка")+"»?"))return;
         remove.disabled=true;
         try{
           await deleteDoc(doc(db,"promotions",item.id));
