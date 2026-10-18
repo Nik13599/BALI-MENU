@@ -18,6 +18,7 @@ const baliMenuSectionKeys=["kitchen","bar","hookah","tea"];
 let baliVisibleMenuSections=Object.fromEntries(baliMenuSectionKeys.map(key=>[key,true]));
 let baliMenuSearchText = '';
 let availableEvents = [];
+let receivedEventSnapshot=false;
 let guestInterestDates=new Set();
 const pendingInterestDates=new Set();
 let showOnlyPlannedEvents=false;
@@ -296,7 +297,7 @@ window.addEventListener('bali:events', ({ detail }) => {
     const incoming=detail.events||[];
     // An RSVP transaction changes interestCount, not the poster or event data.
     // Keep the existing carousels mounted so the heart responds without a jump.
-    const unchangedPosters=availableEvents.length===incoming.length&&
+    const unchangedPosters=receivedEventSnapshot&&availableEvents.length===incoming.length&&
         availableEvents.every((previous,i)=>{
             const next=incoming[i];
             if(previous.date!==next?.date)return false;
@@ -304,6 +305,7 @@ window.addEventListener('bali:events', ({ detail }) => {
             return JSON.stringify(publicFields(previous))===JSON.stringify(publicFields(next));
         });
     availableEvents=incoming;
+    receivedEventSnapshot=true;
     if(unchangedPosters){
         const counts=new Map(incoming.map(event=>[event.date,
             Number.isSafeInteger(event.interestCount)&&event.interestCount>=0?event.interestCount:0]));
