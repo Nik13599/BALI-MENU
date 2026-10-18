@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="bali-design-studio.css?v=20261017-84">
   <link rel="stylesheet" href="bali-home-placeholder-admin.css?v=20261018-93">
   <link rel="stylesheet" href="bali-menu-details.css?v=20261018-97">
+  <link rel="stylesheet" href="bali-admin-clarity.css?v=20261018-1">
 
 </head>
 <body class="bali-admin-theme">
@@ -42,48 +43,53 @@
     <p id="loginIdentity" class="hint" role="status"></p>
     <p id="adminUid" class="hint"></p>
     <p id="loginStatus" class="status" role="status" aria-live="polite"></p>
-    <p class="login-version">BALI MENU · версия интерфейса 14</p>
+    <p class="login-version">BALI MENU · защищённый вход сотрудников</p>
   </section>
 
   <section id="adminView" class="admin-shell" hidden>
     <aside class="admin-sidebar" aria-label="Навигация по панели">
-      <div class="sidebar-caption">РАБОЧЕЕ ПРОСТРАНСТВО</div>
+      <div class="sidebar-caption">BALI / УПРАВЛЕНИЕ</div>
       <nav class="admin-tabs" aria-label="Разделы">
-        <button type="button" class="admin-tab active" data-admin-tab="orders" aria-selected="true" aria-controls="adminOrdersPanel">
+        <div class="admin-nav-group" role="presentation">Начало работы</div>
+        <button type="button" class="admin-tab active" data-admin-tab="overview" aria-selected="true" aria-controls="adminOverviewPanel">
+          <span class="tab-icon" aria-hidden="true">⌂</span><span>Обзор</span>
+        </button>
+        <div class="admin-nav-group" role="presentation">Работа с гостями</div>
+        <button type="button" class="admin-tab" data-admin-tab="orders" aria-selected="false" aria-controls="adminOrdersPanel">
           <span class="tab-icon" aria-hidden="true">◈</span><span>Предзаказы</span>
           <span class="tab-count" id="sidebarPendingCount" hidden>0</span>
         </button>
         <button type="button" class="admin-tab" data-admin-tab="clients" aria-selected="false" aria-controls="adminClientsPanel">
-          <span class="tab-icon" aria-hidden="true">♙</span><span>Клиенты</span>
+          <span class="tab-icon" aria-hidden="true">♙</span><span>Гости</span>
         </button>
+        <div class="admin-nav-group" role="presentation">Наполнение сайта</div>
         <button type="button" class="admin-tab" data-admin-tab="menu" aria-selected="false" aria-controls="adminMenuPanel">
           <span class="tab-icon" aria-hidden="true">▥</span><span>Меню и цены</span>
         </button>
         <button type="button" class="admin-tab" data-admin-tab="events" aria-selected="false" aria-controls="adminEventsPanel">
           <span class="tab-icon" aria-hidden="true">▤</span><span>Мероприятия</span>
         </button>
+        <div class="admin-nav-group" role="presentation">Оформление</div>
         <button type="button" class="admin-tab" data-admin-tab="design" aria-selected="false" aria-controls="adminDesignPanel">
-          <span class="tab-icon" aria-hidden="true">▣</span><span>Дизайн главной</span>
+          <span class="tab-icon" aria-hidden="true">▣</span><span>Дизайн сайта</span>
         </button>
         <button type="button" class="admin-tab" data-admin-tab="appearance" aria-selected="false" aria-controls="adminAppearancePanel">
-          <span class="tab-icon" aria-hidden="true">✦</span><span>Цветовая тема</span>
+          <span class="tab-icon" aria-hidden="true">✦</span><span>Цвета сайта</span>
         </button>
       </nav>
-      <div class="sidebar-note">
-        <span class="online-dot" aria-hidden="true"></span>
-        <span>Данные обновляются через Firebase</span>
-      </div>
+      <p class="sidebar-note">Сохранённые изменения каталога и настроек отображаются на сайте после обновления данных Firebase. Предзаказы включаются отдельно.</p>
     </aside>
 
     <div class="admin-main">
       <header class="admin-toolbar">
         <div class="toolbar-title">
           <div class="eyebrow">BALI / ПАНЕЛЬ УПРАВЛЕНИЯ</div>
-          <h1 id="adminPageTitle">Предзаказы</h1>
-          <p id="adminPageDescription">Новые заявки, подтверждения и печать заказов</p>
+          <h1 id="adminPageTitle">Обзор BALI</h1>
+          <p id="adminPageDescription">Быстрые действия и понятные настройки заведения</p>
         </div>
         <div class="toolbar-account">
           <span id="adminEmail" class="admin-email"></span>
+          <button type="button" id="adminReturnOverview" class="admin-return-home" hidden>← Обзор</button>
           <button type="button" id="adminSignOut" class="logout-btn">Выйти</button>
         </div>
       </header>
@@ -110,6 +116,72 @@
           <small>Доступные даты</small>
         </div>
       </div>
+
+      <section class="admin-panel admin-overview" id="adminOverviewPanel" data-admin-panel="overview" aria-labelledby="overviewHeading">
+        <div class="admin-overview-welcome">
+          <div class="eyebrow">БЫСТРЫЙ СТАРТ</div>
+          <h2 id="overviewHeading">Что хотите сделать?</h2>
+          <p>Выберите задачу — мы откроем нужный редактор. Здесь ничего не изменится, пока вы не сохраните данные в форме.</p>
+        </div>
+        <div class="admin-quick-grid" aria-label="Быстрые действия">
+          <article class="admin-quick-card">
+            <div class="admin-quick-symbol" aria-hidden="true">◈</div>
+            <h3>Предзаказы</h3>
+            <p>Очередь гостей, статусы, даты и доступные действия с заказами.</p>
+            <button type="button" data-admin-go="orders">Открыть предзаказы <span aria-hidden="true">→</span></button>
+          </article>
+          <article class="admin-quick-card admin-quick-card-wide">
+            <div class="admin-quick-symbol" aria-hidden="true">▥</div>
+            <h3>Меню и цены</h3>
+            <p>Четыре независимые карты. Выберите, какие позиции нужно добавить или изменить.</p>
+            <div class="admin-quick-chips" role="group" aria-label="Редакторы карт">
+              <button type="button" data-admin-go="menu" data-admin-menu="kitchen">Кухня →</button>
+              <button type="button" data-admin-go="menu" data-admin-menu="bar">Бар →</button>
+              <button type="button" data-admin-go="menu" data-admin-menu="hookah">Кальяны →</button>
+              <button type="button" data-admin-go="menu" data-admin-menu="tea">Чай →</button>
+            </div>
+          </article>
+          <article class="admin-quick-card">
+            <div class="admin-quick-symbol" aria-hidden="true">▤</div>
+            <h3>Мероприятия</h3>
+            <p>Новая дата, афиша, время события и настройки предзаказов.</p>
+            <button type="button" data-admin-go="events">Открыть календарь <span aria-hidden="true">→</span></button>
+          </article>
+          <article class="admin-quick-card">
+            <div class="admin-quick-symbol" aria-hidden="true">♙</div>
+            <h3>Гости</h3>
+            <p>Поиск зарегистрированных гостей и просмотр доступной истории.</p>
+            <button type="button" data-admin-go="clients">Открыть гостей <span aria-hidden="true">→</span></button>
+          </article>
+          <article class="admin-quick-card">
+            <div class="admin-quick-symbol" aria-hidden="true">▣</div>
+            <h3>Дизайн сайта</h3>
+            <p>Главная страница, баннеры, фотографии и предпросмотр по устройствам.</p>
+            <button type="button" data-admin-go="design">Настроить дизайн <span aria-hidden="true">→</span></button>
+          </article>
+          <article class="admin-quick-card">
+            <div class="admin-quick-symbol" aria-hidden="true">✦</div>
+            <h3>Цвета сайта</h3>
+            <p>Готовые темы, ручные оттенки и предпросмотр до публикации.</p>
+            <button type="button" data-admin-go="appearance">Выбрать цвета <span aria-hidden="true">→</span></button>
+          </article>
+        </div>
+        <div class="admin-workflow">
+          <h3>Как работать с настройками</h3>
+          <ol>
+            <li><strong>Откройте раздел.</strong> Выберите нужную карту, мероприятие или блок дизайна.</li>
+            <li><strong>Внесите изменения.</strong> Заполните поля или выберите существующую запись.</li>
+            <li><strong>Сохраните.</strong> Дождитесь сообщения о результате.</li>
+            <li><strong>Проверьте сайт.</strong> Откройте гостевую версию в соседней вкладке.</li>
+          </ol>
+          <a href="index.html" target="_blank" rel="noopener noreferrer" class="admin-preview-link">Открыть сайт для проверки ↗</a>
+        </div>
+      </section>
+
+      <details id="adminSectionGuide" class="admin-section-guide" hidden>
+        <summary><span aria-hidden="true">?</span> Как пользоваться этим разделом</summary>
+        <div id="adminSectionGuideText" class="admin-section-guide-text"></div>
+      </details>
 
       <section class="admin-panel" id="adminOrdersPanel" data-admin-panel="orders" aria-labelledby="ordersHeading">
         <div class="section-heading">
