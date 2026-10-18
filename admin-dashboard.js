@@ -4,12 +4,46 @@
   "use strict";
   const $ = id => document.getElementById(id);
   const meta = {
-    orders: ["Предзаказы", "Новые заявки, подтверждения и печать заказов"],
-    clients: ["Клиенты", "Профили гостей и история их предзаказов"],
-    menu: ["Меню и цены", "Каталог, доступность блюд и актуальные цены"],
-    events: ["Мероприятия", "Даты, названия и время приёма предзаказов"],
-    design: ["Дизайн главной", "Блок о клубе, несколько товаров BALI MERCH и BALI PRIVILEGE с макетами по устройствам"],
-    appearance: ["Цветовая тема", "Темы и ручные акцентные цвета всего приложения"]
+    overview: ["Обзор BALI", "Быстрый доступ ко всем задачам заведения"],
+    orders: ["Предзаказы", "Очередь, статусы заказов и доступные действия"],
+    clients: ["Гости", "Поиск зарегистрированных гостей и история заказов"],
+    menu: ["Меню и цены", "Четыре отдельные карты: кухня, бар, кальяны и чай"],
+    events: ["Мероприятия", "Даты, афиши, расписание и приём предзаказов"],
+    design: ["Дизайн сайта", "Изображения и тексты, адаптация для ПК, планшета и телефона"],
+    appearance: ["Цвета сайта", "Готовые темы и цвета гостевого интерфейса"]
+  };
+  const sectionHelp = {
+    orders: [
+      "Выберите дату мероприятия в фильтре или оставьте «Все даты».",
+      "Откройте заявку из очереди и выполните доступное действие; сначала проверьте данные гостя.",
+      "Если заказов нет, проверьте статус подключения приёма заказов. Данные нельзя создавать здесь вручную."
+    ],
+    clients: [
+      "Найдите гостя через поиск по имени, телефону или email.",
+      "Откройте карточку для просмотра доступной истории его заказов.",
+      "Профили доступны только уполномоченным администраторам."
+    ],
+    menu: [
+      "Выберите сверху карту: кухня, бар, кальяны или чай.",
+      "Для кухни сначала проверьте категории, затем добавляйте блюда и стоимость.",
+      "Для остальных карт указывайте категорию, название, объём и цену. Не используйте фиктивные цены.",
+      "Видимость раздела для гостей регулируется отдельно. Бар, кальяны и чай не добавляются в корзину предзаказа."
+    ],
+    events: [
+      "Выберите существующую дату справа или нажмите «Новая дата».",
+      "Укажите дату, название, время, афишу и при необходимости время закрытия предзаказов.",
+      "Сохраните мероприятие и проверьте его на публичном календаре."
+    ],
+    design: [
+      "Переключайте ПК, планшет и телефон в окне предпросмотра.",
+      "Выберите блок главной страницы и отредактируйте соответствующие поля.",
+      "Сохраните изменения в самом редакторе. Кнопка «Открыть сайт» нужна для проверки."
+    ],
+    appearance: [
+      "Выберите готовую тему или задайте собственные цвета.",
+      "Проверьте контраст и видимость текста в предпросмотре.",
+      "Примените изменения через кнопку сохранения темы."
+    ]
   };
   const tabs = [...document.querySelectorAll("[data-admin-tab]")];
   const panels = [...document.querySelectorAll("[data-admin-panel]")];
@@ -22,6 +56,28 @@
       tab.tabIndex = active ? 0 : -1;
     }
     for (const panel of panels) panel.hidden = panel.dataset.adminPanel !== name;
+    const guide=$("adminSectionGuide");
+    const guideText=$("adminSectionGuideText");
+    if (guide) {
+      guide.hidden = name === "overview";
+      guide.open = false;
+    }
+    if (guideText) {
+      guideText.replaceChildren();
+      const steps=sectionHelp[name];
+      if (steps) {
+        const list=document.createElement("ol");
+        for (const step of steps) {
+          const li=document.createElement("li");
+          li.textContent=step;
+          list.append(li);
+        }
+        guideText.append(list);
+      }
+    }
+    const back=$("adminReturnOverview");
+    if (back) back.hidden=name === "overview";
+
     // Statistics remain on operational pages, but not in the visual designer.
     document.body.dataset.baliAdminSection=name;
     window.dispatchEvent(new CustomEvent("bali:admin:section",{detail:{section:name}}));
@@ -45,7 +101,22 @@
     });
   }
   panels.forEach(panel=>panel.setAttribute("role","tabpanel"));
-  activate("orders",false);
+  activate("overview",false);
+
+  $("adminReturnOverview")?.addEventListener("click",()=>activate("overview"));
+  document.querySelectorAll("[data-admin-go]").forEach(button=>{
+    button.addEventListener("click",()=>{
+      const target=button.dataset.adminGo;
+      if (!meta[target]) return;
+      activate(target);
+      const catalog=button.dataset.adminMenu;
+      if (target==="menu" && catalog) {
+        const tab=document.querySelector('[data-bali-catalog-tab="'+catalog+'"]');
+        tab?.click();
+      }
+    });
+  });
+
 
   function openEditor(section,card,reset,focus) {
     activate(section,false);
