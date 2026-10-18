@@ -334,3 +334,30 @@ body.bali-admin-theme .bali-promo-editor .bali-design-spec-art-hero>span {
   overflow-wrap:anywhere;
   font-size:12px;
 }
+
+
+body.bali-admin-theme .bali-promo-viewport-choice {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+  margin:10px 0 4px;
+  color:#dbe5dd;
+  font:650 12px/1.4 Manrope,Inter,sans-serif;
+}
+body.bali-admin-theme #baliPromoViewportPreset {
+  flex:1 1 245px;
+  max-width:370px;
+  min-height:40px;
+  padding:8px 12px;
+  border:1px solid #46564d;
+  border-radius:10px;
+  background:#192326;
+  color:#eef6e7;
+  font:600 12px/1.4 Manrope,Inter,sans-serif;
+  cursor:pointer;
+}
+body.bali-admin-theme #baliPromoViewportPreset:focus-visible {
+  outline:2px solid var(--bt-primary,#b9ff51);
+  outline-offset:2px;
+}
