@@ -123,6 +123,20 @@ assert(html.includes('id="baliSharedMenuControls"') &&
   !barPublic.includes('addToCart(') &&
   !source("bali-extra-menus.js").includes('addToCart('),
   "Every device and all four menu maps must share identical category/search layout without food preorders in other maps");
+const adminOverview=source("admin-dashboard.js");
+const adminClarity=source("bali-admin-clarity.css");
+assert(admin.includes('id="adminOverviewPanel"') &&
+  admin.includes('data-admin-tab="overview"') &&
+  ["orders","clients","menu","events","design","appearance"].every(section=>
+    admin.includes('data-admin-tab="'+section+'"')) &&
+  ["kitchen","bar","hookah","tea"].every(mode=>
+    admin.includes('data-admin-menu="'+mode+'"')) &&
+  admin.includes('bali-admin-clarity.css?v=20261018-1') &&
+  admin.includes('admin-dashboard.js?v=20261018-103') &&
+  adminOverview.includes('activate("overview",false)') &&
+  adminOverview.includes('[data-admin-go]') &&
+  adminClarity.includes('.admin-quick-grid'),
+  "Admin overview must expose all live editors without changing catalog data or permissions");
 const liveStudio=source("bali-design-studio.js");
 const studioCss=source("bali-design-studio.css");
 const siteAdmin=source("bali-site-content-admin.js");
@@ -136,7 +150,7 @@ assert(admin.includes('bali-design-studio.css?v=20261017-84') &&
   admin.includes('data-studio-device="tablet"') &&
   admin.includes('data-studio-device="phone"') &&
   admin.includes('data-site-field="menuPageTitle"') &&
-  html.includes('bali-site-content.js?v=20261018-95') &&
+  /bali-site-content\\.js\\?v=20261018-\\d+/.test(html) &&
   liveStudio.includes('frame.contentDocument') &&
   liveStudio.includes('selectionFrom(target)') &&
   liveStudio.includes('fit()') &&
