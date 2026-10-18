@@ -50,10 +50,16 @@
     const height=Math.round(bounds.height);
     // 2x source pixels for sharp raster artwork, with the exact live aspect.
     const ratio=(width/height).toFixed(3);
+    const source=liveDoc.querySelector("#baliPcHeroPoster");
+    const sourceRatio=source?.naturalWidth>0&&source?.naturalHeight>0
+      ?source.naturalWidth/source.naturalHeight:null;
+    const mismatch=sourceRatio&&Math.abs(sourceRatio-width/height)>0.06
+      ?" ВНИМАНИЕ: текущий загруженный баннер имеет пропорции "+sourceRatio.toFixed(3)+":1 — не как этот блок. Перезагрузите оригинал, подготовленный по размерам выше."
+      :"";
     heroSizing.textContent="Размер блока в предпросмотре "+devices[device].width+"×"+devices[device].height+
       ": "+width+" × "+height+" px (пропорция "+ratio+":1). "+
       "Готовьте баннер точно "+width*2+" × "+height*2+" px для этого экрана (2× для чёткости). "+
-      "На других мониторах пропорции немного меняются — сайт вписывает изображение без обрезки.";
+      "На других мониторах пропорции немного меняются — сайт вписывает изображение без обрезки."+mismatch;
     const sample=panel.querySelector(".bali-promo-editor .bali-design-spec-art-hero");
     if(sample){
       sample.style.aspectRatio=width+" / "+height;
@@ -159,6 +165,7 @@
       heroSizeObserver=new ResizeObserver(reportArtworkSize);
       heroSizeObserver.observe(liveHero);
     }
+    doc.querySelector("#baliPcHeroPoster")?.addEventListener("load",reportArtworkSize);
     requestAnimationFrame(reportArtworkSize);
     if(doc.documentElement.dataset.baliStudioCapture)return;
     doc.documentElement.dataset.baliStudioCapture="true";
