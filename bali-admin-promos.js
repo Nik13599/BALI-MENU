@@ -41,7 +41,7 @@ if(form&&list&&status){
     if(validImage(image)&&image){
       const element=node("img");element.src=image;element.alt="Предпросмотр баннера BALI PRIVILEGE";
       preview.append(element);
-    }else preview.append(node("span","","Предпросмотр баннера 8:3"));
+    }else preview.append(node("span","","Предпросмотр баннера без обрезки"));
   }
   function clear(){
     imageSerial++;
@@ -58,12 +58,12 @@ if(form&&list&&status){
     const file=fileInput.files?.[0];
     if(!file)return;
     const serial=++imageSerial;
-    processing=true;save.disabled=true;say("Подготавливаем баннер 8:3…");
+    processing=true;save.disabled=true;say("Подготавливаем баннер, сохраняя исходные пропорции…");
     try{
       const result=await compressImage(file,"design-hero");
       if(serial!==imageSerial)return;
       selectedImage=result;urlInput.value="";showPreview(result);
-      say("Баннер обработан и готов к сохранению. Формат 8:3.");
+      say("Баннер обработан без обрезки текста. Сохраните форму.");
     }catch(error){
       if(serial===imageSerial)say(error.message||"Не удалось обработать баннер.");
     }finally{
