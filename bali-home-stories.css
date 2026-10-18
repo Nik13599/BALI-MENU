@@ -197,8 +197,9 @@
   stroke:#f02b50;
 }
 #homeSection .bali-home-heart.is-saving{
-  opacity:.58;
-  cursor:wait;
+  /* Keep the optimistic filled heart fully visible while Firebase persists. */
+  opacity:1;
+  cursor:progress;
 }
 #homeSection .bali-home-heart:focus-visible{
   outline:2px solid #f5d89a;
