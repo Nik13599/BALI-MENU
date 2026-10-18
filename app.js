@@ -19,6 +19,7 @@ let baliVisibleMenuSections=Object.fromEntries(baliMenuSectionKeys.map(key=>[key
 let baliMenuSearchText = '';
 let availableEvents = [];
 let guestInterestDates=new Set();
+const pendingInterestDates=new Set();
 let showOnlyPlannedEvents=false;
 let lastRenderedEventsView=false;
 let lastWheelSlideAt=0;
@@ -146,10 +147,91 @@ function initEventCarousel() {
     updateEventCarouselPosition();
 }
 
+// Update both RSVP controls in place. Do not recreate the carousel on each click.
+function syncInterestVisuals(){
+    for(const card of document.querySelectorAll("#homeEventCarousel .bali-home-event-card[data-event-date]")){
+        const heart=card.querySelector(".bali-home-heart");
+        if(!heart)continue;
+        const date=card.dataset.eventDate;
+        const liked=guestInterestDates.has(date);
+        const waiting=pendingInterestDates.has(date);
+        const title=card.querySelector("h3")?.textContent||"мероприятие";
+        heart.classList.toggle("is-liked",liked);
+        heart.classList.toggle("is-saving",waiting);
+        heart.setAttribute("aria-pressed",String(liked));
+        heart.setAttribute("aria-label",liked?"Убрать «"+title+"» из моих планов":"Хочу пойти на «"+title+"»");
+        heart.setAttribute("aria-busy",String(waiting));
+        heart.title=liked?"Убрать из моих планов":"Хочу пойти";
+        heart.disabled=waiting;
+    }
+    for(const card of document.querySelectorAll("#eventsGrid .event-card[data-event-date]")){
+        const button=card.querySelector(".event-want-to-go");
+        if(!button)continue;
+        const date=card.dataset.eventDate;
+        const selected=guestInterestDates.has(date);
+        const waiting=pendingInterestDates.has(date);
+        button.classList.toggle("selected",selected);
+        button.setAttribute("aria-pressed",String(selected));
+        button.setAttribute("aria-busy",String(waiting));
+        button.textContent=selected?"✓ В моих планах":"Хочу пойти";
+        button.title=selected?"Нажмите, чтобы убрать мероприятие из планов":"Добавить мероприятие в планы";
+        button.disabled=waiting;
+    }
+    const badge=document.getElementById("plannedEventsCount");
+    if(badge)badge.textContent=String(availableEvents.filter(e=>guestInterestDates.has(e.date)
+        &&e.date>=minskDateToday()).length);
+}
+function setInterestSelection(date,selected){
+    if(selected)guestInterestDates.add(date);
+    else guestInterestDates.delete(date);
+    syncInterestVisuals();
+}
+// Instant local feedback; Firestore remains the authority and an error rolls it back.
+async function toggleGuestInterest(date,message){
+    if(pendingInterestDates.has(date))return;
+    if(!window.BaliInterests){
+        if(message)message.textContent="Подключение к Firebase ещё загружается. Попробуйте снова.";
+        return;
+    }
+    const previous=guestInterestDates.has(date);
+    pendingInterestDates.add(date);
+    setInterestSelection(date,!previous);
+    if(message)message.textContent="";
+    try{
+        const result=await window.BaliInterests.toggle(date);
+        if(result?.loginRequired){
+            setInterestSelection(date,previous);
+            if(message)message.textContent="Войдите в личный кабинет, чтобы сохранить мероприятие.";
+            return;
+        }
+        if(result?.busy){
+            setInterestSelection(date,previous);
+            return;
+        }
+        if(typeof result?.selected!=="boolean")throw new Error("Не удалось подтвердить изменение.");
+        setInterestSelection(date,result.selected);
+        if(message)message.textContent=result.selected?"Добавлено в «Мои планы».":"Удалено из «Моих планов».";
+    }catch(error){
+        setInterestSelection(date,previous);
+        if(message)message.textContent=error?.message||"Не удалось сохранить мероприятие.";
+    }finally{
+        pendingInterestDates.delete(date);
+        syncInterestVisuals();
+        if(showOnlyPlannedEvents)renderUpcomingEvents();
+    }
+}
 window.addEventListener('bali:interests',({detail})=>{
-    guestInterestDates=new Set(detail?.dates||[]);
-    renderUpcomingEvents();
-    renderHomeEvents();
+    const incoming=new Set(detail?.dates||[]);
+    // Preserve the user's immediate action while an older remote snapshot arrives.
+    for(const date of pendingInterestDates){
+        if(guestInterestDates.has(date))incoming.add(date);
+        else incoming.delete(date);
+    }
+    const changed=incoming.size!==guestInterestDates.size||
+        [...incoming].some(date=>!guestInterestDates.has(date));
+    guestInterestDates=incoming;
+    if(showOnlyPlannedEvents&&changed)renderUpcomingEvents();
+    else syncInterestVisuals();
 });
 window.addEventListener('bali:interests-error',({detail})=>{
     const status=document.getElementById("eventsInterestStatus");
@@ -444,49 +526,20 @@ function renderHomeEvents() {
         path.setAttribute("d","M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z");
         svg.append(path);
         heart.append(svg);
-        const syncHeart=liked=>{
-            heart.classList.toggle("is-liked",liked);
-            heart.setAttribute("aria-pressed",String(liked));
-            heart.setAttribute("aria-label",liked
-                ?"Убрать «"+event.title+"» из моих планов"
-                :"Хочу пойти на «"+event.title+"»");
-            heart.title=liked?"Убрать из моих планов":"Хочу пойти";
-        };
-        syncHeart(guestInterestDates.has(event.date));
-        heart.addEventListener("click",async click=>{
+        heart.addEventListener("click",click=>{
             click.preventDefault();
             click.stopPropagation();
-            if(heart.disabled)return;
-            const feedback=document.getElementById("homeInterestFeedback");
-            heart.disabled=true;
-            heart.classList.add("is-saving");
-            try{
-                if(!window.BaliInterests)throw new Error("Подключение к Firebase ещё загружается.");
-                const result=await window.BaliInterests.toggle(event.date);
-                if(result?.loginRequired){
-                    if(feedback)feedback.textContent="Войдите в личный кабинет, чтобы добавить событие.";
-                    return;
-                }
-                if(result?.busy)return;
-                if(typeof result?.selected==="boolean"){
-                    if(result.selected)guestInterestDates.add(event.date);
-                    else guestInterestDates.delete(event.date);
-                    syncHeart(result.selected);
-                    if(feedback)feedback.textContent=result.selected
-                        ?"Событие добавлено в «Мои планы»."
-                        :"Событие удалено из «Моих планов».";
-                    if(showOnlyPlannedEvents&&!result.selected)renderHomeEvents();
-                    renderUpcomingEvents();
-                }
-            }catch(error){
-                if(feedback)feedback.textContent=error?.message||"Не удалось изменить планы.";
-            }finally{
-                heart.disabled=false;
-                heart.classList.remove("is-saving");
-            }
+            void toggleGuestInterest(event.date,document.getElementById("homeInterestFeedback"));
         });
         card.append(posterWrap,information,openCard,heart);
         track.append(card);
+        // Initial paint matches current Firestore/optimistic state.
+        if(guestInterestDates.has(event.date))heart.classList.add("is-liked");
+        heart.setAttribute("aria-pressed",String(guestInterestDates.has(event.date)));
+        heart.setAttribute("aria-label",guestInterestDates.has(event.date)
+            ?"Убрать «"+event.title+"» из моих планов":"Хочу пойти на «"+event.title+"»");
+        heart.title=guestInterestDates.has(event.date)?"Убрать из моих планов":"Хочу пойти";
+        heart.disabled=pendingInterestDates.has(event.date);
     }
     // Fill only vacant PC HOME slots. These are decorative announcements:
     // no fake date, RSVP heart, event link, or calendar record is created.
@@ -642,29 +695,14 @@ function renderUpcomingEvents() {
         planBtn.type="button";
         planBtn.className="event-want-to-go"+(guestInterestDates.has(event.date)?" selected":"");
         planBtn.setAttribute("aria-pressed",String(guestInterestDates.has(event.date)));
-        planBtn.textContent=guestInterestDates.has(event.date)?"✓ В моих планах · Убрать":"Хочу пойти";
+        planBtn.textContent=guestInterestDates.has(event.date)?"✓ В моих планах":"Хочу пойти";
+        planBtn.title=guestInterestDates.has(event.date)
+            ?"Нажмите, чтобы убрать мероприятие из планов":"Добавить мероприятие в планы";
+        planBtn.disabled=pendingInterestDates.has(event.date);
         const message=document.createElement("p");
         message.className="event-interest-message";
         message.setAttribute("role","status");
-        planBtn.addEventListener("click",async()=>{
-            if(!window.BaliInterests){
-                message.textContent="Подключение к Firebase ещё загружается. Попробуйте через несколько секунд.";
-                return;
-            }
-            planBtn.disabled=true;
-            const label=planBtn.textContent;
-            planBtn.textContent="Сохраняем...";
-            message.textContent="";
-            try{
-                const result=await window.BaliInterests.toggle(event.date);
-                if(result.loginRequired)message.textContent="Войдите в кабинет через Google для сохранения.";
-            }catch(error){
-                message.textContent=error.message||"Не удалось сохранить мероприятие.";
-            }finally{
-                planBtn.disabled=false;
-                planBtn.textContent=label;
-            }
-        });
+        planBtn.addEventListener("click",()=>void toggleGuestInterest(event.date,message));
         // Date appears once, in the badge over the square poster.
         // The information can scroll independently when long; actions stay
         // at the absolute bottom of the visible event card.
@@ -690,6 +728,7 @@ function renderUpcomingEvents() {
         card.append(posterWrap,body);
         grid.append(card);
     }
+    syncInterestVisuals();
     const restoreIndex=changedView?0:Math.max(0,upcoming.findIndex(e=>e.date===previousDate));
     const restore=()=>{
         const cards=carouselEventCards(grid);
