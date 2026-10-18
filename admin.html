@@ -530,12 +530,12 @@
           <div class="card-heading"><h3>О клубе BALI</h3><span class="tag">Правая колонка ПК</span></div>
           <div class="bali-design-spec">
             <div class="bali-design-spec-art bali-design-spec-art-square"><span>900 × 1400</span></div>
-            <div><strong>Фото карточки — ПК 900 × 1400 px</strong><small>Вертикальный макет 9:14 для высокой карточки «О клубе», занимающей место двух прежних кнопок. Отдельные версии для планшета и телефона загрузите ниже. Текст сайта накладывается поверх изображения.</small></div>
+            <div><strong>Фото карточки — ПК 900 × 1400 px</strong><small>Вертикальный макет 9:14 для высокой карточки «О клубе», занимающей место двух прежних кнопок. Отдельные версии для планшета и телефона загрузите ниже. Если текст уже есть на картинке, оставьте поля пустыми — сайт покажет её без наложенных подписей.</small></div>
           </div>
           <form id="baliHomeAboutForm" class="bali-design-form">
-            <label>Название блока<input id="baliHomeAboutTitle" required maxlength="50" value="О клубе"></label>
-            <label>Подпись<input id="baliHomeAboutSubtitle" required maxlength="85" value="Атмосфера, музыка, люди"></label>
-            <label>Текст внутри раскрывающейся карточки<textarea id="baliHomeAboutDescription" required rows="3" maxlength="450">Ночной клуб BALI в Минске. Музыка, события и встречи в одной атмосфере.</textarea></label>
+            <label>Название блока (необязательно)<input id="baliHomeAboutTitle" maxlength="50" value="О клубе" placeholder="Оставьте пустым, если надпись уже на изображении"></label>
+            <label>Подпись (необязательно)<input id="baliHomeAboutSubtitle" maxlength="85" value="Атмосфера, музыка, люди" placeholder="Можно оставить пустой"></label>
+            <label>Текст внутри раскрывающейся карточки (необязательно)<textarea id="baliHomeAboutDescription" rows="3" maxlength="450" placeholder="Можно оставить пустым">Ночной клуб BALI в Минске. Музыка, события и встречи в одной атмосфере.</textarea></label>
             <div class="bali-design-upload">
               <label>Фото «О клубе» для ПК — 900×1400<input id="baliHomeAboutFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
               <div class="bali-design-image-preview bali-design-image-preview-square" id="baliHomeAboutPreview"><span>Фото ПК 9:14</span></div>
@@ -568,12 +568,12 @@
           <p class="hint">Добавляйте любое количество карточек мерча, загружайте фотографии, указывайте наличие и цену. На главной карточки показываются по очереди. Черновики гостям не видны.</p>
           <div class="bali-design-spec">
             <div class="bali-design-spec-art bali-design-spec-art-landscape"><span>1200 × 800</span></div>
-            <div><strong>Фото мерча — 1200 × 800 px</strong><small>Формат 3:2, JPG / PNG / WebP до 15 МБ. Хорошо подходит для одежды и аксессуаров. Не размещайте мелкий текст в фото — название, статус и цену сайт покажет отдельно.</small></div>
+            <div><strong>Фото мерча — 1200 × 800 px</strong><small>Формат 3:2, JPG / PNG / WebP до 15 МБ. Хорошо подходит для одежды и аксессуаров. Название и описание можно не вводить, если они уже есть на фото.</small></div>
           </div>
           <form id="baliHomeMerchForm" class="bali-design-form">
             <input type="hidden" id="baliHomeMerchId">
-            <label>Название товара<input id="baliHomeMerchName" required minlength="2" maxlength="95" placeholder="Например, худи BALI"></label>
-            <label>Описание<textarea id="baliHomeMerchDescription" rows="2" maxlength="180" placeholder="Коротко о товаре"></textarea></label>
+            <label>Название товара (необязательно при наличии фото)<input id="baliHomeMerchName" minlength="2" maxlength="95" placeholder="Название можно разместить на фотографии"></label>
+            <label>Описание (необязательно)<textarea id="baliHomeMerchDescription" rows="2" maxlength="180" placeholder="Коротко о товаре"></textarea></label>
             <div class="bali-design-form-grid">
               <label>Статус
                 <select id="baliHomeMerchStatus">
@@ -620,15 +620,15 @@
         </section>
         <section class="card bali-promo-editor" id="baliPromoEditor" data-design-editor="privilege" hidden>
           <div class="card-heading"><h3>BALI PRIVILEGE · Спецпредложения</h3><span class="tag">Главная страница ПК</span></div>
-          <p class="hint">Каждое опубликованное предложение — отдельный слайд BALI PRIVILEGE. Переключаются автоматически; на сайте остаются ваши заголовки, описания и изображения.</p>
+          <p class="hint">Каждое опубликованное предложение — отдельный слайд. Заголовок и описание необязательны: можно опубликовать только картинку с готовым дизайном.</p>
           <div class="bali-design-spec bali-design-spec-wide">
             <div class="bali-design-spec-art bali-design-spec-art-hero"><span>БАННЕР 1600 × 600</span></div>
-            <div><strong>BALI PRIVILEGE · 1600 × 600 px</strong><small>Соотношение 8:3. JPG / PNG / WebP до 15 МБ. При загрузке изображение автоматически подгоняется под формат. Текст лучше размещать в редакторе; важные детали картинки располагайте справа, не ближе 8% к краям. На ПК размер блока подстраивается под экран.</small></div>
+            <div><strong>BALI PRIVILEGE · 1600 × 600 px</strong><small>Соотношение 8:3. JPG / PNG / WebP до 15 МБ. При загрузке изображение автоматически подгоняется под формат. Можно загрузить готовый баннер с текстом: лишние надписи и декоративные водяные знаки сайт поверх него не наложит. На ПК размер блока подстраивается под экран.</small></div>
           </div>
           <form id="baliPromoForm" class="bali-promo-form">
             <input type="hidden" id="baliPromoId">
-            <label>Заголовок предложения *<input id="baliPromoTitle" required minlength="2" maxlength="100" placeholder="Название предложения"></label>
-            <label>Описание *<textarea id="baliPromoDescription" required maxlength="260" rows="3" placeholder="Условия предложения без вымышленных цен и обещаний"></textarea></label>
+            <label>Заголовок (необязательно при наличии баннера)<input id="baliPromoTitle" minlength="2" maxlength="100" placeholder="Если заголовок уже на баннере — не заполняйте"></label>
+            <label>Описание (необязательно)<textarea id="baliPromoDescription" maxlength="260" rows="3" placeholder="Если текст уже на баннере — не заполняйте"></textarea></label>
             <div class="bali-design-upload">
               <label>Баннер для ПК — 1600×600<input id="baliPromoImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
               <div class="bali-design-image-preview" id="baliPromoImagePreview" aria-label="Предпросмотр баннера"><span>Предпросмотр баннера 8:3</span></div>
