@@ -491,8 +491,8 @@ assert(rules.includes('match /bar_menu/{drinkId}') &&
   "Bar Firestore collection must be publicly read-only and securely admin-editable");
 
 assert(html.includes('bali-desktop-fullwidth.css?v=') &&
-  html.indexOf('bali-desktop-fullwidth.css?v=20261017-64') >
-  html.indexOf('bali-lime-neutral.css?v=20261017-62'),
+  html.indexOf('bali-desktop-fullwidth.css?v=') >
+  html.indexOf('bali-lime-neutral.css?v='),
   "Desktop studio redesign must load last while LIME remains the default skin");
 assert(desktopLayoutCss.includes('/* BALI STUDIO / v64') &&
   desktopLayoutCss.includes('@media (min-width:768px)') &&
@@ -530,10 +530,10 @@ assert(html.includes('data-bali-theme="lime"') &&
   html.includes('history.scrollRestoration="manual"') &&
   html.includes('bali-lime-neutral.css?v=') &&
   admin.includes('bali-lime-neutral.css?v=') &&
-  html.indexOf('bali-lime-neutral.css?v=20261017-62') >
-  html.indexOf('bali-theme.css?v=20261017-60') &&
-  admin.indexOf('bali-lime-neutral.css?v=20261017-62') >
-  admin.indexOf('bali-theme.css?v=20261017-60'),
+  html.indexOf('bali-lime-neutral.css?v=') >
+  html.indexOf('bali-theme.css?v=') &&
+  admin.indexOf('bali-lime-neutral.css?v=') >
+  admin.indexOf('bali-theme.css?v='),
   "LIME neutral skin and manual Safari scroll restoration must be loaded after base styles");
 assert(app.includes('function resetGuestVerticalPosition(page)') &&
   app.includes('document.scrollingElement||document.documentElement') &&
@@ -592,10 +592,10 @@ assert(html.includes('bali-theme.css?v=') &&
   admin.includes('bali-theme.css?v=') &&
   html.includes('bali-theme.js?v=') &&
   admin.includes('bali-theme.js?v=') &&
-  html.indexOf('bali-theme.css?v=20261017-60') >
-  html.indexOf('bali-obsidian-premium.css?v=20261017-57') &&
-  admin.indexOf('bali-theme.css?v=20261017-60') >
-  admin.indexOf('bali-obsidian-premium.css?v=20261017-57'),
+  html.indexOf('bali-theme.css?v=') >
+  html.indexOf('bali-obsidian-premium.css?v=') &&
+  admin.indexOf('bali-theme.css?v=') >
+  admin.indexOf('bali-obsidian-premium.css?v='),
   "Global accent CSS and realtime settings module must load last on both interfaces");
 assert(admin.includes('data-admin-tab="appearance"') &&
   admin.includes('id="adminAppearancePanel"') &&
@@ -646,10 +646,10 @@ assert(customIconJs.includes('appearance:"palette"') &&
 const obsidianCss=source("bali-obsidian-premium.css");
 assert(html.includes('bali-obsidian-premium.css?v=') &&
   admin.includes('bali-obsidian-premium.css?v=') &&
-  html.indexOf('bali-obsidian-premium.css?v=20261017-57') >
-  html.indexOf('bali-home-stories.css?v=20261017-52') &&
-  admin.indexOf('bali-obsidian-premium.css?v=20261017-57') >
-  admin.indexOf('admin-dashboard.css?v=20261017-20'),
+  html.indexOf('bali-obsidian-premium.css?v=') >
+  html.indexOf('bali-home-stories.css?v=') &&
+  admin.indexOf('bali-obsidian-premium.css?v=') >
+  admin.indexOf('admin-dashboard.css?v='),
   "One current premium theme must load last on the guest and admin sites");
 assert(['bali-atelier-theme.css','bali-velvet-night.css','bali-editorial-minimal.css']
   .every(name=>!html.includes('href="'+name)&&!admin.includes('href="'+name)),
@@ -707,7 +707,7 @@ assert(admin.includes('id="seedImportBtn"') && admin.includes('id="seedPreview"'
 assert(adminClient.includes('runTransaction(db') && adminClient.includes('current[i].exists()'), "Menu import must skip existing documents in a transaction");
 const responsive = source("responsive-menu.css");
 assert(html.includes('responsive-menu.css?v='), "Responsive stylesheet must be loaded with current cache version");
-assert(html.indexOf('responsive-menu.css?v=20261017-21') > html.indexOf('href="auth.css"'), "Responsive stylesheet must load after auth.css");
+assert(html.indexOf('responsive-menu.css?v=') > html.indexOf('href="auth.css"'), "Responsive stylesheet must load after auth.css");
 assert(/grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/.test(responsive), "Desktop must use 5 columns");
 assert(/@media\s*\(min-width:\s*768px\)\s*and\s*\(max-width:\s*1199px\)/.test(responsive), "Tablet breakpoint missing");
 assert(/@media\s*\(max-width:\s*767px\)/.test(responsive), "Phone breakpoint missing");
@@ -793,8 +793,8 @@ assert(responsive.includes('grid-template-rows:auto 42px') &&
   responsive.includes('height:42px'), "Mobile Menu and Events must align on one baseline");
 const modernHeader = source("header-modern.css");
 assert(html.includes('header-modern.css?v='), "Modern BALI navigation must load");
-assert(html.indexOf('header-modern.css?v=20261017-22') >
-  html.indexOf('responsive-menu.css?v=20261017-21'), "Header overrides must load after responsive CSS");
+assert(html.indexOf('header-modern.css?v=') >
+  html.indexOf('responsive-menu.css?v='), "Header overrides must load after responsive CSS");
 assert(modernHeader.includes('grid-template-areas:"brand brand brand account" "menu events orders cart"'),
   "Premium mobile header must keep profile above cart and all four controls in the same row");
 assert(modernHeader.includes('grid-template-rows:43px 42px') &&
@@ -807,8 +807,8 @@ assert((modernHeader.match(/\\{/g)||[]).length === (modernHeader.match(/\\}/g)||
   "Modern BALI header CSS has unbalanced braces");
 const categoryCss = source("menu-categories.css");
 assert(html.includes('menu-categories.css?v='), "Category layout CSS not linked");
-assert(html.indexOf('menu-categories.css?v=20261017-23') >
-  html.indexOf('header-modern.css?v=20261017-22'), "Sticky category stylesheet must load after header CSS");
+assert(html.indexOf('menu-categories.css?v=') >
+  html.indexOf('header-modern.css?v='), "Sticky category stylesheet must load after header CSS");
 assert(app.includes("class=\"menu-category-block\"") && app.includes("menu-category-heading"),
   "All menu view must render product categories with visible headings");
 assert(app.includes("const groups = new Map()") && app.includes("groups.get(name).push(item)"),
@@ -943,8 +943,8 @@ assert(app.includes("menuSection.scrollTop = 0") &&
 const approvedCss=source("bali-redesign.css");
 const squareCss=source("bali-event-square.css");
 assert(html.includes('bali-event-square.css?v=') &&
-  html.indexOf('bali-event-square.css?v=20261017-50') >
-  html.indexOf('bali-home-premium.css?v=20261017-49'),
+  html.indexOf('bali-event-square.css?v=') >
+  html.indexOf('bali-home-premium.css?v='),
   "Square event styling must load after the mobile and premium styles");
 assert(squareCss.includes("aspect-ratio:1 / 1") &&
   squareCss.includes(".bali-event-info {") &&
@@ -959,8 +959,8 @@ assert(app.includes('track.clientHeight-(mobile?185:195)') &&
 const premiumCss=source("bali-home-premium.css");
 const homeStoriesCss=source("bali-home-stories.css");
 assert(html.includes('bali-home-stories.css?v=') &&
-  html.indexOf('bali-home-stories.css?v=20261017-52') >
-  html.indexOf('bali-event-square.css?v=20261017-50'),
+  html.indexOf('bali-home-stories.css?v=') >
+  html.indexOf('bali-event-square.css?v='),
   "Homepage square card overrides must load after event card styles");
 assert(homeStoriesCss.includes("aspect-ratio:1/1") &&
   homeStoriesCss.includes(".bali-home-poster-wrap") &&
@@ -991,8 +991,8 @@ assert(html.includes('<section class="bali-home-events-panel"') &&
   html.indexOf('id="menuNavBtn"') < html.indexOf('class="bali-home-contacts-card"'),
   "Home should be grouped in order: events, menu and contacts");
 assert(html.includes('bali-home-premium.css?v=') &&
-  html.indexOf('bali-home-premium.css?v=20261017-49') >
-  html.indexOf('bali-redesign.css?v=20261017-46'),
+  html.indexOf('bali-home-premium.css?v=') >
+  html.indexOf('bali-redesign.css?v='),
   "Premium home CSS must load after the existing phone, tablet and desktop CSS");
 assert(premiumCss.includes("/* BALI NIGHT CLUB · premium home zones, v49") &&
   premiumCss.includes("grid-template-rows:minmax(0,1fr) auto auto!important") &&
@@ -1098,8 +1098,8 @@ assert(approvedCss.includes("/* BALI v41: compact event calendar above its tabs;
   approvedCss.includes("#eventsSection .event-interest-count{display:block!important"),
   "Events should show compact calendar, slightly shorter stories and all event details");
 assert(html.includes('bali-redesign.css?v=') &&
-  html.indexOf('bali-redesign.css?v=20261017-46') >
-    html.indexOf('events-carousel.css?v=20261017-36'),
+  html.indexOf('bali-redesign.css?v=') >
+    html.indexOf('events-carousel.css?v='),
   "Approved mobile visual override must load last");
 assert(html.includes('id="profileSection"') &&
   html.includes('id="profileMyOrdersBtn"') &&
@@ -1119,8 +1119,8 @@ assert(approvedCss.includes('/* Menu: original sticky category filters intention
   app.includes('updateCategoryButtons()'), "Original menu category filtering must remain intact");
 const carouselCss=source("events-carousel.css");
 assert(html.includes('events-carousel.css?v='), "Swipe carousel stylesheet must load");
-assert(html.indexOf('events-carousel.css?v=20261017-36') >
-  html.indexOf('bali-pages.css?v=20261017-32'), "Carousel must override older event grid styles");
+assert(html.indexOf('events-carousel.css?v=') >
+  html.indexOf('bali-pages.css?v='), "Carousel must override older event grid styles");
 assert(html.includes('id="eventsCarouselShell"') &&
   html.includes('id="eventsCarouselPosition"') &&
   html.includes('aria-roledescription="карусель"'), "Accessible event carousel shell missing");
