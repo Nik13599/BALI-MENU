@@ -50,7 +50,7 @@ if(image&&title&&description&&counter&&action&&hero){
       title.hidden=false;
       description.textContent=fallbackText;
       description.hidden=false;
-      hero.classList.remove("has-artwork","is-image-only");
+      hero.classList.remove("has-artwork","is-image-only","has-no-action");
       counter.textContent="— / —";
       action.hidden=true;
     }else{
@@ -62,10 +62,13 @@ if(image&&title&&description&&counter&&action&&hero){
       description.hidden=!offer.description.trim();
       hero.classList.toggle("has-artwork",hasArtwork);
       hero.classList.toggle("is-image-only",hasArtwork&&!offer.title.trim()&&!offer.description.trim());
+      hero.classList.toggle("has-no-action",offer.destination==="none");
       counter.textContent=String(index+1).padStart(2,"0")+" / "+String(offers.length).padStart(2,"0");
       action.hidden=offer.destination==="none";
       if(!action.hidden)action.firstChild.textContent=offer.buttonText||"Подробнее ";
     }
+    const slideControls=hero.querySelector(".bali-pc-hero-controls");
+    if(slideControls)slideControls.hidden=offers.length<2;
     arrows.forEach(button=>{
       button.disabled=offers.length<2;
       button.setAttribute("aria-disabled",String(offers.length<2));
