@@ -204,7 +204,7 @@
     if(size==="current"){
       devices.desktop.width=Math.max(1180,Math.round(window.innerWidth));
       devices.desktop.height=Math.max(600,Math.round(window.innerHeight));
-    }else if(/^\\d{4}x\\d{3,4}$/.test(size)){
+    }else if(["1440x900","1920x1080","1792x852","1366x768"].includes(size)){
       const [width,height]=size.split("x").map(Number);
       if(width>=1180&&height>=600&&width<=3840&&height<=2160){
         devices.desktop.width=width;
