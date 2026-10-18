@@ -624,21 +624,22 @@
           <div class="card-heading"><h3>BALI PRIVILEGE · Спецпредложения</h3><span class="tag">Главная страница ПК</span></div>
           <p class="hint">Каждое опубликованное предложение — отдельный слайд. Заголовок и описание необязательны: можно опубликовать только картинку с готовым дизайном.</p>
           <div class="bali-design-spec bali-design-spec-wide">
-            <div class="bali-design-spec-art bali-design-spec-art-hero"><span>БАННЕР 1600 × 600</span></div>
-            <div><strong>BALI PRIVILEGE · 1600 × 600 px</strong><small>Соотношение 8:3. JPG / PNG / WebP до 15 МБ. При загрузке изображение автоматически подгоняется под формат. Можно загрузить готовый баннер с текстом: лишние надписи и декоративные водяные знаки сайт поверх него не наложит. На ПК размер блока подстраивается под экран.</small></div>
+            <div class="bali-design-spec-art bali-design-spec-art-hero"><span>РАЗМЕР БЛОКА — НИЖЕ</span></div>
+            <div><strong>BALI PRIVILEGE · размер зависит от экрана</strong><small>Блок меняет ширину и высоту при изменении размера окна ПК. Число 1600×600 не является точным для всех экранов. Используйте фактические размеры области в предпросмотре справа. Готовые надписи на фото не обрезаются: весь рисунок сохраняется.</small></div>
           </div>
+          <p id="baliPromoRealSize" class="bali-promo-geometry" role="status" aria-live="polite">Определяем точные размеры верхнего баннера в предпросмотре…</p>
           <form id="baliPromoForm" class="bali-promo-form">
             <input type="hidden" id="baliPromoId">
             <label>Заголовок (необязательно при наличии баннера)<input id="baliPromoTitle" minlength="2" maxlength="100" placeholder="Если заголовок уже на баннере — не заполняйте"></label>
             <label>Описание (необязательно)<textarea id="baliPromoDescription" maxlength="260" rows="3" placeholder="Если текст уже на баннере — не заполняйте"></textarea></label>
             <button type="button" class="bali-clear-artwork-copy" data-bali-clear-artwork-copy="privilege">Очистить заголовок и описание — оставить только баннер</button>
             <div class="bali-design-upload">
-              <label>Баннер для ПК — 1600×600<input id="baliPromoImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
-              <div class="bali-design-image-preview" id="baliPromoImagePreview" aria-label="Предпросмотр баннера"><span>Предпросмотр баннера 8:3</span></div>
+              <label>Баннер для ПК — смотрите размер и пропорции выше<input id="baliPromoImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
+              <div class="bali-design-image-preview" id="baliPromoImagePreview" aria-label="Предпросмотр баннера"><span>Предпросмотр в пропорциях экрана</span></div>
               <button type="button" id="baliPromoRemoveImage">Убрать изображение</button>
             </div>
             <label>Или ссылка на изображение (HTTPS)<input id="baliPromoImage" type="url" maxlength="2048" placeholder="https://..."></label>
-            <p class="hint">Добавьте специально скомпонованные баннеры для планшета и телефона. Если их нет — используется основной слайд.</p>
+            <p class="hint">ПК: готовьте изображение по размерам, указанным выше для выбранного предпросмотра. Высота блока зависит от высоты окна. На планшете и телефоне блок BALI PRIVILEGE сейчас скрыт существующей компоновкой; варианты можно загрузить для будущей адаптации.</p>
             <div class="bali-design-variant-grid" aria-label="Адаптивные изображения">
  <div class="bali-design-variant">
     <strong>Планшет · 1200 × 675 px · 16:9</strong>
