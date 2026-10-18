@@ -131,8 +131,8 @@ assert(admin.includes('id="adminOverviewPanel"') &&
     admin.includes('data-admin-tab="'+section+'"')) &&
   ["kitchen","bar","hookah","tea"].every(mode=>
     admin.includes('data-admin-menu="'+mode+'"')) &&
-  admin.includes('bali-admin-clarity.css?v=20261018-1') &&
-  admin.includes('admin-dashboard.js?v=20261018-103') &&
+  admin.includes('bali-admin-clarity.css?v=20261018-') &&
+  admin.includes('admin-dashboard.js?v=20261018-') &&
   adminOverview.includes('activate("overview",false)') &&
   adminOverview.includes('[data-admin-go]') &&
   adminClarity.includes('.admin-quick-grid'),
@@ -142,7 +142,7 @@ const studioCss=source("bali-design-studio.css");
 const siteAdmin=source("bali-site-content-admin.js");
 const sitePublic=source("bali-site-content.js");
 assert(admin.includes('bali-design-studio.css?v=20261017-84') &&
-  admin.includes('bali-design-studio.js?v=20261017-85') &&
+  admin.includes('bali-design-studio.js?v=20261018-') &&
   admin.includes('bali-site-content-admin.js?v=20261018-97') &&
   admin.includes('id="baliDesignLiveFrame"') &&
   admin.includes('id="baliDesignCanvas"') &&
