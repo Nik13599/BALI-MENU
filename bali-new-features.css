@@ -9,7 +9,6 @@
   min-height:31px;padding:5px 9px;
 }
 #eventsGrid .event-card,#homeEventCarousel .bali-home-event-card{position:relative}
-#homeEventCarousel .bali-share-trigger{position:absolute;right:6px;bottom:6px;z-index:4;font-size:9px;min-height:27px;padding:4px 6px}
 #eventsGrid .bali-share-trigger{position:absolute;top:9px;right:9px;z-index:4}
 .bali-share-trigger:hover{background:#b9ff51;color:#0a110a;border-color:#b9ff51}
 .bali-share-dialog,.bali-smart-dialog{
