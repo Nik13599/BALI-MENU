@@ -176,7 +176,7 @@ const mobileAboutAdminCss=source("bali-mobile-about-admin.css");
 assert(html.includes('id="baliMobileAboutBackgroundA"') &&
   html.includes('id="baliMobileAboutBackgroundB"') &&
   html.includes('id="baliMobileAboutBackgroundDots"') &&
-  html.includes('bali-mobile-about-hero.css?v=20261019-1') &&
+  html.includes('bali-mobile-about-hero.css?v=20261019-2') &&
   html.includes('bali-mobile-about-hero.js?v=20261019-1') &&
   mobileAboutCss.includes('@media(max-width:767px)') &&
   mobileAboutCss.includes('object-fit:cover!important') &&
@@ -201,6 +201,27 @@ assert(html.includes('id="baliMobileAboutBackgroundA"') &&
   rules.includes('allow get, list: if isAdmin() || resource.data.published == true;') &&
   rules.includes('allow create, update: if isAdmin() && validMobileAboutBackground(request.resource.data);'),
   "Mobile About must support independently uploaded and protected published backgrounds");
+// Compact owner-approved top hero: full horizontal headline in the same
+// home-grid row, not a vertically stacked text block that consumes the viewport.
+const heroMarkup=html.slice(html.indexOf('<section class="bali-mobile-home-hero"'),
+  html.indexOf('<!-- Existing live events'));
+assert(heroMarkup.includes('<h1><span>BALI — </span><em>БОЛЬШЕ, ЧЕМ КЛУБ</em></h1>') &&
+  heroMarkup.includes('Площадка для мероприятий в центре Минска.') &&
+  heroMarkup.includes('Вечеринки') &&
+  heroMarkup.includes('закрытые мероприятия') &&
+  heroMarkup.includes('корпоративы') &&
+  heroMarkup.includes('концерты') &&
+  heroMarkup.includes('презентации') &&
+  heroMarkup.includes('и многое другое') &&
+  heroMarkup.includes('id="baliMobileAboutBtn"') &&
+  !heroMarkup.includes('БОЛЬШЕ<br>ЧЕМ<br>КЛУБ') &&
+  mobileAboutCss.includes('clamp(119px,33.33vw,150px)') &&
+  mobileAboutCss.includes('white-space:nowrap!important') &&
+  mobileAboutCss.includes('.bali-mobile-hero-formats') &&
+  mobileAboutCss.includes('.bali-mobile-home-hero h1>em') &&
+  mobileAboutCss.includes('grid-template-rows:clamp(114px,33.33vw,140px)') &&
+  !html.includes('bali-mobile-home-hero-copy"><h1>БОЛЬШЕ<br>'),
+  "Mobile BALI About must use owner's exact compact headline, venue details and proportional height");
 // v87 PC viewport is a fixed full-width, full-height 3-column dashboard.
 // Other desktop pages must not scroll down; only product lists scroll.
 const viewportCss=source("bali-pc-viewport.css");
