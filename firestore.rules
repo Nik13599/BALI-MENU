@@ -709,6 +709,32 @@ service cloud.firestore {
       }
     }
 
+    // BALI Privilege Control: the Firebase Admin SDK in Cloud Functions
+    // is the ONLY writer. Staff/browser clients cannot grant or redeem.
+    match /guestWallets/{uid} {
+      allow get: if signedInAs(uid) || isAdmin();
+      allow list, create, update, delete: if false;
+    }
+    match /staffRoles/{uid} {
+      allow get: if signedInAs(uid);
+      allow list, create, update, delete: if false;
+    }
+    match /qrSessions/{id} {
+      allow read, write: if false;
+    }
+    match /qrIssuance/{uid} {
+      allow read, write: if false;
+    }
+    match /walletOperations/{id} {
+      allow read, write: if false;
+    }
+    match /guestEntries/{id} {
+      allow read, write: if false;
+    }
+    match /discountReceipts/{id} {
+      allow read, write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

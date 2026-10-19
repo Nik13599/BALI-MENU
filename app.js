@@ -330,7 +330,7 @@ window.addEventListener('bali:events-error', () => {
     if (select) select.innerHTML = '<option value="">Не удалось загрузить мероприятия</option>';
 });
 // Клиентские разделы BALI: URL/история браузера работают без перезагрузки.
-const BALI_GUEST_PAGES = new Set(["home","menu","events","profile","contacts"]);
+const BALI_GUEST_PAGES = new Set(["home","menu","events","profile","id","contacts"]);
 function routeFromLocation() {
     const hash=window.location.hash.slice(1).toLowerCase();
     return BALI_GUEST_PAGES.has(hash)?hash:"home";
@@ -353,7 +353,7 @@ function renderGuestPage(page,{scroll=true}={}) {
     const selected=BALI_GUEST_PAGES.has(page)?page:"home";
     const sections={
         home:"homeSection", menu:"menuPage",
-        events:"eventsSection", profile:"profileSection", contacts:"contactsSection"
+        events:"eventsSection", profile:"profileSection", id:"baliIdSection", contacts:"contactsSection"
     };
     for(const [name,id] of Object.entries(sections)) {
         const section=document.getElementById(id);
@@ -951,8 +951,24 @@ function attachEventListeners() {
         switchBaliMenuMode(baliActiveMenuMode);
     }
     for(const nav of document.querySelectorAll("[data-bali-nav]")){
-        nav.addEventListener("click",()=>navigateGuestPage(nav.dataset.baliNav));
+        nav.addEventListener("click",()=>{
+            if(nav.dataset.baliNav==="id"&&!window.BaliAuth?.isRegistered?.()){
+                window.BaliAuth?.open?.();return;
+            }
+            navigateGuestPage(nav.dataset.baliNav);
+        });
     }
+    // Two independent mobile routes: user account (right side) and ID card (header).
+    const openMobileAccount=()=>{
+        if(!window.BaliAuth?.isRegistered?.()){window.BaliAuth?.open?.();return;}
+        navigateGuestPage("profile");
+    };
+    const openMobileId=()=>{
+        if(!window.BaliAuth?.isRegistered?.()){window.BaliAuth?.open?.();return;}
+        navigateGuestPage("id");
+    };
+    document.getElementById("baliMobileProfileBtn")?.addEventListener("click",openMobileAccount);
+    document.getElementById("baliMobileIdBtn")?.addEventListener("click",openMobileId);
     document.getElementById("baliCartDock")?.addEventListener("click",openCart);
     document.getElementById("baliMenuSearch")?.addEventListener("input",event=>{
         baliMenuSearchText=String(event.target.value||"").trim().toLocaleLowerCase("ru-RU");
@@ -969,6 +985,12 @@ function attachEventListeners() {
         else window.BaliAuth?.open();
     });
     window.addEventListener("bali:auth-state",({detail})=>{
+        const mobileId=document.getElementById("baliMobileIdBtn");
+        const mobileProfile=document.getElementById("baliMobileProfileBtn");
+        if(mobileId)mobileId.setAttribute("aria-label",detail?.registered?"Открыть мою BALI ID карту":"Войти, чтобы получить BALI ID");
+        if(mobileProfile)mobileProfile.setAttribute("aria-label",detail?.registered?"Открыть мой профиль":"Войти в личный кабинет");
+        // Do not show a departed guest's card on a stale SPA route.
+        if(!detail?.registered&&document.body.dataset.baliPage==="id")navigateGuestPage("profile",{replace:true});
         const name=document.getElementById("baliProfileName");
         const phone=document.getElementById("baliProfilePhone");
         const email=document.getElementById("baliProfileEmail");
