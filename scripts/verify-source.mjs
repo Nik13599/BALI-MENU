@@ -95,9 +95,9 @@ assert(html.includes('bali-pc-reference.css?v=') &&
   source("bali-pc-reference.css").includes('body.bali-guest-theme #menuPage .menu-category-block .menu-purchase-controls') &&
   source("bali-pc-reference.css").includes('grid-template-columns:1fr!important') &&
   source("bali-pc-reference.css").includes('body.bali-guest-theme #eventsSection .events-topbar') &&
-  source("bali-pc-reference.css").includes('grid-template-columns:minmax(0,1fr) auto clamp(200px,18.5vw,280px)!important') &&
-  source("bali-pc-reference.css").includes('body.bali-guest-theme #eventsSection .events-topbar #eventsViewTabs') &&
-  source("bali-pc-reference.css").includes('grid-column:2!important') &&
+  source("bali-pc-reference.css").includes('grid-template-columns:minmax(0,1fr) clamp(200px,18.5vw,280px)!important') &&
+  source("bali-pc-reference.css").includes('body.bali-guest-theme #eventsSection .events-topbar .events-heading') &&
+  source("bali-pc-reference.css").includes('grid-column:1!important') &&
   source("bali-pc-reference.css").includes('--bali-calendar-edge-width:') &&
   source("bali-pc-reference.css").includes('--bali-calendar-edge-opacity:') &&
   source("bali-pc-reference.css").includes('-webkit-mask-image:linear-gradient(to right,') &&
@@ -876,8 +876,13 @@ const interestSource = source("event-interests.js");
 const interestCss = source("event-interests.css");
 assert(html.includes('event-interests.js?v=') &&
   html.includes('event-interests.css?v='), "Guest interest module and styles must load");
-assert(html.includes('id="plannedEventsCount"') &&
-  html.includes('id="eventsViewTabs"'), "My Plans event filter missing");
+assert(!html.includes('id="plannedEventsCount"') &&
+  !html.includes('id="eventsViewTabs"') &&
+  !html.includes('data-events-view=') &&
+  html.includes('id="profileMyPlansBtn"') &&
+  app.includes('showOnlyPlannedEvents=true;') &&
+  app.includes('if(nav.dataset.baliNav==="events")showOnlyPlannedEvents=false;'),
+  "Calendar filters must be removed; profile My Plans stays accessible and Calendar opens all events");
 assert(app.includes('Хочу пойти') &&
   app.includes('Хочет пойти: ') &&
   app.includes('guestInterestDates.has(event.date)'), "Event cards must display RSVP button and public counts");
@@ -1208,8 +1213,9 @@ assert(!html.includes('Ближайшие мероприятия по датам
 const topbarStart=html.indexOf('class="events-topbar"');
 const topbarEnd=html.indexOf('id="eventsInterestStatus"',topbarStart);
 assert(topbarStart>=0 && topbarEnd>topbarStart &&
-  html.slice(topbarStart,topbarEnd).includes('id="eventsViewTabs"'),
-  "All Events/My Plans must share a row with Bali Calendar");
+  !html.slice(topbarStart,topbarEnd).includes('id="eventsViewTabs"') &&
+  html.slice(topbarStart,topbarEnd).includes('id="eventsHeadingGuest"'),
+  "Calendar header must display its heading without All Events/My Plans buttons");
 assert(html.includes('Выбирай событие и добавляй его в «Мои планы».'),
   "Small footer copy must be concise and fit two lines");
 assert(carouselCss.includes('BALI v36') &&

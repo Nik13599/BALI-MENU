@@ -178,9 +178,6 @@ function syncInterestVisuals(){
         button.title=selected?"Нажмите, чтобы убрать мероприятие из планов":"Добавить мероприятие в планы";
         button.disabled=waiting;
     }
-    const badge=document.getElementById("plannedEventsCount");
-    if(badge)badge.textContent=String(availableEvents.filter(e=>guestInterestDates.has(e.date)
-        &&e.date>=minskDateToday()).length);
 }
 function setInterestSelection(date,selected){
     if(selected)guestInterestDates.add(date);
@@ -648,13 +645,6 @@ function renderUpcomingEvents() {
       .filter(e=>e?.date>=today&&/^\d{4}-\d{2}-\d{2}$/.test(e?.date||""))
       .sort((a,b)=>a.date.localeCompare(b.date));
     const planned=allUpcoming.filter(e=>guestInterestDates.has(e.date));
-    const badge=document.getElementById("plannedEventsCount");
-    if(badge)badge.textContent=String(planned.length);
-    for(const button of document.querySelectorAll("[data-events-view]")) {
-        const active=(button.dataset.eventsView==="planned")===showOnlyPlannedEvents;
-        button.classList.toggle("active",active);
-        button.setAttribute("aria-pressed",String(active));
-    }
     const upcoming=showOnlyPlannedEvents?planned:allUpcoming;
     if(!upcoming.length) {
         const empty=document.createElement("div");
@@ -943,6 +933,9 @@ function attachEventListeners() {
             if(nav.dataset.baliNav==="id"&&!window.BaliAuth?.isRegistered?.()){
                 window.BaliAuth?.open?.();return;
             }
+            // The Calendar tab always opens all events; the personal
+            // "Мои планы" view remains available from the profile page.
+            if(nav.dataset.baliNav==="events")showOnlyPlannedEvents=false;
             navigateGuestPage(nav.dataset.baliNav);
         });
     }
@@ -993,6 +986,7 @@ function attachEventListeners() {
         event.preventDefault();showGuestSection("menu");
     });
     document.getElementById("eventsNavBtn")?.addEventListener("click",()=>{
+        showOnlyPlannedEvents=false;
         showGuestSection("events");
     });
 
@@ -1005,12 +999,6 @@ function attachEventListeners() {
     document.getElementById("accountMyOrdersBtn")?.addEventListener("click",()=>{
         document.getElementById("closeAuth")?.click();
         void openMyOrders();
-    });
-    document.getElementById("eventsViewTabs")?.addEventListener("click",event=>{
-        const button=event.target.closest("button[data-events-view]");
-        if(!button)return;
-        showOnlyPlannedEvents=button.dataset.eventsView==="planned";
-        renderUpcomingEvents();
     });
 
     const eventSelect = document.getElementById('eventSelect');
