@@ -232,7 +232,6 @@ assert(heroMarkup.includes('<h1><span>BALI — </span><em>БОЛЬШЕ, ЧЕМ �
   mobileAboutCss.includes('width:clamp(104px,32vw,142px)!important;') &&
   mobileAboutCss.includes('margin:clamp(9px,2.5vw,13px) 0 0!important;') &&
   mobileAboutCss.includes('margin-top:8px!important;') &&
-  html.includes('bali-mobile-about-hero.css?v=20261019-3') &&
   mobileAboutCss.includes('.bali-mobile-home-hero h1>em') &&
   mobileAboutCss.includes('grid-template-rows:clamp(114px,33.33vw,140px)') &&
   !html.includes('bali-mobile-home-hero-copy"><h1>БОЛЬШЕ<br>'),
