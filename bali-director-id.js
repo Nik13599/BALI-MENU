@@ -3,6 +3,7 @@
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,collection,query,where,limit,getDocs,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getFunctions,httpsCallable} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-functions.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const TIERS=["Member","Silver","Gold","Platinum","Black","Private"];
@@ -111,4 +112,33 @@ $("directorAssignForm").addEventListener("submit",async event=>{
   }catch(error){
     status("directorSaveStatus","Не удалось назначить категорию: "+(error.code||"unknown")+". Проверьте опубликованные правила Firestore и роль директора.");
   }finally{isBusy=false;submit.disabled=false;}
+});
+/* Quantitative grants are server-side and entirely independent of cosmetic tiers. */
+const issueQuantity=httpsCallable(getFunctions(app,"europe-west1"),"issueBaliQuantity");
+$("directorBonusGrantForm")?.addEventListener("submit",async event=>{
+  event.preventDefault();
+  if(!authorized||!selectedUid||!auth.currentUser?.emailVerified){
+    status("directorBonusGrantStatus","Выберите гостя с активным BALI ID.");return;
+  }
+  const kind=$("directorBonusType").value;
+  const quantity=Number($("directorBonusQuantity").value);
+  const transferable=$("directorBonusTransferable").checked;
+  const reason=$("directorBonusReason").value.trim();
+  if(!["shot","cocktail","hookah","entry"].includes(kind)||!Number.isInteger(quantity)||quantity<1||quantity>500||reason.length<5){
+    status("directorBonusGrantStatus","Укажите вид, количество 1–500 и основание (не менее 5 символов).");return;
+  }
+  const destination=selectedUid,guestName=selectedGuestName,number=selectedId;
+  if(!confirm("Начислить "+quantity+" ед. ("+kind+") гостю "+guestName+" · BALI ID "+number+"?"))return;
+  const button=event.currentTarget.querySelector('button[type="submit"]');
+  button.disabled=true;status("directorBonusGrantStatus","Сохраняем начисление на сервере…");
+  try{
+    const response=(await issueQuantity({uid:destination,kind,quantity,transferable,reason})).data;
+    if(!response?.ok)throw Error("Server did not confirm");
+    status("directorBonusGrantStatus","Успешно начислено: "+quantity+" шт. гостю "+guestName+". Запись добавлена в историю.");
+  }catch(error){
+    const code=String(error.code||"");
+    status("directorBonusGrantStatus",code.includes("not-found")||code.includes("unavailable")
+      ?"Сервер количественных бонусов ещё не опубликован. Начисление не выполнено."
+      :"Не удалось начислить бонусы ("+(code||"server-error")+"). Начисление не подтверждено.");
+  }finally{button.disabled=false}
 });
