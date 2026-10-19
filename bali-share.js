@@ -19,7 +19,7 @@
     return {date,title,src:img?.currentSrc||img?.src||""};
   }
   function attach(){
-    for(const card of document.querySelectorAll("#eventsGrid .event-card,#homeEventCarousel .bali-home-event-card")){
+    for(const card of document.querySelectorAll("#eventsGrid .event-card")){
       if(card.querySelector(".bali-share-trigger"))continue;
       const button=document.createElement("button");
       button.type="button";button.className="bali-share-trigger";
@@ -34,7 +34,7 @@
   const observer=new MutationObserver(records=>{
     if(records.some(r=>r.addedNodes.length))attach();
   });
-  for(const root of [document.getElementById("eventsGrid"),document.getElementById("homeEventCarousel")]){
+  for(const root of [document.getElementById("eventsGrid")]){
     if(root)observer.observe(root,{childList:true});
   }
   attach();
