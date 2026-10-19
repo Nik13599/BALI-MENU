@@ -265,3 +265,34 @@ body.bali-guest-theme .bali-bank-dialog::backdrop{background:rgba(0,0,0,.8);back
   .bali-bank-grant{padding:4px 0}
 }
 @media(prefers-reduced-motion:reduce){.bali-bank-dialog::backdrop{backdrop-filter:none}}
+
+
+/* BALI ID banking surface: eliminate parent-page wheel/touch scrolling.
+   Only the separately opened operation history has a scrolling viewport. */
+body.bali-guest-theme[data-bali-page="id"]{
+  overscroll-behavior:none!important;
+}
+body.bali-guest-theme #baliIdSection,
+body.bali-guest-theme #baliIdSection>.container,
+body.bali-guest-theme #baliIdSection .bali-profile-card.bali-id-profile{
+  overscroll-behavior:none!important;
+  scrollbar-width:none!important;
+  overflow:hidden!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene{
+  touch-action:pan-y;
+}
+body.bali-guest-theme #baliIdSection .bali-id-card-back .bali-id-benefits{
+  touch-action:none;
+}
+.bali-bank-history-scroll{
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+}
+@media(max-height:480px){
+  body.bali-guest-theme #baliIdSection .bali-id-page-title{font-size:15px!important}
+  body.bali-guest-theme #baliIdSection .bali-id-heading{display:none!important}
+  body.bali-guest-theme #baliIdSection .bali-id-show-qr{min-height:28px!important;padding:3px!important}
+  body.bali-guest-theme #baliIdSection .bali-bank-actions button{height:30px!important}
+  body.bali-guest-theme #baliIdSection .bali-id-status{display:none!important}
+}

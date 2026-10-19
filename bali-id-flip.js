@@ -76,6 +76,19 @@ function onFaceClick(){
 }
 front.addEventListener("click",onFaceClick);
 back.addEventListener("click",onFaceClick);
+// On the static BALI ID dashboard the wheel flips the card instead of
+// scrolling the page. Throttle wheel bursts / momentum to one turn.
+let lastWheelFlip=0;
+scene.addEventListener("wheel",event=>{
+  if(Math.abs(event.deltaY)<5&&Math.abs(event.deltaX)<5)return;
+  if(document.querySelector(".bali-bank-dialog[open],.bali-id-qr-dialog[open]"))return;
+  event.preventDefault();
+  const now=performance.now();
+  if(now-lastWheelFlip<700||gesture||settling)return;
+  lastWheelFlip=now;
+  flip(!isFlipped);
+},{passive:false});
+
 for(const face of [front,back]){
   face.addEventListener("keydown",event=>{
     if(["Enter"," ","ArrowLeft","ArrowRight"].includes(event.key)){
