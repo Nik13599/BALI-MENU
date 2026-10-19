@@ -1,0 +1,127 @@
+/* Separate BALI ID page + two independent mobile shortcuts.
+   Keeps desktop account control and four-button mobile bottom navigation intact. */
+.bali-header-id-trigger,
+.bali-mobile-profile-fab{display:none}
+body.bali-guest-theme #baliIdSection[hidden]{display:none!important}
+body.bali-guest-theme #baliIdSection{
+  box-sizing:border-box;
+  min-height:calc(100dvh - var(--bali-header-height,70px));
+  padding:clamp(18px,3vw,42px) 12px 118px;
+  overflow-y:auto;
+  color:#f7fbf8;
+}
+body.bali-guest-theme #baliIdSection>.container{
+  max-width:950px;
+  width:100%;
+  height:auto!important;
+  max-height:none!important;
+  margin:auto;
+  overflow:visible!important;
+}
+body.bali-guest-theme #baliIdSection .bali-profile-card{
+  display:grid;
+  gap:clamp(16px,2.5vw,23px);
+  width:100%;
+  max-width:940px;
+  padding:clamp(16px,3.2vw,34px);
+  background:linear-gradient(145deg,rgba(8,11,15,.94),rgba(18,24,22,.94));
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:24px;
+  box-shadow:0 18px 65px rgba(0,0,0,.4);
+}
+body.bali-guest-theme #baliIdSection .bali-id-page-title{
+  margin:0 0 clamp(15px,2.7vw,27px);
+  font:850 clamp(23px,4.2vw,35px)/1.1 Manrope,Inter,sans-serif;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  color:#fff;
+}
+body.bali-guest-theme #profileSection .bali-profile-id-link{
+  border-color:rgba(185,255,81,.57);
+  color:#d9ffbd;
+}
+@media(min-width:1180px){
+  body.bali-guest-theme #baliIdSection{
+    position:fixed!important;
+    top:var(--bali-banner-height,0px)!important;
+    bottom:0!important;
+    left:var(--bali-pc-side,240px)!important;
+    right:0!important;
+    height:auto!important;
+    min-height:0!important;
+    width:auto!important;
+    padding:86px clamp(22px,2.4vw,38px) 28px!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:contain;
+    z-index:1;
+    background:transparent;
+  }
+}
+@media(max-width:767px){
+  /* The brand remains centred; ID replaces the top-right user pictogram. */
+  body.bali-guest-theme .header #accountBtn{display:none!important}
+  body.bali-guest-theme .header .bali-header-id-trigger{
+    appearance:none;
+    display:flex!important;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    flex-direction:column;
+    position:relative;
+    width:43px;min-width:43px;height:46px;
+    margin:0;padding:5px 1px;
+    background:transparent;
+    border:0;
+    border-radius:11px;
+    color:var(--bali-mobile-neon,var(--bt-primary,#b9ff51));
+    font:800 9px/1 Manrope,Inter,sans-serif;
+    letter-spacing:.05em;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  body.bali-guest-theme .header .bali-header-id-trigger svg{
+    display:block;width:27px;height:27px;
+  }
+  body.bali-guest-theme .header .bali-header-id-trigger:focus-visible,
+  body.bali-guest-theme #baliMobileProfileBtn:focus-visible{
+    outline:2px solid var(--bt-primary,#b9ff51);
+    outline-offset:2px;
+  }
+  body.bali-guest-theme #baliMobileProfileBtn{
+    appearance:none;
+    display:grid!important;
+    place-items:center;
+    position:fixed!important;
+    top:calc(var(--bali-banner-height,0px) + var(--bali-header-height,68px) + 8px);
+    right:calc(10px + env(safe-area-inset-right));
+    width:43px;height:43px;
+    margin:0;padding:8px;
+    border:1px solid rgba(185,255,81,.49);
+    border-radius:50%;
+    background:rgba(12,18,18,.93);
+    color:var(--bali-mobile-neon,var(--bt-primary,#b9ff51));
+    box-shadow:0 4px 15px rgba(0,0,0,.32);
+    cursor:pointer;
+    touch-action:manipulation;
+    z-index:1110;
+  }
+  body.bali-guest-theme #baliMobileProfileBtn svg{width:24px;height:24px;display:block}
+  body.bali-guest-theme[data-bali-page="profile"] #baliMobileProfileBtn{
+    border-color:var(--bali-mobile-neon,var(--bt-primary,#b9ff51));
+    background:rgba(26,40,26,.96);
+  }
+  body.bali-guest-theme #baliIdSection{
+    padding:15px 10px calc(93px + env(safe-area-inset-bottom));
+  }
+  body.bali-guest-theme #baliIdSection .bali-profile-card{
+    border-radius:17px;
+    padding:17px;
+  }
+  body.bali-guest-theme #baliIdSection .bali-id-card{
+    min-height:260px;
+    padding:17px;
+  }
+  /* Preserve readable card content when the floating profile control is nearby. */
+  body.bali-guest-theme #baliIdSection .bali-id-heading{padding-right:35px}
+}
