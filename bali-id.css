@@ -57,3 +57,14 @@ body.bali-guest-theme #profileSection .bali-profile-card{
   .bali-id-bottom small{font-size:9px}
 }
 @media(min-width:1180px){body.bali-guest-theme #profileSection.bali-profile-page{padding-left:clamp(240px,20vw,340px)}}
+
+/* Existing PC shell pinned the profile container to a fixed clipped viewport.
+   The new full-page identity card must remain vertically scrollable. */
+body.bali-guest-theme #profileSection>.container{
+  box-sizing:border-box!important;
+  height:auto!important;
+  max-height:none!important;
+  min-height:0!important;
+  overflow:visible!important;
+}
+body.bali-guest-theme #profileSection[hidden]{display:none!important}
