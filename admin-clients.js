@@ -22,7 +22,10 @@ function renderClients(){
     info.append(el("strong",c.name),el("small",c.phone+" · "+c.email));
     const view=el("button","История заказов");
     view.type="button";view.addEventListener("click",()=>openHistory(c));
-    card.append(info,view);list.append(card);
+    const tier=el("button","Privilege","client-privilege-button");
+    tier.type="button";
+    tier.addEventListener("click",()=>window.dispatchEvent(new CustomEvent("bali:admin:select-privilege",{detail:{uid:c.uid,name:c.name,email:c.email}})));
+    card.append(info,view,tier);list.append(card);
   }
   if(!entries.length)list.append(el("p",needle?"Совпадений среди загруженных клиентов нет.":"Клиентов пока нет."));
   if(!loadedAll&&authorized) {
