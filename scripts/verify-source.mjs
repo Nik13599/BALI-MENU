@@ -176,7 +176,7 @@ const mobileAboutAdminCss=source("bali-mobile-about-admin.css");
 assert(html.includes('id="baliMobileAboutBackgroundA"') &&
   html.includes('id="baliMobileAboutBackgroundB"') &&
   html.includes('id="baliMobileAboutBackgroundDots"') &&
-  html.includes('bali-mobile-about-hero.css?v=20261019-4') &&
+  html.includes('bali-mobile-about-hero.css?v=20261019-5') &&
   html.includes('bali-mobile-about-hero.js?v=20261019-1') &&
   mobileAboutCss.includes('@media(max-width:767px)') &&
   mobileAboutCss.includes('object-fit:cover!important') &&
@@ -214,26 +214,33 @@ assert(heroMarkup.includes('<h1><span>BALI — </span><em>БОЛЬШЕ, ЧЕМ �
   !heroMarkup.includes('презентации') &&
   heroMarkup.includes('И многое другое') &&
   heroMarkup.includes('class="bali-mobile-hero-formats"') &&
-  (heroMarkup.match(/class="bali-mobile-hero-chip(?: bali-mobile-hero-chip-wide)?"/g)||[]).length === 5 &&
+  (heroMarkup.match(/class="bali-mobile-hero-chip"/g)||[]).length === 5 &&
   !heroMarkup.includes('<p class="bali-mobile-hero-formats"') &&
   !heroMarkup.includes('<button class="bali-mobile-hero-chip"') &&
-  mobileAboutCss.includes('grid-template-columns:repeat(3,minmax(0,1fr))!important') &&
-  mobileAboutCss.includes('grid-column:span 2!important') &&
+  mobileAboutCss.includes('grid-template-columns:repeat(6,minmax(0,1fr))!important') &&
+  mobileAboutCss.includes('grid-column:2/span 2!important') &&
+  mobileAboutCss.includes('grid-column:4/span 2!important') &&
   mobileAboutCss.includes('font:550 clamp(9px,2.5vw,12px)/1.08') &&
+  mobileAboutCss.includes('gap:7px 10px!important') &&
+  mobileAboutCss.includes('grid-template-rows:repeat(2,26px)!important') &&
+  mobileAboutCss.includes('height:26px!important') &&
+  mobileAboutCss.includes('-webkit-backdrop-filter:blur(9px) saturate(125%)!important') &&
+  mobileAboutCss.includes('background:rgba(238,255,246,.075)!important') &&
+  !heroMarkup.includes('bali-mobile-hero-chip-wide') &&
   mobileAboutCss.includes('pointer-events:none!important') &&
   mobileAboutCss.includes('margin-top:clamp(7px,2.2vw,10px)!important') &&
   mobileAboutCss.includes('justify-content:flex-start!important') &&
-  html.includes('bali-mobile-about-hero.css?v=20261019-4') &&
+  html.includes('bali-mobile-about-hero.css?v=20261019-5') &&
   heroMarkup.includes('id="baliMobileAboutBtn"') &&
   !heroMarkup.includes('БОЛЬШЕ<br>ЧЕМ<br>КЛУБ') &&
-  mobileAboutCss.includes('clamp(119px,33.33vw,150px)') &&
+  mobileAboutCss.includes('clamp(138px,37vw,165px)') &&
   mobileAboutCss.includes('white-space:nowrap!important') &&
   mobileAboutCss.includes('.bali-mobile-hero-formats') &&
   mobileAboutCss.includes('width:clamp(104px,32vw,142px)!important;') &&
   mobileAboutCss.includes('margin:clamp(9px,2.5vw,13px) 0 0!important;') &&
   mobileAboutCss.includes('margin-top:8px!important;') &&
   mobileAboutCss.includes('.bali-mobile-home-hero h1>em') &&
-  mobileAboutCss.includes('grid-template-rows:clamp(114px,33.33vw,140px)') &&
+  mobileAboutCss.includes('grid-template-rows:clamp(135px,36vw,155px)') &&
   !html.includes('bali-mobile-home-hero-copy"><h1>БОЛЬШЕ<br>'),
   "Mobile BALI About must use owner's exact compact headline, venue details and proportional height");
 // v87 PC viewport is a fixed full-width, full-height 3-column dashboard.
