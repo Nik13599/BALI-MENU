@@ -1,0 +1,162 @@
+/* BALI ID flip + temporary QR dialog.
+   A live, staff-verifiable QR is issued ONLY by authenticated Firebase Cloud Functions.
+   No static guest ID / UID / unauthenticated QR is ever treated as a valid pass. */
+import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getFunctions,httpsCallable} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-functions.js";
+
+const $=id=>document.getElementById(id);
+const scene=$("baliIdFlipScene"),track=$("baliIdFlipTrack"),front=$("baliIdFront"),back=$("baliIdBack");
+const help=$("baliIdFlipHelp");
+const dialog=$("baliQrDialog"),showBtn=$("baliShowQr"),closeBtn=$("baliQrClose");
+const image=$("baliQrImage"),message=$("baliQrMessage"),expiry=$("baliQrExpires"),refresh=$("baliQrRefresh");
+if(!scene||!track||!front||!back||!dialog||!showBtn||!image){
+  throw new Error("BALI ID flip markup is missing.");
+}
+
+let isFlipped=false,touchStart=null,lastSwiped=0;
+function flip(toBack,{focus=false}={}){
+  isFlipped=Boolean(toBack);
+  track.classList.toggle("is-flipped",isFlipped);
+  front.setAttribute("aria-hidden",String(isFlipped));
+  back.setAttribute("aria-hidden",String(!isFlipped));
+  front.tabIndex=isFlipped?-1:0;
+  back.tabIndex=isFlipped?0:-1;
+  if(help)help.textContent=isFlipped
+    ?"← Свайпните или нажмите, чтобы увидеть лицевую сторону →"
+    :"← Свайпните карту влево или вправо, чтобы перевернуть →";
+  if(focus)(isFlipped?back:front).focus({preventScroll:true});
+}
+function onFaceClick(event){
+  if(Date.now()-lastSwiped<500)return;
+  // Clicking outside a text selection changes the card side.
+  if(window.getSelection?.()?.toString()?.trim())return;
+  flip(!isFlipped);
+}
+front.addEventListener("click",onFaceClick);
+back.addEventListener("click",onFaceClick);
+for(const face of [front,back]){
+  face.addEventListener("keydown",event=>{
+    if(["Enter"," ","ArrowLeft","ArrowRight"].includes(event.key)){
+      event.preventDefault();
+      flip(!isFlipped,{focus:true});
+    }
+  });
+}
+scene.addEventListener("touchstart",event=>{
+  if(event.touches.length!==1){touchStart=null;return;}
+  const point=event.touches[0];
+  touchStart={x:point.clientX,y:point.clientY};
+},{passive:true});
+scene.addEventListener("touchend",event=>{
+  if(!touchStart||event.changedTouches.length!==1){touchStart=null;return;}
+  const point=event.changedTouches[0];
+  const dx=point.clientX-touchStart.x,dy=point.clientY-touchStart.y;
+  touchStart=null;
+  // Left and right both flip the current side. Vertical swipes keep page scrolling.
+  if(Math.abs(dx)>=48&&Math.abs(dx)>Math.abs(dy)*1.25){
+    lastSwiped=Date.now();
+    flip(!isFlipped);
+  }
+},{passive:true});
+scene.addEventListener("touchcancel",()=>{touchStart=null;});
+flip(false);
+
+const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
+const auth=getAuth(app);
+let qrTimer=null,validUntil=0,requestSequence=0,busy=false;
+function setMessage(text){message.textContent=text;message.hidden=!text;}
+function clearQr({close=false}={}){
+  ++requestSequence;
+  if(qrTimer)clearInterval(qrTimer);
+  qrTimer=null;validUntil=0;busy=false;
+  image.removeAttribute("src");
+  image.hidden=true;
+  if(expiry)expiry.textContent="";
+  if(refresh)refresh.hidden=true;
+  if(close&&dialog.open)dialog.close();
+}
+function updateExpiry(){
+  if(!dialog.open)return;
+  const seconds=Math.max(0,Math.ceil((validUntil-Date.now())/1000));
+  if(seconds>0){
+    expiry.textContent="QR действителен ещё "+seconds+" сек.";
+    return;
+  }
+  if(qrTimer)clearInterval(qrTimer);
+  qrTimer=null;
+  image.hidden=true;image.removeAttribute("src");
+  expiry.textContent="";
+  setMessage("Срок действия QR истёк. Создайте новый код.");
+  refresh.hidden=false;
+}
+function readableError(error){
+  const code=String(error?.code||"");
+  if(["functions/not-found","functions/unimplemented","functions/unavailable"].includes(code))
+    return "Безопасный QR-код пока недоступен: сервер проверки BALI ID ещё не подключён.";
+  if(["functions/unauthenticated","functions/permission-denied"].includes(code))
+    return "Нет доступа к QR-коду. Войдите в подтверждённый аккаунт BALI.";
+  if(code==="functions/resource-exhausted")
+    return "Подождите несколько секунд перед повторным запросом QR.";
+  if(code==="functions/failed-precondition"||code==="functions/not-found")
+    return "Сначала активируйте персональную карту BALI ID.";
+  return "Не удалось получить защищённый QR-код. Повторите попытку позже.";
+}
+async function issueQr(){
+  if(busy)return;
+  busy=true;
+  const sequence=++requestSequence;
+  if(qrTimer)clearInterval(qrTimer);
+  qrTimer=null;validUntil=0;
+  image.hidden=true;image.removeAttribute("src");
+  expiry.textContent="";
+  refresh.hidden=true;
+  setMessage("Создаём временный QR-код…");
+  try{
+    const uid=auth.currentUser?.uid;
+    if(!uid||!auth.currentUser?.emailVerified||!window.BaliAuth?.isRegistered?.())
+      throw Object.assign(new Error("Требуется регистрация"),{code:"functions/unauthenticated"});
+    const functions=getFunctions(app,"europe-west1");
+    const call=httpsCallable(functions,"issueGuestQr");
+    const result=(await call({})).data;
+    if(sequence!==requestSequence||!dialog.open||uid!==auth.currentUser?.uid)return;
+    // This image must be generated by the protected backend for the current guest.
+    if(!result||!/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(result.qrDataUrl||"")
+      ||!Number.isFinite(result.expiresAt)||result.expiresAt<=Date.now())
+      throw new Error("Неверный ответ сервера");
+    image.src=result.qrDataUrl;
+    image.hidden=false;
+    validUntil=result.expiresAt;
+    setMessage("");
+    updateExpiry();
+    qrTimer=setInterval(updateExpiry,1000);
+  }catch(error){
+    if(sequence!==requestSequence||!dialog.open)return;
+    image.hidden=true;
+    setMessage(readableError(error));
+    // A missing backend is not a retryable guest-side issue.
+    refresh.hidden=["functions/not-found","functions/unimplemented","functions/unavailable"].includes(error?.code)?true:false;
+  }finally{
+    if(sequence===requestSequence)busy=false;
+  }
+}
+showBtn.addEventListener("click",()=>{
+  // A QR cannot be issued before the user has a verified BALI account.
+  if(!auth.currentUser?.emailVerified||!window.BaliAuth?.isRegistered?.()){
+    window.BaliAuth?.open?.();
+    return;
+  }
+  if(!dialog.open)dialog.showModal();
+  void issueQr();
+});
+closeBtn?.addEventListener("click",()=>dialog.close());
+refresh?.addEventListener("click",()=>void issueQr());
+dialog.addEventListener("click",event=>{if(event.target===dialog)dialog.close();});
+dialog.addEventListener("close",()=>clearQr());
+window.addEventListener("pagehide",()=>clearQr({close:true}));
+onAuthStateChanged(auth,user=>{
+  if(!user||!user.emailVerified){clearQr({close:true});flip(false);}
+});
+window.addEventListener("bali:auth-state",event=>{
+  if(!event.detail?.registered){clearQr({close:true});flip(false);}
+});
