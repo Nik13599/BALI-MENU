@@ -1,60 +1,48 @@
-/* Tea menu: compact editorial cards with the same information icon and
-   detail dialog as kitchen dishes. Tea remains browse-only. */
-#menuPage #baliTeaList .bali-tea-card-grid{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  column-gap:13px;row-gap:13px;
-  border:0;
+/* BALI tea tiles reuse the kitchen menu-category-block, menu-grid and
+   menu-item components. The desktop kitchen grid is six columns at >=1180px;
+   the phone kitchen layout is a single vertical list. */
+#menuPage #baliTeaContent{
+  padding:10px 0 95px!important;
+}
+#menuPage #baliTeaList{
+  box-sizing:border-box;
+  width:100%;
+  max-width:1360px;
+  margin-inline:auto;
+  padding-inline:clamp(12px,2.8vw,28px);
+  gap:clamp(27px,4vw,45px);
 }
 #menuPage #baliTeaList .bali-tea-item.menu-item{
-  position:relative!important;
-  display:block!important;
-  min-width:0!important;
-  width:100%!important;
-  max-width:none!important;
-  min-height:124px!important;
-  margin:0!important;
-  padding:22px 65px 19px 21px!important;
-  border:1px solid rgba(255,255,255,.13)!important;
-  border-radius:15px!important;
-  background:linear-gradient(142deg,rgba(42,44,46,.96),rgba(19,22,24,.97))!important;
-  box-shadow:0 9px 26px rgba(0,0,0,.14)!important;
-  box-sizing:border-box!important;
-  color:#f1f1ed!important;
-  overflow:visible!important;
+  min-width:0;
+  height:100%;
+  cursor:default;
 }
-#menuPage #baliTeaList .bali-tea-item .bali-tea-card-content{
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  gap:11px;
-  margin:0!important;
-  padding:0!important;
+/* Kitchen cards devote this footprint to quantity + add-to-cart controls.
+   Tea shows no ordering widgets but keeps the same card dimensions. */
+#menuPage #baliTeaList .bali-tea-actions-spacer{
+  flex:0 0 auto;
+  height:34px;
+  margin-top:auto;
+  pointer-events:none;
 }
-#menuPage #baliTeaList .bali-tea-item .bali-bar-product-name{
-  display:block;
-  margin:0!important;
-  padding:0!important;
-  font:730 clamp(14px,1.2vw,17px)/1.4 Manrope,Inter,sans-serif!important;
-  color:#f4f4f1!important;
-  letter-spacing:-.02em;
+@media(min-width:1180px){
+  #menuPage #baliTeaList .bali-tea-actions-spacer{height:60px}
 }
-#menuPage #baliTeaList .bali-tea-card-prices{
-  display:flex;
-  flex-wrap:wrap;gap:12px;
+@media(max-width:767px){
+  #menuPage #baliTeaContent{padding:10px 0 105px!important}
+  #menuPage #baliTeaList{padding-inline:9px;gap:29px}
+  /* No photo was supplied for the tea items, so let text occupy the row
+     rather than reserving an empty 90px image column. */
+  #menuPage #baliTeaList .bali-tea-item.menu-item--no-image{
+    grid-template-columns:minmax(0,1fr);
+    min-height:113px;
+  }
+  #menuPage #baliTeaList .bali-tea-actions-spacer{height:31px}
 }
-#menuPage #baliTeaList .bali-tea-card-price{
-  display:flex;align-items:baseline;gap:7px;
-  font:760 16px/1.3 Manrope,Inter,sans-serif;
-  color:var(--bt-primary,#d7efb8);
-  font-variant-numeric:tabular-nums;
+@media(max-width:359px){
+  #menuPage #baliTeaList .bali-tea-item.menu-item--no-image{min-height:108px}
 }
-#menuPage #baliTeaList .bali-tea-card-price small{
-  font:500 11px/1.3 Manrope,Inter,sans-serif;color:#a7adae;
-}
-#menuPage #baliTeaList .bali-tea-item .menu-details-btn{
-  top:16px!important;right:15px!important;
-}
+
 #baliTeaDetailsDialog .bali-menu-details-body{padding-bottom:32px!important}
 #baliTeaDetailsDialog .bali-menu-details-label{margin-top:13px}
 #baliTeaDetailsDialog .bali-tea-details-source{
