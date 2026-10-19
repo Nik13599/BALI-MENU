@@ -21,6 +21,7 @@ jobs:
         run: |
           node --check app.js
           node --input-type=module --check < auth.js
+          node --input-type=module --check < bali-id-flip.js
           node --input-type=module --check < menu-firestore.js
           node --input-type=module --check < admin-firestore.js
           node --input-type=module --check < menu-seed.js
