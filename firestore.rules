@@ -21,7 +21,7 @@ service cloud.firestore {
     }
 
     match /users/{uid} {
-      allow get: if signedInAs(uid) || isAdmin();
+      allow get: if signedInAs(uid) || isAdmin() || isDirector();
       allow list: if isAdmin();
       allow create: if signedInAs(uid)
         && validProfile(request.resource.data, uid)
@@ -60,8 +60,8 @@ service cloud.firestore {
         && getAfter(baliIdCounterPath()).data.updatedAt == request.time;
     }
     match /baliIds/{uid} {
-      allow get: if signedInAs(uid) || isAdmin();
-      allow list: if isAdmin();
+      allow get: if signedInAs(uid) || isAdmin() || isDirector();
+      allow list: if isAdmin() || isDirector();
       allow create: if signedInAs(uid)
         && exists(/databases/$(database)/documents/users/$(uid))
         && validBaliId(uid);
@@ -91,21 +91,27 @@ service cloud.firestore {
         && validBaliCounter()
         && request.resource.data.count == resource.data.count + 1;
     }
-    // A guest can read their own privilege, but cannot write/upgrade it.
-    // Only verified admins may grant tiers and their private benefits.
+    // Newly registered guests may create ONLY their default Member card.
+    // All later upgrades and personal benefits require a director or admin.
     function validPrivilege(data, uid) {
       return data.keys().hasAll(['uid','tier','benefits','updatedAt','updatedBy'])
         && data.keys().hasOnly(['uid','tier','benefits','updatedAt','updatedBy'])
         && data.uid == uid
-        && data.tier in ['Member','Silver','Black','Private']
+        && data.tier in ['Member','Silver','Gold','Platinum','Black','Private']
         && data.benefits is list && data.benefits.size() <= 10
         && data.updatedAt == request.time
         && data.updatedBy == request.auth.uid;
     }
     match /guestPrivileges/{uid} {
-      allow get: if signedInAs(uid) || isAdmin();
+      allow get: if signedInAs(uid) || isAdmin() || isDirector();
       allow list: if isAdmin();
-      allow create, update: if isAdmin()
+      allow create: if exists(/databases/$(database)/documents/users/$(uid))
+        && validPrivilege(request.resource.data,uid)
+        && ((isAdmin() || isDirector()) ||
+           (signedInAs(uid)
+             && request.resource.data.tier == 'Member'
+             && request.resource.data.benefits.size() == 0));
+      allow update: if (isAdmin() || isDirector())
         && exists(/databases/$(database)/documents/users/$(uid))
         && validPrivilege(request.resource.data,uid);
       allow delete: if false;
@@ -117,8 +123,8 @@ service cloud.firestore {
         && request.resource.data.keys().hasAll(['levels','updatedAt'])
         && request.resource.data.keys().hasOnly(['levels','updatedAt'])
         && request.resource.data.levels is map
-        && request.resource.data.levels.keys().hasAll(['Member','Silver','Black','Private'])
-        && request.resource.data.levels.keys().hasOnly(['Member','Silver','Black','Private'])
+        && request.resource.data.levels.keys().hasAll(['Member','Silver','Gold','Platinum','Black','Private'])
+        && request.resource.data.levels.keys().hasOnly(['Member','Silver','Gold','Platinum','Black','Private'])
         && request.resource.data.updatedAt == request.time;
     }
 
@@ -145,6 +151,19 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true;
     }
 
+    // The director role is assigned manually by the Firebase project owner.
+    // Visitors cannot self-assign staff roles; admins keep their existing role.
+    function isDirector() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/staffRoles/$(request.auth.uid))
+        && get(/databases/$(database)/documents/staffRoles/$(request.auth.uid)).data.role == 'director'
+        && get(/databases/$(database)/documents/staffRoles/$(request.auth.uid)).data.active == true;
+    }
+    match /staffRoles/{uid} {
+      allow get: if signedInAs(uid) || isAdmin();
+      allow list, create, update, delete: if false;
+    }
     match /admins/{uid} {
       allow get: if signedInAs(uid);
       allow list, create, update, delete: if false;
