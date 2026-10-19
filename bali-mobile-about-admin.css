@@ -1,0 +1,35 @@
+/* Studio editor for independently published mobile About photos. */
+.bali-mobile-about-editor .bali-mobile-about-admin-list-heading{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  gap:8px;margin:22px 0 10px;
+}
+.bali-mobile-about-admin-list-heading h4{margin:0;color:#f0f5ef;font-size:16px}
+.bali-mobile-about-admin-list-heading small{color:#aebeb0;line-height:1.45}
+.bali-mobile-about-admin-list{display:grid;gap:10px}
+.bali-mobile-about-admin-entry{
+  display:grid;grid-template-columns:minmax(90px,150px) minmax(0,1fr);
+  gap:12px;align-items:center;
+  box-sizing:border-box;width:100%;min-width:0;
+  border:1px solid rgba(185,255,81,.19);border-radius:13px;
+  padding:10px;background:#13191c;
+}
+.bali-mobile-about-admin-entry img{
+  display:block;width:100%;aspect-ratio:2/1;height:auto;object-fit:cover;
+  border-radius:9px;
+}
+.bali-mobile-about-admin-entry p{margin:0 0 7px;color:#dbe8dc;font-size:12px}
+.bali-mobile-about-admin-entry .bali-mobile-about-entry-state{color:#b9ff51;font-size:11px;font-weight:780}
+.bali-mobile-about-admin-entry .bali-mobile-about-entry-actions{
+  display:flex;flex-wrap:wrap;gap:6px;
+}
+.bali-mobile-about-admin-entry button{
+  min-height:34px;padding:6px 10px;
+  border:1px solid rgba(210,231,215,.34);
+  border-radius:8px;background:#222b29;color:#fff;
+  font:720 12px Manrope,Inter,sans-serif;cursor:pointer
+}
+.bali-mobile-about-admin-entry button:hover,
+.bali-mobile-about-admin-entry button:focus-visible{border-color:#b9ff51}
+.bali-mobile-about-admin-entry button:disabled{opacity:.35;cursor:not-allowed}
+.bali-mobile-about-admin-entry button[data-remove]{color:#ffbdad;border-color:#7e4a4a}
+@media(max-width:580px){.bali-mobile-about-admin-entry{grid-template-columns:minmax(0,1fr)}}

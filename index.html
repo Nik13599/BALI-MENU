@@ -43,6 +43,7 @@
     <link rel="stylesheet" href="bali-id-flip.css?v=20261019-4">
     <link rel="stylesheet" href="bali-id-tiers.css?v=20261019-3">
     <link rel="stylesheet" href="bali-info-page.css?v=20261019-2">
+    <link rel="stylesheet" href="bali-mobile-about-hero.css?v=20261019-1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
@@ -141,11 +142,16 @@
       <div class="container bali-home-inner">
         <!-- Reference mobile composition; artwork and event data remain live. -->
         <section class="bali-mobile-home-hero" aria-label="BALI — больше чем клуб">
+          <div class="bali-mobile-about-backgrounds" aria-hidden="true">
+            <img id="baliMobileAboutBackgroundA" class="bali-mobile-about-bg is-active" alt="" decoding="async">
+            <img id="baliMobileAboutBackgroundB" class="bali-mobile-about-bg" alt="" decoding="async">
+          </div>
           <div class="bali-mobile-home-hero-copy">
             <h1>БОЛЬШЕ<br>ЧЕМ<br>КЛУБ</h1>
             <p>МУЗЫКА<br>ЛЮДИ<br>АТМОСФЕРА<br>ТЫ</p>
             <button type="button" id="baliMobileAboutBtn" class="bali-mobile-about-action">О КЛУБЕ <span aria-hidden="true">→</span></button>
           </div>
+          <div class="bali-mobile-about-background-dots" id="baliMobileAboutBackgroundDots" role="group" aria-label="Фоны блока «О клубе»" hidden></div>
         </section>
         <!-- Existing live events and offers, adapted via mobile-only grid. -->
         <!-- Верхняя зона: календарь и горизонтальная карусель -->
@@ -776,6 +782,7 @@
     <script type="module" src="bali-home-design.js?v=20261018-106"></script>
     <script type="module" src="bali-site-content.js?v=20261018-100"></script>
     <script src="bali-info-page.js?v=20261019-1" defer></script>
+    <script type="module" src="bali-mobile-about-hero.js?v=20261019-1"></script>
     <script type="module" src="bali-home-placeholder.js?v=20261018-92"></script>
 
     <script type="module" src="bali-pc-offers.js?v=20261018-106"></script>
