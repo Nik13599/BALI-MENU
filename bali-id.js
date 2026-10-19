@@ -46,10 +46,10 @@ function renderWallet(){
     return (!expires||expires>Date.now())&&(g.unlimited||g.kind==="discount"||g.remaining>0);
   });
   // Entries with different expiration dates stay distinct: avoid combining expiry incorrectly.
-  for(const g of active.slice(0,12)){
+  for(const [index,g] of active.entries()){
     const name=bonusLabels[g.kind]||g.kind;
     const count=g.kind==="discount"?g.percent+"%":g.unlimited?"∞":String(g.remaining);
-    const chip=document.createElement("span");chip.textContent=name+" "+count;tiny.append(chip);
+    if(index<4){const chip=document.createElement("span");chip.textContent=name+" "+count;tiny.append(chip);}
     const card=document.createElement("div");card.className="bali-id-balance";
     const value=document.createElement("strong");value.textContent=count;
     const label=document.createElement("span");label.textContent=name;
