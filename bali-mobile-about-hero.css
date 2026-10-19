@@ -213,11 +213,11 @@
     justify-content:space-between!important;
     align-items:center!important;
     box-sizing:border-box!important;
-    width:clamp(112px,37vw,160px)!important;
+    width:clamp(104px,32vw,142px)!important;
     min-width:0!important;
     min-height:0!important;
     height:clamp(26px,7.7vw,34px)!important;
-    margin:clamp(5px,1.3vw,8px) 0 0!important;
+    margin:clamp(9px,2.5vw,13px) 0 0!important;
     padding:4px clamp(10px,3vw,15px)!important;
     gap:6px!important;
     border:0!important;
@@ -251,6 +251,6 @@
   }
   body.bali-guest-theme #homeSection .bali-mobile-about-action{
     height:clamp(25px,7vw,31px)!important;
-    margin-top:4px!important;
+    margin-top:8px!important;
   }
 }
