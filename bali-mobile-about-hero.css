@@ -1,0 +1,108 @@
+/* Mobile BALI About top banner.
+ * Uploaded backgrounds appear below live typography. No PC/tablet changes. */
+@media(max-width:767px){
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero{
+    position:relative!important;
+    isolation:isolate!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+    border:1px solid rgba(220,236,221,.18)!important;
+    border-radius:clamp(13px,4.3vw,21px)!important;
+    background:
+      radial-gradient(ellipse at 85% 35%,rgba(96,154,74,.29),transparent 65%),
+      linear-gradient(125deg,#0a1111 15%,#1a2c24 70%,#080a0d 100%)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero::before{
+    content:""!important;
+    position:absolute!important;
+    z-index:1!important;
+    inset:0!important;
+    pointer-events:none!important;
+    background:linear-gradient(90deg,rgba(5,8,8,.94) 0%,rgba(5,8,8,.75) 35%,rgba(5,8,8,.10) 90%)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero::after{
+    content:"";
+    position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:linear-gradient(180deg,transparent 62%,rgba(0,0,0,.28));
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-backgrounds{
+    position:absolute!important;
+    z-index:0!important;
+    inset:0!important;
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    overflow:hidden!important;
+    pointer-events:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-bg{
+    position:absolute!important;
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
+    display:block!important;
+    object-fit:cover!important;
+    object-position:center center!important;
+    opacity:0;
+    transform:scale(1.035);
+    transition:opacity 850ms ease,transform 8s linear;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-bg.is-active{
+    opacity:1!important;
+    transform:scale(1)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-bg:not([src]){
+    visibility:hidden!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero-copy{
+    position:relative!important;
+    z-index:3!important;
+    display:block!important;
+    max-width:68%!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero h1,
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero p{
+    text-shadow:0 2px 8px rgba(0,0,0,.85),0 1px 25px rgba(0,0,0,.65)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-action{
+    position:relative!important;
+    z-index:4!important;
+    box-shadow:0 4px 18px rgba(0,0,0,.37)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-background-dots{
+    position:absolute;
+    right:clamp(9px,3vw,17px);
+    bottom:clamp(8px,1.4dvh,14px);
+    z-index:5;
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:6px;
+    max-width:40%;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-background-dots[hidden]{display:none!important}
+  body.bali-guest-theme #homeSection .bali-mobile-about-background-dots button{
+    appearance:none;
+    width:15px;height:4px;
+    padding:0;margin:0;
+    border:0;border-radius:8px;
+    background:rgba(255,255,255,.55);
+    cursor:pointer;
+    touch-action:manipulation;
+    transition:background .25s,width .25s;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-background-dots button[aria-pressed="true"]{
+    width:25px;background:var(--bali-mobile-neon,#b9ff51);
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-background-dots button:focus-visible{
+    outline:2px solid #b9ff51;outline-offset:5px;
+  }
+}
+@media(max-width:767px) and (prefers-reduced-motion:reduce){
+  body.bali-guest-theme #homeSection .bali-mobile-about-bg{
+    transform:none!important;transition:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-background-dots button{transition:none!important}
+}
