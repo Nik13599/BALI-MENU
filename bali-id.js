@@ -1,26 +1,34 @@
 /* BALI ID / Privilege — user-specific, Firestore-backed, no shared local IDs. */
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {getFirestore,doc,getDoc,onSnapshot,runTransaction,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getFirestore,doc,getDoc,setDoc,onSnapshot,runTransaction,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 const $=id=>document.getElementById(id);
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app);
+const TIERS=["Member","Silver","Gold","Platinum","Black","Private"];
+// Default copy mirrors the six approved BALI ID category references.
+// These descriptions do not issue free products or discounts.
 const DEFAULTS={
-  Member:{description:"Ваш первый уровень BALI PRIVILEGE.",criteria:"Регистрация в BALI.",benefits:["Персональная цифровая карта гостя"]},
-  Silver:{description:"Больше возможностей для постоянных гостей.",criteria:"Назначает администратор.",benefits:[]},
-  Black:{description:"Специальные привилегии клуба.",criteria:"Назначает администратор.",benefits:[]},
-  Private:{description:"Индивидуальные условия BALI.",criteria:"Назначает администратор.",benefits:[]}
+  Member:{description:"Ваш первый уровень BALI PRIVILEGE.",criteria:"Автоматически после регистрации.",benefits:["Персональная цифровая карта гостя"]},
+  Silver:{description:"Ваш уровень с первыми дополнительными привилегиями.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Дополнительные клубные преимущества"]},
+  Gold:{description:"Ваш уровень с расширенными преимуществами.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Расширенные клубные привилегии"]},
+  Platinum:{description:"Ваш премиальный уровень BALI PRIVILEGE.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Премиальные преимущества"]},
+  Black:{description:"Ваш уровень с особыми клубными привилегиями.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Особые клубные привилегии"]},
+  Private:{description:"Закрытый статус по приглашению.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Индивидуальные привилегии по решению администрации"]}
 };
 let privilegedUnsub=null,rulesUnsub=null,session=0,profile=null,rules=DEFAULTS,privilege=null,activeUid=null;
 const displayNumber=n=>Number.isSafeInteger(n)&&n>0?String(n).padStart(6,"0"):"— — — — — —";
 const cleanText=x=>typeof x==="string"?x.trim():"";
 const setText=(id,value)=>{if($(id))$(id).textContent=value;};
 function render(){
-  const tier=["Member","Silver","Black","Private"].includes(privilege?.tier)?privilege.tier:"Member";
+  const tier=TIERS.includes(privilege?.tier)?privilege.tier:"Member";
+  const cardScene=$("baliIdFlipScene");
+  if(cardScene)cardScene.dataset.baliTier=tier.toLowerCase();
   const config=rules[tier]||DEFAULTS[tier];
   setText("baliCardName",cleanText(profile?.name)||"ГОСТЬ BALI");
   setText("baliCardTier",tier.toUpperCase());
   setText("baliBenefitsTier",tier.toUpperCase());
+  setText("baliCardHeaderTier",tier.toUpperCase());
   setText("baliBenefitsDescription",cleanText(config?.description)||DEFAULTS[tier].description);
   const values=[...(Array.isArray(config?.benefits)?config.benefits:[]),
     ...(Array.isArray(privilege?.benefits)?privilege.benefits:[])].filter(x=>cleanText(x));
@@ -30,6 +38,28 @@ function render(){
       const line=document.createElement("li");line.textContent=text;list.append(line);
     }
     if(!values.length){const li=document.createElement("li");li.textContent="Индивидуальные предложения появятся здесь после назначения администратором.";list.append(li);}
+  }
+}
+async function ensureMemberAssignment(uid){
+  const ref=doc(db,"guestPrivileges",uid);
+  try{
+    const previous=await getDoc(ref);
+    if(previous.exists())return previous.data();
+    // A user may CREATE their own initial Member record exactly once; Firestore
+    // rules block any user updates or direct upgrades. Concurrent assignment by
+    // staff wins; a conflicting create is ignored and reread.
+    try{
+      await setDoc(ref,{uid,tier:"Member",benefits:[],updatedBy:uid,updatedAt:serverTimestamp()});
+    }catch(error){
+      const current=await getDoc(ref).catch(()=>null);
+      if(current?.exists())return current.data();
+      throw error;
+    }
+    return {uid,tier:"Member",benefits:[]};
+  }catch(error){
+    // During Firestore rules rollout the default Member artwork still works.
+    // Never let a missing assignment override an existing privilege locally.
+    return null;
   }
 }
 async function allocate(uid,run){
@@ -81,10 +111,11 @@ async function initializeForUser(user){
     if(run!==session)return;
     setText("baliIdStatus","");
     const [tierRules,assigned]=await Promise.all([
-      getDoc(doc(db,"privilegeRules","main")),getDoc(doc(db,"guestPrivileges",user.uid))
+      getDoc(doc(db,"privilegeRules","main")).catch(()=>null),
+      ensureMemberAssignment(user.uid)
     ]);
     if(run!==session)return;
-    if(tierRules.exists()){
+    if(tierRules?.exists()){
       const values=tierRules.data()?.levels||{};
       rules=Object.fromEntries(Object.keys(DEFAULTS).map(tier=>[tier,{
         description:cleanText(values[tier]?.description)||DEFAULTS[tier].description,
@@ -92,7 +123,7 @@ async function initializeForUser(user){
         benefits:Array.isArray(values[tier]?.benefits)?values[tier].benefits.filter(v=>typeof v==="string").slice(0,10):DEFAULTS[tier].benefits
       }]));
     }
-    if(assigned.exists())privilege=assigned.data();
+    if(assigned)privilege=assigned;
     render();
     rulesUnsub=onSnapshot(doc(db,"privilegeRules","main"),snapshot=>{
       if(run!==session||!snapshot.exists())return;
