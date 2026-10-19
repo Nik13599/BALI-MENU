@@ -38,7 +38,7 @@ function active(g,millis,eventRef){
   return (expiry===null||expiry>millis)&&(!g.eventRef||g.eventRef===eventRef);
 }
 function sanitizeGrant(g,millis){
-  return {id:g.id,kind:g.kind,remaining:g.remaining??null,unlimited:!!g.unlimited,percent:g.percent||null,appliesTo:g.appliesTo||null,eventRef:g.eventRef||null,expiresAt:g.expiresAt?.toMillis?.()||null,active:active(g,millis,null)&&((g.remaining??1)>0||g.unlimited)};
+  return {id:g.id,kind:g.kind,remaining:g.remaining??null,unlimited:!!g.unlimited,percent:g.percent||null,appliesTo:g.appliesTo||null,eventRef:g.eventRef||null,expiresAt:g.expiresAt?.toMillis?.()||null,active:(!g.expiresAt||g.expiresAt.toMillis()>millis)&&((g.remaining??1)>0||g.unlimited)};
 }
 const publicWallet=(w)=>({grants:w.grants.map(g=>sanitizeGrant(g,serverNow()))});
 function validCount(input,max=500){
@@ -89,11 +89,14 @@ exports.issueGuestQr=callable(async req=>{
   return {qrDataUrl,token,expiresAt:time+90000};
 });
 exports.scanGuestQr=callable(async req=>{
-  await requireRole(req,["bartender","hostess","director","admin"]);
+  const staff=await requireRole(req,["bartender","hostess","director","admin"]);
   const token=trimmed(req.data?.token,150).replace(/^BALI:/i,"");
   const pass=await readQR(token);
   const [guest,wallet]=await Promise.all([guestBasics(pass.uid),db.doc("guestWallets/"+pass.uid).get()]);
-  return {guest,wallet:publicWallet(walletOrEmpty(pass.uid,wallet))};
+  const publicGrants=publicWallet(walletOrEmpty(pass.uid,wallet));
+  if(staff.role==="hostess")publicGrants.grants=publicGrants.grants.filter(g=>g.kind==="entry");
+  if(staff.role==="bartender")publicGrants.grants=publicGrants.grants.filter(g=>g.kind!=="entry");
+  return {guest,wallet:publicGrants};
 });
 exports.findGuestByNumber=callable(async req=>{
   await requireRole(req,["director","admin"]);
