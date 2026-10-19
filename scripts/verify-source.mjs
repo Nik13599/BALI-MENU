@@ -467,7 +467,7 @@ const infoSection=html.slice(html.indexOf('id="contactsSection"'),html.indexOf('
 for(const term of ["Контакты и социальные сети","Режим работы","Посещение клуба","Меню и предзаказы","BALI ID · Privilege","Правовая информация","Сведения об организации","Персональные данные","Условия предзаказов и обращений"]){
   assert(infoSection.includes(term),"Info is missing required club/site section: "+term);
 }
-assert(html.includes('bali-info-page.css?v=20261019-1') &&
+assert(html.includes('bali-info-page.css?v=20261019-2') &&
   html.includes('bali-info-page.js?v=20261019-1') &&
   html.includes('id="baliInfoContactMirror"') &&
   infoClient.includes('sidebar.cloneNode(true)') &&
