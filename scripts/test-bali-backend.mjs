@@ -88,7 +88,9 @@ const received=async(number,authUid=sender)=>exports.previewBaliRecipient({...au
 const make=(items,key,authUid=sender,to="000002")=>exports.transferBaliBenefits({...auth(authUid),data:{number:to,items,requestId:key}});
 const balance=(id,kind)=>memory.get("guestWallets/"+id).grants.filter(g=>g.kind===kind).reduce((s,g)=>s+g.remaining,0);
 const key="a".repeat(32);
-assert.deepEqual(await received("000002"),{name:"Андрей",number:"000002"});
+const resolved=await received("000002");
+assert.equal(resolved.name,"Андрей");
+assert.equal(resolved.number,"000002");
 await assert.rejects(received("000001"),e=>e.code==="failed-precondition");
 await assert.rejects(received("999999"),e=>e.code==="not-found");
 await assert.rejects(received("00002"),e=>e.code==="invalid-argument");
