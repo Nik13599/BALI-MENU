@@ -1241,7 +1241,11 @@ assert(html.includes('id="baliCardNumber"') &&
   html.includes('id="baliMobileProfileBtn"') &&
   html.includes('id="baliMobileIdBtn"') &&
   source("bali-id-flip.js").includes('httpsCallable(functions,"issueGuestQr")') &&
-  source("bali-id-flip.js").includes('touchend') &&
+  source("bali-id-flip.js").includes('pointermove') &&
+  source("bali-id-flip.js").includes('pointerup') &&
+  source("bali-id-flip.js").includes('track.style.transform="rotateY("+(base+progress*180)+"deg)"') &&
+  source("bali-id-flip.js").includes('suppressTouchClickUntil') &&
+  source("bali-id-flip.css").includes('justify-self:center!important') &&
   source("auth.js").includes('data-bali-nav="profile"') &&
   idClient.includes('runTransaction(db,async tx=>') &&
   idClient.includes('doc(db,"baliCounters","guests")') &&
