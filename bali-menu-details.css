@@ -89,3 +89,266 @@
   .bali-menu-details-body{padding:13px 15px 24px}
   .bali-menu-details-photo{max-height:220px}
 }
+
+
+/* BALI v110: in-card information icon and preorder controls in the details
+   dialog. The icon is always present, but disabled when detailed copy is empty. */
+#menuPage .menu-category-block .menu-item{
+  position:relative!important;
+}
+#menuPage .menu-category-block .menu-item .menu-details-btn,
+#menuPage .menu-item .menu-details-btn{
+  position:absolute!important;
+  display:grid!important;
+  place-items:center!important;
+  top:clamp(7px,1vw,14px)!important;
+  right:clamp(7px,1vw,14px)!important;
+  z-index:5!important;
+  flex:0 0 auto!important;
+  width:clamp(30px,3.5vw,39px)!important;
+  height:clamp(30px,3.5vw,39px)!important;
+  min-width:0!important;
+  min-height:0!important;
+  padding:5px!important;
+  margin:0!important;
+  border:1px solid rgba(226,238,229,.74)!important;
+  border-radius:50%!important;
+  background:rgba(15,20,23,.63)!important;
+  color:#f3f5f1!important;
+  box-shadow:none!important;
+  font-size:0!important;
+  line-height:0!important;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s,border-color .15s,opacity .15s;
+}
+#menuPage .menu-item .menu-details-btn svg{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  flex:0 0 auto;
+  pointer-events:none;
+}
+#menuPage .menu-item .menu-details-btn.has-details:hover{
+  color:#d8ffab!important;
+  border-color:var(--bt-primary,#b9ff51)!important;
+  background:rgba(185,255,81,.12)!important;
+}
+#menuPage .menu-item .menu-details-btn.no-details:disabled{
+  color:#777c7e!important;
+  background:rgba(12,16,19,.44)!important;
+  border-color:rgba(210,218,212,.20)!important;
+  opacity:.43!important;
+  cursor:not-allowed!important;
+  pointer-events:none!important;
+  filter:grayscale(1);
+}
+#menuPage .menu-item .menu-details-btn:focus-visible{
+  outline:2px solid var(--bt-primary,#b9ff51)!important;
+  outline-offset:3px!important;
+}
+/* Keep product names and prices clear of the upper-right information icon
+   on cards that have no photograph. */
+#menuPage .menu-item.menu-item--no-image .menu-item-content{
+  padding-top:clamp(10px,1.3vw,18px)!important;
+}
+#menuPage .menu-item.menu-item--no-image .menu-item-header{
+  padding-right:clamp(30px,3.9vw,49px)!important;
+}
+.bali-menu-details-dialog[open]{
+  position:fixed!important;
+  top:50%!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:auto!important;
+  transform:translate(-50%,-50%)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  width:min(565px,calc(100vw - 28px))!important;
+  max-width:calc(100vw - 28px)!important;
+  max-height:calc(100dvh - 30px)!important;
+  margin:0!important;
+  overflow:hidden!important;
+  padding:0!important;
+  border:1px solid rgba(217,228,221,.25)!important;
+  border-radius:23px!important;
+  background:#171a1e!important;
+  box-shadow:0 24px 100px rgba(0,0,0,.7)!important;
+}
+.bali-menu-details-dialog:not([open]){display:none!important}
+.bali-menu-details-dialog::backdrop{
+  background:rgba(2,3,6,.73)!important;
+  backdrop-filter:blur(11px)!important;
+  -webkit-backdrop-filter:blur(11px)!important;
+}
+.bali-menu-details-head{
+  position:relative!important;
+  display:flex!important;
+  flex:0 0 auto;
+  align-items:center!important;
+  justify-content:space-between!important;
+  min-height:57px;
+  background:#191c20!important;
+  border-bottom:1px solid rgba(255,255,255,.10)!important;
+  padding:10px 16px 10px 20px!important;
+  color:#cdd2d0!important;
+  font:750 11px/1.2 Manrope,Inter,sans-serif!important;
+  letter-spacing:.08em!important;
+}
+.bali-menu-details-head #baliMenuDetailsClose{
+  display:grid!important;
+  place-items:center!important;
+  flex:0 0 40px;
+  width:40px!important;height:40px!important;
+  margin:0!important;
+  padding:0!important;
+  background:#25292d!important;
+  border:1px solid rgba(232,239,234,.25)!important;
+  border-radius:50%!important;
+  color:#fff!important;
+  font-size:20px!important;
+  cursor:pointer;
+}
+.bali-menu-details-head #baliMenuDetailsClose:hover{
+  background:#363c3d!important;
+}
+.bali-menu-details-body{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain;
+  display:grid!important;
+  align-content:start;
+  gap:10px!important;
+  padding:20px clamp(17px,3.7vw,26px) 21px!important;
+  background:#171a1e;
+}
+.bali-menu-details-photo{
+  display:block!important;
+  width:100%!important;
+  max-height:300px!important;
+  aspect-ratio:auto!important;
+  object-fit:contain!important;
+  border-radius:14px!important;
+  background:#0d1012!important;
+  margin-bottom:7px!important;
+}
+.bali-menu-details-name{
+  font:800 clamp(20px,4.3vw,29px)/1.19 Manrope,Inter,sans-serif!important;
+  margin:0!important;
+}
+.bali-menu-details-price{
+  color:var(--bt-primary,#b9ff51)!important;
+  font:850 clamp(21px,4.2vw,29px)/1.25 Manrope,Inter,sans-serif!important;
+  letter-spacing:0!important;
+}
+.bali-menu-details-weight{
+  color:#a8aeb5!important;
+  font:550 13px/1.4 Manrope,Inter,sans-serif!important;
+}
+.bali-menu-details-actions{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.16fr) minmax(0,1fr)!important;
+  gap:12px!important;
+  align-items:stretch!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  padding:14px clamp(13px,3.7vw,25px) calc(15px + env(safe-area-inset-bottom))!important;
+  box-sizing:border-box!important;
+  background:#1b1e22!important;
+  border-top:1px solid rgba(255,255,255,.13)!important;
+}
+.bali-menu-details-quantity{
+  display:grid!important;
+  grid-template-columns:minmax(36px,1fr) minmax(27px,.57fr) minmax(36px,1fr)!important;
+  gap:7px!important;
+  align-items:center!important;
+  min-width:0!important;
+}
+.bali-menu-details-step{
+  display:grid!important;
+  place-items:center!important;
+  width:100%!important;
+  height:51px!important;
+  min-height:0!important;
+  padding:0!important;
+  border:1px solid rgba(210,220,215,.28)!important;
+  border-radius:12px!important;
+  background:#292c31!important;
+  color:#f5f5f5!important;
+  font:700 26px/1 Manrope,Inter,sans-serif!important;
+  cursor:pointer;
+}
+.bali-menu-details-step:disabled{
+  opacity:.33!important;
+  cursor:not-allowed!important;
+}
+.bali-menu-details-count{
+  display:grid!important;
+  place-items:center!important;
+  min-width:0!important;
+  color:#fff!important;
+  font:800 21px/1.15 Manrope,Inter,sans-serif!important;
+  font-variant-numeric:tabular-nums;
+}
+.bali-menu-details-add{
+  display:grid!important;
+  place-items:center!important;
+  width:100%!important;
+  height:51px!important;
+  min-height:0!important;
+  border:0!important;
+  border-radius:13px!important;
+  padding:6px!important;
+  background:var(--bt-primary,#b9ff51)!important;
+  color:#0b1309!important;
+  font:850 clamp(13px,3.6vw,17px)/1.2 Manrope,Inter,sans-serif!important;
+  cursor:pointer;
+}
+.bali-menu-details-add:disabled{
+  background:#3a3f3d!important;
+  color:#a9aaa9!important;
+  cursor:not-allowed;
+}
+@media(max-width:767px){
+  .bali-menu-details-dialog[open]{
+    width:calc(100vw - 22px)!important;
+    max-width:calc(100vw - 22px)!important;
+    border-radius:20px!important;
+    max-height:calc(100dvh - 24px)!important;
+  }
+  .bali-menu-details-body{padding:17px 17px 21px!important}
+  .bali-menu-details-photo{max-height:240px!important}
+  .bali-menu-details-actions{
+    gap:8px!important;
+    grid-template-columns:minmax(0,1.15fr) minmax(0,.95fr)!important;
+    padding:11px 13px calc(12px + env(safe-area-inset-bottom))!important;
+  }
+  .bali-menu-details-quantity{gap:5px!important}
+  .bali-menu-details-step,.bali-menu-details-add{height:47px!important}
+  #menuPage .menu-item .menu-details-btn{
+    top:7px!important;right:7px!important;
+    width:32px!important;height:32px!important;
+  }
+}
+@media(max-width:359px){
+  .bali-menu-details-quantity{grid-template-columns:minmax(31px,1fr) 22px minmax(31px,1fr)!important}
+  .bali-menu-details-actions{grid-template-columns:minmax(0,1.05fr) minmax(0,.9fr)!important}
+  .bali-menu-details-add{font-size:12px!important}
+}
+/* Admin: the information icon is controlled by the presence of full copy. */
+.bali-admin-product-details .bali-product-details-toggle input[hidden]{
+  display:none!important;
+}
+.bali-admin-product-details .bali-product-details-fields{
+  display:grid!important;
+}
+.bali-admin-product-details .bali-product-details-fields[hidden]{display:none!important}
+.bali-admin-product-details .bali-product-details-toggle{
+  font-weight:800!important;
+}
+.bali-admin-details-status{
+  margin:0;
+  color:#b7cfba;
+  font:600 12px/1.5 Manrope,Inter,sans-serif;
+}
