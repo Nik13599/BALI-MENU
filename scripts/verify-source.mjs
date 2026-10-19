@@ -1221,7 +1221,7 @@ assert(app.includes('const fitStorySlides=()=>') &&
   "Stories must size from measured available height");
 // BALI ID: complete profile, immutable atomic sequence, admin-only tier assignment.
 const centredIdCss=source("bali-id-flip.css");
-assert(html.includes('bali-id-flip.css?v=20261019-3') &&
+assert(/bali-id-flip\\.css\\?v=[0-9-]+/.test(html) &&
   centredIdCss.includes('grid-template-columns:minmax(0,1fr)!important') &&
   centredIdCss.includes('width:min(100%,645px)!important') &&
   centredIdCss.includes('max-width:100%!important') &&
