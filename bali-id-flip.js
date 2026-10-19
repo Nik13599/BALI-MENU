@@ -7,7 +7,6 @@ import {getFunctions,httpsCallable} from "https://www.gstatic.com/firebasejs/10.
 
 const $=id=>document.getElementById(id);
 const scene=$("baliIdFlipScene"),track=$("baliIdFlipTrack"),front=$("baliIdFront"),back=$("baliIdBack");
-const help=$("baliIdFlipHelp");
 const dialog=$("baliQrDialog"),showBtn=$("baliShowQr"),closeBtn=$("baliQrClose");
 const image=$("baliQrImage"),message=$("baliQrMessage"),expiry=$("baliQrExpires"),refresh=$("baliQrRefresh");
 if(!scene||!track||!front||!back||!dialog||!showBtn||!image){
@@ -29,9 +28,6 @@ function setFaceState(toBack,{focus=false}={}){
   back.setAttribute("aria-hidden",String(!isFlipped));
   front.tabIndex=isFlipped?-1:0;
   back.tabIndex=isFlipped?0:-1;
-  if(help)help.textContent=isFlipped
-    ?"← Проведите пальцем, чтобы увидеть лицевую сторону →"
-    :"← Проведите пальцем влево или вправо, чтобы перевернуть →";
   if(focus)(isFlipped?back:front).focus({preventScroll:true});
 }
 function normalizeRotation(){
