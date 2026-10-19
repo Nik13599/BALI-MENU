@@ -1,0 +1,111 @@
+/* BALI Privilege / admin-only CRM. No automated tier upgrades. */
+import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
+const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
+const TIERS=["Member","Silver","Black","Private"];
+const defaults={
+  Member:{description:"Персональный цифровой пропуск BALI.",criteria:"Доступен всем зарегистрированным гостям.",benefits:["BALI ID"]},
+  Silver:{description:"Для постоянных гостей клуба.",criteria:"Назначается администратором.",benefits:["Персональные предложения"]},
+  Black:{description:"Расширенный уровень Privilege.",criteria:"Назначается администратором.",benefits:["Ранний доступ к отдельным анонсам"]},
+  Private:{description:"Индивидуальные привилегии клуба.",criteria:"Назначается администратором.",benefits:["Персональные условия от администрации"]}
+};
+let authorized=false,selected=null;
+const line=()=>document.createElement("div");
+const normalize=raw=>String(raw||"").split(/\r?\n/).map(v=>v.trim()).filter(Boolean);
+const setStatus=(id,message)=>{$(id).textContent=message};
+function renderRules(values=defaults){
+  const root=$("baliPrivilegeRulesFields");root.replaceChildren();
+  for(const tier of TIERS){
+    const d=values[tier]||defaults[tier];
+    const fieldset=document.createElement("fieldset");
+    const legend=document.createElement("legend");legend.textContent=tier;fieldset.append(legend);
+    for(const [key,label,multi,max] of [
+      ["description","Описание статуса",false,180],
+      ["criteria","Условия ручного назначения",false,250],
+      ["benefits","Преимущества, по одному на строку",true,700]
+    ]){
+      const row=document.createElement("label");row.textContent=label;
+      const input=document.createElement(multi?"textarea":"input");
+      input.dataset.tier=tier;input.dataset.field=key;
+      input.maxLength=max;if(multi)input.rows=3;
+      input.value=Array.isArray(d[key])?d[key].join("\n"):String(d[key]||"");
+      row.append(input);fieldset.append(row);
+    }
+    root.append(fieldset);
+  }
+}
+renderRules();
+window.addEventListener("bali:admin:select-privilege",async({detail})=>{
+  if(!authorized||!detail?.uid)return;
+  selected=detail.uid;
+  $("baliPrivilegeGuestUid").value=detail.uid;
+  $("baliPrivilegeGuest").value=detail.name+" · "+detail.email;
+  $("baliPrivilegePersonal").value="";
+  $("baliPrivilegeTier").value="Member";
+  setStatus("baliPrivilegeAssignStatus","Загружаем текущий уровень гостя...");
+  try{
+    const [id,assignment]=await Promise.all([
+      getDoc(doc(db,"baliIds",detail.uid)),
+      getDoc(doc(db,"guestPrivileges",detail.uid))
+    ]);
+    if(selected!==detail.uid)return;
+    const tier=assignment.data()?.tier||"Member";
+    $("baliPrivilegeTier").value=TIERS.includes(tier)?tier:"Member";
+    $("baliPrivilegePersonal").value=(assignment.data()?.benefits||[]).join("\n");
+    setStatus("baliPrivilegeAssignStatus",
+      "BALI ID: "+(id.exists()?String(id.data().number).padStart(6,"0"):"ещё не активирован")+
+      " · статус: "+tier);
+    $("baliPrivilegeAdmin").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }catch(e){setStatus("baliPrivilegeAssignStatus","Ошибка загрузки статуса: "+(e.code||"unknown"));}
+});
+$("baliPrivilegeAssignForm")?.addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!authorized||!selected)return setStatus("baliPrivilegeAssignStatus","Выберите гостя из списка.");
+  const tier=$("baliPrivilegeTier").value;
+  const benefits=normalize($("baliPrivilegePersonal").value);
+  if(!TIERS.includes(tier)||benefits.length>10||benefits.some(x=>x.length>180))
+    return setStatus("baliPrivilegeAssignStatus","Максимум 10 преимуществ длиной до 180 символов.");
+  const submit=e.currentTarget.querySelector('button[type="submit"]');
+  submit.disabled=true;
+  try{
+    await setDoc(doc(db,"guestPrivileges",selected),{
+      uid:selected,tier,benefits,updatedBy:auth.currentUser.uid,updatedAt:serverTimestamp()
+    });
+    setStatus("baliPrivilegeAssignStatus","Статус "+tier+" назначен и сохранён в Firebase.");
+  }catch(error){
+    setStatus("baliPrivilegeAssignStatus","Не удалось сохранить: "+(error.code||"unknown")+
+      ". Проверьте опубликованные firestore.rules.");
+  }finally{submit.disabled=false;}
+});
+$("baliPrivilegeRulesForm")?.addEventListener("submit",async e=>{
+  e.preventDefault();if(!authorized)return;
+  const levels={};
+  for(const tier of TIERS){
+    const root=$("baliPrivilegeRulesFields");
+    const get=key=>root.querySelector('[data-tier="'+tier+'"][data-field="'+key+'"]').value.trim();
+    levels[tier]={description:get("description"),criteria:get("criteria"),benefits:normalize(get("benefits"))};
+    if(levels[tier].benefits.length>10||levels[tier].benefits.some(x=>x.length>180))
+      return setStatus("baliPrivilegeRulesStatus","У "+tier+" максимум 10 преимуществ по 180 символов.");
+  }
+  const submit=e.currentTarget.querySelector('button[type="submit"]');submit.disabled=true;
+  try{
+    await setDoc(doc(db,"privilegeRules","main"),{levels,updatedAt:serverTimestamp()});
+    setStatus("baliPrivilegeRulesStatus","Условия и преимущества четырёх уровней сохранены.");
+  }catch(err){
+    setStatus("baliPrivilegeRulesStatus","Не удалось сохранить правила: "+(err.code||"unknown"));
+  }finally{submit.disabled=false;}
+});
+onAuthStateChanged(auth,async user=>{
+  authorized=false;selected=null;
+  if(!user||!user.emailVerified)return;
+  try{
+    const role=await getDoc(doc(db,"admins",user.uid));
+    if(auth.currentUser?.uid!==user.uid||role.data()?.active!==true)return;
+    authorized=true;
+    const rules=await getDoc(doc(db,"privilegeRules","main"));
+    if(rules.exists())renderRules({...defaults,...rules.data().levels});
+    setStatus("baliPrivilegeRulesStatus","Изменения сохраняются в Firebase. Назначение статуса — только вручную.");
+  }catch(err){setStatus("baliPrivilegeRulesStatus","Ошибка проверки прав: "+(err.code||"unknown"));}
+});
