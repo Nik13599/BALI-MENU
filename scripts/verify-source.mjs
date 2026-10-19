@@ -176,7 +176,7 @@ const mobileAboutAdminCss=source("bali-mobile-about-admin.css");
 assert(html.includes('id="baliMobileAboutBackgroundA"') &&
   html.includes('id="baliMobileAboutBackgroundB"') &&
   html.includes('id="baliMobileAboutBackgroundDots"') &&
-  html.includes('bali-mobile-about-hero.css?v=20261019-3') &&
+  html.includes('bali-mobile-about-hero.css?v=20261019-4') &&
   html.includes('bali-mobile-about-hero.js?v=20261019-1') &&
   mobileAboutCss.includes('@media(max-width:767px)') &&
   mobileAboutCss.includes('object-fit:cover!important') &&
