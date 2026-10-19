@@ -1232,6 +1232,10 @@ const idClient=source("bali-id.js");
 const privilegeClient=source("bali-privilege-admin.js");
 const shareClient=source("bali-share.js");
 const smartClient=source("bali-smart-design.js");
+assert(!html.includes('baliIdFlipHelp') &&
+  !source("bali-id-flip.js").includes('baliIdFlipHelp') &&
+  !source("bali-id-flip.css").includes('bali-id-flip-help'),
+  "The BALI ID flip instruction below the card must remain removed.");
 assert(html.includes('id="baliCardNumber"') &&
   html.includes('id="baliBenefitsList"') &&
   html.includes('id="baliIdSection"') &&
