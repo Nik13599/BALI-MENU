@@ -42,6 +42,7 @@
     <link rel="stylesheet" href="bali-id-navigation.css?v=20261019-2">
     <link rel="stylesheet" href="bali-id-flip.css?v=20261019-4">
     <link rel="stylesheet" href="bali-id-tiers.css?v=20261019-3">
+    <link rel="stylesheet" href="bali-id-bank.css?v=20261019-1">
     <link rel="stylesheet" href="bali-info-page.css?v=20261019-2">
     <link rel="stylesheet" href="bali-mobile-about-hero.css?v=20261019-6">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -554,6 +555,13 @@
               </div>
             </div>
           </div>
+          <div class="bali-bank-actions" aria-label="Действия BALI ID">
+            <button type="button" id="baliIdTransferOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 8h16m-5-5 5 5-5 5M20 17H4m5-5-5 5 5 5"/></svg>Перевести</button>
+            <button type="button" id="baliIdHistoryOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5M12 7v5l4 2"/></svg>История операций</button>
+          </div>
+          <section class="bali-bank-wallet" aria-label="Мои количественные привилегии">
+            <div id="baliIdWalletList" class="bali-bank-wallet-list" aria-live="polite"></div>
+          </section>
           <button type="button" class="bali-id-show-qr" id="baliShowQr">
             <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM19 15v3M14 20h7M20 20v-2"/></svg>
             Показать QR-код
@@ -562,6 +570,68 @@
         </div>
       </div>
     </section>
+
+
+    <!-- Guest benefit transfers use a step wizard; the parent page stays fixed. -->
+    <dialog id="baliTransferDialog" class="bali-bank-dialog" aria-labelledby="baliTransferTitle">
+      <div class="bali-bank-dialog-shell">
+        <div class="bali-bank-dialog-head"><h2 id="baliTransferTitle">ПЕРЕВЕСТИ ПРИВИЛЕГИИ</h2><button type="button" id="baliTransferClose" class="bali-bank-icon" aria-label="Закрыть перевод">×</button></div>
+        <section class="bali-bank-step" id="baliTransferLookupStep">
+          <h3>Получатель BALI ID</h3>
+          <form id="baliTransferLookupForm">
+            <label for="baliTransferRecipient">Введите 6 цифр номера карты</label>
+            <input type="text" id="baliTransferRecipient" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000002" autocomplete="off" required>
+            <button type="submit" class="bali-bank-primary">Продолжить</button>
+          </form>
+          <p id="baliTransferLookupStatus" class="bali-bank-status" role="status" aria-live="polite"></p>
+          <div id="baliTransferRecipientPreview" class="bali-bank-recipient" hidden>
+            <small>ПРОВЕРЬТЕ ПОЛУЧАТЕЛЯ</small><strong id="baliTransferRecipientName"></strong>
+            <span id="baliTransferRecipientCode"></span>
+            <button type="button" class="bali-bank-primary" id="baliTransferNext">Верно, продолжить</button>
+            <button type="button" class="bali-bank-secondary" id="baliTransferChangeRecipient">Выбрать другого</button>
+          </div>
+        </section>
+        <section class="bali-bank-step" id="baliTransferChoicesStep" hidden>
+          <h3>Выберите бонусы и количество</h3>
+          <div class="bali-bank-step-note" id="baliTransferToCaption"></div>
+          <div id="baliTransferChoices"></div>
+          <div class="bali-bank-pagination">
+            <button type="button" class="bali-bank-secondary" id="baliTransferPrevPage">‹</button>
+            <span id="baliTransferPage">1 / 1</span>
+            <button type="button" class="bali-bank-secondary" id="baliTransferNextPage">›</button>
+          </div>
+          <p id="baliTransferSelectedCount" class="bali-bank-status">0 шт.</p>
+          <p id="baliTransferChoiceStatus" class="bali-bank-status" role="status" aria-live="polite"></p>
+          <div class="bali-bank-step-actions">
+            <button type="button" class="bali-bank-secondary" id="baliTransferChoiceBack">Назад</button>
+            <button type="button" class="bali-bank-primary" id="baliTransferReviewOpen" disabled>Продолжить</button>
+          </div>
+        </section>
+        <section class="bali-bank-step" id="baliTransferReviewStep" hidden>
+          <h3>Проверьте перевод</h3>
+          <p id="baliTransferReviewRecipient" class="bali-bank-review-recipient"></p>
+          <div id="baliTransferReviewList"></div>
+          <p id="baliTransferReviewStatus" class="bali-bank-status" role="status" aria-live="polite"></p>
+          <button type="button" class="bali-bank-primary" id="baliTransferConfirm">Подтвердить и отправить</button>
+          <div id="baliTransferCompleted" hidden>
+            <p id="baliTransferSuccess" class="bali-bank-status"></p>
+            <button type="button" class="bali-bank-secondary" id="baliTransferAgain">Новый перевод</button>
+          </div>
+          <button type="button" class="bali-bank-secondary" id="baliTransferReviewBack">Назад к выбору</button>
+        </section>
+      </div>
+    </dialog>
+    <dialog id="baliHistoryDialog" class="bali-bank-dialog bali-bank-history-dialog" aria-labelledby="baliHistoryTitle">
+      <div class="bali-bank-dialog-shell">
+        <div class="bali-bank-dialog-head"><h2 id="baliHistoryTitle">ИСТОРИЯ ОПЕРАЦИЙ</h2><button type="button" id="baliHistoryClose" class="bali-bank-icon" aria-label="Закрыть историю">×</button></div>
+        <p class="bali-bank-step-note">Начисления, списания, переводы · время Минска</p>
+        <div id="baliIdHistoryScroll" class="bali-bank-history-scroll" tabindex="0" aria-label="Список операций">
+          <div id="baliIdHistoryList"></div>
+          <button type="button" class="bali-bank-secondary" id="baliIdHistoryMore" hidden>Показать ещё</button>
+        </div>
+        <p id="baliIdHistoryStatus" class="bali-bank-status" role="status" aria-live="polite"></p>
+      </div>
+    </dialog>
 
     <!-- Защищённый QR BALI ID показывается отдельно от двусторонней карты. -->
     <dialog id="baliQrDialog" class="bali-id-qr-dialog" aria-labelledby="baliQrTitle">
@@ -802,6 +872,7 @@
     <script type="module" src="bali-id.js?v=20261019-6"></script>
     <script src="bali-pc-id-home.js?v=20261019-1" defer></script>
     <script type="module" src="bali-id-flip.js?v=20261019-3"></script>
+    <script type="module" src="bali-id-bank.js?v=20261019-1"></script>
     <script src="bali-share.js?v=20261019-4" defer></script>
 </body>
 
