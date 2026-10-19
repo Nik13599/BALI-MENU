@@ -11,7 +11,7 @@ const DEFAULTS={
   Black:{description:"Специальные привилегии клуба.",criteria:"Назначает администратор.",benefits:[]},
   Private:{description:"Индивидуальные условия BALI.",criteria:"Назначает администратор.",benefits:[]}
 };
-let privilegedUnsub=null,session=0,profile=null,rules=DEFAULTS,privilege=null,activeUid=null;
+let privilegedUnsub=null,rulesUnsub=null,session=0,profile=null,rules=DEFAULTS,privilege=null,activeUid=null;
 const displayNumber=n=>Number.isSafeInteger(n)&&n>0?String(n).padStart(6,"0"):"— — — — — —";
 const cleanText=x=>typeof x==="string"?x.trim():"";
 const setText=(id,value)=>{if($(id))$(id).textContent=value;};
@@ -69,6 +69,7 @@ async function initializeForUser(user){
   if(user?.uid===activeUid)return;
   const run=++session;
   privilegedUnsub?.();privilegedUnsub=null;
+  rulesUnsub?.();rulesUnsub=null;
   profile=null;privilege=null;rules=DEFAULTS;activeUid=null;
   setText("baliIdStatus","");setText("baliCardNumber","— — — — — —");
   if(!user||!user.emailVerified){render();return;}
@@ -97,6 +98,16 @@ async function initializeForUser(user){
     }
     if(assigned.exists())privilege=assigned.data();
     render();
+    rulesUnsub=onSnapshot(doc(db,"privilegeRules","main"),snapshot=>{
+      if(run!==session||!snapshot.exists())return;
+      const values=snapshot.data()?.levels||{};
+      rules=Object.fromEntries(Object.keys(DEFAULTS).map(tier=>[tier,{
+        description:cleanText(values[tier]?.description)||DEFAULTS[tier].description,
+        criteria:cleanText(values[tier]?.criteria)||DEFAULTS[tier].criteria,
+        benefits:Array.isArray(values[tier]?.benefits)?values[tier].benefits.filter(v=>typeof v==="string").slice(0,10):DEFAULTS[tier].benefits
+      }]));
+      render();
+    });
     privilegedUnsub=onSnapshot(doc(db,"guestPrivileges",user.uid),snapshot=>{
       if(run!==session)return;
       privilege=snapshot.exists()?snapshot.data():null;render();
