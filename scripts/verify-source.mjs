@@ -1225,10 +1225,23 @@ const privilegeClient=source("bali-privilege-admin.js");
 const shareClient=source("bali-share.js");
 const smartClient=source("bali-smart-design.js");
 assert(html.includes('id="baliCardNumber"') &&
-  html.includes('id="baliProfileSettings"') &&
   html.includes('id="baliBenefitsList"') &&
-  html.includes('bali-id.js?v=20261019-2') &&
-  html.includes('bali-share.js?v=20261019-2') &&
+  html.includes('id="baliIdSection"') &&
+  html.includes('id="profileSection"') &&
+  !html.includes('id="baliProfileSettings"') &&
+  html.includes('bali-id.js?v=') &&
+  html.includes('bali-share.js?v=') &&
+  html.includes('bali-id-flip.js?v=') &&
+  html.includes('bali-id-flip.css?v=') &&
+  html.includes('id="baliIdFront"') &&
+  html.includes('id="baliIdBack"') &&
+  html.includes('id="baliShowQr"') &&
+  html.includes('id="baliQrDialog"') &&
+  html.indexOf('id="baliShowQr"') > html.indexOf('id="baliIdFlipScene"') &&
+  html.includes('id="baliMobileProfileBtn"') &&
+  html.includes('id="baliMobileIdBtn"') &&
+  source("bali-id-flip.js").includes('httpsCallable(functions,"issueGuestQr")') &&
+  source("bali-id-flip.js").includes('touchend') &&
   source("auth.js").includes('data-bali-nav="profile"') &&
   idClient.includes('runTransaction(db,async tx=>') &&
   idClient.includes('doc(db,"baliCounters","guests")') &&
