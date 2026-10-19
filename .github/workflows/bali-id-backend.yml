@@ -1,0 +1,42 @@
+name: BALI ID — Deploy Firebase backend (manual)
+
+# Deliberately NOT automatic. Balance-altering Cloud Functions and security
+# rules must not be deployed just because GitHub Pages changed.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Validate and deploy BALI ID Functions, rules and indexes
+    runs-on: ubuntu-latest
+    environment: firebase-backend
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify BALI ID bank transfer security
+        run: |
+          node --check functions/index.js
+          node --input-type=module --check < bali-id-bank.js
+          node scripts/verify-bali-bank.mjs
+          node scripts/verify-source.mjs
+      - name: Authenticate using short-lived Workload Identity Federation
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.FIREBASE_WIF_PROVIDER }}
+          service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Install Firebase tools and function dependencies
+        run: |
+          npm install -g firebase-tools
+          npm install --prefix functions --no-audit --no-fund
+      - name: Publish protected Firebase backend
+        run: |
+          test "$FIREBASE_PROJECT_ID" = "bali-menu-5a48b"
+          firebase deploy --project "$FIREBASE_PROJECT_ID" --only "firestore:rules,firestore:indexes,functions:bali-id" --non-interactive
