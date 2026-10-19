@@ -459,6 +459,30 @@ assert(html.includes('class="bali-pc-sidebar-contacts"') &&
   pcReferenceCss.includes('body.bali-guest-theme #homeSection .bali-home-contacts-card{display:none!important}') &&
   !html.includes('Барная карта и кухня'),
   "PC contacts belong in persistent left sidebar, mobile contacts remain available, menu banner no subtitle");
+// The mobile Info tab is the complete public information page. The desktop
+// sidebar remains the single editable source for the phone, chat/social and map.
+const infoCss=source("bali-info-page.css");
+const infoClient=source("bali-info-page.js");
+const infoSection=html.slice(html.indexOf('id="contactsSection"'),html.indexOf('id="profileSection"'));
+for(const term of ["Контакты и социальные сети","Режим работы","Посещение клуба","Меню и предзаказы","BALI ID · Privilege","Правовая информация","Сведения об организации","Персональные данные","Условия предзаказов и обращений"]){
+  assert(infoSection.includes(term),"Info is missing required club/site section: "+term);
+}
+assert(html.includes('bali-info-page.css?v=20261019-1') &&
+  html.includes('bali-info-page.js?v=20261019-1') &&
+  html.includes('id="baliInfoContactMirror"') &&
+  infoClient.includes('sidebar.cloneNode(true)') &&
+  infoClient.includes('new MutationObserver(schedule)') &&
+  infoClient.includes('window.addEventListener("bali:home-interface",schedule)') &&
+  infoCss.includes('overflow-y:auto!important') &&
+  infoCss.includes('padding-bottom:calc(105px + env(safe-area-inset-bottom))') &&
+  infoSection.includes('Каждую пятницу и субботу') &&
+  infoSection.includes('23:00–06:00') &&
+  infoSection.includes('data-bali-nav="events"') &&
+  infoSection.includes('data-bali-nav="menu"') &&
+  infoSection.includes('data-bali-nav="id"') &&
+  infoSection.includes('реквизиты пока не подтверждены владельцем проекта') &&
+  infoSection.includes('не заменяет такую политику'),
+  "Mobile Info must show the editable desktop contacts and truthful legal/visitor disclosures");
 // Homepage design tools must be publicly read-only and safely admin-managed.
 const designAdmin=source("bali-home-design-admin.js");
 const designPublic=source("bali-home-design.js");
