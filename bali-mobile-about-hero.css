@@ -112,7 +112,7 @@
 @media(max-width:767px){
   body.bali-guest-theme #homeSection .bali-home-inner{
     grid-template-rows:
-      clamp(138px,37vw,165px)
+      clamp(148px,41vw,176px)
       minmax(0,1.16fr)
       minmax(0,.88fr)
       auto!important;
@@ -163,13 +163,14 @@
     width:100%!important;
     max-width:100%!important;
     min-width:0!important;
-    white-space:nowrap!important;
-    margin:0 0 clamp(2px,.75vw,4px)!important;
+    white-space:normal!important;
+    text-wrap:balance;
+    margin:0 0 clamp(7px,2vw,10px)!important;
     padding:0!important;
     color:#fff!important;
     text-align:left!important;
     text-transform:none!important;
-    font:850 clamp(14px,4.6vw,24px)/1.1 Manrope,Inter,sans-serif!important;
+    font:850 clamp(19px,5.3vw,27px)/1.1 Manrope,Inter,sans-serif!important;
     letter-spacing:-.045em!important;
     text-shadow:none!important;
   }
@@ -184,58 +185,12 @@
   body.bali-guest-theme #homeSection .bali-mobile-home-hero p.bali-mobile-hero-tagline{
     display:block!important;
     max-width:100%!important;
-    margin:0 0 clamp(4px,1.05vw,7px)!important;
+    margin:0!important;
     color:#e5e8e4!important;
-    font:550 clamp(9px,2.5vw,12px)/1.22 Manrope,Inter,sans-serif!important;
+    font:600 clamp(13px,3.45vw,17px)/1.35 Manrope,Inter,sans-serif!important;
     letter-spacing:0!important;
     text-transform:none!important;
     text-shadow:none!important;
-  }
-  body.bali-guest-theme #homeSection .bali-mobile-hero-formats{
-    display:grid!important;
-    grid-template-columns:repeat(6,minmax(0,1fr))!important;
-    grid-template-rows:repeat(2,26px)!important;
-    gap:7px 10px!important;
-    box-sizing:border-box!important;
-    width:calc(100% - 8px)!important;
-    max-width:390px!important;
-    min-width:0!important;
-    margin:0!important;
-    padding:0!important;
-  }
-  body.bali-guest-theme #homeSection .bali-mobile-hero-chip{
-    display:flex!important;
-    grid-column:span 2;
-    align-items:center!important;
-    justify-content:center!important;
-    box-sizing:border-box!important;
-    width:100%!important;
-    height:26px!important;
-    min-width:0!important;
-    min-height:0!important;
-    padding:2px 3px!important;
-    background:rgba(238,255,246,.075)!important;
-    border:1px solid rgba(239,255,247,.27)!important;
-    border-radius:6px!important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 2px 9px rgba(0,0,0,.11)!important;
-    -webkit-backdrop-filter:blur(9px) saturate(125%)!important;
-    backdrop-filter:blur(9px) saturate(125%)!important;
-    color:#f2f5f2!important;
-    font:550 clamp(9px,2.5vw,12px)/1.08 Manrope,Inter,sans-serif!important;
-    letter-spacing:0!important;
-    text-align:center!important;
-    text-transform:none!important;
-    overflow-wrap:normal;
-    hyphens:auto;
-    text-shadow:0 1px 2px rgba(0,0,0,.4)!important;
-    cursor:default!important;
-    pointer-events:none!important;
-  }
-  body.bali-guest-theme #homeSection .bali-mobile-hero-chip:nth-child(4){
-    grid-column:2/span 2!important;
-  }
-  body.bali-guest-theme #homeSection .bali-mobile-hero-chip:nth-child(5){
-    grid-column:4/span 2!important;
   }
   body.bali-guest-theme #homeSection .bali-mobile-about-action{
     align-self:flex-start!important;
@@ -243,18 +198,18 @@
     justify-content:space-between!important;
     align-items:center!important;
     box-sizing:border-box!important;
-    width:clamp(104px,32vw,142px)!important;
+    width:clamp(136px,41vw,178px)!important;
     min-width:0!important;
     min-height:0!important;
-    height:clamp(26px,7.7vw,34px)!important;
-    margin:clamp(9px,2.5vw,13px) 0 0!important;
+    height:clamp(36px,9.3vw,43px)!important;
+    margin:clamp(12px,3.4vw,17px) 0 0!important;
     padding:4px clamp(10px,3vw,15px)!important;
     gap:6px!important;
     border:0!important;
     border-radius:999px!important;
     background:var(--bali-mobile-neon,#b9ff51)!important;
     color:#080f08!important;
-    font:850 clamp(9px,2.6vw,12px)/1 Manrope,Inter,sans-serif!important;
+    font:850 clamp(12px,3.15vw,15px)/1 Manrope,Inter,sans-serif!important;
     letter-spacing:.12em!important;
     box-shadow:none!important;
     cursor:pointer;
@@ -271,45 +226,32 @@
 }
 @media(max-width:767px) and (max-height:690px){
   body.bali-guest-theme #homeSection .bali-home-inner{
-    grid-template-rows:clamp(135px,36vw,155px) minmax(0,1.17fr) minmax(0,.87fr) auto!important;
+    grid-template-rows:clamp(146px,40vw,169px) minmax(0,1.17fr) minmax(0,.87fr) auto!important;
   }
   body.bali-guest-theme #homeSection .bali-mobile-home-hero h1{
-    font-size:clamp(14px,4.4vw,21px)!important;
+    font-size:clamp(18px,5.1vw,23px)!important;
   }
   body.bali-guest-theme #homeSection .bali-mobile-home-hero p.bali-mobile-hero-tagline{
-    margin-bottom:3px!important;
+    margin-bottom:0!important;
   }
   body.bali-guest-theme #homeSection .bali-mobile-about-action{
-    height:clamp(25px,7vw,31px)!important;
-    margin-top:8px!important;
+    height:clamp(35px,9vw,40px)!important;
+    margin-top:clamp(12px,3vw,15px)!important;
   }
 }
 
-/* Compact two-row, three-column non-clickable format badges.
-   Move the heading toward the top and reserve space under the badges for CTA. */
+/* Compact, readable three-element About hero without the former event chips.
+   Preserve the independently managed background gallery on phones. */
 @media(max-width:767px){
   body.bali-guest-theme #homeSection .bali-mobile-home-hero{
-    justify-content:flex-start!important;
-    padding-top:clamp(4px,1.2vw,6px)!important;
-    padding-bottom:4px!important;
+    justify-content:center!important;
+    padding-top:clamp(8px,2.25vw,12px)!important;
+    padding-bottom:clamp(8px,2.25vw,12px)!important;
   }
   body.bali-guest-theme #homeSection .bali-mobile-home-hero-copy{
-    justify-content:flex-start!important;
-  }
-  body.bali-guest-theme #homeSection .bali-mobile-home-hero h1{
-    margin-bottom:2px!important;
+    justify-content:center!important;
   }
   body.bali-guest-theme #homeSection .bali-mobile-home-hero p.bali-mobile-hero-tagline{
-    margin-bottom:3px!important;
-  }
-  body.bali-guest-theme #homeSection .bali-mobile-about-action{
-    height:clamp(24px,6.7vw,29px)!important;
-    margin-top:clamp(7px,2.2vw,10px)!important;
-  }
-}
-@media(max-width:767px) and (max-height:690px){
-  body.bali-guest-theme #homeSection .bali-mobile-about-action{
-    margin-top:7px!important;
-    height:24px!important;
+    max-width:98%!important;
   }
 }
