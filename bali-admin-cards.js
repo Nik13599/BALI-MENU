@@ -4,8 +4,9 @@
    Never move these items into the preorder collection "menu". */
 import {getApp,getApps,initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {getFirestore,collection,doc,getDoc,onSnapshot,setDoc,deleteDoc,serverTimestamp}
+import {getFirestore,collection,doc,getDoc,onSnapshot,setDoc,deleteDoc,serverTimestamp,writeBatch}
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {BALI_TEA_SEED} from "./bali-tea-seed.js";
 
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app);
@@ -64,6 +65,8 @@ const collator=new Intl.Collator("ru",{numeric:true,sensitivity:"base"});
 const format=x=>Number(x).toLocaleString("ru-RU",{minimumFractionDigits:2,maximumFractionDigits:2})+" BYN";
 let editable=false,session=0;
 function buildEditor(config){
+  const isTea=config.key==="tea";
+  const teaFields=["description","ingredients","taste","brewing"];
   const host=byId(config.host);
   if(!host)return;
   host.replaceChildren();
@@ -89,10 +92,28 @@ function buildEditor(config){
   field("price2","Цена №2, BYN","number",false,"0.00");
   field("sort","Порядок сортировки","number",true,"100");
   fields.sort.value="100";
+  if(isTea){
+    for(const [key,title,placeholder] of [
+      ["description","Подробное описание","Особенности сорта, происхождение, характер настоя"],
+      ["ingredients","Состав","Чайный лист, ягоды, травы и другие ингредиенты"],
+      ["taste","Вкус и аромат","Вкусовые ноты и аромат"],
+      ["brewing","Как заваривать","Температура воды, граммовка, время заваривания"]]){
+      const label=make("label","bali-tea-info-field",title);
+      const fieldInput=make("textarea");fieldInput.name=key;
+      fieldInput.rows=3;fieldInput.maxLength=2400;fieldInput.placeholder=placeholder;
+      label.append(fieldInput);form.append(label);fields[key]=fieldInput;
+    }
+  }
   const actions=make("div","bali-admin-bar-buttons");
   const save=make("button","primary","Добавить позицию");save.type="submit";
   const clear=make("button","","Очистить форму");clear.type="button";
   actions.append(save,clear);form.append(actions);
+  let seedButton=null;
+  if(isTea){
+    seedButton=make("button","bali-tea-import-button","Загрузить 32 чая из предоставленного меню");
+    seedButton.type="button";seedButton.disabled=true;
+    form.append(seedButton);
+  }
   const status=make("p","status","Ожидаем проверку прав администратора.");
   status.setAttribute("role","status");status.setAttribute("aria-live","polite");
   const itemsHost=make("div","bali-admin-bar-items");
@@ -100,6 +121,7 @@ function buildEditor(config){
   host.append(head,form,status,itemsHost,info);
   const entries=new Map();
   let unsubscribe=null;
+  let loaded=false;
   const tell=value=>{status.textContent=value;};
   const reset=()=>{
     form.reset();hidden.value="";fields.sort.value="100";save.textContent="Добавить позицию";
@@ -129,7 +151,8 @@ function buildEditor(config){
         const description=make("div","bali-admin-bar-info");
         const parts=item.volume1+" — "+format(item.price1)
           +(item.volume2?" · "+item.volume2+" — "+format(item.price2):"");
-        description.append(make("strong","",item.name),make("small","",parts));
+        description.append(make("strong","",item.name+(item.hidden?" · СКРЫТО":"")),make("small","",parts));
+        if(isTea&&item.description)description.append(make("small","",item.description.slice(0,160)));
         const controls=make("div","bali-admin-bar-row-actions");
         const edit=make("button","","Изменить");edit.type="button";
         edit.addEventListener("click",()=>{
@@ -138,20 +161,33 @@ function buildEditor(config){
             fields[id].value=String(item[id]??"");
           fields.price1.value=String(item.price1);
           fields.price2.value=item.volume2?String(item.price2):"";
+          if(isTea)for(const key of teaFields)fields[key].value=String(item[key]||"");
           save.textContent="Сохранить изменения";
           form.scrollIntoView({behavior:"smooth",block:"start"});
           tell("Редактирование: "+item.name);
         });
-        const remove=make("button","","Удалить");remove.type="button";
+        const remove=make("button","",item.hidden?"Восстановить":"Удалить");remove.type="button";
         remove.addEventListener("click",async()=>{
-          if(!editable){tell("Нет прав на удаление.");return;}
-          if(!confirm("Удалить «"+item.name+"» из раздела «"+config.title+"»?"))return;
+          if(!editable){tell("Нет прав на изменение.");return;}
+          const isSeed=isTea&&BALI_TEA_SEED.some(x=>x.id===item.id);
+          const shouldToggle=isSeed||item.hidden;
+          if(!item.hidden&&!confirm("Удалить «"+item.name+"» из раздела «"+config.title+"»?"))return;
           remove.disabled=true;
           try{
-            await deleteDoc(doc(db,config.collection,item.id));
+            if(shouldToggle){
+              const {id,...record}=item;
+              delete record.updatedAt;
+              await setDoc(doc(db,config.collection,item.id),{
+                ...record,hidden:!item.hidden,sourcePage:Number.isInteger(item.sourcePage)?item.sourcePage:0,
+                updatedAt:serverTimestamp()
+              });
+              tell(item.hidden?"Позиция восстановлена.":"Позиция скрыта в чайной карте.");
+            }else{
+              await deleteDoc(doc(db,config.collection,item.id));
+              tell("Позиция удалена.");
+            }
             if(hidden.value===item.id)reset();
-            tell("Позиция удалена.");
-          }catch(error){tell("Ошибка удаления: "+(error?.code||"неизвестная ошибка"));}
+          }catch(error){tell("Ошибка изменения: "+(error?.code||"неизвестная ошибка"));}
           finally{remove.disabled=false;}
         });
         controls.append(edit,remove);row.append(description,controls);group.append(row);
@@ -179,7 +215,13 @@ function buildEditor(config){
     const ref=id?doc(db,config.collection,id):doc(collection(db,config.collection));
     save.disabled=true;tell("Сохраняем...");
     try{
-      await setDoc(ref,{name,category,volume1,price1,volume2,price2,sort,updatedAt:serverTimestamp()});
+      const record={name,category,volume1,price1,volume2,price2,sort,updatedAt:serverTimestamp()};
+      if(isTea){
+        for(const key of teaFields)record[key]=val(key);
+        record.sourcePage=Number.isInteger(entries.get(id)?.sourcePage)?entries.get(id).sourcePage:0;
+        record.hidden=false;
+      }
+      await setDoc(ref,record);
       reset();tell("Сохранено: «"+name+"». Данные обновлены в отдельной коллекции.");
     }catch(error){
       tell(error?.code==="permission-denied"
@@ -187,9 +229,38 @@ function buildEditor(config){
         :"Не удалось сохранить: "+(error?.code||"неизвестная ошибка"));
     }finally{save.disabled=false;}
   });
+  if(isTea&&seedButton){
+    seedButton.addEventListener("click",async()=>{
+      if(!editable||!loaded){tell("Дождитесь загрузки действующей чайной карты из Firebase.");return;}
+      const existingNames=new Set([...entries.values()].map(x=>x.name.toLocaleLowerCase("ru-RU")));
+      const missing=BALI_TEA_SEED.filter(x=>!entries.has(x.id)&&!existingNames.has(x.name.toLocaleLowerCase("ru-RU")));
+      if(!missing.length){tell("Все 32 чая уже есть в базе или совпадают с существующими названиями.");return;}
+      if(!confirm("Добавить "+missing.length+" отсутствующих позиций чайной карты в Firebase? Уже созданные товары не будут перезаписаны."))return;
+      seedButton.disabled=true;
+      tell("Загружаем чайную карту...");
+      try{
+        const batch=writeBatch(db);
+        for(const item of missing){
+          batch.set(doc(db,config.collection,item.id),{
+            name:item.name,category:item.category,volume1:item.volume1,price1:item.price1,
+            volume2:item.volume2,price2:item.price2,sort:item.sort,
+            description:item.description,ingredients:item.ingredients,
+            taste:item.taste,brewing:item.brewing,
+            sourcePage:item.sourcePage||0,hidden:false,updatedAt:serverTimestamp()
+          });
+        }
+        await batch.commit();
+        tell("Загружено "+missing.length+" позиций. Цены и описания теперь можно редактировать здесь.");
+      }catch(error){
+        tell("Не удалось импортировать чайную карту: "+(error?.code||error?.message||"ошибка"));
+      }finally{seedButton.disabled=false;}
+    });
+  }
   return{
     resetAuth(){
       if(unsubscribe){unsubscribe();unsubscribe=null;}
+      loaded=false;
+      if(seedButton)seedButton.disabled=true;
       entries.clear();render();
     },
     start(){
@@ -199,6 +270,8 @@ function buildEditor(config){
           const item={id:d.id,...d.data()};
           if(valid(item))entries.set(d.id,item);
         }
+        loaded=true;
+        if(seedButton)seedButton.disabled=false;
         render();tell(config.title+": "+entries.size+" позиций.");
       },error=>tell(error?.code==="permission-denied"
         ?"Нет доступа к "+config.collection+". Опубликуйте новые Firestore Rules."
