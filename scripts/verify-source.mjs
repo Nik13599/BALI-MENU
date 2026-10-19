@@ -730,7 +730,7 @@ assert(!admin.includes('id="adminPassword"'), "Legacy admin password form must b
 assert(menuClient.includes('collection(db, "menu")') && menuClient.includes('collection(db, "events")'), "Catalog must read Firestore menu and events");
 assert(adminClient.includes('doc(db,"admins",user.uid)') && adminClient.includes('role.data().active!==true'), "Admin role check missing");
 assert(rules.includes('match /menu/{itemId}') && rules.includes('match /events/{eventId}'), "Firestore catalog rules missing");
-assert(rules.includes('allow create, update: if isAdmin()'), "Catalog writes must require admin role");
+assert(rules.includes('allow update: if (isAdmin() || isDirector())'), "Catalog writes must require admin role");
 assert((rules.match(/match \/\{document=\*\*\}/g) || []).length === 1, "Unexpected catch-all rules or corrupted rules");
 const seedSource = source("menu-seed.js");
 const { BALI_MENU_SEED } = await import("data:text/javascript," + encodeURIComponent(seedSource));
@@ -1281,10 +1281,43 @@ assert(html.includes('id="baliCardNumber"') &&
   "BALI ID must use a protected sequential transaction and a full guest profile.");
 assert(admin.includes('id="baliPrivilegeAssignForm"') &&
   admin.includes('id="baliPrivilegeRulesForm"') &&
-  admin.includes('bali-privilege-admin.js?v=20261019-1') &&
+  admin.includes('bali-privilege-admin.js?v=20261019-2') &&
   privilegeClient.includes('setDoc(doc(db,"guestPrivileges",selected)') &&
   privilegeClient.includes('setDoc(doc(db,"privilegeRules","main")'),
   "Privilege statuses and assignment rules must be admin-editable without client self-upgrades.");
+// BALI ID: six named cards, custom visual language, safe default Member
+// creation and a separate verified director assignment interface.
+const directorHtml=source("director-id.html");
+const directorClient=source("bali-director-id.js");
+const tierCss=source("bali-id-tiers.css");
+for(const tier of ["Member","Silver","Gold","Platinum","Black","Private"]){
+  assert(idClient.includes(tier+':{description:') &&
+    privilegeClient.includes(tier+':{description:') &&
+    admin.includes('<option value="'+tier+'">') &&
+    directorHtml.includes('<option value="'+tier+'">'),
+    "Six BALI ID status names must match the approved categories: "+tier);
+  assert(tierCss.includes('data-bali-tier="'+tier.toLowerCase()+'"'),
+    "Missing the approved color treatment for BALI ID tier "+tier);
+}
+assert(html.includes('bali-id-tiers.css?v=') &&
+  html.includes('class="bali-id-centre-art"') &&
+  html.includes('class="bali-id-brand-label"') &&
+  html.includes('id="baliCardHeaderTier"') &&
+  idClient.includes('cardScene.dataset.baliTier=tier.toLowerCase()') &&
+  idClient.includes('async function ensureMemberAssignment(uid)') &&
+  idClient.includes('tier:"Member",benefits:[],updatedBy:uid') &&
+  rules.includes("request.resource.data.tier == 'Member'") &&
+  rules.includes("request.resource.data.benefits.size() == 0") &&
+  rules.includes("allow update: if (isAdmin() || isDirector())") &&
+  rules.includes("function isDirector()") &&
+  rules.includes('match /staffRoles/{uid}') &&
+  rules.includes("data.tier in ['Member','Silver','Gold','Platinum','Black','Private']") &&
+  rules.includes("data.levels.keys().hasAll(['Member','Silver','Gold','Platinum','Black','Private'])") &&
+  directorClient.includes('where("number","==",number)') &&
+  directorClient.includes('getDoc(doc(db,"staffRoles",user.uid))') &&
+  directorClient.includes('setDoc(doc(db,"guestPrivileges",selectedUid)') &&
+  directorHtml.includes('id="directorAssignForm"'),
+  "Six-category BALI ID must preserve the default Member and restrict upgrades to director/admin");
 const shareStyles=source("bali-new-features.css");
 assert(shareClient.includes('const actions=card.querySelector(".bali-event-actions")') &&
   shareClient.includes('actions.append(button);') &&
