@@ -728,6 +728,17 @@ service cloud.firestore {
       }
     }
 
+    // FUTURE BALI ID bonus transfers. Cloud Functions must perform BOTH wallet
+    // updates and the audit entry in one server-side Firestore transaction.
+    // NEVER allow a browser (including directors) to write these documents.
+    match /guestWallets/{uid} {
+      allow get: if signedInAs(uid) || isAdmin() || isDirector();
+      allow list, create, update, delete: if false;
+    }
+    match /bonusTransfers/{transferId} {
+      allow read, write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
