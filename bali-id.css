@@ -68,3 +68,12 @@ body.bali-guest-theme #profileSection>.container{
   overflow:visible!important;
 }
 body.bali-guest-theme #profileSection[hidden]{display:none!important}
+
+body.bali-guest-theme #profileSection .bali-id-page-title{
+  margin:0 0 clamp(15px,2.7vw,27px)!important;
+  padding:0!important;
+  font:850 clamp(23px,4.2vw,35px)/1.1 Manrope,Inter,sans-serif!important;
+  letter-spacing:.09em!important;
+  color:#fff!important;
+  text-transform:uppercase!important;
+}
