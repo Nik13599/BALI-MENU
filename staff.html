@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#080b10">
+<title>BALI · Privilege Control</title>
+<link rel="stylesheet" href="bali-staff.css">
+</head>
+<body>
+<header class="staff-header">
+  <a href="index.html" class="staff-brand" aria-label="На сайт BALI"><img src="assets/bali-nightclub-logo.png" alt="BALI NIGHTCLUB"></a>
+  <div class="staff-header-right"><span id="staffRoleTag">ПРОВЕРКА ДОСТУПА</span><button id="staffSignOut" class="secondary" hidden>Выйти</button></div>
+</header>
+<main class="staff-main">
+  <section class="staff-panel" id="staffLogin">
+    <span class="eyebrow">BALI · ДОСТУП СОТРУДНИКА</span><h1>PRIVILEGE CONTROL</h1>
+    <p>Служебный интерфейс для бармена, хостес, директора и администратора. Для входа используется назначенная сотруднику учётная запись Google.</p>
+    <button class="primary" id="staffSignIn">Войти через Google</button>
+    <p id="staffLoginStatus" role="status"></p>
+  </section>
+  <div id="staffWorkspace" hidden>
+    <nav class="staff-tabs" aria-label="Рабочие разделы">
+      <button data-staff-tab="scan" aria-current="page">Сканирование</button>
+      <button data-staff-tab="director" id="directorTab" hidden>Управление</button>
+      <button data-staff-tab="audit" id="auditTab" hidden>Журнал</button>
+    </nav>
+    <section id="staffScanPanel" class="staff-panel">
+      <span class="eyebrow">01 / BALI SCAN</span><h1>СКАНИРОВАНИЕ ID</h1>
+      <p>Отсканируйте одноразовый QR-код, который гость открывает в своей карте. QR действует 90 секунд и погашается после подтверждения операции.</p>
+      <div class="scan-controls">
+        <button id="startCamera" class="primary">◫ Открыть камеру</button>
+        <button id="stopCamera" class="secondary" hidden>Остановить</button>
+      </div>
+      <div class="camera-box" id="cameraBox" hidden><video id="scanVideo" autoplay muted playsinline></video></div>
+      <label for="staffQrInput">Ручной ввод кода, если камера не поддерживает сканирование</label>
+      <div class="field-row"><input id="staffQrInput" placeholder="BALI:..."><button id="scanQrButton" class="secondary">Проверить</button></div>
+      <p id="scanStatus" role="status" class="status"></p>
+      <div id="staffGuestCard" class="staff-guest-card" hidden>
+        <p class="eyebrow">ГОСТЬ ПОДТВЕРЖДЁН</p><h2 id="scannedGuestName"></h2><p id="scannedGuestMeta"></p>
+        <div class="wallet-grid" id="scannedGuestGrants"></div>
+        <section class="action-box" id="redeemBox" hidden>
+          <h3>Списание подарка</h3>
+          <label>Вид бонуса<select id="redeemKind"><option value="cocktail">Коктейль</option><option value="shot">Шот</option><option value="hookah">Кальян</option></select></label>
+          <label>Количество<input id="redeemCount" type="number" min="1" max="50" value="1"></label>
+          <label>Мероприятие (необязательно)<input id="redeemEvent" placeholder="ID мероприятия, если бонус целевой"></label>
+          <button id="redeemButton" class="primary">Списать бонусы</button>
+        </section>
+        <section class="action-box" id="discountBox" hidden>
+          <h3>Подтверждение скидки</h3>
+          <label>Доступная скидка<select id="discountGrant"></select></label>
+          <label>Номер чека<input id="discountReceipt" placeholder="Обязателен для исключения дублей"></label>
+          <button id="discountButton" class="primary">Подтвердить применение скидки</button>
+        </section>
+        <section class="action-box" id="entryBox" hidden>
+          <h3>Контроль входа</h3>
+          <label>ID мероприятия (при наличии)<input id="entryEvent" placeholder="Без ID — один вход за день"></label>
+          <button id="entryButton" class="primary">Отметить проход</button>
+        </section>
+      </div>
+    </section>
+    <section id="staffDirectorPanel" class="staff-panel" hidden>
+      <span class="eyebrow">02 / DIRECTOR CONTROL</span><h1>УПРАВЛЕНИЕ ПРИВИЛЕГИЯМИ</h1>
+      <p>Директор и администратор могут начислять и вручную списывать бонусы. Каждое действие сохраняется в журнале.</p>
+      <div class="action-box">
+        <h3>Найти BALI ID</h3>
+        <div class="field-row"><input id="guestNumberSearch" inputmode="numeric" placeholder="000001"><button id="findGuestButton" class="secondary">Найти</button></div>
+        <p id="directorGuestInfo" class="status">Выберите гостя по номеру BALI ID.</p>
+        <div id="directorWalletGrants" class="wallet-grid"></div>
+      </div>
+      <form id="grantForm" class="action-box">
+        <h3>Начисление</h3>
+        <label>Тип<select id="grantKind"><option value="cocktail">Бесплатный коктейль</option><option value="shot">Бесплатный шот</option><option value="hookah">Бесплатный кальян</option><option value="entry">Бесплатный вход</option><option value="discount">Скидка</option></select></label>
+        <label id="grantCountWrap">Количество<input id="grantCount" type="number" min="1" max="500" value="1"></label>
+        <label id="grantPercentWrap" hidden>Размер скидки, %<input id="grantPercent" type="number" min="1" max="100" value="15"></label>
+        <label id="grantAreaWrap" hidden>На какие позиции<select id="grantArea"><option value="kitchen">Кухня</option><option value="bar">Бар</option><option value="all">Все разрешённые позиции</option></select></label>
+        <label id="grantUnlimitedWrap" hidden><input id="grantUnlimited" type="checkbox"> Безлимитные проходы в пределах срока</label>
+        <label>Действует до (необязательно, кроме безлимитного входа)<input id="grantExpires" type="date"></label>
+        <label>Только для события (необязательно)<input id="grantEvent" placeholder="ID мероприятия"></label>
+        <label>Комментарий<input id="grantNote" maxlength="200" placeholder="Основание начисления"></label>
+        <button type="submit" class="primary">Начислить</button>
+      </form>
+      <form id="manualDebitForm" class="action-box">
+        <h3>Ручное списание директором</h3>
+        <label>Тип<select id="debitKind"><option value="cocktail">Коктейль</option><option value="shot">Шот</option><option value="hookah">Кальян</option><option value="entry">Проход</option></select></label>
+        <label>Количество<input id="debitCount" type="number" min="1" max="500" value="1"></label>
+        <label>Причина (обязательна)<input id="debitReason" minlength="5" maxlength="200" required placeholder="Например: исправление выдачи"></label>
+        <button type="submit" class="secondary">Списать с указанием причины</button>
+      </form>
+      <form id="staffAssignForm" class="action-box">
+        <h3>Доступ сотрудников</h3>
+        <p>Для директора требуется ручное назначение роли в Firestore. Здесь директор может назначить бармена или хостес.</p>
+        <label>Firebase UID сотрудника<input id="staffUid" required placeholder="UID из Firebase Authentication"></label>
+        <label>Роль<select id="staffAssignRole"><option value="bartender">Бармен</option><option value="hostess">Хостес</option></select></label>
+        <label><input id="staffActive" type="checkbox" checked> Доступ активен</label>
+        <button class="secondary">Сохранить доступ</button>
+      </form>
+      <p id="directorStatus" role="status" class="status"></p>
+    </section>
+    <section id="staffAuditPanel" class="staff-panel" hidden>
+      <span class="eyebrow">03 / AUDIT LOG</span><h1>ЖУРНАЛ ОПЕРАЦИЙ</h1>
+      <button id="refreshAudit" class="secondary">Обновить журнал</button>
+      <p class="status" id="auditStatus"></p><div id="auditRows" class="audit-rows"></div>
+    </section>
+  </div>
+</main>
+<script src="firebase-config.js"></script>
+<script type="module" src="bali-staff.js"></script>
+</body></html>
