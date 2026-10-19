@@ -1,0 +1,33 @@
+/* BALI Mobile Glass Navigation — no dark plates/underlays.
+   This file is loaded after all legacy guest styles and applies ONLY on phones. */
+@media(max-width:767px){
+ body.bali-guest-theme .bali-bottom-nav{
+   position:fixed!important;z-index:1002!important;
+   background:rgba(243,250,255,.025)!important;
+   background-color:rgba(243,250,255,.025)!important;
+   background-image:none!important;
+   backdrop-filter:blur(25px) saturate(1.24)!important;
+   -webkit-backdrop-filter:blur(25px) saturate(1.24)!important;
+   border:1px solid rgba(242,250,242,.13)!important;
+   box-shadow:none!important;
+   isolation:auto!important;
+ }
+ body.bali-guest-theme .bali-bottom-nav::before,
+ body.bali-guest-theme .bali-bottom-nav::after{
+   display:none!important;content:none!important;
+ }
+ body.bali-guest-theme .bali-bottom-nav button{
+   background:transparent!important;background-color:transparent!important;
+   background-image:none!important;box-shadow:none!important;
+   border:0!important;
+ }
+ /* No separate black rectangle is placed behind the glass or below the dock. */
+ body.bali-guest-theme[data-bali-page="about"] .header .header-content{
+   background:transparent!important;
+ }
+ body.bali-guest-theme[data-bali-page="menu"] .bali-bottom-nav,
+ body.bali-guest-theme[data-bali-page="about"] .bali-bottom-nav,
+ body.bali-guest-theme[data-bali-page="contacts"] .bali-bottom-nav{
+   background:rgba(243,250,255,.025)!important;
+ }
+}

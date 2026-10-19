@@ -561,7 +561,7 @@
                   src="index.html?bali-admin-design-preview=1" loading="lazy" referrerpolicy="same-origin"></iframe>
               </div>
             </div>
-            <div class="bali-studio-bottomline"><span class="online-dot"></span><span>Актуальные мероприятия, карты меню, BALI PRIVILEGE и MERCH из Firebase</span></div>
+            <div class="bali-studio-bottomline"><span class="online-dot"></span><span>Актуальные мероприятия, карты меню, BALI PRIVILEGE и цифровые карты BALI ID из Firebase</span></div>
             <p id="baliStudioLoadStatus" class="status" role="status" aria-live="polite">Загружаем живую схему сайта…</p>
           </section>
           <aside class="bali-design-inspector" aria-labelledby="baliStudioInspectorTitle">
@@ -627,61 +627,11 @@
           <div class="bali-mobile-about-admin-list-heading"><h4>Загруженные фоны</h4><small>Видимые гостям фоны плавно сменяются каждые 8,5 секунды.</small></div>
           <div id="baliMobileAboutAdminList" class="bali-mobile-about-admin-list" aria-live="polite"></div>
         </section>
-        <section class="card bali-design-merch-editor" data-design-editor="merch" hidden>
-          <div class="card-heading"><h3>BALI MERCH · Витрина</h3><span class="tag">Несколько товаров</span></div>
-          <p class="hint">Добавляйте любое количество карточек мерча, загружайте фотографии, указывайте наличие и цену. На главной карточки показываются по очереди. Черновики гостям не видны.</p>
-          <div class="bali-design-spec">
-            <div class="bali-design-spec-art bali-design-spec-art-landscape"><span>1200 × 800</span></div>
-            <div><strong>Фото мерча — 1200 × 800 px</strong><small>Формат 3:2, JPG / PNG / WebP до 15 МБ. Хорошо подходит для одежды и аксессуаров. Название и описание можно не вводить, если они уже есть на фото.</small></div>
-          </div>
-          <form id="baliHomeMerchForm" class="bali-design-form">
-            <input type="hidden" id="baliHomeMerchId">
-            <label>Название товара (необязательно при наличии фото)<input id="baliHomeMerchName" minlength="2" maxlength="95" placeholder="Название можно разместить на фотографии"></label>
-            <label>Описание (необязательно)<textarea id="baliHomeMerchDescription" rows="2" maxlength="180" placeholder="Коротко о товаре"></textarea></label>
-            <button type="button" class="bali-clear-artwork-copy" data-bali-clear-artwork-copy="merch">Очистить надписи — оставить только фотографию</button>
-            <div class="bali-design-form-grid">
-              <label>Статус
-                <select id="baliHomeMerchStatus">
-                  <option value="soon">Скоро в продаже</option>
-                  <option value="available">В продаже</option>
-                </select>
-              </label>
-              <label>Цена, BYN (для «В продаже»)<input id="baliHomeMerchPrice" type="number" min="0" max="20000" step="0.01" value="0"></label>
-            </div>
-            <div class="bali-design-form-grid">
-              <label>Порядок показа<input id="baliHomeMerchSort" type="number" min="0" max="100000" step="1" value="100" required></label>
-              <label class="check bali-design-publication"><input type="checkbox" id="baliHomeMerchPublished">Показывать на сайте</label>
-            </div>
-            <div class="bali-design-upload">
-              <label>Фото товара для ПК — 1200×800<input id="baliHomeMerchFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
-              <div class="bali-design-image-preview" id="baliHomeMerchPreview"><span>Фото товара 3:2</span></div>
-              <button type="button" id="baliHomeMerchRemoveImage">Убрать фото</button>
-            </div>
-            <label>Или HTTPS-ссылка на фото<input id="baliHomeMerchImageUrl" type="url" maxlength="2048" placeholder="https://..."></label>
-            <p class="hint">Здесь можно подготовить отдельные фотографии одного товара для разных экранов.</p>
-            <div class="bali-design-variant-grid" aria-label="Адаптивные изображения">
- <div class="bali-design-variant">
-    <strong>Планшет · 900 × 900 px · 1:1</strong>
-    <label>Загрузить вариант <input id="baliHomeMerchTabletFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
-    <div class="bali-design-image-preview" id="baliHomeMerchTabletPreview"><span>Планшет 1:1</span></div>
-    <label>Или HTTPS-ссылка <input id="baliHomeMerchTabletImageUrl" type="url" maxlength="2048" placeholder="https://..."></label>
-    <button type="button" id="baliHomeMerchTabletRemoveImage">Убрать изображение</button>
-  </div>
-<div class="bali-design-variant">
-    <strong>Телефон · 720 × 900 px · 4:5</strong>
-    <label>Загрузить вариант <input id="baliHomeMerchMobileFile" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"></label>
-    <div class="bali-design-image-preview" id="baliHomeMerchMobilePreview"><span>Телефон 4:5</span></div>
-    <label>Или HTTPS-ссылка <input id="baliHomeMerchMobileImageUrl" type="url" maxlength="2048" placeholder="https://..."></label>
-    <button type="button" id="baliHomeMerchMobileRemoveImage">Убрать изображение</button>
-  </div>
- </div>
-            <div class="actions">
-              <button type="submit" id="baliHomeMerchSave" class="primary">Сохранить товар</button>
-              <button type="button" id="baliHomeMerchReset">Новый товар</button>
-            </div>
-            <p class="status" id="baliHomeMerchFeedback" role="status" aria-live="polite">Проверяем доступ…</p>
-          </form>
-          <div class="bali-design-merch-list" id="baliHomeMerchList" aria-live="polite"></div>
+        <section class="card bali-design-id-editor" data-design-editor="idCard" hidden>
+          <div class="card-heading"><h3>BALI ID · цифровая карта гостя</h3><span class="tag">Персональная карта</span></div>
+          <p>На главной странице ПК вместо товарной витрины теперь показана персональная BALI ID. Имя, номер и уровень автоматически берутся из аккаунта гостя.</p>
+          <p class="hint">Статусы Member, Silver, Gold, Platinum, Black и Private назначаются в разделе управления BALI PRIVILEGE. Данные пользователя и QR-код не редактируются как рекламный баннер.</p>
+          <p><a href="director-id.html" target="_blank" rel="noopener noreferrer">Управление BALI ID и Privilege ↗</a></p>
         </section>
         <section class="card bali-promo-editor" id="baliPromoEditor" data-design-editor="privilege" hidden>
           <div class="card-heading"><h3>BALI PRIVILEGE · Спецпредложения</h3><span class="tag">Главная страница ПК</span></div>
@@ -1073,14 +1023,14 @@
 <script type="module" src="bali-admin-cards.js?v=20261019-1"></script>
 <script type="module" src="bali-menu-visibility.js?v=20261017-72"></script>
 <script type="module" src="bali-admin-promos.js?v=20261018-109"></script>
-<script type="module" src="bali-home-design-admin.js?v=20261018-107"></script>
+<script type="module" src="bali-home-design-admin.js?v=20261019-idcard1"></script>
 <script type="module" src="bali-home-placeholder-admin.js?v=20261018-92"></script>
 <script type="module" src="admin-orders.js?v=20261017-20"></script>
 <script type="module" src="admin-clients.js?v=20261019-1"></script>
 <script type="module" src="bali-privilege-admin.js?v=20261019-2"></script>
 <script src="bali-smart-design.js?v=20261019-2" defer></script>
 <script src="admin-dashboard.js?v=20261018-105" defer></script>
-<script src="bali-design-studio.js?v=20261019-116" defer></script>
+<script src="bali-design-studio.js?v=20261019-idcard1" defer></script>
 <script type="module" src="bali-site-content-admin.js?v=20261018-97"></script>
 <script src="bali-icon-atelier.js?v=20261017-58" defer></script>
 <script type="module" src="bali-theme.js?v=20261017-60"></script>

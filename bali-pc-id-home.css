@@ -1,0 +1,55 @@
+/* BALI ID takes the exact right-rail slot previously used by the store.
+   Live card values are mirrored from the authenticated user's BALI ID page. */
+body.bali-guest-theme #homeSection .bali-pc-id-card{
+  display:none;
+}
+@media(min-width:1180px){
+ body.bali-guest-theme #homeSection .bali-pc-id-card{
+   box-sizing:border-box!important;display:block!important;
+   position:relative!important;grid-row:2!important;
+   width:100%!important;height:100%!important;min-height:0!important;
+   padding:0!important;margin:0!important;overflow:hidden!important;
+   text-align:left!important;cursor:pointer!important;
+   border:1px solid rgba(217,238,222,.25)!important;border-radius:16px!important;
+   background:linear-gradient(145deg,#1a2220,#070b0a 61%,#17201b)!important;
+   color:var(--card-accent,#b9ff51)!important;
+ }
+ body.bali-guest-theme #homeSection .bali-pc-id-card:focus-visible{
+   outline:2px solid var(--card-accent,#b9ff51)!important;outline-offset:2px!important;
+ }
+ .bali-pc-id-card[data-bali-tier="silver"]{--card-accent:#d5d7d8}
+ .bali-pc-id-card[data-bali-tier="gold"]{--card-accent:#eac883}
+ .bali-pc-id-card[data-bali-tier="platinum"]{--card-accent:#b7cad5}
+ .bali-pc-id-card[data-bali-tier="black"]{--card-accent:#f1f4f7}
+ .bali-pc-id-card[data-bali-tier="private"]{--card-accent:#eddb91}
+ .bali-pc-id-card[data-bali-tier="member"]{--card-accent:#b9ff51}
+ .bali-pc-id-card-face{display:flex;flex-direction:column;
+   position:relative;height:100%;width:100%;min-height:0;
+   justify-content:space-between;align-items:stretch;
+   padding:clamp(10px,1.25vw,22px);gap:3px;
+   background:radial-gradient(ellipse at 72% 52%,rgba(190,210,203,.09),transparent 48%);
+ }
+ .bali-pc-id-top{display:flex;justify-content:space-between;align-items:flex-start;
+   gap:5px;font:800 clamp(8px,.78vw,14px)/1.25 Manrope,Inter,sans-serif;
+   letter-spacing:.035em;color:var(--card-accent,#b9ff51);
+ }
+ .bali-pc-id-top span:last-child{text-align:right}
+ .bali-pc-id-logo{position:absolute;left:50%;top:50%;
+   transform:translate(-50%,-50%);
+   width:clamp(58px,36%,155px);height:45%;object-fit:contain;
+   opacity:.94;filter:drop-shadow(0 0 12px rgba(185,255,81,.04));
+ }
+ .bali-pc-id-bottom{display:flex;align-items:flex-end;justify-content:space-between;
+   gap:6px;color:var(--card-accent,#b9ff51);z-index:1;
+ }
+ .bali-pc-id-bottom strong{display:block;font:770 clamp(9px,.89vw,16px)/1.2 Manrope,Inter,sans-serif;
+   overflow-wrap:anywhere;
+ }
+ .bali-pc-id-bottom small{display:block;font:540 clamp(8px,.62vw,11px)/1.2 Manrope,Inter,sans-serif;
+   margin-top:3px;opacity:.88;
+ }
+ .bali-pc-id-bottom .bali-pc-id-number{white-space:nowrap;
+   font:790 clamp(10px,.84vw,15px)/1.1 Manrope,Inter,sans-serif;
+   font-variant-numeric:tabular-nums;flex:0 0 auto;
+ }
+}

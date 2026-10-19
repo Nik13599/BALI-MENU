@@ -28,7 +28,7 @@
     <link rel="stylesheet" href="bali-desktop-fullwidth.css?v=20261017-64">
     <link rel="stylesheet" href="bali-bar-menu.css?v=20261018-98">
     <link rel="stylesheet" href="bali-pc-reference.css?v=20261019-87">
-    <link rel="stylesheet" href="bali-pc-viewport.css?v=20261018-93">
+    <link rel="stylesheet" href="bali-pc-viewport.css?v=20261019-idcard1">
     <link rel="stylesheet" href="bali-contact-channels.css?v=20261018-96">
     <link rel="stylesheet" href="bali-age-gate.css?v=20261018-104">
     <link rel="stylesheet" href="bali-menu-details.css?v=20261019-111">
@@ -49,7 +49,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="bali-tea-cards.css?v=20261019-3">
-    <link rel="stylesheet" href="bali-about-shell.css?v=20261019-1">
+    <link rel="stylesheet" href="bali-about-shell.css?v=20261019-fluid2">
+    <link rel="stylesheet" href="bali-mobile-glass.css?v=20261019-1">
+    <link rel="stylesheet" href="bali-pc-id-home.css?v=20261019-1">
 </head>
 
 <body class="bali-guest-theme">
@@ -186,21 +188,18 @@
             <p id="baliPcAboutDescription">Ночной клуб BALI в Минске. Музыка, события и встречи в одной атмосфере.</p>
             <button type="button" data-bali-nav="contacts">Контакты клуба →</button>
           </details>
-          <div class="bali-pc-merch" aria-label="BALI MERCH">
-            <picture class="bali-pc-merch-picture"><source id="baliPcMerchMobileSource" media="(max-width:767px)"><source id="baliPcMerchTabletSource" media="(min-width:768px) and (max-width:1179px)"><img id="baliPcMerchImage" class="bali-pc-merch-photo" alt="" hidden></picture>
-            <span class="bali-pc-merch-mark" aria-hidden="true">BALI</span>
-            <div class="bali-pc-merch-info">
-              <span class="bali-pc-merch-kicker">BALI MERCH</span>
-              <strong id="baliPcMerchTitle">BALI MERCH</strong>
-              <small id="baliPcMerchState">Скоро в продаже</small>
-              <span id="baliPcMerchDescription" class="bali-pc-merch-desc" hidden></span>
+          <button type="button" class="bali-pc-id-card" id="baliHomeIdCard"
+            aria-label="Открыть свою цифровую карту BALI ID" title="Открыть BALI ID"
+            data-bali-tier="member">
+            <div class="bali-pc-id-card-face">
+              <div class="bali-pc-id-top"><span>BALI ID · PRIVILEGE</span><span id="baliHomeIdTier">MEMBER</span></div>
+              <img class="bali-pc-id-logo" src="assets/bali-id-full-logo.svg" alt="BALI NIGHTCLUB" loading="lazy" decoding="async">
+              <div class="bali-pc-id-bottom">
+                <span><strong id="baliHomeIdName">ВАША КАРТА BALI ID</strong><small id="baliHomeIdHint">Войти и получить карту</small></span>
+                <strong class="bali-pc-id-number" id="baliHomeIdNumber">— — — — — —</strong>
+              </div>
             </div>
-            <div class="bali-pc-merch-controls" id="baliPcMerchControls" hidden>
-              <span id="baliPcMerchCounter">01 / 01</span>
-              <button type="button" data-bali-merch-step="-1" aria-label="Предыдущий мерч">‹</button>
-              <button type="button" data-bali-merch-step="1" aria-label="Следующий мерч">›</button>
-            </div>
-          </div>
+          </button>
         </aside>
         <button type="button" id="menuNavBtn" class="bali-home-menu-banner" aria-controls="menuPage">
           <span class="bali-menu-banner-icon" aria-hidden="true">▥</span>
@@ -788,7 +787,7 @@
     <script type="module" src="bali-bar-menu.js?v=20261017-85"></script>
     <script type="module" src="bali-extra-menus.js?v=20261019-3"></script>
     <script type="module" src="bali-menu-visibility.js?v=20261017-72"></script>
-    <script type="module" src="bali-home-design.js?v=20261018-106"></script>
+    <script type="module" src="bali-home-design.js?v=20261019-idcard1"></script>
     <script type="module" src="bali-site-content.js?v=20261018-100"></script>
     <script src="bali-info-page.js?v=20261019-1" defer></script>
     <script type="module" src="bali-mobile-about-hero.js?v=20261019-1"></script>
@@ -801,6 +800,7 @@
     <script type="module" src="bali-theme.js?v=20261017-60"></script>
     <script src="bali-mobile-reference.js?v=20261019-shell1" defer></script>
     <script type="module" src="bali-id.js?v=20261019-6"></script>
+    <script src="bali-pc-id-home.js?v=20261019-1" defer></script>
     <script type="module" src="bali-id-flip.js?v=20261019-3"></script>
     <script src="bali-share.js?v=20261019-4" defer></script>
 </body>
