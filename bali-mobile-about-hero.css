@@ -191,21 +191,41 @@
     text-transform:none!important;
     text-shadow:none!important;
   }
-  body.bali-guest-theme #homeSection .bali-mobile-home-hero p.bali-mobile-hero-formats{
-    display:block!important;
+  body.bali-guest-theme #homeSection .bali-mobile-hero-formats{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    grid-auto-rows:minmax(18px,auto)!important;
+    gap:3px 4px!important;
+    box-sizing:border-box!important;
+    width:100%!important;
     max-width:100%!important;
+    min-width:0!important;
     margin:0!important;
-    color:#bfc8c1!important;
-    font:530 clamp(8px,2.18vw,11px)/1.28 Manrope,Inter,sans-serif!important;
-    letter-spacing:.012em!important;
-    text-transform:none!important;
-    text-shadow:none!important;
-    text-wrap:pretty;
+    padding:0!important;
   }
-  body.bali-guest-theme #homeSection .bali-mobile-hero-formats b{
-    color:var(--bali-mobile-neon,#b9ff51)!important;
-    font:inherit!important;
-    font-weight:800!important;
+  body.bali-guest-theme #homeSection .bali-mobile-hero-chip{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    box-sizing:border-box!important;
+    min-width:0!important;
+    padding:2px 3px!important;
+    background:rgba(215,237,217,.085)!important;
+    border:1px solid rgba(193,221,196,.24)!important;
+    border-radius:5px!important;
+    color:#e5e8e4!important;
+    font:550 clamp(9px,2.5vw,12px)/1.08 Manrope,Inter,sans-serif!important;
+    letter-spacing:0!important;
+    text-align:center!important;
+    text-transform:none!important;
+    overflow-wrap:normal;
+    hyphens:auto;
+    text-shadow:none!important;
+    cursor:default!important;
+    pointer-events:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-hero-chip-wide{
+    grid-column:span 2!important;
   }
   body.bali-guest-theme #homeSection .bali-mobile-about-action{
     align-self:flex-start!important;
@@ -252,5 +272,34 @@
   body.bali-guest-theme #homeSection .bali-mobile-about-action{
     height:clamp(25px,7vw,31px)!important;
     margin-top:8px!important;
+  }
+}
+
+/* Compact two-row, three-column non-clickable format badges.
+   Move the heading toward the top and reserve space under the badges for CTA. */
+@media(max-width:767px){
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero{
+    justify-content:flex-start!important;
+    padding-top:clamp(4px,1.2vw,6px)!important;
+    padding-bottom:4px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero-copy{
+    justify-content:flex-start!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero h1{
+    margin-bottom:2px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero p.bali-mobile-hero-tagline{
+    margin-bottom:3px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-action{
+    height:clamp(24px,6.7vw,29px)!important;
+    margin-top:clamp(7px,2.2vw,10px)!important;
+  }
+}
+@media(max-width:767px) and (max-height:690px){
+  body.bali-guest-theme #homeSection .bali-mobile-about-action{
+    margin-top:7px!important;
+    height:24px!important;
   }
 }
