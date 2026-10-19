@@ -14,8 +14,15 @@ if(!scene||!track||!front||!back||!dialog||!showBtn||!image){
   throw new Error("BALI ID flip markup is missing.");
 }
 
-let isFlipped=false,touchStart=null,lastSwiped=0;
-function flip(toBack,{focus=false}={}){
+// Touch/pen drag is interactive: the rotation follows the finger immediately.
+// Mouse click remains available on desktop, but tapping the card on a phone
+// does NOT flip it. Keyboard controls work on every device.
+const reducedMotion=window.matchMedia("(prefers-reduced-motion:reduce)");
+let isFlipped=false,gesture=null,suppressTouchClickUntil=0,settling=false;
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+const dragDistance=()=>clamp(scene.clientWidth*.58,150,245);
+
+function setFaceState(toBack,{focus=false}={}){
   isFlipped=Boolean(toBack);
   track.classList.toggle("is-flipped",isFlipped);
   front.setAttribute("aria-hidden",String(isFlipped));
@@ -23,14 +30,47 @@ function flip(toBack,{focus=false}={}){
   front.tabIndex=isFlipped?-1:0;
   back.tabIndex=isFlipped?0:-1;
   if(help)help.textContent=isFlipped
-    ?"← Свайпните или нажмите, чтобы увидеть лицевую сторону →"
-    :"← Свайпните карту влево или вправо, чтобы перевернуть →";
+    ?"← Проведите пальцем, чтобы увидеть лицевую сторону →"
+    :"← Проведите пальцем влево или вправо, чтобы перевернуть →";
   if(focus)(isFlipped?back:front).focus({preventScroll:true});
 }
-function onFaceClick(event){
-  if(Date.now()-lastSwiped<500)return;
-  // Clicking outside a text selection changes the card side.
+function normalizeRotation(){
+  // -180deg and +180deg have the same visible orientation. Normalize without
+  // a transition, so the next slow drag always starts at the correct angle.
+  track.style.transition="none";
+  track.style.transform="rotateY("+(isFlipped?180:0)+"deg)";
+  void track.offsetWidth;
+  track.style.transform="";
+  track.style.transition="";
+  settling=false;
+}
+function flip(toBack,{focus=false}={}){
+  gesture=null;
+  settling=false;
+  track.style.transition="";
+  track.style.transform="";
+  setFaceState(toBack,{focus});
+}
+function settleDrag(toBack,targetAngle){
+  setFaceState(toBack);
+  settling=true;
+  // Force the browser to commit the last finger-controlled angle before
+  // restoring the CSS transition for the remaining part of the rotation.
+  void track.offsetWidth;
+  track.style.transition="";
+  track.style.transform="rotateY("+targetAngle+"deg)";
+  if(reducedMotion.matches)normalizeRotation();
+}
+track.addEventListener("transitionend",event=>{
+  if(event.target===track&&event.propertyName==="transform"&&settling&&!gesture){
+    normalizeRotation();
+  }
+});
+function onFaceClick(){
+  if(Date.now()<suppressTouchClickUntil)return;
   if(window.getSelection?.()?.toString()?.trim())return;
+  // Regular mouse click on a laptop/PC retains the requested flip action.
+  if(gesture||settling)return;
   flip(!isFlipped);
 }
 front.addEventListener("click",onFaceClick);
@@ -43,23 +83,69 @@ for(const face of [front,back]){
     }
   });
 }
-scene.addEventListener("touchstart",event=>{
-  if(event.touches.length!==1){touchStart=null;return;}
-  const point=event.touches[0];
-  touchStart={x:point.clientX,y:point.clientY};
-},{passive:true});
-scene.addEventListener("touchend",event=>{
-  if(!touchStart||event.changedTouches.length!==1){touchStart=null;return;}
-  const point=event.changedTouches[0];
-  const dx=point.clientX-touchStart.x,dy=point.clientY-touchStart.y;
-  touchStart=null;
-  // Left and right both flip the current side. Vertical swipes keep page scrolling.
-  if(Math.abs(dx)>=48&&Math.abs(dx)>Math.abs(dy)*1.25){
-    lastSwiped=Date.now();
-    flip(!isFlipped);
+
+scene.addEventListener("pointerdown",event=>{
+  if(!event.isPrimary||!["touch","pen"].includes(event.pointerType)||settling)return;
+  suppressTouchClickUntil=Date.now()+900;
+  gesture={
+    id:event.pointerId,
+    x:event.clientX,y:event.clientY,
+    startTime:performance.now(),lastX:event.clientX,lastTime:performance.now(),
+    velocity:0,axis:null,dx:0
+  };
+  try{scene.setPointerCapture(event.pointerId);}catch{}
+});
+scene.addEventListener("pointermove",event=>{
+  const g=gesture;
+  if(!g||event.pointerId!==g.id)return;
+  const dx=event.clientX-g.x,dy=event.clientY-g.y;
+  if(!g.axis){
+    if(Math.abs(dx)<7&&Math.abs(dy)<7)return;
+    if(Math.abs(dx)>Math.abs(dy)*1.12)g.axis="horizontal";
+    else if(Math.abs(dy)>Math.abs(dx)*1.12)g.axis="vertical";
+    else return;
   }
-},{passive:true});
-scene.addEventListener("touchcancel",()=>{touchStart=null;});
+  if(g.axis!=="horizontal")return; // Native vertical scrolling remains intact.
+  const currentTime=performance.now();
+  const dt=currentTime-g.lastTime;
+  if(dt>0)g.velocity=(event.clientX-g.lastX)/dt;
+  g.lastTime=currentTime;g.lastX=event.clientX;g.dx=dx;
+
+  // On the rear side choose the equivalent -180/+180 start angle that
+  // points toward the nearest 0deg position for the drag direction.
+  const base=isFlipped?(dx>=0?-180:180):0;
+  const progress=clamp(dx/dragDistance(),-1,1);
+  track.style.transition="none";
+  track.style.transform="rotateY("+(base+progress*180)+"deg)";
+});
+function endGesture(event,cancelled=false){
+  const g=gesture;
+  if(!g||event.pointerId!==g.id)return;
+  gesture=null;
+  if(scene.hasPointerCapture?.(g.id)){
+    try{scene.releasePointerCapture(g.id);}catch{}
+  }
+  if(g.axis!=="horizontal")return;
+  const dx=g.dx,direction=dx>=0?1:-1;
+  const progress=Math.abs(dx)/dragDistance();
+  // Slow deliberate drags complete when the card moves almost half a turn;
+  // fast, intentional flicks also work with a shorter travel distance.
+  const fast=Math.abs(dx)>=24&&Math.abs(g.velocity)>=.5;
+  const completed=!cancelled&&(progress>=.42||fast);
+  const next=completed?!isFlipped:isFlipped;
+  const target=completed
+    ?(isFlipped?0:direction*180)
+    :(isFlipped?-direction*180:0);
+  settleDrag(next,target);
+}
+scene.addEventListener("pointerup",event=>endGesture(event));
+scene.addEventListener("pointercancel",event=>endGesture(event,true));
+// Prevent stuck transforms when the window loses focus mid-swipe.
+window.addEventListener("blur",()=>{
+  if(!gesture)return;
+  const g=gesture;
+  endGesture({pointerId:g.id},true);
+});
 flip(false);
 
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
