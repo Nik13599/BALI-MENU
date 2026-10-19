@@ -208,11 +208,22 @@ const heroMarkup=html.slice(html.indexOf('<section class="bali-mobile-home-hero"
 assert(heroMarkup.includes('<h1><span>BALI — </span><em>БОЛЬШЕ, ЧЕМ КЛУБ</em></h1>') &&
   heroMarkup.includes('Площадка для мероприятий в центре Минска.') &&
   heroMarkup.includes('Вечеринки') &&
-  heroMarkup.includes('закрытые мероприятия') &&
-  heroMarkup.includes('корпоративы') &&
-  heroMarkup.includes('концерты') &&
+  heroMarkup.includes('Закрытые мероприятия') &&
+  heroMarkup.includes('Корпоративы') &&
+  heroMarkup.includes('Концерты') &&
   !heroMarkup.includes('презентации') &&
-  heroMarkup.includes('и многое другое') &&
+  heroMarkup.includes('И многое другое') &&
+  heroMarkup.includes('class="bali-mobile-hero-formats"') &&
+  (heroMarkup.match(/class="bali-mobile-hero-chip(?: bali-mobile-hero-chip-wide)?"/g)||[]).length === 5 &&
+  !heroMarkup.includes('<p class="bali-mobile-hero-formats"') &&
+  !heroMarkup.includes('<button class="bali-mobile-hero-chip"') &&
+  mobileAboutCss.includes('grid-template-columns:repeat(3,minmax(0,1fr))!important') &&
+  mobileAboutCss.includes('grid-column:span 2!important') &&
+  mobileAboutCss.includes('font:550 clamp(9px,2.5vw,12px)/1.08') &&
+  mobileAboutCss.includes('pointer-events:none!important') &&
+  mobileAboutCss.includes('margin-top:clamp(7px,2.2vw,10px)!important') &&
+  mobileAboutCss.includes('justify-content:flex-start!important') &&
+  html.includes('bali-mobile-about-hero.css?v=20261019-4') &&
   heroMarkup.includes('id="baliMobileAboutBtn"') &&
   !heroMarkup.includes('БОЛЬШЕ<br>ЧЕМ<br>КЛУБ') &&
   mobileAboutCss.includes('clamp(119px,33.33vw,150px)') &&
