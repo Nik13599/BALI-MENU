@@ -366,3 +366,30 @@
     width:90%!important;
   }
 }
+
+/* Kitchen cards: information 'i' mirrors the Tea-card icon one-to-one.
+   Same circular 25px desktop / 24px phone control, inset and SVG proportions. */
+#menuPage #baliKitchenContent .menu-item .menu-details-btn{
+  top:4px!important;
+  right:4px!important;
+  width:25px!important;
+  height:25px!important;
+  min-width:25px!important;
+  min-height:25px!important;
+  padding:4px!important;
+  margin:0!important;
+}
+#menuPage #baliKitchenContent .menu-item .menu-details-btn svg{
+  width:100%!important;
+  height:100%!important;
+}
+@media(max-width:767px){
+  #menuPage #baliKitchenContent .menu-item .menu-details-btn{
+    top:3px!important;
+    right:5px!important;
+    width:24px!important;
+    height:24px!important;
+    min-width:24px!important;
+    min-height:24px!important;
+  }
+}

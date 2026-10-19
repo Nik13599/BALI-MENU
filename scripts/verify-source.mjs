@@ -147,7 +147,7 @@ const studioCss=source("bali-design-studio.css");
 const siteAdmin=source("bali-site-content-admin.js");
 const sitePublic=source("bali-site-content.js");
 assert(admin.includes('bali-design-studio.css?v=') &&
-  admin.includes('bali-design-studio.js?v=20261019-116') &&
+  admin.includes('bali-design-studio.js?v=20261019-idcard1') &&
   admin.includes('bali-site-content-admin.js?v=') &&
   admin.includes('id="baliDesignLiveFrame"') &&
   admin.includes('id="baliDesignCanvas"') &&
@@ -571,26 +571,36 @@ assert(admin.includes('id="adminDesignPanel"') &&
   admin.includes('data-admin-tab="design"') &&
   source("admin-dashboard.js").includes('design: ["Дизайн сайта"') &&
   admin.includes('id="baliHomeAboutForm"') &&
-  admin.includes('id="baliHomeMerchForm"') &&
+  admin.includes('data-design-editor="idCard"') &&
+  !admin.includes('id="baliHomeMerchForm"') &&
+  !admin.includes('data-design-editor="merch"') &&
   admin.includes('id="baliPromoForm"') &&
   admin.includes('bali-home-design-admin.js?v=') &&
   admin.includes('bali-admin-promos.js?v=') &&
   html.includes('bali-home-design.js?v=') &&
   html.includes('bali-pc-offers.js?v=') &&
   html.includes('class="bali-pc-about-picture"') &&
-  html.includes('class="bali-pc-merch-picture"') &&
+  html.includes('id="baliHomeIdCard"') &&
+  html.includes('bali-pc-id-home.js?v=') &&
+  html.includes('bali-pc-id-home.css?v=') &&
+  !html.includes('class="bali-pc-merch"') &&
   !html.includes('>Забронировать стол</strong>') &&
   !html.includes('>Фотогалерея</strong>') &&
   designAdmin.includes('makeImageVariants(') &&
-  promosAdmin.includes('makeImageVariants(') &&
+  !designAdmin.includes('baliHomeMerchForm') &&
   designVariants.includes('compressImage(f,kind+"-"+suffix)') &&
-  designPublic.includes('where("published","==",true)') &&
+  designPublic.includes('doc(db,"settings","homeDesign")') &&
+  promosAdmin.includes('makeImageVariants(') &&
   promosPublic.includes('imageMobileUrl') &&
+  source("bali-pc-id-home.js").includes('baliCardNumber') &&
+  source("bali-pc-id-home.js").includes('baliIdFlipScene') &&
+  source("bali-mobile-glass.css").includes('backdrop-filter:blur(25px)') &&
+  source("bali-menu-details.css").includes('#baliKitchenContent .menu-item .menu-details-btn') &&
   rules.includes("match /merch/{merchId}") &&
   rules.includes('validHomeDesign(request.resource.data)') &&
   rules.includes('validMerch(request.resource.data)') &&
   rules.includes('validDesignImage(data.imageTabletUrl, 155000)'),
-  "Home Design must allow safe admin artwork uploads, responsive previews and published merch.");
+  "Home Design must retain safe artwork editing and personal BALI ID instead of merch, while keeping legacy data rules intact.");
 assert(html.includes('>ГЛАВНАЯ</button>') &&
   html.includes('>КАЛЕНДАРЬ</button>') &&
   html.includes('>МЕНЮ</button>') &&
