@@ -47,9 +47,9 @@ const createRequestId=()=>{
 function renderBalance(){
   const host=$("baliIdWalletList");if(!host)return;
   host.replaceChildren();
-  if(!logged()){
-    host.append(node("p","bali-bank-empty","Войдите в аккаунт для просмотра баланса."));return;
-  }
+  const wallet=host.closest(".bali-bank-wallet");
+  if(wallet)wallet.hidden=true;
+  if(!logged())return;
   const aggregates=new Map();
   for(const grant of grants){
     if(!current(grant))continue;
@@ -61,9 +61,8 @@ function renderBalance(){
     card.append(node("span","",names[kind]||kind),node("strong","",String(qty)));
     host.append(card);
   }
-  if(!aggregates.size){
-    host.append(node("p","bali-bank-empty","Количественных бонусов пока нет. Уровень указан на карте."));
-  }
+  // An empty wallet does not occupy space on the fixed ID screen.
+  if(wallet)wallet.hidden=aggregates.size===0;
 }
 function resetTransfer(){
   ++run;

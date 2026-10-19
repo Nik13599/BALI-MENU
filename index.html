@@ -42,7 +42,7 @@
     <link rel="stylesheet" href="bali-id-navigation.css?v=20261019-2">
     <link rel="stylesheet" href="bali-id-flip.css?v=20261019-4">
     <link rel="stylesheet" href="bali-id-tiers.css?v=20261019-3">
-    <link rel="stylesheet" href="bali-id-bank.css?v=20261019-2">
+    <link rel="stylesheet" href="bali-id-bank.css?v=20261019-3">
     <link rel="stylesheet" href="bali-info-page.css?v=20261019-2">
     <link rel="stylesheet" href="bali-mobile-about-hero.css?v=20261019-6">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -578,14 +578,15 @@
           <div class="bali-bank-actions" aria-label="Действия BALI ID">
             <button type="button" id="baliIdTransferOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 8h16m-5-5 5 5-5 5M20 17H4m5-5-5 5 5 5"/></svg>Перевести</button>
             <button type="button" id="baliIdHistoryOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5M12 7v5l4 2"/></svg>История операций</button>
-          </div>
-          <section class="bali-bank-wallet" aria-label="Мои количественные привилегии">
-            <div id="baliIdWalletList" class="bali-bank-wallet-list" aria-live="polite"></div>
-          </section>
           <button type="button" class="bali-id-show-qr" id="baliShowQr">
             <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM19 15v3M14 20h7M20 20v-2"/></svg>
             Показать QR-код
           </button>
+          </div>
+          <section class="bali-bank-wallet" aria-label="Мои количественные привилегии">
+            <div id="baliIdWalletList" class="bali-bank-wallet-list" aria-live="polite"></div>
+          </section>
+
           <p class="bali-id-status" id="baliIdStatus" role="status" aria-live="polite"></p>
         </div>
       </div>
@@ -893,7 +894,7 @@
     <script type="module" src="bali-id.js?v=20261019-6"></script>
     <script src="bali-pc-id-home.js?v=20261019-1" defer></script>
     <script type="module" src="bali-id-flip.js?v=20261019-4"></script>
-    <script type="module" src="bali-id-bank.js?v=20261019-1"></script>
+    <script type="module" src="bali-id-bank.js?v=20261019-2"></script>
     <script src="bali-share.js?v=20261019-4" defer></script>
 </body>
 
