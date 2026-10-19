@@ -200,3 +200,33 @@
   .bali-design-merch-entry{flex-wrap:wrap}
   .bali-design-merch-entry-actions{width:100%}
 }
+
+/* Tea details, editable from the same admin menu area. */
+#baliAdminTeaPane .bali-tea-info-field{
+  grid-column:1/-1;
+  display:grid;gap:8px;
+  min-width:0;
+  font:640 12px/1.4 Manrope,sans-serif;
+  color:#d8e0dc;
+}
+#baliAdminTeaPane .bali-tea-info-field textarea{
+  display:block;
+  width:100%;min-height:90px;box-sizing:border-box;
+  margin:0;padding:12px 13px;
+  border:1px solid rgba(255,255,255,.17);border-radius:11px;
+  background:#262a2e;color:#f6f6f6;
+  font:500 13px/1.6 Manrope,Inter,sans-serif;
+  resize:vertical;
+}
+#baliAdminTeaPane .bali-tea-import-button{
+  grid-column:1/-1;
+  padding:13px 18px;
+  min-height:45px;
+  border:1px solid var(--bt-border,#a2c878);
+  border-radius:11px;
+  background:rgba(185,255,81,.07);
+  color:var(--bt-text,#d1edb9);
+  font:720 13px/1.4 Manrope,Inter,sans-serif;
+  cursor:pointer;
+}
+#baliAdminTeaPane .bali-tea-import-button:disabled{opacity:.55;cursor:progress}
