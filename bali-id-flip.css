@@ -315,3 +315,37 @@ body.bali-guest-theme .bali-id-qr-dialog::backdrop{
   body.bali-guest-theme #baliIdSection .bali-id-flip-track{transition:none!important;will-change:auto}
   body.bali-guest-theme .bali-id-qr-dialog::backdrop{backdrop-filter:none;-webkit-backdrop-filter:none}
 }
+
+/* Keep the ID card, instruction, QR action and status on the same centre line
+   at every breakpoint, independently of the wider profile container. */
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene,
+body.bali-guest-theme #baliIdSection .bali-id-flip-help,
+body.bali-guest-theme #baliIdSection .bali-id-show-qr,
+body.bali-guest-theme #baliIdSection .bali-id-status{
+  justify-self:center!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene{
+  touch-action:pan-y;
+  user-select:none;
+  -webkit-user-select:none;
+  cursor:grab;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene:active{
+  cursor:grabbing;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-track{
+  transition:transform 620ms cubic-bezier(.22,.75,.28,1);
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-help,
+body.bali-guest-theme #baliIdSection .bali-id-show-qr,
+body.bali-guest-theme #baliIdSection .bali-id-status{
+  width:100%;
+  max-width:645px;
+}
+@media(prefers-reduced-motion:reduce){
+  body.bali-guest-theme #baliIdSection .bali-id-flip-track{
+    transition:none!important;
+  }
+}
