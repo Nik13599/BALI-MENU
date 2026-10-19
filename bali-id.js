@@ -116,10 +116,6 @@ async function allocate(uid,run){
       :"Не удалось получить BALI ID: "+(e.code||"ошибка сети")+". Повторите открытие профиля.");
   }
 }
-const gear=$("baliProfileSettings"),panel=$("baliProfileSettingsPanel");
-gear?.addEventListener("click",()=>{panel.hidden=!panel.hidden;gear.setAttribute("aria-expanded",String(!panel.hidden));});
-$("baliIdEditData")?.addEventListener("click",()=>window.BaliAuth?.open());
-$("baliIdSignOut")?.addEventListener("click",()=>$("profileLogoutBtn")?.click());
 window.addEventListener("bali:auth-state",({detail})=>{
   profile=detail?.registered?{name:detail.name}:null;
   render();
