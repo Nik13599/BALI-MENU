@@ -35,6 +35,7 @@
     <link rel="stylesheet" href="bali-brand-logo.css?v=20261018-2">
 
     <link rel="stylesheet" href="bali-artwork-clean.css?v=20261018-106">
+    <link rel="stylesheet" href="bali-mobile-reference.css?v=20261019-1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
@@ -123,6 +124,15 @@
     <!-- Главная BALI: календарь, события, меню и контакты без рекламного блока -->
     <section class="bali-home" id="homeSection" aria-label="Главная страница BALI">
       <div class="container bali-home-inner">
+        <!-- Reference mobile composition; artwork and event data remain live. -->
+        <section class="bali-mobile-home-hero" aria-label="BALI — больше чем клуб">
+          <div class="bali-mobile-home-hero-copy">
+            <h1>БОЛЬШЕ<br>ЧЕМ<br>КЛУБ</h1>
+            <p>МУЗЫКА<br>ЛЮДИ<br>АТМОСФЕРА<br>ТЫ</p>
+            <button type="button" id="baliMobileAboutBtn" class="bali-mobile-about-action">О КЛУБЕ <span aria-hidden="true">→</span></button>
+          </div>
+        </section>
+        <!-- Existing live events and offers, adapted via mobile-only grid. -->
         <!-- Верхняя зона: календарь и горизонтальная карусель -->
         <section class="bali-home-events-panel" aria-label="Ближайшие мероприятия BALI">
           <div class="bali-pc-hero">
@@ -212,11 +222,34 @@
               <path d="M12 1.5C6.2 1.5 1.5 6.2 1.5 12c0 7.1 10.5 16.3 10.5 16.3S22.5 19.1 22.5 12C22.5 6.2 17.8 1.5 12 1.5Z M12 7.75a4.25 4.25 0 1 0 0 8.5a4.25 4.25 0 0 0 0-8.5Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
             </svg>
           </span>
-          <span class="bali-yandex-address">Минск, ул. Кирова, 13</span>
+          <span class="bali-yandex-address-info">
+            <strong class="bali-yandex-address">Минск, ул. Кирова, 13</strong>
+            <small class="bali-yandex-caption">ОТКРЫТЬ НА КАРТЕ <span aria-hidden="true">→</span></small>
+          </span>
+          <span class="bali-yandex-map-graphic" aria-hidden="true">
+            <svg viewBox="0 0 180 80" preserveAspectRatio="xMidYMid slice" focusable="false">
+              <g fill="none" stroke="#87918c" stroke-opacity=".19" stroke-width="2">
+                <path d="M-10 65 72-10M20 95 113-9M80 100 174 0M120 91 192 16M-5 8 186 75M-7 45 145 104"/>
+                <path d="M10-10 188 55M15 21 195 83" stroke-width="1"/>
+                <path d="M58 0 42 80M100-5 84 85M156-5 143 91" stroke-width="1"/>
+              </g>
+              <circle cx="137" cy="45" r="20" fill="#b9ff51" opacity=".10"/>
+              <circle cx="137" cy="45" r="12" fill="#b9ff51" opacity=".20"/>
+              <circle cx="137" cy="45" r="7" fill="#b9ff51"/>
+              <circle cx="137" cy="45" r="2.8" fill="#07110a"/>
+            </svg>
+          </span>
         </a>
         </div>
       </div>
     </section>
+
+    <dialog id="baliMobileAboutDialog" class="bali-mobile-about-dialog" aria-labelledby="baliMobileAboutDialogTitle">
+      <button type="button" class="bali-mobile-about-close" id="baliMobileAboutClose" aria-label="Закрыть информацию о клубе">×</button>
+      <h2 id="baliMobileAboutDialogTitle">О клубе BALI</h2>
+      <p id="baliMobileAboutDialogDescription">Музыка, атмосфера, люди — BALI NIGHT CLUB.</p>
+      <button type="button" class="bali-mobile-about-contacts" data-bali-nav="contacts">Адрес и контакты →</button>
+    </dialog>
 
     <div id="menuPage" hidden>
     <!-- Hero Section -->
@@ -401,7 +434,7 @@
       <button type="button" data-bali-nav="home" class="active" aria-current="page"><span class="bali-nav-glyph" aria-hidden="true">⌂</span><small>Главная</small></button>
       <button type="button" data-bali-nav="events"><span class="bali-nav-glyph" aria-hidden="true">▦</span><small>События</small></button>
       <button type="button" data-bali-nav="menu"><span class="bali-nav-glyph" aria-hidden="true">▥</span><small>Меню</small></button>
-      <button type="button" data-bali-nav="profile"><span class="bali-nav-glyph" aria-hidden="true">♙</span><small>Профиль</small></button>
+      <button type="button" data-bali-nav="contacts"><span class="bali-nav-glyph" aria-hidden="true">ⓘ</span><small>Информация</small></button>
     </nav>
     <button type="button" class="bali-cart-dock" id="baliCartDock" hidden>
       <span class="bali-cart-dock-left"><span aria-hidden="true">▤</span> Корзина <strong id="baliDockCount">0</strong></span>
@@ -609,6 +642,7 @@
     <script type="module" src="event-interests.js?v=20261017-26"></script>
     <script src="bali-icon-atelier.js?v=20261017-58" defer></script>
     <script type="module" src="bali-theme.js?v=20261017-60"></script>
+    <script src="bali-mobile-reference.js?v=20261019-1" defer></script>
 </body>
 
 </html>
