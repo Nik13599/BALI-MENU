@@ -303,8 +303,8 @@ assert(html.includes('id="baliAgeGate"') &&
   source('bali-bar-menu.css').includes('#menuPage #baliHookahContent .bali-bar-intro') &&
   rules.includes('match /users/{uid}/ageConfirmations/{consentId}'),
   "Bar and hookah require 18+ account-based confirmation; tea and hookah read-only notices display.");
-// v99: admin opt-in product "Подробнее" must never be published
-// without nonempty text; optional detail photo/grams may be absent.
+// v110: every dish has an info icon, disabled without full description.
+// Full text, optional photo, weight and cart controls use existing Firestore fields.
 const adminClient=source("admin-firestore.js");
 const moreCss=source("bali-menu-details.css");
 assert(html.includes('id="baliMenuDetailsDialog"') &&
@@ -316,22 +316,30 @@ assert(html.includes('id="baliMenuDetailsDialog"') &&
   admin.includes('id="menuDetailsImageFile"') &&
   admin.includes('id="menuDetailsImagePreview"') &&
   admin.includes('id="menuWeight"') &&
-  adminClient.includes('detailsEnabled&&!detailsText') &&
+  admin.includes('id="menuDetailsAvailability"') &&
+  adminClient.includes('const hasText=Boolean($("menuDetailsText").value.trim())') &&
   adminClient.includes('compressImage(file,"menu-detail")') &&
   adminClient.includes('detailImageCleared') &&
   adminClient.includes('detailEnabled:detailsEnabled') &&
-  app.includes('item.detailEnabled===true && String(item.detailText||"").trim()') &&
+  app.includes('const hasDetails=Boolean(String(item.detailText||"").trim())') &&
+  app.includes('disabled aria-disabled="true"') &&
   app.includes('data-menu-action="details"') &&
   app.includes('function openBaliMenuDetails(product)') &&
+  app.includes('bali-menu-details-quantity') &&
+  app.includes('addToCart(id,selectedMenuQuantity(id))') &&
   app.includes('if(src&&src!=="https://placehold.co/400x200?text=BALI")') &&
   app.includes('product.detailText') &&
   moreCss.includes('.bali-menu-details-dialog') &&
-  moreCss.includes('.menu-details-btn') &&
+  moreCss.includes('.menu-details-btn.no-details:disabled') &&
+  html.includes('id="baliMenuDetailsActions"') &&
   source("image-compressor.js").includes('"menu-detail":{ratio:4/3,maxChars:95000') &&
   rules.includes("'detailEnabled','detailText','detailImageUrl'") &&
   rules.includes("data.get('detailEnabled',false) == false") &&
   rules.includes("data.detailText.size() >= 1"),
-  "Menu detail button requires admin opt-in, text, optional WebP, weight and Firestore admin validation.");
+  "Menu information icon is disabled for empty descriptions and its dialog shares cart/quantity controls.");
+assert(source("bali-mobile-reference.css").includes('Floating "Корзина" shortcut on mobile') &&
+  source("bali-mobile-reference.css").includes('translateX(-50%)!important'),
+  "Floating mobile cart should be narrower and raised above the bottom navigation.");
 const barAdmin=source("bali-admin-bar.js");
 const barAdminCss=source("bali-admin-bar.css");
 assert(html.includes('id="baliMenuModeSwitch"') &&
