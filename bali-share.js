@@ -20,7 +20,8 @@
   }
   function attach(){
     for(const card of document.querySelectorAll("#eventsGrid .event-card")){
-      if(card.querySelector(".bali-share-trigger"))continue;
+      const actions=card.querySelector(".bali-event-actions");
+      if(!actions||actions.querySelector(".bali-share-trigger"))continue;
       const button=document.createElement("button");
       button.type="button";button.className="bali-share-trigger";
       button.setAttribute("aria-label","Создать сторис с афишей "+(card.querySelector("h3")?.textContent||"BALI"));
@@ -28,7 +29,7 @@
       button.addEventListener("click",event=>{
         event.preventDefault();event.stopPropagation();void start(getData(card));
       });
-      card.append(button);
+      actions.append(button);
     }
   }
   const observer=new MutationObserver(records=>{
