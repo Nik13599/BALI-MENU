@@ -327,7 +327,7 @@ window.addEventListener('bali:events-error', () => {
     if (select) select.innerHTML = '<option value="">Не удалось загрузить мероприятия</option>';
 });
 // Клиентские разделы BALI: URL/история браузера работают без перезагрузки.
-const BALI_GUEST_PAGES = new Set(["home","menu","events","profile","id","contacts"]);
+const BALI_GUEST_PAGES = new Set(["home","menu","events","profile","id","contacts","about"]);
 function routeFromLocation() {
     const hash=window.location.hash.slice(1).toLowerCase();
     return BALI_GUEST_PAGES.has(hash)?hash:"home";
@@ -344,13 +344,16 @@ function resetGuestVerticalPosition(page) {
         const home=document.querySelector("#homeSection .bali-home-inner");
         if(home)home.scrollTop=0;
     }
+    if(page==="about"){
+        try{document.getElementById("baliAboutFrame")?.contentWindow?.scrollTo(0,0);}catch(_e){}
+    }
 }
 
 function renderGuestPage(page,{scroll=true}={}) {
     const selected=BALI_GUEST_PAGES.has(page)?page:"home";
     const sections={
         home:"homeSection", menu:"menuPage",
-        events:"eventsSection", profile:"profileSection", id:"baliIdSection", contacts:"contactsSection"
+        events:"eventsSection", profile:"profileSection", id:"baliIdSection", contacts:"contactsSection", about:"baliAboutSection"
     };
     for(const [name,id] of Object.entries(sections)) {
         const section=document.getElementById(id);
@@ -359,7 +362,7 @@ function renderGuestPage(page,{scroll=true}={}) {
     const back=document.getElementById("homeFloatingBtn");
     if(back)back.hidden=true;
     for(const button of document.querySelectorAll("[data-bali-nav]")){
-        const active=button.dataset.baliNav===selected;
+        const active=button.dataset.baliNav===(selected==="about"?"contacts":selected);
         button.classList.toggle("active",active);
         if(active)button.setAttribute("aria-current","page");
         else button.removeAttribute("aria-current");
@@ -369,6 +372,9 @@ function renderGuestPage(page,{scroll=true}={}) {
     document.body.dataset.baliPage=selected;
     // Корзина не остаётся открытой при переходе из меню.
     if(selected!=="menu" && typeof closeCart==="function")closeCart();
+    if(selected!=="about"){
+        document.getElementById("baliAboutFrame")?.contentWindow?.postMessage({type:"bali:about:pause"},window.location.origin);
+    }
     if(selected==="events")renderUpcomingEvents();
     if(selected==="home")renderHomeEvents();
     if(scroll)resetGuestVerticalPosition(selected);
