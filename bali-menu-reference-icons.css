@@ -8,31 +8,33 @@ body.bali-guest-theme #menuPage #baliMenuModeSwitch.bali-menu-mode-switch{
   flex-wrap:nowrap!important;
   justify-content:center!important;
   align-items:center!important;
-  gap:clamp(9px,1.45vw,15px)!important;
+  gap:clamp(8px,1vw,14px)!important;
   width:100%!important;
   max-width:100%!important;
   min-height:0!important;
   box-sizing:border-box!important;
-  padding:clamp(10px,1.5vh,18px) clamp(12px,2vw,30px)!important;
+  padding:14px clamp(12px,2vw,30px)!important;
   margin:0 auto!important;
   overflow:visible!important;
 }
 body.bali-guest-theme #menuPage #baliMenuModeSwitch .bali-menu-mode-btn:not([hidden]){
-  display:grid!important;
-  place-items:center!important;
-  flex:0 1 clamp(77px,8vw,110px)!important;
-  width:clamp(77px,8vw,110px)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:9px!important;
+  flex:0 1 190px!important;
+  width:min(190px,100%)!important;
   min-width:0!important;
-  max-width:110px!important;
-  height:auto!important;
-  min-height:0!important;
-  max-height:none!important;
-  aspect-ratio:1 / 1!important;
+  max-width:190px!important;
+  height:43px!important;
+  min-height:43px!important;
+  max-height:43px!important;
+  aspect-ratio:auto!important;
   box-sizing:border-box!important;
-  padding:clamp(7px,1.15vw,12px)!important;
+  padding:7px 12px!important;
   margin:0!important;
   border:1px solid rgba(229,232,240,.23)!important;
-  border-radius:clamp(19px,2.5vw,27px)!important;
+  border-radius:10px!important;
   background:linear-gradient(145deg,#101016 0%,#080a11 100%)!important;
   color:#fff!important;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.025)!important;
@@ -46,17 +48,17 @@ body.bali-guest-theme #menuPage #baliMenuModeSwitch .bali-menu-mode-btn[hidden]{
 body.bali-guest-theme #menuPage #baliMenuModeSwitch .bali-menu-mode-icon{
   display:grid!important;
   place-items:center!important;
-  width:100%!important;
-  height:100%!important;
-  min-width:0!important;
-  flex:none!important;
+  width:28px!important;
+  height:28px!important;
+  min-width:28px!important;
+  flex:0 0 28px!important;
   overflow:visible!important;
   pointer-events:none!important;
 }
 body.bali-guest-theme #menuPage #baliMenuModeSwitch .bali-menu-mode-icon img{
   display:block!important;
-  width:84%!important;
-  height:84%!important;
+  width:100%!important;
+  height:100%!important;
   max-width:100%!important;
   max-height:100%!important;
   object-fit:contain!important;
@@ -66,7 +68,9 @@ body.bali-guest-theme #menuPage #baliMenuModeSwitch .bali-menu-mode-icon img{
   user-select:none;
 }
 body.bali-guest-theme #menuPage #baliMenuModeSwitch .bali-menu-mode-label{
-  display:none!important; /* Buttons retain full aria-label and title text. */
+  display:inline!important;
+  font:700 clamp(11px,1vw,14px)/1.2 Manrope,Inter,sans-serif!important;
+  white-space:nowrap!important;
 }
 body.bali-guest-theme #menuPage #baliMenuModeSwitch .bali-menu-mode-btn.is-active:not([hidden]),
 body.bali-guest-theme #menuPage #baliMenuModeSwitch .bali-menu-mode-btn[aria-pressed="true"]:not([hidden]){
@@ -94,24 +98,42 @@ body.bali-guest-theme #menuPage .bali-menu-search{
 }
 @media(max-width:767px){
   body.bali-guest-theme #menuPage #baliMenuModeSwitch.bali-menu-mode-switch{
-    gap:clamp(6px,2vw,11px)!important;
-    padding:8px clamp(8px,2.4vw,14px) 11px!important;
+    gap:clamp(7px,2.5vw,13px)!important;
+    padding:8px 8px 7px!important;
     border-bottom:1px solid rgba(255,255,255,.08)!important;
   }
   body.bali-guest-theme #menuPage #baliMenuModeSwitch .bali-menu-mode-btn:not([hidden]){
-    flex:1 1 0!important;
-    width:auto!important;
-    min-width:0!important;
-    max-width:clamp(65px,21vw,89px)!important;
-    height:auto!important;
-    min-height:0!important;
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 46px!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
     aspect-ratio:1/1!important;
-    padding:clamp(7px,2vw,11px)!important;
-    border-radius:clamp(17px,5vw,24px)!important;
+    padding:6px!important;
+    border-radius:12px!important;
+  }
+  body.bali-guest-theme #menuPage #baliMenuModeSwitch .bali-menu-mode-icon{
+    width:28px!important;
+    height:28px!important;
+    min-width:0!important;
+    flex:none!important;
   }
   body.bali-guest-theme #menuPage #baliMenuModeSwitch .bali-menu-mode-icon img{
-    width:85%!important;
-    height:85%!important;
+    width:100%!important;
+    height:100%!important;
+  }
+  body.bali-guest-theme #menuPage #baliMenuModeSwitch .bali-menu-mode-label{
+    display:none!important;
+  }
+}
+@media(min-width:1180px){
+  body.bali-guest-theme #menuPage #baliMenuModeSwitch.bali-menu-mode-switch{
+    padding:0 0 10px!important;
+    border-bottom:1px solid rgba(255,255,255,.09)!important;
   }
 }
 @media(prefers-reduced-motion:reduce){
