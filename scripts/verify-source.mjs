@@ -866,7 +866,12 @@ assert(adminClient.includes('if(poster)payload.poster_url=poster'),
 assert(adminClient.includes('e.code==="permission-denied"') &&
   adminClient.includes("if(help)help.hidden=false"),
   "Permission denial during event poster save must provide rule deployment guidance");
-assert(app.includes('button.textContent="Сделать предзаказ";'), "Upcoming event CTA must read Сделать предзаказ");
+assert(!app.includes('button.textContent="Сделать предзаказ";') &&
+  !app.includes('button.className="event-go-to-menu"') &&
+  app.includes('actions.append(planBtn);') &&
+  html.includes('id="checkoutBtn"') &&
+  html.includes('id="eventSelect"'),
+  "Calendar posters must not offer a preorder CTA; kitchen menu checkout stays available");
 const interestSource = source("event-interests.js");
 const interestCss = source("event-interests.css");
 assert(html.includes('event-interests.js?v=') &&
@@ -1205,7 +1210,7 @@ const topbarEnd=html.indexOf('id="eventsInterestStatus"',topbarStart);
 assert(topbarStart>=0 && topbarEnd>topbarStart &&
   html.slice(topbarStart,topbarEnd).includes('id="eventsViewTabs"'),
   "All Events/My Plans must share a row with Bali Calendar");
-assert(html.includes('Выбирай событие, добавляй в «Мои планы» или оформляй предзаказ.'),
+assert(html.includes('Выбирай событие и добавляй его в «Мои планы».'),
   "Small footer copy must be concise and fit two lines");
 assert(carouselCss.includes('BALI v36') &&
   carouselCss.includes('aspect-ratio:9 / 16') &&
