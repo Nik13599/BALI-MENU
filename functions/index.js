@@ -227,10 +227,21 @@ exports.adjustGuestBenefit=callable(async req=>{
 });
 exports.listPrivilegeAudit=callable(async req=>{
   await requireRole(req,["director","admin"]);
-  const rows=await db.collection("walletOperations").orderBy("createdAt","desc").limit(60).get();
-  return {items:rows.docs.map(row=>{
-    const d=row.data();return {id:row.id,type:d.type,guestUid:d.guestUid,staffUid:d.staffUid,staffRole:d.staffRole,kind:d.kind||"",count:d.count??null,percent:d.percent??null,receipt:d.receipt||"",reason:d.reason||"",createdAt:d.createdAt?.toMillis?.()||0};
-  })};
+  const after=trimmed(req.data?.after,100);
+  let listing=db.collection("walletOperations").orderBy("createdAt","desc");
+  if(after){
+    if(!/^[a-f0-9]{32}$|^[A-Za-z0-9_-]{12,80}$/.test(after))bad("Некорректный указатель журнала.");
+    const last=await db.doc("walletOperations/"+after).get();
+    if(!last.exists)throw new HttpsError("not-found","Указанная страница журнала больше не существует.");
+    listing=listing.startAfter(last);
+  }
+  const rows=await listing.limit(60).get();
+  return {
+    items:rows.docs.map(row=>{
+      const d=row.data();return {id:row.id,type:d.type,guestUid:d.guestUid,staffUid:d.staffUid,staffRole:d.staffRole,kind:d.kind||"",count:d.count??null,percent:d.percent??null,receipt:d.receipt||"",reason:d.reason||"",createdAt:d.createdAt?.toMillis?.()||0};
+    }),
+    nextCursor:rows.size===60?rows.docs[rows.docs.length-1].id:null
+  };
 });
 exports.setBaliStaffRole=callable(async req=>{
   await requireRole(req,["director","admin"]);
