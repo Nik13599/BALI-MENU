@@ -467,7 +467,7 @@ const infoSection=html.slice(html.indexOf('id="contactsSection"'),html.indexOf('
 for(const term of ["Контакты и социальные сети","Режим работы","Посещение клуба","Меню и предзаказы","BALI ID · Privilege","Правовая информация","Сведения об организации","Персональные данные","Условия предзаказов и обращений"]){
   assert(infoSection.includes(term),"Info is missing required club/site section: "+term);
 }
-assert(html.includes('bali-info-page.css?v=20261019-1') &&
+assert(html.includes('bali-info-page.css?v=20261019-2') &&
   html.includes('bali-info-page.js?v=20261019-1') &&
   html.includes('id="baliInfoContactMirror"') &&
   infoClient.includes('sidebar.cloneNode(true)') &&
@@ -480,8 +480,24 @@ assert(html.includes('bali-info-page.css?v=20261019-1') &&
   infoSection.includes('data-bali-nav="events"') &&
   infoSection.includes('data-bali-nav="menu"') &&
   infoSection.includes('data-bali-nav="id"') &&
-  infoSection.includes('реквизиты пока не подтверждены владельцем проекта') &&
-  infoSection.includes('не заменяет такую политику'),
+  infoSection.includes('Общество с ограниченной ответственностью «МАГИШТЫК»') &&
+  infoSection.includes('220030, г. Минск, ул. Кирова, 13, пом. 3') &&
+  infoSection.includes('193849140') &&
+  infoSection.includes('50981204500') &&
+  infoSection.includes('BY26ALFA30122G57320010270000') &&
+  infoSection.includes('ЗАО «Альфа-Банк»') &&
+  infoSection.includes('ALFABY2X') &&
+  infoSection.includes('mailto:Kolyaselekh@gmail.com') &&
+  infoSection.includes('tel:+375333786884') &&
+  infoSection.includes('Селех Николай Иванович') &&
+  infoSection.includes('Место оказания услуг:') &&
+  infoSection.includes('<details open>') &&
+  !infoSection.includes('реквизиты пока не подтверждены владельцем проекта') &&
+  infoSection.includes('не заменяет такую политику') &&
+  html.includes('bali-info-page.css?v=20261019-2') &&
+  infoCss.includes('.bali-info-legal-grid') &&
+  infoCss.includes('word-break:break-all;') &&
+  html.includes('href="tel:+375296700300"'),
   "Mobile Info must show the editable desktop contacts and truthful legal/visitor disclosures");
 // Homepage design tools must be publicly read-only and safely admin-managed.
 const designAdmin=source("bali-home-design-admin.js");

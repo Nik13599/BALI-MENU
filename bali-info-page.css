@@ -234,3 +234,61 @@ body.bali-guest-theme #contactsSection .bali-info-mirror.bali-pc-sidebar-contact
 @media(prefers-reduced-motion:reduce){
   #contactsSection .bali-info-mirror a{transition:none!important}
 }
+
+/* Official organisation data supplied by the site owner. This is separate
+   from the public phone used for club bookings in the contact mirror. */
+#contactsSection .bali-info-company-name{
+  color:#f5f8f2!important;
+  font:820 clamp(15px,3.6vw,19px)/1.4 Manrope,Inter,sans-serif!important;
+  margin:2px 0 16px!important;
+}
+#contactsSection .bali-info-legal-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  margin:0 0 18px;
+  padding:0;
+  gap:1px;
+  overflow:hidden;
+  border-radius:12px;
+  border:1px solid rgba(228,240,230,.16);
+  background:rgba(255,255,255,.13);
+}
+#contactsSection .bali-info-legal-grid>div{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  min-width:0;
+  padding:13px;
+  background:#151b1c;
+}
+#contactsSection .bali-info-legal-grid dt{
+  color:#9eaea3;
+  font:740 10px/1.4 Manrope,Inter,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.095em;
+}
+#contactsSection .bali-info-legal-grid dd{
+  min-width:0;margin:0;
+  color:#f3f6f2;
+  font:650 clamp(12px,2.8vw,14px)/1.55 Manrope,Inter,sans-serif;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+#contactsSection .bali-info-legal-grid .bali-info-account-number{
+  font-variant-numeric:tabular-nums;
+  overflow-wrap:anywhere;
+  word-break:break-all;
+  font-size:clamp(11px,2.8vw,14px);
+}
+#contactsSection .bali-info-legal-grid a,
+#contactsSection .bali-info-details-body a{
+  color:#b9ff51;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  overflow-wrap:anywhere;
+}
+#contactsSection .bali-info-legal-venue{margin-bottom:2px!important}
+@media(max-width:700px){
+  #contactsSection .bali-info-legal-grid{grid-template-columns:minmax(0,1fr)}
+  #contactsSection .bali-info-legal-grid>div{padding:11px 13px}
+}
