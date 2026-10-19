@@ -1115,8 +1115,16 @@ function createMenuItemHTML(item) {
     const imageSource=String(item.image_url||"").trim();
     const safeImage=imageSource?safeImageUrl(imageSource):"";
     const withImage=Boolean(imageSource&&safeImage!=="https://placehold.co/400x200?text=BALI");
+    const hasDetails=Boolean(String(item.detailText||"").trim());
     return `
         <div class="menu-item ${unavailable ? 'unavailable' : ''} ${withImage ? '' : 'menu-item--no-image'}" data-id="${id}">
+            <button type="button" class="menu-details-btn ${hasDetails ? 'has-details' : 'no-details'}"
+                    data-menu-action="details" data-id="${id}"
+                    aria-label="${hasDetails ? 'Подробная информация: ' : 'Подробное описание отсутствует: '}${escapeHTML(item.name)}"
+                    title="${hasDetails ? 'Информация о блюде' : 'Подробное описание пока не добавлено'}"
+                    ${hasDetails ? '' : 'disabled aria-disabled="true"'}>
+              <svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.2"/><path d="M12 10.7v5.5M12 7.65h.01"/></svg>
+            </button>
             ${withImage ? `<img src="${safeImage}"
                 alt="${escapeHTML(item.name)}" class="menu-item-image">` : ''}
             <div class="menu-item-content">
@@ -1138,8 +1146,6 @@ function createMenuItemHTML(item) {
                         <button type="button" class="add-to-cart-btn" data-menu-action="add" data-id="${id}">В корзину</button>
                     </div>`
                 }
-                ${item.detailEnabled===true && String(item.detailText||"").trim()
-                  ? `<button type="button" class="menu-details-btn" data-menu-action="details" data-id="${id}">Подробнее</button>` : ''}
             </div>
         </div>
     `;
@@ -1155,26 +1161,41 @@ elements.menuGrid?.addEventListener("error",event=>{
     item?.classList.add("menu-item--no-image");
 },true);
 
-// More information is separate from the preorder flow. Each property comes
-// from the current Firestore product, never from a stale cart.
+// The information icon is always displayed, but only text-filled products open.
+// The modal uses the existing cart and quantity data, not a second checkout flow.
+let openMenuDetailsProductId=null;
+function syncMenuQuantityInCard(id){
+    const card=elements.menuGrid.querySelector('.menu-item[data-id="'+id+'"]');
+    if(!card)return;
+    const value=selectedMenuQuantity(id);
+    const count=card.querySelector(".menu-quantity-value");
+    const minus=card.querySelector('[data-menu-action="minus"]');
+    const plus=card.querySelector('[data-menu-action="plus"]');
+    if(count)count.textContent=String(value);
+    if(minus)minus.disabled=value<=1;
+    if(plus)plus.disabled=value>=MAX_MENU_QUANTITY;
+}
 function openBaliMenuDetails(product) {
-    if(product.detailEnabled!==true||!String(product.detailText||"").trim())return;
+    if(!String(product.detailText||"").trim())return;
     const dialog=document.getElementById("baliMenuDetailsDialog");
     const body=document.getElementById("baliMenuDetailsBody");
-    if(!dialog||!body)return;
+    const actions=document.getElementById("baliMenuDetailsActions");
+    if(!dialog||!body||!actions)return;
+    openMenuDetailsProductId=Number(product.id);
     body.replaceChildren();
+    actions.replaceChildren();
     const make=(tag,className,content)=>{
         const node=document.createElement(tag);
         if(className)node.className=className;
         if(content!==undefined)node.textContent=content;
         return node;
     };
-    const imageValue=String(product.detailImageUrl||"").trim();
+    const imageValue=String(product.detailImageUrl||product.image_url||"").trim();
     const src=imageValue?safeImageUrl(imageValue):"";
     if(src&&src!=="https://placehold.co/400x200?text=BALI"){
         const photo=make("img","bali-menu-details-photo");
         photo.src=src;
-        photo.alt="Дополнительное фото: "+String(product.name||"");
+        photo.alt="Фотография блюда: "+String(product.name||"");
         photo.addEventListener("error",()=>photo.remove(),{once:true});
         body.append(photo);
     }
@@ -1190,6 +1211,43 @@ function openBaliMenuDetails(product) {
     }
     body.append(make("h3","bali-menu-details-label","Подробное описание"));
     body.append(make("p","bali-menu-details-copy",product.detailText));
+    const group=make("div","bali-menu-details-quantity");
+    group.setAttribute("role","group");
+    group.setAttribute("aria-label","Количество блюда");
+    const minus=make("button","bali-menu-details-step","−");
+    const count=make("output","bali-menu-details-count");
+    const plus=make("button","bali-menu-details-step","+");
+    const add=make("button","bali-menu-details-add",product.available?"В корзину":"Недоступно");
+    for(const [button,label] of [[minus,"Уменьшить количество"],[plus,"Увеличить количество"]]){
+        button.type="button";
+        button.setAttribute("aria-label",label);
+    }
+    add.type="button";
+    add.disabled=!product.available;
+    function refresh(){
+        const current=selectedMenuQuantity(openMenuDetailsProductId);
+        count.value=String(current);
+        count.textContent=String(current);
+        minus.disabled=!product.available||current<=1;
+        plus.disabled=!product.available||current>=MAX_MENU_QUANTITY;
+        syncMenuQuantityInCard(openMenuDetailsProductId);
+    }
+    function adjust(delta){
+        const current=selectedMenuQuantity(openMenuDetailsProductId);
+        const next=Math.max(1,Math.min(MAX_MENU_QUANTITY,current+delta));
+        menuQuantities.set(openMenuDetailsProductId,next);
+        refresh();
+    }
+    minus.addEventListener("click",()=>adjust(-1));
+    plus.addEventListener("click",()=>adjust(1));
+    add.addEventListener("click",()=>{
+        const id=openMenuDetailsProductId;
+        if(!Number.isSafeInteger(id))return;
+        if(addToCart(id,selectedMenuQuantity(id))===true)dialog.close();
+    });
+    group.append(minus,count,plus);
+    actions.append(group,add);
+    refresh();
     if(dialog.open)dialog.close();
     dialog.showModal();
 }
@@ -1198,6 +1256,9 @@ document.getElementById("baliMenuDetailsClose")?.addEventListener("click",()=>{
 });
 document.getElementById("baliMenuDetailsDialog")?.addEventListener("click",event=>{
     if(event.target===event.currentTarget)event.currentTarget.close();
+});
+document.getElementById("baliMenuDetailsDialog")?.addEventListener("close",()=>{
+    openMenuDetailsProductId=null;
 });
 
 function showLoading() {
@@ -1251,13 +1312,13 @@ function handleCategoryFilter(e) {
 
 function addToCart(itemId, quantity = 1) {
     const item = menuItems.find(i => i.id === itemId);
-    if (!item || !item.available) return;
-    if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > MAX_MENU_QUANTITY) return;
+    if (!item || !item.available) return false;
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > MAX_MENU_QUANTITY) return false;
     const existingItem = cart.find(i => i.id === itemId);
     const amountAlreadyInCart = existingItem?.quantity || 0;
     if (amountAlreadyInCart + quantity > MAX_MENU_QUANTITY) {
         alert('Не более 50 единиц одного блюда в корзине. Сейчас в корзине: ' + amountAlreadyInCart + '.');
-        return;
+        return false;
     }
     if (existingItem) {
         existingItem.quantity += quantity;
@@ -1276,6 +1337,7 @@ function addToCart(itemId, quantity = 1) {
         button.classList.add('menu-add-success');
         window.setTimeout(() => button.classList.remove('menu-add-success'), 280);
     }
+    return true;
 }
 
 function removeFromCart(itemId) {
