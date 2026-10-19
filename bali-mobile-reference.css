@@ -817,3 +817,29 @@ body.bali-guest-theme .bali-mobile-about-dialog:not([open]){display:none!importa
     min-height:44px!important;
   }
 }
+
+/* Floating "Корзина" shortcut on mobile: a shorter centered pill, lifted
+   above the existing four-item bottom navigation. Keep the real cart logic. */
+@media(max-width:767px){
+  body.bali-guest-theme .bali-cart-dock:not([hidden]){
+    position:fixed!important;
+    z-index:1003!important;
+    left:50%!important;
+    right:auto!important;
+    transform:translateX(-50%)!important;
+    width:min(350px,calc(100vw - 65px))!important;
+    max-width:min(350px,calc(100vw - 65px))!important;
+    min-height:44px!important;
+    height:auto!important;
+    margin:0!important;
+    padding:8px 13px!important;
+    border-radius:14px!important;
+    bottom:calc(env(safe-area-inset-bottom) + clamp(67px,9.2dvh,84px) + 19px)!important;
+  }
+}
+@media(max-width:767px) and (max-height:690px){
+  body.bali-guest-theme .bali-cart-dock:not([hidden]){
+    bottom:calc(env(safe-area-inset-bottom) + 61px + 18px)!important;
+    min-height:40px!important;
+  }
+}
