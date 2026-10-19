@@ -26,6 +26,7 @@ jobs:
           node --input-type=module --check < bali-privilege-admin.js
           node --input-type=module --check < bali-director-id.js
           node --input-type=module --check < bali-bonus-transfer-scaffold.js
+          node --check bali-info-page.js
           node --input-type=module --check < menu-firestore.js
           node --input-type=module --check < admin-firestore.js
           node --input-type=module --check < menu-seed.js
