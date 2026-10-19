@@ -1062,15 +1062,15 @@
     padding:3px!important;
     font-size:11px!important;
   }
-  /* Calendar headline and tabs remain in one top line; third column
-     reserves space for the independent profile control on the right. */
+  /* Calendar title stays aligned with the sidebar logo while reserving
+     room for the independent profile control on desktop. */
   body.bali-guest-theme #eventsSection>.container{
     padding-top:0!important;
     padding-bottom:8px!important;
   }
   body.bali-guest-theme #eventsSection .events-topbar{
     display:grid!important;
-    grid-template-columns:minmax(0,1fr) auto clamp(200px,18.5vw,280px)!important;
+    grid-template-columns:minmax(0,1fr) clamp(200px,18.5vw,280px)!important;
     align-items:start!important;
     justify-content:stretch!important;
     column-gap:clamp(8px,1vw,15px)!important;
