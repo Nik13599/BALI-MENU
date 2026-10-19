@@ -39,7 +39,7 @@
     <link rel="stylesheet" href="bali-id.css?v=20261019-5">
     <link rel="stylesheet" href="bali-new-features.css?v=20261019-1">
     <link rel="stylesheet" href="bali-menu-reference-icons.css?v=20261019-2">
-    <link rel="stylesheet" href="bali-id-navigation.css?v=20261019-1">
+    <link rel="stylesheet" href="bali-id-navigation.css?v=20261019-2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
@@ -53,6 +53,9 @@
     <!-- BALI: минимальная шапка с профилем -->
     <header class="header">
       <div class="container header-content">
+        <button type="button" id="baliMobileProfileBtn" class="bali-mobile-profile-fab" aria-label="Открыть профиль пользователя" title="Мой профиль">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.7"/><path d="M4.3 20v-1.4c0-3.8 3.5-6.4 7.7-6.4s7.7 2.6 7.7 6.4V20"/></svg>
+        </button>
         <a href="#home" class="logo" id="homeBrandBtn" aria-label="BALI — на главную">
           <img class="bali-brand-logo" src="assets/bali-nightclub-logo.png?v=20261018-original" width="938" height="264" alt="" decoding="async" fetchpriority="high">
         </a>
@@ -469,9 +472,7 @@
       <button type="button" class="bali-nav-profile-item" data-bali-nav="profile"><span class="bali-nav-glyph" aria-hidden="true">♙</span><small>Профиль</small></button>
       <button type="button" class="bali-nav-info-item" data-bali-nav="contacts"><span class="bali-nav-glyph" aria-hidden="true">ⓘ</span><small>Инфо</small></button>
     </nav>
-    <button type="button" id="baliMobileProfileBtn" class="bali-mobile-profile-fab" aria-label="Открыть профиль пользователя" title="Мой профиль">
-      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.7"/><path d="M4.3 20v-1.4c0-3.8 3.5-6.4 7.7-6.4s7.7 2.6 7.7 6.4V20"/></svg>
-    </button>
+
     <button type="button" class="bali-cart-dock" id="baliCartDock" hidden>
       <span class="bali-cart-dock-left"><span aria-hidden="true">▤</span> Корзина <strong id="baliDockCount">0</strong></span>
       <span id="baliDockTotal">0.00 BYN</span><span aria-hidden="true">›</span>
