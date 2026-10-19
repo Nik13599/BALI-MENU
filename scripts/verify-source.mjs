@@ -1219,6 +1219,42 @@ assert(app.includes('const fitStorySlides=()=>') &&
   app.includes('(track.clientHeight-14)*9/16') &&
   app.includes('observer.observe(track)'),
   "Stories must size from measured available height");
+// BALI ID: complete profile, immutable atomic sequence, admin-only tier assignment.
+const idClient=source("bali-id.js");
+const privilegeClient=source("bali-privilege-admin.js");
+const shareClient=source("bali-share.js");
+const smartClient=source("bali-smart-design.js");
+assert(html.includes('id="baliCardNumber"') &&
+  html.includes('id="baliProfileSettings"') &&
+  html.includes('id="baliBenefitsList"') &&
+  html.includes('bali-id.js?v=20261019-1') &&
+  html.includes('bali-share.js?v=20261019-1') &&
+  source("auth.js").includes('data-bali-nav="profile"') &&
+  idClient.includes('runTransaction(db,async tx=>') &&
+  idClient.includes('doc(db,"baliCounters","guests")') &&
+  idClient.includes('doc(db,"baliIds",uid)') &&
+  idClient.includes('onAuthStateChanged(auth,initializeForUser)') &&
+  firestore.includes('match /baliCounters/{key}') &&
+  firestore.includes('getAfter(baliIdPath(request.auth.uid))') &&
+  firestore.includes('match /guestPrivileges/{uid}') &&
+  firestore.includes('allow create, update: if isAdmin()'),
+  "BALI ID must use a protected sequential transaction and a full guest profile.");
+assert(admin.includes('id="baliPrivilegeAssignForm"') &&
+  admin.includes('id="baliPrivilegeRulesForm"') &&
+  admin.includes('bali-privilege-admin.js?v=20261019-1') &&
+  privilegeClient.includes('setDoc(doc(db,"guestPrivileges",selected)') &&
+  privilegeClient.includes('setDoc(doc(db,"privilegeRules","main")'),
+  "Privilege statuses and assignment rules must be admin-editable without client self-upgrades.");
+assert(shareClient.includes('canvas.width=WIDTH;canvas.height=HEIGHT') &&
+  shareClient.includes('const WIDTH=1080,HEIGHT=1920;') &&
+  shareClient.includes('navigator.canShare?.({files:[file]})') &&
+  shareClient.includes('bali-share-trigger') &&
+  smartClient.includes('bali-smart-previews') &&
+  smartClient.includes('data-smart-crop') &&
+  smartClient.includes('data-smart-original') &&
+  admin.includes('bali-smart-design.js?v=20261019-1'),
+  "Share must export 9:16 stories and Smart Design must offer previews and non-destructive crop.");
+
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
 
 assert(!app.includes("elements.cartCount") &&
