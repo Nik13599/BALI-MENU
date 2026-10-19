@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="bali-admin-cards.css?v=20261017-82">
   <link rel="stylesheet" href="bali-design-studio.css?v=20261017-84">
   <link rel="stylesheet" href="bali-home-placeholder-admin.css?v=20261018-93">
-  <link rel="stylesheet" href="bali-menu-details.css?v=20261018-97">
+  <link rel="stylesheet" href="bali-menu-details.css?v=20261019-110">
   <link rel="stylesheet" href="bali-admin-clarity.css?v=20261018-108">
 
 </head>
@@ -952,14 +952,15 @@
         <p class="hint">Фото автоматически обрезается по центру до 1:1 и сжимается.</p>
       </div>
       <section class="bali-admin-product-details" aria-label="Подробная информация о блюде">
-        <label class="check bali-product-details-toggle">
-          <input id="menuDetailsEnabled" type="checkbox">
-          <span>Добавить подробную информацию — показать кнопку «Подробнее»</span>
-        </label>
-        <div id="menuDetailsFields" class="bali-product-details-fields" hidden>
-          <p class="hint">Подробное описание обязательно, если включена кнопка. Название, цена, граммовка и состав подставляются автоматически.</p>
-          <label>Дополнительное подробное описание *
-            <textarea id="menuDetailsText" maxlength="2400" rows="6" placeholder="Приготовление, ингредиенты и особенности блюда"></textarea>
+        <div class="bali-product-details-toggle">
+          <input id="menuDetailsEnabled" type="checkbox" hidden aria-hidden="true" tabindex="-1">
+          <strong>ⓘ Информация о блюде</strong>
+        </div>
+        <p id="menuDetailsAvailability" class="bali-admin-details-status" role="status">Без подробного описания значок информации будет серым и неактивным.</p>
+        <div id="menuDetailsFields" class="bali-product-details-fields">
+          <p class="hint">Добавьте подробное описание — значок ⓘ в меню станет активным автоматически. Без текста он останется неактивным. Название, цена, вес и состав берутся из полей выше.</p>
+          <label>Подробное описание (необязательно)
+            <textarea id="menuDetailsText" maxlength="2400" rows="6" placeholder="Как приготовлено блюдо, состав, ингредиенты, особенности вкуса и подачи"></textarea>
           </label>
           <label>Дополнительная фотография для окна «Подробнее» (HTTPS)
             <input id="menuDetailsImage" type="url" maxlength="1000" placeholder="https://...">
@@ -1004,7 +1005,7 @@
 </main>
 
 <script src="firebase-config.js?v=20261017-8"></script>
-<script type="module" src="admin-firestore.js?v=20261018-99"></script>
+<script type="module" src="admin-firestore.js?v=20261019-110"></script>
 <script type="module" src="bali-admin-bar.js?v=20261017-65"></script>
 <script type="module" src="bali-admin-cards.js?v=20261017-66"></script>
 <script type="module" src="bali-menu-visibility.js?v=20261017-72"></script>
