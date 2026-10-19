@@ -1,0 +1,59 @@
+/* BALI ID · unified profile, responsive phone/tablet/desktop */
+body.bali-guest-theme #profileSection.bali-profile-page{
+  overflow-y:auto!important;
+  min-height:calc(100dvh - 100px);
+  padding:clamp(18px,3vw,42px) 12px 120px;
+}
+body.bali-guest-theme #profileSection .container{max-width:950px;margin:auto}
+body.bali-guest-theme #profileSection .bali-profile-card{
+  width:100%!important;
+  max-width:940px!important;
+  margin:0 auto!important;
+  display:grid!important;
+  gap:clamp(16px,2.5vw,23px)!important;
+  padding:clamp(16px,3.2vw,34px)!important;
+  border-radius:24px!important;
+  background:linear-gradient(145deg,rgba(8,11,15,.94),rgba(18,24,22,.94))!important;
+  border:1px solid rgba(255,255,255,.13)!important;
+  box-shadow:0 18px 65px rgba(0,0,0,.4);
+}
+.bali-id-heading{display:flex;justify-content:space-between;align-items:center;color:#d2d8d2;font:700 12px/1.4 Manrope,Inter,sans-serif;letter-spacing:.18em}
+.bali-id-gear{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:#202723;color:#f8faf6;border:1px solid #455449;font-size:27px;cursor:pointer}
+.bali-id-gear:hover,.bali-id-gear:focus-visible{border-color:#b9ff51;color:#b9ff51}
+.bali-id-card{
+  position:relative;display:flex;flex-direction:column;justify-content:space-between;
+  aspect-ratio:1.68/1;width:100%;max-width:645px;box-sizing:border-box;
+  padding:clamp(19px,4vw,35px);overflow:hidden;border-radius:clamp(20px,4vw,29px);
+  color:#fff;background:radial-gradient(ellipse at 90% 15%,rgba(185,255,81,.13),transparent 51%),
+    linear-gradient(130deg,#121a19 0%,#060909 47%,#273028 100%);
+  border:1px solid rgba(235,251,228,.29);box-shadow:0 14px 40px #0009,inset 0 0 30px #ffffff06;
+}
+.bali-id-card::after{content:"";position:absolute;right:-15%;bottom:-85%;width:95%;aspect-ratio:1;border:1px solid rgba(185,255,81,.24);border-radius:50%;box-shadow:0 0 0 26px rgba(185,255,81,.035),0 0 0 65px rgba(185,255,81,.028);pointer-events:none}
+.bali-id-top,.bali-id-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;z-index:1}
+.bali-id-top{align-items:flex-start}
+.bali-id-top img{display:block;max-width:140px;width:31%;height:auto;object-fit:contain}
+.bali-id-top span,.bali-id-bottom small{font:780 clamp(10px,1.8vw,14px)/1.2 Manrope,sans-serif;letter-spacing:.14em;color:#b9ff51;text-align:right}
+.bali-id-number-caption{margin-top:auto;color:#aebfb4;font:650 clamp(9px,1.9vw,13px) Manrope,sans-serif;letter-spacing:.12em}
+.bali-id-number{z-index:1;font:550 clamp(36px,9vw,68px)/1.07 Inter,Manrope,sans-serif;letter-spacing:.13em;margin:5px 0 clamp(12px,3vw,27px);font-variant-numeric:tabular-nums}
+.bali-id-bottom strong{font:750 clamp(14px,2.9vw,21px)/1.3 Manrope,sans-serif;text-transform:uppercase}
+.bali-id-benefits{padding:clamp(16px,3vw,24px);border-radius:18px;background:#111918;border:1px solid #334039;color:#fff}
+.bali-id-benefits-head{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.bali-id-benefits-head h2{font:750 clamp(18px,3.3vw,24px)/1.2 Manrope,sans-serif;margin:0}
+.bali-id-benefits-head span{font:800 12px Manrope,sans-serif;letter-spacing:.12em;color:#b9ff51}
+.bali-id-benefits p{color:#c1cbc4;line-height:1.6;margin:10px 0}
+.bali-id-benefits ul{margin:6px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.bali-id-benefits li{padding-left:21px;position:relative;line-height:1.45}
+.bali-id-benefits li::before{content:"✦";position:absolute;left:0;color:#b9ff51}
+.bali-id-settings{display:grid;gap:12px;padding:18px;border-radius:16px;background:#191e1d;border:1px solid #596957}
+.bali-id-settings[hidden]{display:none!important}
+.bali-id-settings h2{margin:0;color:white;font:700 18px Manrope,sans-serif}
+.bali-id-settings button{min-height:45px;border:1px solid #53614e;border-radius:11px;background:#2a322d;color:white;cursor:pointer;font:600 14px Manrope,sans-serif}
+.bali-id-status{font-size:12px;color:#b7e3ad}
+@media(max-width:767px){
+  body.bali-guest-theme #profileSection.bali-profile-page{padding:14px 10px calc(95px + env(safe-area-inset-bottom))}
+  body.bali-guest-theme #profileSection .bali-profile-card{border-radius:17px!important}
+  .bali-id-card{min-height:194px;aspect-ratio:1.65/1}
+  .bali-id-number{letter-spacing:.09em}
+  .bali-id-bottom small{font-size:9px}
+}
+@media(min-width:1180px){body.bali-guest-theme #profileSection.bali-profile-page{padding-left:clamp(240px,20vw,340px)}}
