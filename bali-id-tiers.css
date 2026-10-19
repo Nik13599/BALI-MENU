@@ -241,7 +241,7 @@ body.bali-guest-theme #baliIdSection .bali-id-flip-scene .bali-id-card-front .ba
   height:clamp(110px,23vw,195px)!important;
   min-width:0!important;
   max-width:58%!important;
-  max-height:100%!important;
+  max-height:195px!important;
   margin:0 auto!important;
   padding:0!important;
   visibility:visible!important;
@@ -258,5 +258,6 @@ body.bali-guest-theme #baliIdSection .bali-id-flip-scene .bali-id-card-front .ba
   body.bali-guest-theme #baliIdSection .bali-id-flip-scene .bali-id-card-front .bali-id-centre-art img.bali-id-brand-master{
     height:clamp(106px,34vw,145px)!important;
     max-width:55%!important;
+    max-height:145px!important;
   }
 }
