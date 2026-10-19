@@ -32,7 +32,8 @@ function normalize(data,id){
     sort:Number.isInteger(data.sort)?data.sort:100,
     description:textField(data.description),taste:textField(data.taste),
     ingredients:textField(data.ingredients),brewing:textField(data.brewing),
-    sourcePage:Number.isInteger(data.sourcePage)?data.sourcePage:null
+    sourcePage:Number.isInteger(data.sourcePage)?data.sourcePage:null,
+    hidden:data.hidden===true
   };
 }
 const sortItems=(a,b)=>a.sort-b.sort||collator.compare(a.category,b.category)||collator.compare(a.name,b.name);
@@ -46,7 +47,7 @@ function mergeTeaItems(firebaseItems){
     const key=result.has(item.id)?item.id:(fallbackId||item.id);
     result.set(key,{...result.get(key),...item,id:key});
   }
-  return [...result.values()].sort(sortItems);
+  return [...result.values()].filter(x=>x.hidden!==true).sort(sortItems);
 }
 let teaDialog;
 function getTeaDialog(){
