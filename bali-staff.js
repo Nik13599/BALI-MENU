@@ -185,7 +185,7 @@ onAuthStateChanged(auth,async user=>{
     const result=(await api.role({})).data;
     if(auth.currentUser?.uid!==user.uid)return;
     currentRole=result.role;$("staffRoleTag").textContent=roleLabel(currentRole);
-    if(currentRole==="guest"){message("staffLoginStatus","Этому аккаунту не назначена роль сотрудника. Обратитесь к директору.");return}
+    if(currentRole==="guest"){message("staffLoginStatus","Этому аккаунту не назначена роль сотрудника. UID для директора: "+user.uid);return}
     visible("staffLogin",false);visible("staffWorkspace",true);
     const manager=["director","admin"].includes(currentRole);
     visible("directorTab",manager);visible("auditTab",manager);
