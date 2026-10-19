@@ -36,9 +36,10 @@
 
     <link rel="stylesheet" href="bali-artwork-clean.css?v=20261018-106">
     <link rel="stylesheet" href="bali-mobile-reference.css?v=20261019-6">
-    <link rel="stylesheet" href="bali-id.css?v=20261019-3">
+    <link rel="stylesheet" href="bali-id.css?v=20261019-5">
     <link rel="stylesheet" href="bali-new-features.css?v=20261019-1">
     <link rel="stylesheet" href="bali-menu-reference-icons.css?v=20261019-2">
+    <link rel="stylesheet" href="bali-id-navigation.css?v=20261019-1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
@@ -57,7 +58,12 @@
         </a>
         <div class="bali-pc-account-wrap">
           <button type="button" class="account-btn" id="accountBtn" aria-label="Войти в личный кабинет" aria-haspopup="menu" aria-expanded="false" aria-controls="baliPcProfileMenu">Войти в личный кабинет</button>
+          <button type="button" class="bali-header-id-trigger" id="baliMobileIdBtn" aria-label="Открыть мою BALI ID карту" title="Моя BALI ID">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><circle cx="8.4" cy="10.7" r="2.1"/><path d="M5.5 16c.5-2.1 5.3-2.1 5.8 0M14 10h4.5M14 14h3.5"/></svg>
+            <span>ID</span>
+          </button>
           <div class="bali-pc-profile-menu" id="baliPcProfileMenu" role="menu" aria-label="Личный кабинет" hidden>
+            <button type="button" role="menuitem" data-bali-profile-action="id"><span aria-hidden="true">▣</span>Моя BALI ID</button>
             <button type="button" role="menuitem" data-bali-profile-action="orders"><span aria-hidden="true">▤</span>Мои заказы</button>
             <button type="button" role="menuitem" data-bali-profile-action="plans"><span aria-hidden="true">♡</span>Мои планы</button>
             <button type="button" role="menuitem" data-bali-profile-action="details"><span aria-hidden="true">♙</span>Мои данные</button>
@@ -417,7 +423,28 @@
       <div class="container">
         <h1 id="profileHeading" class="bali-id-page-title">МОЙ BALI</h1>
         <div class="bali-profile-card bali-id-profile">
-          <div class="bali-id-heading"><span>ЛИЧНЫЙ МИР ГОСТЯ</span><button type="button" id="baliProfileSettings" class="bali-id-gear" aria-label="Настройки профиля" title="Настройки профиля">⚙</button></div>
+          <div class="bali-profile-head">
+            <div class="bali-profile-avatar" aria-hidden="true">B</div>
+            <div><strong id="baliProfileName">Гость BALI</strong>
+              <span id="baliProfilePhone">Войдите в личный кабинет</span>
+              <span id="baliProfileEmail"></span>
+            </div>
+          </div>
+<button type="button" id="profileBaliIdBtn" data-bali-nav="id" class="bali-profile-action bali-profile-id-link"><span aria-hidden="true">▣</span> Моя BALI ID <b>›</b></button>
+          <button type="button" id="profileMyOrdersBtn" class="bali-profile-action"><span>▤</span> Мои заказы <b>›</b></button>
+          <button type="button" id="profileMyPlansBtn" class="bali-profile-action"><span>▦</span> Мои планы <b>›</b></button>
+          <button type="button" id="profileDataBtn" class="bali-profile-action"><span>♙</span> Мои данные <b>›</b></button>
+          <button type="button" id="profileLogoutBtn" class="bali-profile-action bali-logout"><span>⇥</span> Выйти из аккаунта <b>›</b></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Отдельная страница BALI ID -->
+    <section id="baliIdSection" class="bali-profile-page bali-id-page" aria-labelledby="baliIdPageHeading" hidden>
+      <div class="container">
+        <h1 id="baliIdPageHeading" class="bali-id-page-title">BALI ID</h1>
+        <div class="bali-profile-card bali-id-profile">
+          <div class="bali-id-heading"><span>ЛИЧНЫЙ МИР ГОСТЯ</span></div>
           <div class="bali-id-card" aria-label="Цифровая карта гостя BALI ID">
             <div class="bali-id-top"><img src="assets/bali-nightclub-logo.png" alt="BALI NIGHTCLUB"><span id="baliCardTier">MEMBER</span></div>
             <div class="bali-id-number-caption">ПЕРСОНАЛЬНЫЙ НОМЕР ГОСТЯ</div>
@@ -430,22 +457,6 @@
             <ul id="baliBenefitsList"></ul>
             <p class="bali-id-status" id="baliIdStatus" role="status" aria-live="polite"></p>
           </section>
-          <div id="baliProfileSettingsPanel" class="bali-id-settings" hidden>
-            <h2>Настройки профиля</h2>
-            <button type="button" id="baliIdEditData">Изменить имя и телефон</button>
-            <button type="button" id="baliIdSignOut">Выйти из аккаунта</button>
-          </div>
-          <div class="bali-profile-head">
-            <div class="bali-profile-avatar" aria-hidden="true">B</div>
-            <div><strong id="baliProfileName">Гость BALI</strong>
-              <span id="baliProfilePhone">Войдите в личный кабинет</span>
-              <span id="baliProfileEmail"></span>
-            </div>
-          </div>
-          <button type="button" id="profileMyOrdersBtn" class="bali-profile-action"><span>▤</span> Мои заказы <b>›</b></button>
-          <button type="button" id="profileMyPlansBtn" class="bali-profile-action"><span>▦</span> Мои планы <b>›</b></button>
-          <button type="button" id="profileDataBtn" class="bali-profile-action"><span>♙</span> Мои данные <b>›</b></button>
-          <button type="button" id="profileLogoutBtn" class="bali-profile-action bali-logout"><span>⇥</span> Выйти из аккаунта <b>›</b></button>
         </div>
       </div>
     </section>
@@ -458,6 +469,9 @@
       <button type="button" class="bali-nav-profile-item" data-bali-nav="profile"><span class="bali-nav-glyph" aria-hidden="true">♙</span><small>Профиль</small></button>
       <button type="button" class="bali-nav-info-item" data-bali-nav="contacts"><span class="bali-nav-glyph" aria-hidden="true">ⓘ</span><small>Инфо</small></button>
     </nav>
+    <button type="button" id="baliMobileProfileBtn" class="bali-mobile-profile-fab" aria-label="Открыть профиль пользователя" title="Мой профиль">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.7"/><path d="M4.3 20v-1.4c0-3.8 3.5-6.4 7.7-6.4s7.7 2.6 7.7 6.4V20"/></svg>
+    </button>
     <button type="button" class="bali-cart-dock" id="baliCartDock" hidden>
       <span class="bali-cart-dock-left"><span aria-hidden="true">▤</span> Корзина <strong id="baliDockCount">0</strong></span>
       <span id="baliDockTotal">0.00 BYN</span><span aria-hidden="true">›</span>
@@ -649,8 +663,8 @@
     </dialog>
     <script src="firebase-config.js?v=20261017-10"></script>
     <script type="module" src="bali-age-gate.js?v=20261018-98"></script>
-    <script src="app.js?v=20261019-110"></script>
-    <script src="bali-pc-reference.js?v=20261017-79" defer></script>
+    <script src="app.js?v=20261019-112"></script>
+    <script src="bali-pc-reference.js?v=20261019-1" defer></script>
     <script type="module" src="auth.js?v=20261019-1"></script>
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>
     <script type="module" src="bali-bar-menu.js?v=20261017-85"></script>
@@ -666,8 +680,8 @@
     <script src="bali-icon-atelier.js?v=20261017-58" defer></script>
     <script type="module" src="bali-theme.js?v=20261017-60"></script>
     <script src="bali-mobile-reference.js?v=20261019-1" defer></script>
-    <script type="module" src="bali-id.js?v=20261019-2"></script>
-    <script src="bali-share.js?v=20261019-2" defer></script>
+    <script type="module" src="bali-id.js?v=20261019-5"></script>
+    <script src="bali-share.js?v=20261019-3" defer></script>
 </body>
 
 </html>
