@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="bali-admin-clarity.css?v=20261018-108">
 
   <link rel="stylesheet" href="bali-new-features.css?v=20261019-1">
+  <link rel="stylesheet" href="bali-bonus-transfer-scaffold.css?v=20261019-1">
 </head>
 <body class="bali-admin-theme">
 <header class="topbar">
@@ -242,6 +243,23 @@
             </form>
           </details>
         </section>
+        <section class="card bali-transfer-management" id="baliBonusTransfersAdmin">
+  <section class="bali-transfer-scaffold" aria-labelledby="baliTransferTitle">
+  <h3 id="baliTransferTitle">Переводы накопленных бонусов <small>СКОРО</small></h3>
+  <p>Зарезервирован будущий перевод поштучных бонусов между BALI ID по номеру карты. Сейчас списание и зачисление отключены.</p>
+  <form data-bali-transfer-form autocomplete="off">
+    <div class="bali-transfer-fields">
+      <label>Отправитель — номер BALI ID<input type="text" inputmode="numeric" pattern="[0-9]{1,9}" maxlength="9" placeholder="000001" name="fromCardNumber"></label>
+      <label>Получатель — номер BALI ID<input type="text" inputmode="numeric" pattern="[0-9]{1,9}" maxlength="9" placeholder="000025" name="toCardNumber"></label>
+      <label>Тип накопленного бонуса<select name="kind"><option value="cocktail">Коктейли · шт.</option><option value="shot">Шоты · шт.</option><option value="hookah">Кальяны · шт.</option><option value="entry">Проходки · шт. (если разрешены)</option></select></label>
+      <label>Количество, шт.<input name="quantity" type="number" min="1" max="500" step="1" value="1"></label>
+    </div>
+    <button type="submit" data-bali-transfer-submit disabled title="Будет доступно после подключения защищённого перевода">Перевести бонусы — скоро</button>
+    <p data-bali-transfer-status role="status" aria-live="polite">Функция подготовлена, но пока не подключена.</p>
+  </form>
+  <p class="bali-transfer-footnote">Позднее здесь появятся проверка доступного остатка и журнал переводов. Статусы карт, скидки и безлимитные привилегии не передаются.</p>
+</section>
+</section>
         <section class="card client-history-card" id="clientHistoryCard" hidden>
           <div class="card-heading"><h3 id="clientHistoryHeading">История клиента</h3>
             <button type="button" id="closeClientHistory">Закрыть</button></div>
@@ -1047,5 +1065,6 @@
 <script type="module" src="bali-site-content-admin.js?v=20261018-97"></script>
 <script src="bali-icon-atelier.js?v=20261017-58" defer></script>
 <script type="module" src="bali-theme.js?v=20261017-60"></script>
+  <script type="module" src="bali-bonus-transfer-scaffold.js?v=20261019-1"></script>
 </body>
 </html>
