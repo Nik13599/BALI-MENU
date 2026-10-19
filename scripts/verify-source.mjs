@@ -356,7 +356,10 @@ for(const [route,file] of [
     "Mobile navigation must show supplied BALI brush icon for "+route);
 }
 assert(referenceBottomNav.includes('.bali-bottom-nav button.active::after') &&
-  html.includes('bali-mobile-reference.css?v=20261019-5') &&
+  html.includes('bali-mobile-reference.css?v=20261019-6') &&
+  referenceBottomNav.includes('button:not(.active) .bali-nav-glyph') &&
+  referenceBottomNav.includes('color:#fff!important;') &&
+  referenceBottomNav.includes('button.active .bali-nav-glyph') &&
   referenceBottomNav.includes('clamp(26px,7.8vw,36px)') &&
   referenceBottomNav.includes('clamp(10px,3vw,14px)') &&
   html.includes('class="bali-nav-info-item" data-bali-nav="contacts"'),
