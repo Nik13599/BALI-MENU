@@ -216,6 +216,29 @@
           <p id="clientsAdminStatus" class="status" aria-live="polite"></p>
           <div id="clientList" class="client-list" aria-live="polite">Загрузка базы клиентов...</div>
         </section>
+        <section class="card bali-privilege-admin" id="baliPrivilegeAdmin" aria-labelledby="baliPrivilegeAdminTitle">
+          <div class="card-heading"><h3 id="baliPrivilegeAdminTitle">BALI ID · управление Privilege</h3><span class="tag">Только администратор</span></div>
+          <p class="hint">Присвоение уровня вручную. Номер BALI ID выдаётся автоматически при первой загрузке карты гостя и не меняется при повышении статуса.</p>
+          <form id="baliPrivilegeAssignForm" class="bali-privilege-form">
+            <label>Гость из списка (нажмите «Privilege» рядом с именем)<input id="baliPrivilegeGuest" readonly placeholder="Выберите гостя" required></label>
+            <input type="hidden" id="baliPrivilegeGuestUid">
+            <label>Статус<select id="baliPrivilegeTier">
+              <option value="Member">Member</option><option value="Silver">Silver</option>
+              <option value="Black">Black</option><option value="Private">Private</option>
+            </select></label>
+            <label>Персональные преимущества (каждое с новой строки)<textarea id="baliPrivilegePersonal" rows="3" maxlength="700" placeholder="Например: индивидуальное приглашение"></textarea></label>
+            <button type="submit" class="primary">Назначить статус гостю</button>
+            <p id="baliPrivilegeAssignStatus" class="status" role="status"></p>
+          </form>
+          <details class="bali-privilege-rules-editor">
+            <summary>Настроить уровни и условия присвоения</summary>
+            <form id="baliPrivilegeRulesForm">
+              <div id="baliPrivilegeRulesFields" class="bali-privilege-rules-fields"></div>
+              <button type="submit" class="primary">Сохранить правила Privilege</button>
+              <p id="baliPrivilegeRulesStatus" role="status" class="status"></p>
+            </form>
+          </details>
+        </section>
         <section class="card client-history-card" id="clientHistoryCard" hidden>
           <div class="card-heading"><h3 id="clientHistoryHeading">История клиента</h3>
             <button type="button" id="closeClientHistory">Закрыть</button></div>
@@ -1014,6 +1037,7 @@
 <script type="module" src="bali-home-placeholder-admin.js?v=20261018-92"></script>
 <script type="module" src="admin-orders.js?v=20261017-20"></script>
 <script type="module" src="admin-clients.js?v=20261017-20"></script>
+<script type="module" src="bali-privilege-admin.js?v=20261019-1"></script>
 <script src="admin-dashboard.js?v=20261018-105" defer></script>
 <script src="bali-design-studio.js?v=20261018-108" defer></script>
 <script type="module" src="bali-site-content-admin.js?v=20261018-97"></script>
