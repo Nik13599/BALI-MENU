@@ -329,6 +329,23 @@ service cloud.firestore {
     }
 
 
+    // Independently managed MOBILE About backgrounds, not the desktop About
+    // settings. Guests can only query published photos; verified admins edit.
+    function validMobileAboutBackground(d) {
+      return d.keys().hasAll(['imageUrl','sort','published','updatedAt'])
+        && d.keys().hasOnly(['imageUrl','sort','published','updatedAt'])
+        && validDesignImage(d.imageUrl, 125000)
+        && d.imageUrl.size() > 0
+        && d.sort is int && d.sort >= 0 && d.sort <= 100000
+        && d.published is bool
+        && d.updatedAt == request.time;
+    }
+    match /mobileAboutBackgrounds/{backgroundId} {
+      allow get, list: if isAdmin() || resource.data.published == true;
+      allow create, update: if isAdmin() && validMobileAboutBackground(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
     match /merch/{merchId} {
       allow get, list: if isAdmin() || resource.data.published == true;
       allow create, update: if isAdmin() && validMerch(request.resource.data);
