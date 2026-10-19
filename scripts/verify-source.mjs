@@ -1234,10 +1234,10 @@ assert(html.includes('id="baliCardNumber"') &&
   idClient.includes('doc(db,"baliCounters","guests")') &&
   idClient.includes('doc(db,"baliIds",uid)') &&
   idClient.includes('onAuthStateChanged(auth,initializeForUser)') &&
-  firestore.includes('match /baliCounters/{key}') &&
-  firestore.includes('getAfter(baliIdPath(request.auth.uid))') &&
-  firestore.includes('match /guestPrivileges/{uid}') &&
-  firestore.includes('allow create, update: if isAdmin()'),
+  rules.includes('match /baliCounters/{key}') &&
+  rules.includes('getAfter(baliIdPath(request.auth.uid))') &&
+  rules.includes('match /guestPrivileges/{uid}') &&
+  rules.includes('allow create, update: if isAdmin()'),
   "BALI ID must use a protected sequential transaction and a full guest profile.");
 assert(admin.includes('id="baliPrivilegeAssignForm"') &&
   admin.includes('id="baliPrivilegeRulesForm"') &&
