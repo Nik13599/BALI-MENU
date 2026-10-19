@@ -38,6 +38,90 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // BALI ID: a globally sequential six-digit-or-longer guest number.
+    // ID and counter MUST be created/updated in the SAME Firestore transaction.
+    // The counter's lastUid is a witness to prevent arbitrary increments or gaps.
+    function baliIdPath(uid) {
+      return /databases/$(database)/documents/baliIds/$(uid);
+    }
+    function baliIdCounterPath() {
+      return /databases/$(database)/documents/baliCounters/guests;
+    }
+    function validBaliId(uid) {
+      return request.resource.data.keys().hasAll(['uid','number','createdAt'])
+        && request.resource.data.keys().hasOnly(['uid','number','createdAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.number is int
+        && request.resource.data.number >= 1
+        && request.resource.data.number <= 999999999
+        && request.resource.data.createdAt == request.time
+        && getAfter(baliIdCounterPath()).data.count == request.resource.data.number
+        && getAfter(baliIdCounterPath()).data.lastUid == uid
+        && getAfter(baliIdCounterPath()).data.updatedAt == request.time;
+    }
+    match /baliIds/{uid} {
+      allow get: if signedInAs(uid) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if signedInAs(uid)
+        && exists(/databases/$(database)/documents/users/$(uid))
+        && validBaliId(uid);
+      allow update, delete: if false;
+    }
+    function validBaliCounter() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.resource.data.keys().hasAll(['count','lastUid','updatedAt'])
+        && request.resource.data.keys().hasOnly(['count','lastUid','updatedAt'])
+        && request.resource.data.count is int
+        && request.resource.data.count >= 1 && request.resource.data.count <= 999999999
+        && request.resource.data.lastUid == request.auth.uid
+        && request.resource.data.updatedAt == request.time
+        && !exists(baliIdPath(request.auth.uid))
+        && getAfter(baliIdPath(request.auth.uid)).data.uid == request.auth.uid
+        && getAfter(baliIdPath(request.auth.uid)).data.number == request.resource.data.count
+        && getAfter(baliIdPath(request.auth.uid)).data.createdAt == request.time;
+    }
+    match /baliCounters/{key} {
+      allow get: if key == 'guests' && request.auth != null
+        && request.auth.token.email_verified == true;
+      allow list, delete: if false;
+      allow create: if key == 'guests'
+        && validBaliCounter() && request.resource.data.count == 1;
+      allow update: if key == 'guests'
+        && validBaliCounter()
+        && request.resource.data.count == resource.data.count + 1;
+    }
+    // A guest can read their own privilege, but cannot write/upgrade it.
+    // Only verified admins may grant tiers and their private benefits.
+    function validPrivilege(data, uid) {
+      return data.keys().hasAll(['uid','tier','benefits','updatedAt','updatedBy'])
+        && data.keys().hasOnly(['uid','tier','benefits','updatedAt','updatedBy'])
+        && data.uid == uid
+        && data.tier in ['Member','Silver','Black','Private']
+        && data.benefits is list && data.benefits.size() <= 10
+        && data.updatedAt == request.time
+        && data.updatedBy == request.auth.uid;
+    }
+    match /guestPrivileges/{uid} {
+      allow get: if signedInAs(uid) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update: if isAdmin()
+        && exists(/databases/$(database)/documents/users/$(uid))
+        && validPrivilege(request.resource.data,uid);
+      allow delete: if false;
+    }
+    match /privilegeRules/{id} {
+      allow get: if id == 'main' && request.auth != null;
+      allow list, delete: if false;
+      allow create, update: if id == 'main' && isAdmin()
+        && request.resource.data.keys().hasAll(['levels','updatedAt'])
+        && request.resource.data.keys().hasOnly(['levels','updatedAt'])
+        && request.resource.data.levels is map
+        && request.resource.data.levels.keys().hasAll(['Member','Silver','Black','Private'])
+        && request.resource.data.levels.keys().hasOnly(['Member','Silver','Black','Private'])
+        && request.resource.data.updatedAt == request.time;
+    }
+
     // 18+ self-attestation, stored only for a verified user's profile.
     // A visitor without an account never gets a stored confirmation.
     match /users/{uid}/ageConfirmations/{consentId} {
