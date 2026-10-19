@@ -1320,6 +1320,16 @@ assert(html.includes('bali-id-tiers.css?v=') &&
   "Six-category BALI ID must preserve the default Member and restrict upgrades to director/admin");
 // Exact brand asset on all ID categories; transfer feature is prepared but
 // categorically unavailable to visitors and untrusted browser clients.
+// The central logo must remain measurable on iOS; percent-based heights inside
+// flexible grid tracks previously caused the entire logo to disappear.
+assert(!tierCss.includes('height:min(100%,210px)') &&
+  !tierCss.includes('max-height:min(100%,155px)') &&
+  tierCss.includes('height:clamp(106px,34vw,145px)!important;') &&
+  tierCss.includes('height:clamp(110px,23vw,195px)!important;') &&
+  tierCss.includes('z-index:5!important;') &&
+  html.includes('bali-id-tiers.css?v=20261019-3') &&
+  html.includes('width="450" height="531" loading="eager"'),
+  "BALI ID full logo must have a definite mobile height and appear above card decor");
 const idLogo=source("assets/bali-id-full-logo.svg");
 const futureTransfer=source("bali-bonus-transfer-scaffold.js");
 const directorTransfer=source("director-id.html");
