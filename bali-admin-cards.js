@@ -111,7 +111,7 @@ function buildEditor(config){
   let seedButton=null;
   if(isTea){
     seedButton=make("button","bali-tea-import-button","Загрузить 32 чая из предоставленного меню");
-    seedButton.type="button";
+    seedButton.type="button";seedButton.disabled=true;
     form.append(seedButton);
   }
   const status=make("p","status","Ожидаем проверку прав администратора.");
@@ -121,6 +121,7 @@ function buildEditor(config){
   host.append(head,form,status,itemsHost,info);
   const entries=new Map();
   let unsubscribe=null;
+  let loaded=false;
   const tell=value=>{status.textContent=value;};
   const reset=()=>{
     form.reset();hidden.value="";fields.sort.value="100";save.textContent="Добавить позицию";
@@ -230,7 +231,7 @@ function buildEditor(config){
   });
   if(isTea&&seedButton){
     seedButton.addEventListener("click",async()=>{
-      if(!editable){tell("Нужны подтверждённые права администратора.");return;}
+      if(!editable||!loaded){tell("Дождитесь загрузки действующей чайной карты из Firebase.");return;}
       const existingNames=new Set([...entries.values()].map(x=>x.name.toLocaleLowerCase("ru-RU")));
       const missing=BALI_TEA_SEED.filter(x=>!entries.has(x.id)&&!existingNames.has(x.name.toLocaleLowerCase("ru-RU")));
       if(!missing.length){tell("Все 32 чая уже есть в базе или совпадают с существующими названиями.");return;}
@@ -258,6 +259,8 @@ function buildEditor(config){
   return{
     resetAuth(){
       if(unsubscribe){unsubscribe();unsubscribe=null;}
+      loaded=false;
+      if(seedButton)seedButton.disabled=true;
       entries.clear();render();
     },
     start(){
@@ -267,6 +270,8 @@ function buildEditor(config){
           const item={id:d.id,...d.data()};
           if(valid(item))entries.set(d.id,item);
         }
+        loaded=true;
+        if(seedButton)seedButton.disabled=false;
         render();tell(config.title+": "+entries.size+" позиций.");
       },error=>tell(error?.code==="permission-denied"
         ?"Нет доступа к "+config.collection+". Опубликуйте новые Firestore Rules."
