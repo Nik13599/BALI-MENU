@@ -11,7 +11,7 @@
     [/^baliHomeAbout(?:Tablet|Mobile)?File$/,{label:"О клубе",ratio:9/14}],
     [/^baliHomeMerch(?:Tablet|Mobile)?File$/,{label:"BALI MERCH",ratio:3/2}],
     [/^baliHome.*ImageFile$/,{label:"Дизайн главной",ratio:3/2}],
-    [/^baliEventPlaceholderImageFile$/,{label:"Афиша-заглушка",ratio:3/4}]
+    [/^baliPlaceholderImageFile$/,{label:"Афиша-заглушка",ratio:3/4}]
   ];
   const allow=new WeakSet();
   const dialog=document.createElement("dialog");dialog.className="bali-smart-dialog";
@@ -35,7 +35,7 @@
     }
     dialog.close();
   }
-  function cancel(){context=null;tidy();if(dialog.open)dialog.close();}
+  function cancel(){if(context?.input)context.input.value="";context=null;tidy();if(dialog.open)dialog.close();}
   $("[data-smart-cancel]").addEventListener("click",cancel);
   dialog.addEventListener("cancel",event=>{event.preventDefault();cancel();});
   dialog.addEventListener("click",e=>{if(e.target===dialog)cancel();});
