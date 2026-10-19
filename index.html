@@ -414,7 +414,25 @@
     <section id="profileSection" class="bali-profile-page" aria-labelledby="profileHeading" hidden>
       <div class="container">
         <h1 id="profileHeading" class="bali-visually-hidden">Профиль BALI</h1>
-        <div class="bali-profile-card">
+        <div class="bali-profile-card bali-id-profile">
+          <div class="bali-id-heading"><span>ЛИЧНЫЙ МИР ГОСТЯ</span><button type="button" id="baliProfileSettings" class="bali-id-gear" aria-label="Настройки профиля" title="Настройки профиля">⚙</button></div>
+          <div class="bali-id-card" aria-label="Цифровая карта гостя BALI ID">
+            <div class="bali-id-top"><img src="assets/bali-nightclub-logo.png" alt="BALI NIGHTCLUB"><span id="baliCardTier">MEMBER</span></div>
+            <div class="bali-id-number-caption">ПЕРСОНАЛЬНЫЙ НОМЕР ГОСТЯ</div>
+            <div class="bali-id-number" id="baliCardNumber">—— ——</div>
+            <div class="bali-id-bottom"><strong id="baliCardName">ГОСТЬ BALI</strong><small>BALI ID · PRIVILEGE</small></div>
+          </div>
+          <section class="bali-id-benefits" aria-labelledby="baliBenefitsHeading">
+            <div class="bali-id-benefits-head"><h2 id="baliBenefitsHeading">Ваши привилегии</h2><span id="baliBenefitsTier">MEMBER</span></div>
+            <p id="baliBenefitsDescription">Привилегии появляются после авторизации.</p>
+            <ul id="baliBenefitsList"></ul>
+            <p class="bali-id-status" id="baliIdStatus" role="status" aria-live="polite"></p>
+          </section>
+          <div id="baliProfileSettingsPanel" class="bali-id-settings" hidden>
+            <h2>Настройки профиля</h2>
+            <button type="button" id="baliIdEditData">Изменить имя и телефон</button>
+            <button type="button" id="baliIdSignOut">Выйти из аккаунта</button>
+          </div>
           <div class="bali-profile-head">
             <div class="bali-profile-avatar" aria-hidden="true">B</div>
             <div><strong id="baliProfileName">Гость BALI</strong>
