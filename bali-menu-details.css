@@ -352,3 +352,17 @@
   color:#b7cfba;
   font:600 12px/1.5 Manrope,Inter,sans-serif;
 }
+
+/* Match the reference: slightly narrower add button with breathing room
+   above the modal footer's bottom edge. */
+.bali-menu-details-actions .bali-menu-details-add{
+  width:91%!important;
+  justify-self:center!important;
+  align-self:start!important;
+  transform:translateY(-3px);
+}
+@media(max-width:767px){
+  .bali-menu-details-actions .bali-menu-details-add{
+    width:90%!important;
+  }
+}
