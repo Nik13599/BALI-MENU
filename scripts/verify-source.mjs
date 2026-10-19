@@ -342,6 +342,23 @@ assert(html.includes('id="baliMenuDetailsDialog"') &&
   rules.includes("data.get('detailEnabled',false) == false") &&
   rules.includes("data.detailText.size() >= 1"),
   "Menu information icon is disabled for empty descriptions and its dialog shares cart/quantity controls.");
+// The user-supplied brush artwork replaces only the mobile navigation masks.
+// Keep existing page IDs, labels, active state and nav routing untouched.
+const referenceBottomNav=source("bali-mobile-reference.css");
+for(const [route,file] of [
+  ["home","home"],["events","events"],["menu","menu"],["contacts","info"]
+]){
+  assert(referenceBottomNav.includes('[data-bali-nav="'+route+'"] .bali-nav-glyph') &&
+    referenceBottomNav.includes('mask-image:url("assets/nav-icons/'+file+'.svg")!important') &&
+    referenceBottomNav.includes('-webkit-mask-image:url("assets/nav-icons/'+file+'.svg")!important') &&
+    source("assets/nav-icons/"+file+".svg").includes('viewBox=') &&
+    html.includes('data-bali-nav="'+route+'"'),
+    "Mobile navigation must show supplied BALI brush icon for "+route);
+}
+assert(referenceBottomNav.includes('.bali-bottom-nav button.active::after') &&
+  html.includes('bali-mobile-reference.css?v=20261019-4') &&
+  html.includes('class="bali-nav-info-item" data-bali-nav="contacts"'),
+  "Mobile navigation must retain four working actions, selected state and dot.");
 assert(source("bali-mobile-reference.css").includes('Floating "Корзина" shortcut on mobile') &&
   source("bali-mobile-reference.css").includes('translateX(-50%)!important'),
   "Floating mobile cart should be narrower and raised above the bottom navigation.");
