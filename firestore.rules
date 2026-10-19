@@ -406,9 +406,35 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Tea products also carry information-only fields for the kitchen-style
+    // details icon. Notes are optional, limited and editable by admins only.
+    function validTeaMenuItem(data) {
+      return data.keys().hasAll(['name','category','volume1','price1','volume2','price2','sort','updatedAt'])
+        && data.keys().hasOnly([
+          'name','category','volume1','price1','volume2','price2','sort','updatedAt',
+          'description','ingredients','taste','brewing','sourcePage','hidden'
+        ])
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 120
+        && data.category is string && data.category.size() >= 2 && data.category.size() <= 60
+        && data.volume1 is string && data.volume1.size() >= 1 && data.volume1.size() <= 30
+        && data.price1 is number && data.price1 >= 0 && data.price1 <= 20000
+        && data.volume2 is string && data.volume2.size() <= 30
+        && data.price2 is number && data.price2 >= 0 && data.price2 <= 20000
+        && (data.volume2 != '' || data.price2 == 0)
+        && data.sort is int && data.sort >= 0 && data.sort <= 100000
+        && data.get('description','') is string && data.get('description','').size() <= 2400
+        && data.get('ingredients','') is string && data.get('ingredients','').size() <= 2400
+        && data.get('taste','') is string && data.get('taste','').size() <= 2400
+        && data.get('brewing','') is string && data.get('brewing','').size() <= 2400
+        && data.get('sourcePage',0) is int
+        && data.get('sourcePage',0) >= 0 && data.get('sourcePage',0) <= 36
+        && data.get('hidden',false) is bool
+        && data.updatedAt == request.time;
+    }
+
     match /tea_menu/{teaId} {
       allow get, list: if true;
-      allow create, update: if isAdmin() && validBarMenuItem(request.resource.data);
+      allow create, update: if isAdmin() && validTeaMenuItem(request.resource.data);
       allow delete: if isAdmin();
     }
 
