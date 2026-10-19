@@ -157,22 +157,33 @@ $("staffAssignForm").addEventListener("submit",async e=>{
     message("directorStatus","Доступ сотрудника обновлён.");
   }catch(e){message("directorStatus",errText(e),true)}
 });
-async function loadAudit(){
+let auditCursor=null,auditBusy=false,auditLoaded=0;
+async function loadAudit(reset=true){
+  if(auditBusy)return;
+  auditBusy=true;
+  if(reset){
+    auditCursor=null;auditLoaded=0;$("auditRows").replaceChildren();
+    visible("moreAudit",false);
+  }
   message("auditStatus","Загружаем операции...");
   try{
-    const data=(await api.audit({})).data.items;
-    const root=$("auditRows");root.replaceChildren();
+    const page=(await api.audit({after:auditCursor||""})).data;
+    const data=page.items||[],root=$("auditRows");
     for(const row of data){
       const box=document.createElement("div");box.className="audit-row";
       const title=document.createElement("strong"),details=document.createElement("small");
-      title.textContent=(row.type||"")+" · "+(label[row.kind]||row.kind||"")+" "+(row.count||row.percent||"");
+      title.textContent=(row.type||"")+" · "+(label[row.kind]||row.kind||"")+" "+(row.count??row.percent??"");
       details.textContent=new Date(row.createdAt).toLocaleString("ru-RU")+" · гость "+row.guestUid+" · сотрудник "+row.staffUid+" ("+row.staffRole+")"+(row.reason?" · "+row.reason:"")+(row.receipt?" · чек "+row.receipt:"");
       box.append(title,details);root.append(box);
     }
-    message("auditStatus",data.length?"Последние "+data.length+" операций.":"Записей пока нет.");
+    auditLoaded+=data.length;auditCursor=page.nextCursor||null;
+    visible("moreAudit",!!auditCursor);
+    message("auditStatus",auditLoaded?"Показано записей: "+auditLoaded+(auditCursor?" · доступны более ранние записи":" · конец журнала"):"Записей пока нет.");
   }catch(e){message("auditStatus",errText(e),true)}
+  finally{auditBusy=false}
 }
-$("refreshAudit").addEventListener("click",loadAudit);
+$("refreshAudit").addEventListener("click",()=>void loadAudit(true));
+$("moreAudit").addEventListener("click",()=>void loadAudit(false));
 $("staffSignIn").addEventListener("click",async()=>{try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(e){message("staffLoginStatus",errText(e),true)}});
 $("staffSignOut").addEventListener("click",()=>signOut(auth));
 onAuthStateChanged(auth,async user=>{
