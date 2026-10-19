@@ -37,18 +37,19 @@ $("menuImageFile").addEventListener("change",async event=>{
     renderStatus("menuStatus","Фото обработано: 1:1, WebP. Нажмите «Сохранить товар».");
   }catch(error){pendingProductImage="";imagePreview("menuImagePreview","");renderStatus("menuStatus",error.message);}
 });
-// The checkbox is the only switch that publishes the guest "Подробнее" button.
+// The details icon is always visible on guest cards. A non-empty detailed
+// description turns it on automatically, without a second checkbox or publish step.
 function updateDetailsFields() {
-  const enabled=$("menuDetailsEnabled").checked;
-  $("menuDetailsFields").hidden=!enabled;
-  $("menuDetailsText").required=enabled;
+  const hasText=Boolean($("menuDetailsText").value.trim());
+  $("menuDetailsEnabled").checked=hasText;
+  $("menuDetailsFields").hidden=false;
+  $("menuDetailsText").required=false;
+  const hint=$("menuDetailsAvailability");
+  if(hint)hint.textContent=hasText
+    ?"● Значок ⓘ будет активным. Нажмите «Сохранить товар», чтобы опубликовать описание."
+    :"○ Без подробного описания значок ⓘ у блюда будет серым и неактивным.";
 }
-$("menuDetailsEnabled").addEventListener("change",()=>{
-  updateDetailsFields();
-  if($("menuDetailsEnabled").checked && !$("menuDetailsText").value.trim())
-    renderStatus("menuStatus","Для кнопки «Подробнее» обязательно заполните дополнительное описание.");
-  else renderStatus("menuStatus","");
-});
+$("menuDetailsText").addEventListener("input",updateDetailsFields);
 $("menuDetailsImageFile").addEventListener("change",async event=>{
   const file=event.target.files?.[0];
   if(!file)return;
@@ -371,7 +372,8 @@ function menuRender() {
     for(const item of bucket.items){
       rows.append(createEntry(
         item.name+" — "+Number(item.price).toFixed(2)+" BYN",
-        "ID "+item.id+" · "+(item.available?"В наличии":"Недоступно"),
+        "ID "+item.id+" · "+(item.available?"В наличии":"Недоступно")
+          +" · ⓘ "+(String(item.detailText||"").trim()?"Информация заполнена":"Без подробного описания"),
         ()=>openProductDialog(item),
         async()=>{
           if(!confirm("Удалить «"+item.name+"»? Это действие нельзя отменить."))return;
@@ -458,6 +460,7 @@ $("menuForm").addEventListener("submit",async event=>{
      !Number.isInteger(sort)||sort<0||sort>100000||!allCategories().some(c=>c.name===category)){
     renderStatus("menuStatus","Проверьте цену, сортировку и выберите существующую категорию.");return;
   }
+  updateDetailsFields();
   const detailsEnabled=$("menuDetailsEnabled").checked;
   const detailsText=$("menuDetailsText").value.trim();
   if(detailsEnabled&&!detailsText){
