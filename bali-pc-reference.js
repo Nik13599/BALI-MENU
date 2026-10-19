@@ -36,6 +36,7 @@
     if(!button)return;
     const action=button.dataset.baliProfileAction;
     closeProfile();
+    if(action==="id")document.getElementById("profileBaliIdBtn")?.click();
     if(action==="orders")document.getElementById("profileMyOrdersBtn")?.click();
     if(action==="plans")document.getElementById("profileMyPlansBtn")?.click();
     if(action==="details")document.getElementById("profileDataBtn")?.click();
