@@ -147,14 +147,6 @@ body.bali-guest-theme #baliIdSection .bali-id-back-mark{
   font:750 9px/1.3 Manrope,Inter,sans-serif;
   letter-spacing:.15em;
 }
-body.bali-guest-theme #baliIdSection .bali-id-flip-help{
-  margin:0;
-  max-width:645px;
-  text-align:center;
-  color:#aeb9b0;
-  font:650 clamp(10px,2.7vw,12px)/1.4 Manrope,Inter,sans-serif;
-  letter-spacing:.03em;
-}
 body.bali-guest-theme #baliIdSection .bali-id-show-qr{
   appearance:none;
   display:flex;
@@ -316,10 +308,9 @@ body.bali-guest-theme .bali-id-qr-dialog::backdrop{
   body.bali-guest-theme .bali-id-qr-dialog::backdrop{backdrop-filter:none;-webkit-backdrop-filter:none}
 }
 
-/* Keep the ID card, instruction, QR action and status on the same centre line
+/* Keep the ID card, QR action and status on the same centre line
    at every breakpoint, independently of the wider profile container. */
 body.bali-guest-theme #baliIdSection .bali-id-flip-scene,
-body.bali-guest-theme #baliIdSection .bali-id-flip-help,
 body.bali-guest-theme #baliIdSection .bali-id-show-qr,
 body.bali-guest-theme #baliIdSection .bali-id-status{
   justify-self:center!important;
@@ -338,7 +329,6 @@ body.bali-guest-theme #baliIdSection .bali-id-flip-scene:active{
 body.bali-guest-theme #baliIdSection .bali-id-flip-track{
   transition:transform 620ms cubic-bezier(.22,.75,.28,1);
 }
-body.bali-guest-theme #baliIdSection .bali-id-flip-help,
 body.bali-guest-theme #baliIdSection .bali-id-show-qr,
 body.bali-guest-theme #baliIdSection .bali-id-status{
   width:100%;
@@ -383,7 +373,6 @@ body.bali-guest-theme #baliIdSection .bali-id-heading{
   min-width:0;
 }
 body.bali-guest-theme #baliIdSection .bali-id-flip-scene,
-body.bali-guest-theme #baliIdSection .bali-id-flip-help,
 body.bali-guest-theme #baliIdSection .bali-id-show-qr,
 body.bali-guest-theme #baliIdSection .bali-id-status{
   box-sizing:border-box!important;
