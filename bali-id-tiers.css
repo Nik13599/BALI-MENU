@@ -187,3 +187,26 @@ body.bali-guest-theme #baliIdSection .bali-id-flip-scene .bali-id-benefits li::b
     font-size:clamp(10px,2.7vw,12px)!important;
   }
 }
+
+/* Accent the actual BALI artwork to match all text/borders by category. */
+body.bali-guest-theme #baliIdSection .bali-id-centre-art img{
+  filter:var(--bali-card-logo-filter,none) drop-shadow(0 0 6px var(--bali-card-halo))!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="member"]{
+  --bali-card-logo-filter:brightness(0) saturate(100%) invert(86%) sepia(69%) saturate(809%) hue-rotate(24deg) brightness(109%);
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="silver"]{
+  --bali-card-logo-filter:brightness(0) saturate(100%) invert(95%) sepia(9%) saturate(372%) hue-rotate(178deg) brightness(100%);
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="gold"]{
+  --bali-card-logo-filter:brightness(0) saturate(100%) invert(78%) sepia(39%) saturate(618%) hue-rotate(350deg) brightness(106%);
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="platinum"]{
+  --bali-card-logo-filter:brightness(0) saturate(100%) invert(85%) sepia(28%) saturate(427%) hue-rotate(172deg) brightness(112%);
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="black"]{
+  --bali-card-logo-filter:brightness(0) invert(98%);
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="private"]{
+  --bali-card-logo-filter:brightness(0) saturate(100%) invert(87%) sepia(89%) saturate(664%) hue-rotate(348deg) brightness(102%);
+}
