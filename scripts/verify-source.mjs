@@ -885,7 +885,7 @@ assert(app.includes('window.setInterval(()=>') &&
   app.includes('renderUpcomingEvents();'), "Past events must disappear automatically from My Plans");
 assert(app.includes('details.append(name,times,description,interested,message);') &&
   app.includes('actions.append(planBtn);') &&
-  app.includes('actions.append(button);') &&
+  !app.includes('button.className="event-go-to-menu"') &&
   app.includes('body.append(details,actions);') &&
   !app.includes('className="event-card-date"'),
   "Date must only appear on square poster; event details above bottom-anchored CTAs");
