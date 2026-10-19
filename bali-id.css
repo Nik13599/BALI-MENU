@@ -18,8 +18,6 @@ body.bali-guest-theme #profileSection .bali-profile-card{
   box-shadow:0 18px 65px rgba(0,0,0,.4);
 }
 .bali-id-heading{display:flex;justify-content:space-between;align-items:center;color:#d2d8d2;font:700 12px/1.4 Manrope,Inter,sans-serif;letter-spacing:.18em}
-.bali-id-gear{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:#202723;color:#f8faf6;border:1px solid #455449;font-size:27px;cursor:pointer}
-.bali-id-gear:hover,.bali-id-gear:focus-visible{border-color:#b9ff51;color:#b9ff51}
 .bali-id-card{
   position:relative;display:flex;flex-direction:column;justify-content:space-between;
   aspect-ratio:1.68/1;width:100%;max-width:645px;box-sizing:border-box;
