@@ -707,3 +707,13 @@
 }
 /* Hide nonmodal placeholder until explicitly opened. */
 .bali-mobile-about-dialog:not([open]){display:none!important}
+
+/* The reference has Information instead of the duplicate lower Profile shortcut.
+   Keep the old Profile shortcut for tablet; the header opens it on phones. */
+@media(max-width:767px){
+  body.bali-guest-theme .bali-bottom-nav .bali-nav-profile-item{display:none!important}
+  body.bali-guest-theme .bali-bottom-nav .bali-nav-info-item{display:flex!important}
+}
+@media(min-width:768px){
+  body.bali-guest-theme .bali-bottom-nav .bali-nav-info-item{display:none!important}
+}
