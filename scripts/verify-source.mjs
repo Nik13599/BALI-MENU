@@ -147,7 +147,7 @@ const studioCss=source("bali-design-studio.css");
 const siteAdmin=source("bali-site-content-admin.js");
 const sitePublic=source("bali-site-content.js");
 assert(admin.includes('bali-design-studio.css?v=') &&
-  admin.includes('bali-design-studio.js?v=20261018-') &&
+  admin.includes('bali-design-studio.js?v=20261019-116') &&
   admin.includes('bali-site-content-admin.js?v=') &&
   admin.includes('id="baliDesignLiveFrame"') &&
   admin.includes('id="baliDesignCanvas"') &&
@@ -167,6 +167,40 @@ assert(admin.includes('bali-design-studio.css?v=') &&
   rules.includes("settingId == 'homeInterface' && validHomeInterface(request.resource.data)") &&
   rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder']"),
   "Live admin design studio must preview all 3 real device layouts, permit block editing and protect the site settings in Firestore");
+// Mobile About artwork follows the user's new design while remaining separate
+// from the desktop About card; staff can upload, reorder and publish 8 photos.
+const mobileAboutCss=source("bali-mobile-about-hero.css");
+const mobileAboutGuest=source("bali-mobile-about-hero.js");
+const mobileAboutAdmin=source("bali-mobile-about-admin.js");
+const mobileAboutAdminCss=source("bali-mobile-about-admin.css");
+assert(html.includes('id="baliMobileAboutBackgroundA"') &&
+  html.includes('id="baliMobileAboutBackgroundB"') &&
+  html.includes('id="baliMobileAboutBackgroundDots"') &&
+  html.includes('bali-mobile-about-hero.css?v=20261019-1') &&
+  html.includes('bali-mobile-about-hero.js?v=20261019-1') &&
+  mobileAboutCss.includes('@media(max-width:767px)') &&
+  mobileAboutCss.includes('object-fit:cover!important') &&
+  mobileAboutCss.includes('background:linear-gradient(90deg') &&
+  mobileAboutGuest.includes('collection(db,"mobileAboutBackgrounds")') &&
+  mobileAboutGuest.includes('where("published","==",true)') &&
+  mobileAboutGuest.includes('prefers-reduced-motion:reduce') &&
+  mobileAboutGuest.includes('8500') &&
+  admin.includes('data-design-editor="mobileAbout"') &&
+  admin.includes('id="baliMobileAboutFiles"') &&
+  admin.includes('multiple>') &&
+  admin.includes('bali-mobile-about-admin.js?v=20261019-1') &&
+  admin.includes('bali-mobile-about-admin.css?v=20261019-1') &&
+  mobileAboutAdmin.includes('const MAX=8') &&
+  mobileAboutAdmin.includes('writeBatch(db)') &&
+  mobileAboutAdmin.includes('compressImage(file,"design-mobile-about-hero")') &&
+  mobileAboutAdminCss.includes('.bali-mobile-about-admin-entry') &&
+  liveStudio.includes('mobileAbout:["Мобильный блок «О клубе»"') &&
+  source("image-compressor.js").includes('"design-mobile-about-hero":{ratio:2,maxChars:120000') &&
+  rules.includes('function validMobileAboutBackground(d)') &&
+  rules.includes('match /mobileAboutBackgrounds/{backgroundId}') &&
+  rules.includes('allow get, list: if isAdmin() || resource.data.published == true;') &&
+  rules.includes('allow create, update: if isAdmin() && validMobileAboutBackground(request.resource.data);'),
+  "Mobile About must support independently uploaded and protected published backgrounds");
 // v87 PC viewport is a fixed full-width, full-height 3-column dashboard.
 // Other desktop pages must not scroll down; only product lists scroll.
 const viewportCss=source("bali-pc-viewport.css");
