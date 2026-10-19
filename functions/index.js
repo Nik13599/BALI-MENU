@@ -18,7 +18,7 @@ const verified=req=>{
   return uid;
 };
 const number6=value=>{
-  if(typeof value!=="string"||!/^\\d{6}$/.test(value)||Number(value)<1)
+  if(typeof value!=="string"||!/^\d{6}$/.test(value)||Number(value)<1)
     fail("invalid-argument","Укажите шестизначный BALI ID.");
   return Number(value);
 };
