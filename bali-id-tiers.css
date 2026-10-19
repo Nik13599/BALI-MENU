@@ -211,33 +211,53 @@ body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="private
   --bali-card-logo-filter:brightness(0) saturate(100%) invert(87%) sepia(89%) saturate(664%) hue-rotate(348deg) brightness(102%);
 }
 
-/* The official mask + handwritten BALI + NIGHTCLUB are ONE unaltered mark,
-   recreated from the supplied transparent reference. Never overlay a second seal. */
-body.bali-guest-theme #baliIdSection .bali-id-centre-art{
+/* Exact complete BALI mark: mask, handwritten BALI and NIGHTCLUB.
+   Safari/iOS fix: NEVER size this logo with height:min(100%,...), because
+   a percent height inside an auto-sized flex/grid track may resolve to 0.
+   Use a definite CSS-pixel height and cap by the card's available space. */
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene .bali-id-card-front .bali-id-centre-art{
+  position:relative!important;
+  z-index:4!important;
+  display:flex!important;
+  flex:1 1 auto!important;
   box-sizing:border-box!important;
-  min-height:0!important;
-  overflow:hidden;
+  width:100%!important;
+  min-width:0!important;
+  min-height:96px!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  align-items:center!important;
   justify-content:center!important;
   align-content:center!important;
-  gap:0!important;
 }
-body.bali-guest-theme #baliIdSection .bali-id-centre-art img.bali-id-brand-master{
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene .bali-id-card-front .bali-id-centre-art img.bali-id-brand-master{
+  position:relative!important;
+  z-index:5!important;
   display:block!important;
+  flex:0 0 auto!important;
   box-sizing:border-box!important;
   width:auto!important;
-  height:min(100%,210px)!important;
-  max-height:min(100%,210px)!important;
-  max-width:48%!important;
+  height:clamp(110px,23vw,195px)!important;
   min-width:0!important;
+  max-width:58%!important;
+  max-height:195px!important;
   margin:0 auto!important;
+  padding:0!important;
+  visibility:visible!important;
+  opacity:1!important;
   object-fit:contain!important;
   object-position:center!important;
   filter:var(--bali-card-logo-filter,none)
       drop-shadow(0 0 5px var(--bali-card-halo))!important;
 }
 @media(max-width:767px){
-  body.bali-guest-theme #baliIdSection .bali-id-centre-art img.bali-id-brand-master{
-    max-height:min(100%,155px)!important;
-    max-width:51%!important;
+  body.bali-guest-theme #baliIdSection .bali-id-flip-scene .bali-id-card-front .bali-id-centre-art{
+    min-height:90px!important;
+  }
+  body.bali-guest-theme #baliIdSection .bali-id-flip-scene .bali-id-card-front .bali-id-centre-art img.bali-id-brand-master{
+    height:clamp(106px,34vw,145px)!important;
+    max-width:55%!important;
+    max-height:145px!important;
   }
 }
