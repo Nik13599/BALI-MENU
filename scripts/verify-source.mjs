@@ -562,6 +562,14 @@ assert(html.includes('bali-info-page.css?v=20261019-2') &&
   html.includes('href="tel:+375296700300"'),
   "Mobile Info must show the editable desktop contacts and truthful legal/visitor disclosures");
 // Homepage design tools must be publicly read-only and safely admin-managed.
+// Calendar regression: the old PC carousel had height:0; inside the new
+// horizontal month + posters layout it must be explicitly stretched.
+const calendarViewCss=source("bali-calendar.css");
+assert(calendarViewCss.includes('.bali-event-calendar-layout>.events-carousel-shell>#eventsGrid') &&
+  calendarViewCss.includes('width:auto!important;height:100%!important') &&
+  calendarViewCss.includes('height:100%!important;min-height:0!important;') &&
+  html.includes('bali-calendar.css?v=20261019-2'),
+  "PC calendar must show its real event posters instead of a zero-height track");
 const designAdmin=source("bali-home-design-admin.js");
 const designPublic=source("bali-home-design.js");
 const designVariants=source("bali-design-variants.js");

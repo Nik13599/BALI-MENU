@@ -83,8 +83,22 @@
     flex:1 1 0!important;min-height:0!important;max-width:100%!important;
   }
   body.bali-guest-theme #eventsSection .bali-calendar-panel{max-height:100%;overflow:auto}
+  /* The legacy desktop layout explicitly sets the carousel to height:0.
+     Before the calendar was added it was a vertical flex item so it could
+     grow from zero; it is now a horizontal flex child and needs a REAL height.
+     Without this the poster track is clipped to zero pixels. */
   body.bali-guest-theme #eventsSection .bali-event-calendar-layout>.events-carousel-shell{
-    flex:1 1 0!important;min-height:0!important;max-height:100%!important;
+    display:flex!important;flex-direction:column!important;
+    flex:1 1 0!important;min-width:0!important;
+    width:auto!important;height:100%!important;
+    min-height:0!important;max-height:100%!important;
+    overflow:hidden!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-calendar-layout>.events-carousel-shell>#eventsGrid{
+    display:flex!important;flex:1 1 0!important;
+    height:100%!important;min-height:0!important;
+    width:100%!important;min-width:0!important;
+    overflow-x:auto!important;overflow-y:hidden!important;
   }
   /* Poster content visually dissolves at the calendar edge. */
   body.bali-guest-theme #eventsSection #eventsGrid{
