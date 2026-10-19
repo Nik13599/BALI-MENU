@@ -218,13 +218,15 @@
           <div id="clientList" class="client-list" aria-live="polite">Загрузка базы клиентов...</div>
         </section>
         <section class="card bali-privilege-admin" id="baliPrivilegeAdmin" aria-labelledby="baliPrivilegeAdminTitle">
-          <div class="card-heading"><h3 id="baliPrivilegeAdminTitle">BALI ID · управление Privilege</h3><span class="tag">Только администратор</span></div>
+          <div class="card-heading"><h3 id="baliPrivilegeAdminTitle">BALI ID · управление Privilege</h3><span class="tag">Администратор</span></div>
+          <p><a href="director-id.html" target="_blank" rel="noopener noreferrer">Открыть отдельный интерфейс директора →</a></p>
           <p class="hint">Присвоение уровня вручную. Номер BALI ID выдаётся автоматически при первой загрузке карты гостя и не меняется при повышении статуса.</p>
           <form id="baliPrivilegeAssignForm" class="bali-privilege-form">
             <label>Гость из списка (нажмите «Privilege» рядом с именем)<input id="baliPrivilegeGuest" readonly placeholder="Выберите гостя" required></label>
             <input type="hidden" id="baliPrivilegeGuestUid">
             <label>Статус<select id="baliPrivilegeTier">
               <option value="Member">Member</option><option value="Silver">Silver</option>
+              <option value="Gold">Gold</option><option value="Platinum">Platinum</option>
               <option value="Black">Black</option><option value="Private">Private</option>
             </select></label>
             <label>Персональные преимущества (каждое с новой строки)<textarea id="baliPrivilegePersonal" rows="3" maxlength="700" placeholder="Например: индивидуальное приглашение"></textarea></label>
@@ -1038,7 +1040,7 @@
 <script type="module" src="bali-home-placeholder-admin.js?v=20261018-92"></script>
 <script type="module" src="admin-orders.js?v=20261017-20"></script>
 <script type="module" src="admin-clients.js?v=20261019-1"></script>
-<script type="module" src="bali-privilege-admin.js?v=20261019-1"></script>
+<script type="module" src="bali-privilege-admin.js?v=20261019-2"></script>
 <script src="bali-smart-design.js?v=20261019-2" defer></script>
 <script src="admin-dashboard.js?v=20261018-105" defer></script>
 <script src="bali-design-studio.js?v=20261018-108" defer></script>

@@ -4,12 +4,14 @@ import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.
 import {getFirestore,doc,getDoc,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
-const TIERS=["Member","Silver","Black","Private"];
+const TIERS=["Member","Silver","Gold","Platinum","Black","Private"];
 const defaults={
-  Member:{description:"Персональный цифровой пропуск BALI.",criteria:"Доступен всем зарегистрированным гостям.",benefits:["BALI ID"]},
-  Silver:{description:"Для постоянных гостей клуба.",criteria:"Назначается администратором.",benefits:["Персональные предложения"]},
-  Black:{description:"Расширенный уровень Privilege.",criteria:"Назначается администратором.",benefits:["Ранний доступ к отдельным анонсам"]},
-  Private:{description:"Индивидуальные привилегии клуба.",criteria:"Назначается администратором.",benefits:["Персональные условия от администрации"]}
+  Member:{description:"Ваш первый уровень BALI PRIVILEGE.",criteria:"Автоматически после регистрации.",benefits:["Персональная цифровая карта гостя"]},
+  Silver:{description:"Ваш уровень с первыми дополнительными привилегиями.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Дополнительные клубные преимущества"]},
+  Gold:{description:"Ваш уровень с расширенными преимуществами.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Расширенные клубные привилегии"]},
+  Platinum:{description:"Ваш премиальный уровень BALI PRIVILEGE.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Премиальные преимущества"]},
+  Black:{description:"Ваш уровень с особыми клубными привилегиями.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Особые клубные привилегии"]},
+  Private:{description:"Закрытый статус по приглашению.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Индивидуальные привилегии по решению администрации"]}
 };
 let authorized=false,selected=null;
 const line=()=>document.createElement("div");
@@ -92,7 +94,7 @@ $("baliPrivilegeRulesForm")?.addEventListener("submit",async e=>{
   const submit=e.currentTarget.querySelector('button[type="submit"]');submit.disabled=true;
   try{
     await setDoc(doc(db,"privilegeRules","main"),{levels,updatedAt:serverTimestamp()});
-    setStatus("baliPrivilegeRulesStatus","Условия и преимущества четырёх уровней сохранены.");
+    setStatus("baliPrivilegeRulesStatus","Условия и преимущества шести уровней сохранены.");
   }catch(err){
     setStatus("baliPrivilegeRulesStatus","Не удалось сохранить правила: "+(err.code||"unknown"));
   }finally{submit.disabled=false;}
@@ -106,6 +108,6 @@ onAuthStateChanged(auth,async user=>{
     authorized=true;
     const rules=await getDoc(doc(db,"privilegeRules","main"));
     if(rules.exists())renderRules({...defaults,...rules.data().levels});
-    setStatus("baliPrivilegeRulesStatus","Изменения сохраняются в Firebase. Назначение статуса — только вручную.");
+    setStatus("baliPrivilegeRulesStatus","Изменения сохраняются в Firebase. Статус назначается директором или администратором вручную.");
   }catch(err){setStatus("baliPrivilegeRulesStatus","Ошибка проверки прав: "+(err.code||"unknown"));}
 });
