@@ -40,6 +40,7 @@
     <link rel="stylesheet" href="bali-new-features.css?v=20261019-1">
     <link rel="stylesheet" href="bali-menu-reference-icons.css?v=20261019-2">
     <link rel="stylesheet" href="bali-id-navigation.css?v=20261019-2">
+    <link rel="stylesheet" href="bali-id-flip.css?v=20261019-1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
@@ -448,21 +449,54 @@
         <h1 id="baliIdPageHeading" class="bali-id-page-title">BALI ID</h1>
         <div class="bali-profile-card bali-id-profile">
           <div class="bali-id-heading"><span>ЛИЧНЫЙ МИР ГОСТЯ</span></div>
-          <div class="bali-id-card" aria-label="Цифровая карта гостя BALI ID">
-            <div class="bali-id-top"><img src="assets/bali-nightclub-logo.png" alt="BALI NIGHTCLUB"><span id="baliCardTier">MEMBER</span></div>
-            <div class="bali-id-number-caption">ПЕРСОНАЛЬНЫЙ НОМЕР ГОСТЯ</div>
-            <div class="bali-id-number" id="baliCardNumber">—— ——</div>
-            <div class="bali-id-bottom"><strong id="baliCardName">ГОСТЬ BALI</strong><small>BALI ID · PRIVILEGE</small></div>
+          <div class="bali-id-flip-scene" id="baliIdFlipScene" aria-describedby="baliIdFlipHelp">
+            <div class="bali-id-flip-track" id="baliIdFlipTrack">
+              <div class="bali-id-card bali-id-card-front" id="baliIdFront" role="button" tabindex="0" aria-label="Лицевая сторона BALI ID. Нажмите или проведите пальцем, чтобы перевернуть">
+                <div class="bali-id-top"><img src="assets/bali-nightclub-logo.png" alt="BALI NIGHTCLUB"><span id="baliCardTier">MEMBER</span></div>
+                <div class="bali-id-number-caption">ПЕРСОНАЛЬНЫЙ НОМЕР ГОСТЯ</div>
+                <div class="bali-id-number" id="baliCardNumber">—— ——</div>
+                <div class="bali-id-bottom"><strong id="baliCardName">ГОСТЬ BALI</strong><small>BALI ID · PRIVILEGE</small></div>
+              </div>
+              <div class="bali-id-card bali-id-card-back" id="baliIdBack" role="button" tabindex="-1" aria-hidden="true" aria-label="Оборотная сторона BALI ID. Нажмите или проведите пальцем, чтобы вернуться">
+                <div class="bali-id-back-top">
+                  <img src="assets/bali-nightclub-logo.png" alt="" aria-hidden="true">
+                  <span>BALI PRIVILEGE</span>
+                </div>
+                <section class="bali-id-benefits" aria-labelledby="baliBenefitsHeading">
+                  <div class="bali-id-benefits-head"><h2 id="baliBenefitsHeading">ВАШИ ПРИВИЛЕГИИ</h2><span id="baliBenefitsTier">MEMBER</span></div>
+                  <p id="baliBenefitsDescription">Привилегии появляются после авторизации.</p>
+                  <ul id="baliBenefitsList"></ul>
+                </section>
+                <span class="bali-id-back-mark">BALI NIGHTCLUB · PRIVATE WORLD</span>
+              </div>
+            </div>
           </div>
-          <section class="bali-id-benefits" aria-labelledby="baliBenefitsHeading">
-            <div class="bali-id-benefits-head"><h2 id="baliBenefitsHeading">Ваши привилегии</h2><span id="baliBenefitsTier">MEMBER</span></div>
-            <p id="baliBenefitsDescription">Привилегии появляются после авторизации.</p>
-            <ul id="baliBenefitsList"></ul>
-            <p class="bali-id-status" id="baliIdStatus" role="status" aria-live="polite"></p>
-          </section>
+          <p id="baliIdFlipHelp" class="bali-id-flip-help">← Свайпните карту влево или вправо, чтобы перевернуть →</p>
+          <button type="button" class="bali-id-show-qr" id="baliShowQr">
+            <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM19 15v3M14 20h7M20 20v-2"/></svg>
+            Показать QR-код
+          </button>
+          <p class="bali-id-status" id="baliIdStatus" role="status" aria-live="polite"></p>
         </div>
       </div>
     </section>
+
+    <!-- Защищённый QR BALI ID показывается отдельно от двусторонней карты. -->
+    <dialog id="baliQrDialog" class="bali-id-qr-dialog" aria-labelledby="baliQrTitle">
+      <div class="bali-id-qr-dialog-body">
+        <button type="button" id="baliQrClose" class="bali-id-qr-close" aria-label="Закрыть окно QR-кода">×</button>
+        <span class="bali-id-qr-eyebrow">BALI ID · ГОСТЬ</span>
+        <h2 id="baliQrTitle">ВАШ QR-КОД</h2>
+        <p class="bali-id-qr-caption">Покажите код сотруднику клуба для проверки привилегий.</p>
+        <div class="bali-id-qr-image-box">
+          <img id="baliQrImage" alt="Временный QR-код BALI ID" width="280" height="280" hidden>
+          <p id="baliQrMessage" role="status" aria-live="polite">QR-код загружается…</p>
+        </div>
+        <p id="baliQrExpires" class="bali-id-qr-expiry" aria-live="off"></p>
+        <button type="button" id="baliQrRefresh" class="bali-id-qr-refresh" hidden>Получить новый QR-код</button>
+        <p class="bali-id-qr-footnote">Для безопасности код временный и одноразовый.</p>
+      </div>
+    </dialog>
 
     <!-- Нижняя навигация гостя -->
     <nav class="bali-bottom-nav" aria-label="Основная навигация">
@@ -682,6 +716,7 @@
     <script type="module" src="bali-theme.js?v=20261017-60"></script>
     <script src="bali-mobile-reference.js?v=20261019-1" defer></script>
     <script type="module" src="bali-id.js?v=20261019-5"></script>
+    <script type="module" src="bali-id-flip.js?v=20261019-1"></script>
     <script src="bali-share.js?v=20261019-3" defer></script>
 </body>
 
