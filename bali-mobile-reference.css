@@ -717,3 +717,7 @@
 @media(min-width:768px){
   body.bali-guest-theme .bali-bottom-nav .bali-nav-info-item{display:none!important}
 }
+
+/* Protect the SPA route state: the home grid must never appear behind Calendar or Menu. */
+body.bali-guest-theme #homeSection[hidden]{display:none!important}
+body.bali-guest-theme .bali-mobile-about-dialog:not([open]){display:none!important}
