@@ -53,6 +53,7 @@
     <link rel="stylesheet" href="bali-about-shell.css?v=20261019-fluid2">
     <link rel="stylesheet" href="bali-mobile-glass.css?v=20261019-1">
     <link rel="stylesheet" href="bali-pc-id-home.css?v=20261019-1">
+    <link rel="stylesheet" href="bali-calendar.css?v=20261019-1">
 </head>
 
 <body class="bali-guest-theme">
@@ -394,7 +395,25 @@
           </div>
         </div>
         <p id="eventsInterestStatus" class="events-interest-status" role="status" aria-live="polite"></p>
-        <div class="events-carousel-shell" id="eventsCarouselShell">
+        <div class="bali-event-calendar-layout">
+          <aside class="bali-calendar-panel" id="baliCalendarPanel" aria-label="Календарь мероприятий">
+            <div class="bali-calendar-today-line"><span id="baliCalendarCurrentDate">Сегодня</span><time id="baliCalendarClock" aria-label="Текущее время в Минске">--:--</time></div>
+            <div class="bali-calendar-month-row">
+              <button type="button" id="baliCalendarToggle" class="bali-calendar-month-label" aria-expanded="false" aria-controls="baliCalendarGrid"><span id="baliCalendarMonthName">Месяц</span><span class="bali-calendar-chevron" aria-hidden="true">⌄</span></button>
+              <div class="bali-calendar-month-arrows">
+                <button type="button" id="baliCalendarPrev" aria-label="Предыдущий месяц">↑</button>
+                <button type="button" id="baliCalendarNext" aria-label="Следующий месяц">↓</button>
+              </div>
+            </div>
+            <div id="baliCalendarWeekstrip" class="bali-calendar-weekstrip" aria-label="Дни выбранной недели"></div>
+            <div id="baliCalendarGrid" class="bali-calendar-grid" role="group" aria-label="Выбор даты">
+              <div class="bali-calendar-weekdays" aria-hidden="true"><span>ПН</span><span>ВТ</span><span>СР</span><span>ЧТ</span><span>ПТ</span><span>СБ</span><span>ВС</span></div>
+              <div id="baliCalendarDays" class="bali-calendar-days"></div>
+            </div>
+            <div class="bali-calendar-selection" id="baliCalendarSelection" role="status" aria-live="polite">Выберите дату, чтобы перейти к мероприятиям</div>
+            <button type="button" id="baliCalendarToday" class="bali-calendar-today-button">Сегодня</button>
+          </aside>
+          <div class="events-carousel-shell" id="eventsCarouselShell">
           <div id="eventsGrid" class="events-grid" role="region" tabindex="0"
                aria-roledescription="карусель" aria-label="Ближайшие мероприятия, по датам"
                aria-live="polite">Загружаем события...</div>
@@ -403,6 +422,7 @@
             <span class="events-carousel-hint"><span aria-hidden="true">←</span> Листайте мероприятия <span aria-hidden="true">→</span></span>
           </div>
         </div>
+        </div><!-- /.bali-event-calendar-layout -->
         <aside class="events-info-panel" aria-label="О мероприятиях BALI">
           <span class="events-info-icon" aria-hidden="true">✦</span>
           <div class="events-info-content">
@@ -850,7 +870,8 @@
     </dialog>
     <script src="firebase-config.js?v=20261017-10"></script>
     <script type="module" src="bali-age-gate.js?v=20261018-98"></script>
-    <script src="app.js?v=20261019-about1"></script>
+    <script src="app.js?v=20261019-calendar1"></script>
+    <script src="bali-calendar.js?v=20261019-1" defer></script>
     <script src="bali-pc-reference.js?v=20261019-1" defer></script>
     <script type="module" src="auth.js?v=20261019-1"></script>
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>

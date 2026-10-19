@@ -66,6 +66,10 @@ function updateEventCarouselPosition() {
         if(focused)card.setAttribute("aria-current","true");
         else card.removeAttribute("aria-current");
     }
+    const highlighted=cards[active]?.dataset.eventDate;
+    window.dispatchEvent(new CustomEvent("bali:calendar:active-event",{
+        detail:{date:highlighted||null}
+    }));
     counter.textContent=cards.length
         ? String(active+1).padStart(2,"0")+" / "+String(cards.length).padStart(2,"0")
         : "Нет мероприятий";
@@ -78,6 +82,9 @@ function scrollEventCarousel(direction) {
     const current=carouselEventIndex(track,cards);
     const target=Math.max(0,Math.min(cards.length-1,current+direction));
     centerEventCard(track,cards[target],true);
+    window.dispatchEvent(new CustomEvent("bali:calendar:active-event",{
+        detail:{date:cards[target]?.dataset.eventDate||null,forced:true}
+    }));
 }
 function initEventCarousel() {
     const track=document.getElementById("eventsGrid");
@@ -375,7 +382,10 @@ function renderGuestPage(page,{scroll=true}={}) {
     if(selected!=="about"){
         document.getElementById("baliAboutFrame")?.contentWindow?.postMessage({type:"bali:about:pause"},window.location.origin);
     }
-    if(selected==="events")renderUpcomingEvents();
+    if(selected==="events"){
+        window.dispatchEvent(new Event("bali:calendar:open"));
+        renderUpcomingEvents();
+    }
     if(selected==="home")renderHomeEvents();
     if(scroll)resetGuestVerticalPosition(selected);
 }
