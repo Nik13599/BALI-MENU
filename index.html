@@ -36,7 +36,7 @@
 
     <link rel="stylesheet" href="bali-artwork-clean.css?v=20261018-106">
     <link rel="stylesheet" href="bali-mobile-reference.css?v=20261019-6">
-    <link rel="stylesheet" href="bali-id.css?v=20261019-3">
+    <link rel="stylesheet" href="bali-id.css?v=20261019-4">
     <link rel="stylesheet" href="bali-new-features.css?v=20261019-1">
     <link rel="stylesheet" href="bali-menu-reference-icons.css?v=20261019-2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -422,11 +422,22 @@
             <div class="bali-id-top"><img src="assets/bali-nightclub-logo.png" alt="BALI NIGHTCLUB"><span id="baliCardTier">MEMBER</span></div>
             <div class="bali-id-number-caption">ПЕРСОНАЛЬНЫЙ НОМЕР ГОСТЯ</div>
             <div class="bali-id-number" id="baliCardNumber">—— ——</div>
+            <div class="bali-id-card-wallet" id="baliIdCardWallet" aria-label="Начисленные привилегии" hidden></div>
             <div class="bali-id-bottom"><strong id="baliCardName">ГОСТЬ BALI</strong><small>BALI ID · PRIVILEGE</small></div>
           </div>
-          <section class="bali-id-benefits" aria-labelledby="baliBenefitsHeading">
+          <section class="bali-qr-section" aria-label="Код карты BALI ID">
+             <button type="button" id="baliShowQr" class="bali-show-qr">▦ Показать QR-код для сотрудника</button>
+             <div id="baliQrPanel" class="bali-qr-panel" hidden>
+               <img id="baliQrImage" alt="Временный QR-код BALI ID для сканирования сотрудником" width="250" height="250">
+               <p id="baliQrExpiry" aria-live="polite"></p>
+               <p>Если сканирование камерой не поддерживается, покажите сотруднику этот код:</p>
+               <output id="baliQrText"></output>
+             </div>
+           </section>
+           <section class="bali-id-benefits" aria-labelledby="baliBenefitsHeading">
             <div class="bali-id-benefits-head"><h2 id="baliBenefitsHeading">Ваши привилегии</h2><span id="baliBenefitsTier">MEMBER</span></div>
             <p id="baliBenefitsDescription">Привилегии появляются после авторизации.</p>
+             <div id="baliIdWalletBalances" class="bali-id-balances" aria-live="polite"></div>
             <ul id="baliBenefitsList"></ul>
             <p class="bali-id-status" id="baliIdStatus" role="status" aria-live="polite"></p>
           </section>
@@ -666,7 +677,7 @@
     <script src="bali-icon-atelier.js?v=20261017-58" defer></script>
     <script type="module" src="bali-theme.js?v=20261017-60"></script>
     <script src="bali-mobile-reference.js?v=20261019-1" defer></script>
-    <script type="module" src="bali-id.js?v=20261019-2"></script>
+    <script type="module" src="bali-id.js?v=20261019-4"></script>
     <script src="bali-share.js?v=20261019-2" defer></script>
 </body>
 
