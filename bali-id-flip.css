@@ -349,3 +349,65 @@ body.bali-guest-theme #baliIdSection .bali-id-status{
     transition:none!important;
   }
 }
+
+/* v3 — Real geometry fix for narrow iPhone viewports.
+   A width:100% grid item inside an auto/min-content grid may grow wider than
+   its parent's content box, even if margin:auto visually centres the item.
+   Constrain the grid TRACK and every child to the actual available space. */
+body.bali-guest-theme #baliIdSection{
+  max-width:100%;
+}
+body.bali-guest-theme #baliIdSection>.container{
+  box-sizing:border-box!important;
+  display:block;
+  width:100%!important;
+  max-width:950px!important;
+  min-width:0!important;
+  margin-inline:auto!important;
+  padding-inline:clamp(8px,2vw,14px)!important;
+}
+body.bali-guest-theme #baliIdSection .bali-profile-card.bali-id-profile{
+  box-sizing:border-box!important;
+  display:grid!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  justify-items:center!important;
+  margin-inline:auto!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-heading{
+  justify-self:stretch!important;
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene,
+body.bali-guest-theme #baliIdSection .bali-id-flip-help,
+body.bali-guest-theme #baliIdSection .bali-id-show-qr,
+body.bali-guest-theme #baliIdSection .bali-id-status{
+  box-sizing:border-box!important;
+  display:block;
+  width:min(100%,645px)!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin-inline:auto!important;
+  justify-self:center!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-show-qr{
+  display:flex;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene .bali-id-card{
+  max-width:100%!important;
+  min-width:0!important;
+  left:0!important;
+  right:0!important;
+}
+@media(max-width:767px){
+  body.bali-guest-theme #baliIdSection>.container{
+    padding-inline:0!important;
+  }
+  body.bali-guest-theme #baliIdSection .bali-profile-card.bali-id-profile{
+    padding-inline:clamp(12px,4vw,17px)!important;
+  }
+}
