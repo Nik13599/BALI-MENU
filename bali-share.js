@@ -90,7 +90,9 @@
     let formatted=data.date;
     try{formatted=new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"long",year:"numeric",timeZone:"Europe/Minsk"}).format(new Date(data.date+"T12:00:00+03:00"));}catch{}
     ctx.fillStyle="#b9ff51";ctx.font="750 43px Arial";ctx.fillText(formatted.toUpperCase(),72,Math.max(1727,yy+16));
-    ctx.fillStyle="#dfe6e0";ctx.font="500 31px Arial";ctx.fillText("Я хочу пойти · BALI NIGHTCLUB",72,1800);
+    const guestName=window.BaliAuth?.getProfile?.()?.name?.trim()?.split(/\\s+/)?.[0]||"";
+    const guestLabel=guestName?("Я, "+guestName.slice(0,24)+", ХОЧУ ПОЙТИ"):"Я ХОЧУ ПОЙТИ";
+    ctx.fillStyle="#dfe6e0";ctx.font="500 31px Arial";ctx.fillText(guestLabel+" · BALI",72,1800);
     ctx.fillStyle="#fff";ctx.font="600 26px Arial";ctx.fillText("nik13599.github.io/BALI-MENU/",72,1860);
     return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(Error("Ошибка создания PNG")),"image/png"));
   }
