@@ -647,6 +647,18 @@
     color:var(--bali-mobile-neon)!important;
     text-shadow:0 0 12px rgba(185,255,81,.19)!important;
   }
+  /* White hand-drawn icons on inactive tabs, neon only on the active tab.
+     Text labels retain their existing muted gray and neon selection styling. */
+  body.bali-guest-theme .bali-bottom-nav button:not(.active) .bali-nav-glyph{
+    color:#fff!important;
+    background-color:#fff!important;
+    opacity:1!important;
+  }
+  body.bali-guest-theme .bali-bottom-nav button.active .bali-nav-glyph{
+    color:var(--bali-mobile-neon)!important;
+    background-color:var(--bali-mobile-neon)!important;
+    opacity:1!important;
+  }
   body.bali-guest-theme .bali-bottom-nav button.active::after{
     content:""!important;
     display:block!important;
