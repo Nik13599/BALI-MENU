@@ -1,0 +1,83 @@
+/* Tea menu: compact editorial cards with the same information icon and
+   detail dialog as kitchen dishes. Tea remains browse-only. */
+#menuPage #baliTeaList .bali-tea-card-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  column-gap:13px;row-gap:13px;
+  border:0;
+}
+#menuPage #baliTeaList .bali-tea-item.menu-item{
+  position:relative!important;
+  display:block!important;
+  min-width:0!important;
+  width:100%!important;
+  max-width:none!important;
+  min-height:124px!important;
+  margin:0!important;
+  padding:22px 65px 19px 21px!important;
+  border:1px solid rgba(255,255,255,.13)!important;
+  border-radius:15px!important;
+  background:linear-gradient(142deg,rgba(42,44,46,.96),rgba(19,22,24,.97))!important;
+  box-shadow:0 9px 26px rgba(0,0,0,.14)!important;
+  box-sizing:border-box!important;
+  color:#f1f1ed!important;
+  overflow:visible!important;
+}
+#menuPage #baliTeaList .bali-tea-item .bali-tea-card-content{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:11px;
+  margin:0!important;
+  padding:0!important;
+}
+#menuPage #baliTeaList .bali-tea-item .bali-bar-product-name{
+  display:block;
+  margin:0!important;
+  padding:0!important;
+  font:730 clamp(14px,1.2vw,17px)/1.4 Manrope,Inter,sans-serif!important;
+  color:#f4f4f1!important;
+  letter-spacing:-.02em;
+}
+#menuPage #baliTeaList .bali-tea-card-prices{
+  display:flex;
+  flex-wrap:wrap;gap:12px;
+}
+#menuPage #baliTeaList .bali-tea-card-price{
+  display:flex;align-items:baseline;gap:7px;
+  font:760 16px/1.3 Manrope,Inter,sans-serif;
+  color:var(--bt-primary,#d7efb8);
+  font-variant-numeric:tabular-nums;
+}
+#menuPage #baliTeaList .bali-tea-card-price small{
+  font:500 11px/1.3 Manrope,Inter,sans-serif;color:#a7adae;
+}
+#menuPage #baliTeaList .bali-tea-item .menu-details-btn{
+  top:16px!important;right:15px!important;
+}
+#baliTeaDetailsDialog .bali-menu-details-body{padding-bottom:32px!important}
+#baliTeaDetailsDialog .bali-menu-details-label{margin-top:13px}
+#baliTeaDetailsDialog .bali-tea-details-source{
+  margin:19px 0 0;
+  padding-top:13px;
+  border-top:1px solid rgba(255,255,255,.12);
+  color:#929b9e;
+  font:500 11px/1.55 Manrope,Inter,sans-serif
+}
+#baliTeaDetailsDialog .bali-menu-details-head .bali-tea-details-close{
+  display:grid!important;place-items:center!important;
+  width:40px!important;height:40px!important;
+  flex:0 0 40px;
+  padding:0!important;margin:0!important;
+  background:#25292d!important;border:1px solid rgba(232,239,234,.25)!important;
+  border-radius:50%!important;color:#fff!important;font-size:20px!important;cursor:pointer;
+}
+#baliTeaDetailsDialog .bali-menu-details-head .bali-tea-details-close:hover{background:#363c3d!important}
+@media(max-width:767px){
+  #menuPage #baliTeaList .bali-tea-card-grid{grid-template-columns:1fr;gap:10px}
+  #menuPage #baliTeaList .bali-tea-item.menu-item{min-height:102px!important;padding:17px 63px 15px 16px!important;border-radius:13px!important}
+  #menuPage #baliTeaList .bali-tea-item .bali-bar-product-name{font-size:14px!important;line-height:1.4!important}
+  #menuPage #baliTeaList .bali-tea-item .bali-tea-card-content{gap:9px}
+  #menuPage #baliTeaList .bali-tea-item .bali-tea-card-price{font-size:14px}
+  #menuPage #baliTeaList .bali-tea-item .menu-details-btn{top:13px!important;right:12px!important}
+}
