@@ -738,18 +738,6 @@ function renderUpcomingEvents() {
         const actions=document.createElement("div");
         actions.className="bali-event-actions";
         actions.append(planBtn);
-        if(open){
-            const button=document.createElement("button");
-            button.type="button";
-            button.className="event-go-to-menu";
-            button.textContent="Сделать предзаказ";
-            button.addEventListener("click",()=>{
-                showGuestSection("menu");
-                const menu=document.querySelector(".menu-section");
-                if(menu)menu.scrollTo({top:0,behavior:"instant"});
-            });
-            actions.append(button);
-        }
         body.append(details,actions);
         card.append(posterWrap,body);
         grid.append(card);
