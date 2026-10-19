@@ -1,0 +1,709 @@
+/* BALI / Mobile reference 2026-10-19.
+   Only <= 767px. Keep the installed site background, brand artwork,
+   real Firebase events/promos, authentication and desktop/tablet layouts. */
+.bali-mobile-home-hero,.bali-mobile-about-dialog {display:none}
+@media(max-width:767px){
+  :root{
+    --bali-mobile-neon:var(--bt-primary,#b9ff51);
+    --bali-mobile-edge:clamp(10px,3.4vw,18px);
+    --bali-bottom-size:72px;
+  }
+  html,body.bali-guest-theme{overscroll-behavior:none}
+  body.bali-guest-theme[data-bali-page="home"]{
+    /* Do not change the project's background or its existing texture. */
+    padding-bottom:calc(75px + env(safe-area-inset-bottom))!important;
+  }
+  body.bali-guest-theme .bali-preview-banner{
+    max-height:22px!important;
+    padding:3px 7px!important;
+    font-size:8px!important;
+    line-height:1.1!important;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+  body.bali-guest-theme .header{
+    position:relative!important;
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+  body.bali-guest-theme .header .header-content{
+    position:relative!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    height:clamp(68px,10.4dvh,92px)!important;
+    min-height:0!important;
+    padding:5px var(--bali-mobile-edge)!important;
+    background:transparent!important;
+  }
+  body.bali-guest-theme .header .logo{
+    position:absolute!important;
+    left:50%!important;
+    top:50%!important;
+    transform:translate(-50%,-50%)!important;
+    margin:0!important;
+    width:clamp(137px,40vw,203px)!important;
+    max-width:46vw!important;
+    padding:0!important;
+  }
+  body.bali-guest-theme .header .bali-brand-logo{
+    display:block!important;
+    width:100%!important;
+    height:auto!important;
+    object-fit:contain!important;
+    max-height:69px!important;
+    filter:none!important;
+  }
+  body.bali-guest-theme .header .bali-pc-account-wrap{
+    position:relative!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    width:43px!important;
+    max-width:43px!important;
+    height:43px!important;
+    flex:0 0 43px!important;
+    z-index:2;
+    margin:0!important;
+  }
+  body.bali-guest-theme .header #accountBtn{
+    position:relative!important;
+    display:grid!important;
+    place-items:center!important;
+    width:42px!important;
+    min-width:42px!important;
+    max-width:42px!important;
+    height:42px!important;
+    min-height:42px!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+    background:transparent!important;
+    color:transparent!important;
+    -webkit-text-fill-color:transparent!important;
+    font-size:0!important;
+    line-height:0!important;
+    text-indent:-9999px!important;
+    overflow:hidden!important;
+    cursor:pointer;
+  }
+  body.bali-guest-theme .header #accountBtn::before{
+    content:""!important;
+    display:block!important;
+    position:absolute!important;
+    width:29px!important;
+    height:29px!important;
+    left:6px;top:6px;
+    background:var(--bali-mobile-neon)!important;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linejoin='round' stroke-linecap='round'%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3Cpath d='M3.5 21v-2.3a8.5 8.5 0 0 1 17 0V21Z'/%3E%3C/svg%3E") center / contain no-repeat!important;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linejoin='round' stroke-linecap='round'%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3Cpath d='M3.5 21v-2.3a8.5 8.5 0 0 1 17 0V21Z'/%3E%3C/svg%3E") center / contain no-repeat!important;
+    text-indent:0!important;
+  }
+  body.bali-guest-theme .header #accountBtn::after{display:none!important;content:none!important}
+  body.bali-guest-theme #homeSection{
+    display:block!important;
+    height:auto!important;
+    min-height:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    background:transparent!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-inner{
+    box-sizing:border-box!important;
+    display:grid!important;
+    width:100%!important;
+    max-width:600px!important;
+    height:100%!important;
+    max-height:none!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1.3fr) minmax(0,1.1fr) minmax(0,.85fr) auto!important;
+    row-gap:clamp(7px,1.05dvh,12px)!important;
+    padding:0 var(--bali-mobile-edge) clamp(6px,.9dvh,10px)!important;
+    margin-inline:auto!important;
+    align-items:stretch!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero{
+    display:flex!important;
+    position:relative!important;
+    grid-column:1!important;
+    grid-row:1!important;
+    flex-direction:column;
+    justify-content:center;
+    align-items:flex-start;
+    min-height:0!important;
+    height:100%!important;
+    overflow:hidden;
+    isolation:isolate;
+    padding:clamp(8px,1.7dvh,18px) clamp(8px,2vw,13px)!important;
+    margin:0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    background:linear-gradient(90deg,rgba(3,6,9,.48),transparent 80%);
+  }
+  .bali-mobile-home-hero-copy{max-width:65%;min-width:0}
+  .bali-mobile-home-hero h1{
+    margin:0 0 clamp(4px,1dvh,12px)!important;
+    padding:0!important;
+    color:#fff!important;
+    font:350 clamp(27px,8vw,46px)/1.03 Inter,Manrope,sans-serif!important;
+    letter-spacing:.025em!important;
+    text-transform:uppercase!important;
+    text-shadow:0 2px 15px rgba(0,0,0,.42);
+  }
+  .bali-mobile-home-hero p{
+    margin:0!important;
+    color:#f0f1ef!important;
+    font:500 clamp(9px,2.15vw,12px)/1.38 Inter,sans-serif!important;
+    letter-spacing:.22em;
+  }
+  .bali-mobile-about-action{
+    display:inline-flex!important;
+    align-items:center;
+    justify-content:space-between;
+    gap:clamp(16px,5vw,34px);
+    width:clamp(145px,47vw,220px);
+    min-height:clamp(41px,6.7dvh,60px);
+    margin-top:clamp(8px,2.5dvh,23px);
+    padding:10px clamp(13px,3.8vw,21px);
+    border:0;border-radius:999px;
+    background:var(--bali-mobile-neon)!important;
+    color:#07100a!important;
+    font:850 clamp(11px,3.1vw,16px)/1.2 Manrope,Inter,sans-serif;
+    letter-spacing:.14em;
+    box-shadow:0 0 22px rgba(185,255,81,.15);
+    cursor:pointer;
+  }
+  .bali-mobile-about-action>span{font-size:24px;line-height:1;font-weight:400}
+  /* Lift the real event carousel and the Firebase promotion into one mobile grid. */
+  body.bali-guest-theme #homeSection .bali-home-events-panel{
+    display:contents!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-events-title,
+  body.bali-guest-theme #homeSection .bali-home-calendar-row,
+  body.bali-guest-theme #homeSection .bali-home-menu-banner,
+  body.bali-guest-theme #homeSection .bali-pc-right-rail{
+    display:none!important;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel.bali-home-events{
+    grid-column:1!important;
+    grid-row:2!important;
+    display:flex!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    padding:0!important;
+    margin:0!important;
+    gap:clamp(6px,1.7vw,12px)!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    scroll-snap-type:x proximity;
+    scrollbar-width:none;
+    align-items:stretch!important;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-x pan-y!important;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel>.bali-home-event-card{
+    flex:0 0 calc((100% - 2*clamp(6px,1.7vw,12px))/3)!important;
+    box-sizing:border-box!important;
+    display:block!important;
+    width:calc((100% - 2*clamp(6px,1.7vw,12px))/3)!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:100%!important;
+    max-height:100%!important;
+    aspect-ratio:auto!important;
+    align-self:stretch!important;
+    border-radius:clamp(10px,3vw,15px)!important;
+    border:1px solid rgba(255,255,255,.22)!important;
+    box-shadow:0 4px 10px rgba(0,0,0,.19)!important;
+    background:#090b0e!important;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-poster-wrap{
+    position:absolute!important;
+    inset:0!important;
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    aspect-ratio:auto!important;
+    border:0!important;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-poster-wrap>img{
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    object-fit:cover!important;
+    object-position:center top!important;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-poster-wrap::after{
+    content:""!important;
+    background:linear-gradient(180deg,rgba(0,0,0,.38),transparent 39%,rgba(0,0,0,.82) 100%)!important;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-event-info{
+    position:absolute!important;
+    display:flex!important;
+    bottom:0!important;left:0!important;right:0!important;
+    z-index:2;
+    padding:clamp(7px,2vw,11px)!important;
+    min-height:0!important;
+    height:auto!important;
+    max-height:45%!important;
+    background:none!important;
+    color:#fff!important;
+    gap:3px!important;
+    pointer-events:none;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-event-info h3{
+    font:800 clamp(9px,2.5vw,15px)/1.16 Manrope,Inter,sans-serif!important;
+    text-transform:uppercase;
+    color:#fff!important;
+    margin:0!important;
+    -webkit-line-clamp:2;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-event-hours{
+    font:600 clamp(8px,2.05vw,11px)/1.3 Manrope,Inter,sans-serif!important;
+    letter-spacing:.045em;
+    text-transform:uppercase;
+    color:#f1f1ef!important;
+    margin:0!important;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-event-description,
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-event-count{
+    display:none!important;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-date-badge{
+    top:8px!important;left:8px!important;
+    z-index:3!important;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-date-badge strong{
+    font-size:clamp(19px,5.5vw,31px)!important;
+    line-height:1!important;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-date-badge span{
+    font-size:clamp(9px,2.35vw,13px)!important;
+    line-height:1.2;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-date-badge small{
+    font-size:clamp(8px,2.05vw,12px)!important;
+    line-height:1.2;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-heart{
+    width:clamp(26px,7.7vw,38px)!important;
+    height:clamp(26px,7.7vw,38px)!important;
+    right:5px!important;top:5px!important;
+    padding:5px!important;
+    color:#fff;
+    background:rgba(2,3,5,.36)!important;
+    border:1px solid rgba(255,255,255,.5)!important;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-heart.is-liked{
+    color:#f02b50!important;
+    border-color:#f02b50!important;
+    background:rgba(34,3,11,.54)!important;
+  }
+  /* Published BALI PRIVILEGE slides: no watermarks, no clipping or fake tiles. */
+  body.bali-guest-theme #homeSection .bali-pc-hero{
+    display:flex!important;
+    position:relative!important;
+    grid-column:1!important;
+    grid-row:3!important;
+    width:100%!important;
+    height:100%!important;
+    max-width:none!important;
+    max-height:none!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    border-radius:clamp(10px,3vw,16px)!important;
+    border:1px solid rgba(255,255,255,.29)!important;
+    background:#070b0b!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero .bali-pc-hero-visual{
+    position:absolute!important;
+    inset:0!important;
+    z-index:0!important;
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    -webkit-mask:none!important;mask:none!important;
+    opacity:1!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero .bali-pc-hero-visual img{
+    width:100%!important;height:100%!important;
+    object-fit:contain!important;
+    opacity:1!important;
+    filter:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero.has-artwork::after,
+  body.bali-guest-theme #homeSection .bali-pc-hero.has-artwork::before{display:none!important;content:none!important}
+  body.bali-guest-theme #homeSection .bali-pc-hero .bali-pc-kicker{display:none!important}
+  body.bali-guest-theme #homeSection .bali-pc-hero .bali-pc-hero-content{
+    position:relative!important;
+    z-index:1!important;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+    width:100%!important;
+    height:100%!important;
+    padding:clamp(12px,3vw,25px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero.has-artwork .bali-pc-hero-content h1,
+  body.bali-guest-theme #homeSection .bali-pc-hero.has-artwork .bali-pc-hero-content p{
+    display:none!important; /* Finished ad artwork must remain unaltered. */
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero:not(.has-artwork) #baliPcOfferTitle{
+    font:350 clamp(21px,6vw,32px)/1.03 Inter,sans-serif!important;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    max-width:75%;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero:not(.has-artwork) #baliPcOfferDescription{
+    font:450 clamp(8px,2.2vw,12px)/1.35 Inter,sans-serif!important;
+    letter-spacing:.13em;
+    max-width:68%;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero .bali-pc-outline-button:not([hidden]){
+    display:grid!important;
+    place-items:center!important;
+    width:clamp(37px,10vw,53px)!important;
+    height:clamp(37px,10vw,53px)!important;
+    min-width:0!important;
+    min-height:0!important;
+    margin-top:clamp(5px,1dvh,11px)!important;
+    padding:0!important;
+    border:1px solid #fff!important;
+    border-radius:50%!important;
+    color:transparent!important;
+    background:rgba(4,7,9,.46)!important;
+    font-size:0!important;
+    gap:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero .bali-pc-outline-button>span{
+    font-size:28px!important;
+    color:#fff!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero .bali-pc-hero-controls:not([hidden]){
+    position:absolute!important;
+    right:9px!important;bottom:8px!important;
+    z-index:4!important;
+    display:flex!important;
+    gap:5px!important;
+    align-items:center;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero .bali-pc-hero-controls button{
+    width:30px!important;height:30px!important;
+    border-radius:50%!important;
+    font-size:20px!important;
+    background:rgba(4,6,8,.65)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero .bali-pc-hero-controls[hidden]{
+    display:none!important;
+  }
+  body.bali-guest-theme #homeSection #homeInterestFeedback{
+    position:absolute!important;
+    bottom:calc(16dvh + 8px)!important;
+    left:50%!important;
+    z-index:6!important;
+  }
+  /* Address and contact actions match the reference while retaining real links. */
+  body.bali-guest-theme #homeSection .bali-home-contacts-card{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    grid-column:1!important;
+    grid-row:4!important;
+    width:100%!important;
+    min-height:0!important;
+    height:auto!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    gap:clamp(7px,1.1dvh,12px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-heading{display:none!important}
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map{
+    box-sizing:border-box!important;
+    order:0!important;
+    position:relative!important;
+    display:flex!important;
+    align-items:center!important;
+    width:100%!important;
+    height:clamp(59px,9.1dvh,82px)!important;
+    min-height:clamp(59px,9.1dvh,82px)!important;
+    margin:0!important;
+    padding:8px clamp(11px,3.2vw,20px)!important;
+    gap:clamp(10px,2.7vw,16px)!important;
+    overflow:hidden!important;
+    border:1px solid rgba(179,195,187,.30)!important;
+    border-radius:clamp(12px,3.2vw,19px)!important;
+    background:linear-gradient(100deg,rgba(9,15,19,.97),rgba(7,12,17,.97))!important;
+    box-shadow:inset 0 0 28px rgba(0,0,0,.21)!important;
+    text-decoration:none!important;
+    color:#fff!important;
+  }
+  body.bali-guest-theme #homeSection .bali-yandex-map .bali-yandex-pin{
+    position:static!important;
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 clamp(28px,7vw,38px)!important;
+    width:clamp(28px,7vw,38px)!important;
+    height:clamp(33px,7.7vw,42px)!important;
+    color:var(--bali-mobile-neon)!important;
+    background:none!important;
+    border:0!important;
+    transform:none!important;
+    margin:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-yandex-map .bali-yandex-pin svg{
+    display:block!important;width:100%!important;height:100%!important;
+  }
+  body.bali-guest-theme #homeSection .bali-yandex-map .bali-yandex-address-info{
+    position:relative!important;
+    z-index:2!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    align-items:flex-start!important;
+    min-width:0!important;
+    flex:1 1 auto!important;
+    gap:5px!important;
+    background:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-yandex-map .bali-yandex-address{
+    display:block!important;
+    font:800 clamp(11px,3.15vw,16px)/1.2 Manrope,Inter,sans-serif!important;
+    color:#fff!important;
+    text-transform:none!important;
+    white-space:nowrap!important;
+    letter-spacing:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-yandex-caption{
+    display:block!important;
+    color:var(--bali-mobile-neon)!important;
+    font:780 clamp(8px,2.15vw,12px)/1.3 Manrope,Inter,sans-serif!important;
+    letter-spacing:.10em!important;
+    white-space:nowrap!important;
+  }
+  body.bali-guest-theme #homeSection .bali-yandex-caption span{font-size:17px;vertical-align:-1px;padding-left:5px}
+  body.bali-guest-theme #homeSection .bali-yandex-map-graphic{
+    position:absolute!important;
+    right:0!important;top:0!important;bottom:0!important;
+    display:block!important;
+    width:44%!important;
+    z-index:1!important;
+    overflow:hidden;
+    mask-image:linear-gradient(90deg,transparent,#000 38%)!important;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 38%)!important;
+    pointer-events:none;
+  }
+  body.bali-guest-theme #homeSection .bali-yandex-map-graphic svg{
+    display:block;width:100%;height:100%;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-home-social{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    order:1!important;
+    width:100%!important;
+    max-width:none!important;
+    height:clamp(43px,6.8dvh,60px)!important;
+    min-height:clamp(43px,6.8dvh,60px)!important;
+    margin:0!important;
+    padding:0!important;
+    gap:clamp(7px,2vw,12px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-social .bali-social-btn{
+    display:flex!important;
+    flex-direction:row!important;
+    justify-content:center!important;
+    align-items:center!important;
+    flex:1 1 auto!important;
+    width:100%!important;
+    min-width:0!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    gap:clamp(4px,1.3vw,9px)!important;
+    padding:clamp(5px,1.4vw,10px)!important;
+    margin:0!important;
+    border:1px solid rgba(179,195,187,.32)!important;
+    border-radius:clamp(11px,3vw,17px)!important;
+    background:linear-gradient(145deg,rgba(12,16,20,.98),rgba(6,9,13,.98))!important;
+    box-shadow:none!important;
+    color:#f4f4f2!important;
+    text-decoration:none!important;
+    text-align:center!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-social .bali-social-svg{
+    display:block!important;
+    flex:0 0 clamp(18px,5.2vw,28px)!important;
+    width:clamp(18px,5.2vw,28px)!important;
+    height:clamp(18px,5.2vw,28px)!important;
+    color:var(--bali-mobile-neon)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-social .bali-pc-contact-label{
+    display:inline!important;
+    color:#fff!important;
+    font:600 clamp(9px,2.5vw,12px)/1.2 Inter,Manrope,sans-serif!important;
+    white-space:nowrap!important;
+  }
+  /* Four-button dark glass dock: current app routes and state stay functional. */
+  body.bali-guest-theme .bali-bottom-nav{
+    position:fixed!important;
+    left:var(--bali-mobile-edge)!important;
+    right:var(--bali-mobile-edge)!important;
+    bottom:calc(7px + env(safe-area-inset-bottom))!important;
+    z-index:1002!important;
+    width:auto!important;
+    max-width:600px!important;
+    height:clamp(67px,9.2dvh,84px)!important;
+    min-height:0!important;
+    margin:0 auto!important;
+    padding:6px 5px!important;
+    box-sizing:border-box!important;
+    border:1px solid rgba(180,185,182,.25)!important;
+    border-radius:clamp(24px,7vw,36px)!important;
+    background:rgba(2,4,6,.91)!important;
+    backdrop-filter:blur(17px)!important;
+    -webkit-backdrop-filter:blur(17px)!important;
+    box-shadow:0 6px 28px rgba(0,0,0,.45)!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+  body.bali-guest-theme .bali-bottom-nav button{
+    position:relative!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:4px!important;
+    min-height:0!important;
+    border:0!important;
+    background:none!important;
+    color:rgba(233,236,235,.75)!important;
+    padding:2px 0 6px!important;
+    text-shadow:none!important;
+  }
+  body.bali-guest-theme .bali-bottom-nav .bali-nav-glyph{
+    display:block!important;
+    position:relative!important;
+    width:clamp(22px,6.2vw,30px)!important;
+    height:clamp(22px,6.2vw,30px)!important;
+    flex:0 0 clamp(22px,6.2vw,30px)!important;
+    font-size:0!important;
+    line-height:0!important;
+    background:currentColor!important;
+    mask-position:center!important;
+    mask-size:contain!important;
+    mask-repeat:no-repeat!important;
+    -webkit-mask-position:center!important;
+    -webkit-mask-size:contain!important;
+    -webkit-mask-repeat:no-repeat!important;
+  }
+  body.bali-guest-theme .bali-bottom-nav [data-bali-nav="home"] .bali-nav-glyph{
+    mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='m12 2 10 9h-2v11h-6v-7h-4v7H4V11H2z'/%3E%3C/svg%3E")!important;
+    -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='m12 2 10 9h-2v11h-6v-7h-4v7H4V11H2z'/%3E%3C/svg%3E")!important;
+  }
+  body.bali-guest-theme .bali-bottom-nav [data-bali-nav="events"] .bali-nav-glyph{
+    mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M7 3v4M17 3v4M3 10h18m-13 5 3 3 5-6'/%3E%3C/svg%3E")!important;
+    -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M7 3v4M17 3v4M3 10h18m-13 5 3 3 5-6'/%3E%3C/svg%3E")!important;
+  }
+  body.bali-guest-theme .bali-bottom-nav [data-bali-nav="menu"] .bali-nav-glyph{
+    mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='M12 6c-2.4-2-5.3-2.7-9-2v15c3.9-.7 6.8 0 9 2m0-15c2.4-2 5.3-2.7 9-2v15c-3.9-.7-6.8 0-9 2M12 6v15'/%3E%3C/svg%3E")!important;
+    -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='M12 6c-2.4-2-5.3-2.7-9-2v15c3.9-.7 6.8 0 9 2m0-15c2.4-2 5.3-2.7 9-2v15c-3.9-.7-6.8 0-9 2M12 6v15'/%3E%3C/svg%3E")!important;
+  }
+  body.bali-guest-theme .bali-bottom-nav [data-bali-nav="contacts"] .bali-nav-glyph{
+    mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 11v6m0-11v.5'/%3E%3C/svg%3E")!important;
+    -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 11v6m0-11v.5'/%3E%3C/svg%3E")!important;
+  }
+  body.bali-guest-theme .bali-bottom-nav small{
+    display:block!important;
+    color:inherit!important;
+    font:500 clamp(9px,2.45vw,12px)/1.2 Inter,Manrope,sans-serif!important;
+    white-space:nowrap;
+  }
+  body.bali-guest-theme .bali-bottom-nav button.active{
+    color:var(--bali-mobile-neon)!important;
+    text-shadow:0 0 12px rgba(185,255,81,.19)!important;
+  }
+  body.bali-guest-theme .bali-bottom-nav button.active::after{
+    content:""!important;
+    display:block!important;
+    position:absolute!important;
+    width:7px!important;height:7px!important;
+    left:calc(50% - 3.5px)!important;
+    bottom:1px!important;
+    border-radius:50%!important;
+    background:var(--bali-mobile-neon)!important;
+    box-shadow:0 0 12px rgba(185,255,81,.57)!important;
+  }
+  body.bali-guest-theme .bali-mobile-about-dialog{
+    display:block;
+    box-sizing:border-box;
+    position:fixed!important;
+    left:50%!important;top:50%!important;
+    transform:translate(-50%,-50%)!important;
+    width:min(400px,calc(100vw - 28px));
+    max-width:calc(100vw - 28px);
+    max-height:calc(100dvh - 40px);
+    margin:0;
+    overflow-y:auto;
+    padding:28px 22px 22px;
+    border:1px solid rgba(185,255,81,.4);
+    border-radius:20px;
+    color:#f5f6f3;
+    background:#0a1014;
+    box-shadow:0 20px 75px rgba(0,0,0,.7);
+  }
+  body.bali-guest-theme .bali-mobile-about-dialog:not([open]){display:none!important}
+  body.bali-guest-theme .bali-mobile-about-dialog::backdrop{background:rgba(0,0,0,.76);backdrop-filter:blur(5px)}
+  .bali-mobile-about-dialog h2{margin:0 0 14px;font-size:21px;color:#fff}
+  .bali-mobile-about-dialog p{color:#cbd5cc;line-height:1.7;font-size:14px}
+  .bali-mobile-about-close{position:absolute;right:10px;top:8px;background:none;border:0;color:#fff;font-size:30px;width:37px;height:37px;cursor:pointer}
+  .bali-mobile-about-contacts{width:100%;min-height:43px;margin-top:12px;background:var(--bali-mobile-neon);color:#051006;border:0;border-radius:12px;font:800 13px Manrope,sans-serif;cursor:pointer}
+}
+@media(max-width:767px) and (max-height:690px){
+  body.bali-guest-theme .header .header-content{height:55px!important}
+  body.bali-guest-theme #homeSection .bali-home-inner{
+    grid-template-rows:minmax(0,1.2fr) minmax(0,1.08fr) minmax(0,.8fr) auto!important;
+    row-gap:5px!important;
+    padding-bottom:3px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map{
+    min-height:52px!important;height:52px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-home-social{min-height:38px!important;height:38px!important}
+  body.bali-guest-theme .bali-bottom-nav{height:61px!important}
+  body.bali-guest-theme .bali-mobile-home-hero h1{font-size:clamp(23px,7vw,34px)!important}
+  body.bali-guest-theme .bali-mobile-about-action{min-height:36px;margin-top:6px}
+}
+@media(max-width:767px) and (max-width:349px){
+  body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-event-info h3{font-size:9px!important}
+  body.bali-guest-theme #homeSection .bali-yandex-map .bali-yandex-address{font-size:10px!important}
+  body.bali-guest-theme #homeSection .bali-home-social .bali-pc-contact-label{font-size:8px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .bali-mobile-about-action,.bali-bottom-nav button{transition:none!important}
+}
+/* Hide nonmodal placeholder until explicitly opened. */
+.bali-mobile-about-dialog:not([open]){display:none!important}
