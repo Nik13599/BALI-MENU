@@ -210,3 +210,34 @@ body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="black"]
 body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="private"]{
   --bali-card-logo-filter:brightness(0) saturate(100%) invert(87%) sepia(89%) saturate(664%) hue-rotate(348deg) brightness(102%);
 }
+
+/* The official mask + handwritten BALI + NIGHTCLUB are ONE unaltered mark,
+   recreated from the supplied transparent reference. Never overlay a second seal. */
+body.bali-guest-theme #baliIdSection .bali-id-centre-art{
+  box-sizing:border-box!important;
+  min-height:0!important;
+  overflow:hidden;
+  justify-content:center!important;
+  align-content:center!important;
+  gap:0!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-centre-art img.bali-id-brand-master{
+  display:block!important;
+  box-sizing:border-box!important;
+  width:auto!important;
+  height:min(100%,210px)!important;
+  max-height:min(100%,210px)!important;
+  max-width:48%!important;
+  min-width:0!important;
+  margin:0 auto!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  filter:var(--bali-card-logo-filter,none)
+      drop-shadow(0 0 5px var(--bali-card-halo))!important;
+}
+@media(max-width:767px){
+  body.bali-guest-theme #baliIdSection .bali-id-centre-art img.bali-id-brand-master{
+    max-height:min(100%,155px)!important;
+    max-width:51%!important;
+  }
+}
