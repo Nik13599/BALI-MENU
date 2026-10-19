@@ -356,7 +356,9 @@ for(const [route,file] of [
     "Mobile navigation must show supplied BALI brush icon for "+route);
 }
 assert(referenceBottomNav.includes('.bali-bottom-nav button.active::after') &&
-  html.includes('bali-mobile-reference.css?v=20261019-4') &&
+  html.includes('bali-mobile-reference.css?v=20261019-5') &&
+  referenceBottomNav.includes('clamp(26px,7.8vw,36px)') &&
+  referenceBottomNav.includes('clamp(10px,3vw,14px)') &&
   html.includes('class="bali-nav-info-item" data-bali-nav="contacts"'),
   "Mobile navigation must retain four working actions, selected state and dot.");
 assert(source("bali-mobile-reference.css").includes('Floating "Корзина" shortcut on mobile') &&
