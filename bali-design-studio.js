@@ -17,6 +17,7 @@
   const labels={
     privilege:["BALI PRIVILEGE","Загрузите макет с пропорциями, указанными по фактическому размеру блока ниже. Размер зависит от экрана."],
     about:["О клубе BALI","Название, описание, фото 900×1400 / 1200×900 / 900×1200."],
+    mobileAbout:["Мобильный блок «О клубе»","До восьми фонов, порядок, публикация и загрузка изображений 1200×600."],
     merch:["BALI MERCH","Несколько товаров, статусы продажи, цены и адаптивные фотографии."],
     navigation:["Логотип и навигация","Тексты пунктов и собственные значки для кнопок."],
     calendar:["BALI календарь","Заголовки календаря и ссылка на редактор мероприятий."],
@@ -75,7 +76,7 @@
     if(!doc)return;
     doc.querySelectorAll("[data-bali-editor-selected]").forEach(node=>node.removeAttribute("data-bali-editor-selected"));
     const targets={
-      privilege:".bali-pc-hero",about:".bali-pc-about",merch:".bali-pc-merch",
+      privilege:".bali-pc-hero",about:".bali-pc-about",mobileAbout:".bali-mobile-home-hero",merch:".bali-pc-merch",
       calendar:".bali-pc-events-title",menuBanner:"#menuNavBtn",
       navigation:".bali-pc-navigation",contacts:".bali-pc-sidebar-contacts",
       events:"#eventsGrid",catalog:"#menuPage",profile:".header #accountBtn"
@@ -139,6 +140,7 @@
     if(!(target instanceof frame.contentWindow.Element))return null;
     const ruleOrder=[
       ["privilege",".bali-pc-hero"],
+      ["mobileAbout",".bali-mobile-home-hero"],
       ["about",".bali-pc-about"],
       ["merch",".bali-pc-merch"],
       ["menuBanner","#menuNavBtn, .bali-menu-heading-row"],
@@ -171,7 +173,7 @@
     doc.documentElement.dataset.baliStudioCapture="true";
     const style=doc.createElement("style");
     style.textContent=`
-      .bali-pc-hero:hover,.bali-pc-about:hover,.bali-pc-merch:hover,
+      .bali-pc-hero:hover,.bali-pc-about:hover,.bali-mobile-home-hero:hover,.bali-pc-merch:hover,
       #menuNavBtn:hover,.bali-pc-events-title:hover,.bali-pc-navigation:hover,
       .bali-pc-sidebar-contacts:hover,.bali-home-event-card:hover,
       .event-card:hover,#menuPage .menu-item:hover{
