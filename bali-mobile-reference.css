@@ -721,3 +721,99 @@
 /* Protect the SPA route state: the home grid must never appear behind Calendar or Menu. */
 body.bali-guest-theme #homeSection[hidden]{display:none!important}
 body.bali-guest-theme .bali-mobile-about-dialog:not([open]){display:none!important}
+
+
+/* 2026-10-19: compact hero and one consistent vertical rhythm, based on
+   the real mobile screenshot. The map/social buttons receive the saved space.
+   This adjusts geometry only; keep the site's existing background and data. */
+@media(max-width:767px){
+  body.bali-guest-theme #homeSection{
+    --bali-reference-block-gap:clamp(8px,1.25dvh,12px);
+  }
+  body.bali-guest-theme #homeSection .bali-home-inner{
+    /* A smaller first row, more room for the address and contact targets. */
+    grid-template-rows:
+      minmax(0,1.06fr)
+      minmax(0,1.16fr)
+      minmax(0,.88fr)
+      auto!important;
+    row-gap:var(--bali-reference-block-gap)!important;
+    gap:var(--bali-reference-block-gap) 0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero{
+    justify-content:center!important;
+    padding:clamp(3px,.7dvh,8px) clamp(7px,2vw,13px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero h1{
+    margin:0 0 4px!important;
+    font-size:clamp(19px,5.5vw,29px)!important;
+    line-height:1!important;
+    letter-spacing:.025em!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero p{
+    font-size:clamp(8px,1.85vw,10px)!important;
+    line-height:1.20!important;
+    letter-spacing:.19em!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-action{
+    min-height:clamp(34px,4.8dvh,43px)!important;
+    height:auto!important;
+    width:clamp(140px,41vw,186px)!important;
+    margin-top:clamp(5px,.95dvh,10px)!important;
+    padding:7px 13px!important;
+    font-size:clamp(10px,2.7vw,13px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-action>span{
+    font-size:22px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card{
+    gap:var(--bali-reference-block-gap)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map{
+    height:clamp(66px,10.1dvh,90px)!important;
+    min-height:clamp(66px,10.1dvh,90px)!important;
+    flex-shrink:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-home-social{
+    height:clamp(50px,7.6dvh,68px)!important;
+    min-height:clamp(50px,7.6dvh,68px)!important;
+    flex-shrink:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-social .bali-social-btn{
+    min-height:100%!important;
+    height:100%!important;
+  }
+}
+@media(max-width:767px) and (max-height:690px){
+  body.bali-guest-theme #homeSection{
+    --bali-reference-block-gap:7px;
+  }
+  body.bali-guest-theme #homeSection .bali-home-inner{
+    grid-template-rows:
+      minmax(0,1.0fr)
+      minmax(0,1.17fr)
+      minmax(0,.87fr)
+      auto!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero h1{
+    font-size:clamp(18px,5vw,24px)!important;
+    line-height:.97!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero p{
+    font-size:8px!important;
+    line-height:1.13!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-action{
+    min-height:33px!important;
+    margin-top:4px!important;
+    padding:5px 10px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-yandex-map{
+    height:58px!important;
+    min-height:58px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-contacts-card .bali-home-social{
+    height:44px!important;
+    min-height:44px!important;
+  }
+}
