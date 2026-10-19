@@ -1285,6 +1285,17 @@ assert(admin.includes('id="baliPrivilegeAssignForm"') &&
   privilegeClient.includes('setDoc(doc(db,"guestPrivileges",selected)') &&
   privilegeClient.includes('setDoc(doc(db,"privilegeRules","main")'),
   "Privilege statuses and assignment rules must be admin-editable without client self-upgrades.");
+const shareStyles=source("bali-new-features.css");
+assert(shareClient.includes('const actions=card.querySelector(".bali-event-actions")') &&
+  shareClient.includes('actions.append(button);') &&
+  !shareClient.includes('card.append(button);') &&
+  shareStyles.includes('#eventsSection #eventsGrid .bali-event-actions{') &&
+  shareStyles.includes('grid-template-columns:minmax(0,1.32fr) minmax(0,1fr)') &&
+  shareStyles.includes('position:static;') &&
+  !shareStyles.includes('#eventsGrid .bali-share-trigger{position:absolute') &&
+  html.includes('bali-share.js?v=20261019-4') &&
+  html.includes('bali-new-features.css?v=20261019-2'),
+  "Calendar Share must sit beside RSVP in the event footer, never overlay the poster");
 assert(shareClient.includes('canvas.width=WIDTH;canvas.height=HEIGHT') &&
   shareClient.includes('const WIDTH=1080,HEIGHT=1920;') &&
   shareClient.includes('navigator.canShare?.({files:[file]})') &&
