@@ -149,10 +149,14 @@ function friendlyError(error) {
 }
 
 els.button.addEventListener("click", () => {
-  // On desktop, registered guests manage their account in the persistent
-  // header dropdown. Guests who are not registered still open the login dialog.
-  if (profile && window.matchMedia("(min-width:1180px)").matches &&
-      window.BaliDesktopProfile?.toggle()) return;
+  // Registered guests always open the full-page BALI ID, on every device.
+  // Unregistered guests open the sign-in/profile-completion form.
+  if(user&&profile){
+    const link=document.querySelector('[data-bali-nav="profile"]');
+    if(link)link.click();
+    else window.location.hash="profile";
+    return;
+  }
   show();
 });
 els.close.addEventListener("click", hide);
