@@ -1,0 +1,72 @@
+/* BALI Share - event action, full-screen preview, no event layout displacement */
+.bali-share-trigger{
+  display:inline-flex;align-items:center;justify-content:center;
+  z-index:4;cursor:pointer;
+  border:1px solid rgba(255,255,255,.55);
+  border-radius:10px;
+  background:rgba(5,8,11,.72);
+  color:#fff;font:750 10px/1.1 Manrope,Inter,sans-serif;letter-spacing:.05em;
+  min-height:31px;padding:5px 9px;
+}
+#eventsGrid .event-card,#homeEventCarousel .bali-home-event-card{position:relative}
+#homeEventCarousel .bali-share-trigger{position:absolute;right:6px;bottom:6px;z-index:4;font-size:9px;min-height:27px;padding:4px 6px}
+#eventsGrid .bali-share-trigger{position:absolute;top:9px;right:9px;z-index:4}
+.bali-share-trigger:hover{background:#b9ff51;color:#0a110a;border-color:#b9ff51}
+.bali-share-dialog,.bali-smart-dialog{
+  position:fixed!important;top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;
+  transform:translate(-50%,-50%)!important;margin:0!important;
+  box-sizing:border-box!important;width:min(560px,calc(100vw - 22px))!important;
+  max-width:calc(100vw - 22px)!important;max-height:calc(100dvh - 28px)!important;
+  overflow-y:auto!important;padding:0!important;
+  border:1px solid #36433a;border-radius:19px;
+  background:#121817;color:#fff;
+  box-shadow:0 24px 85px #000c;
+}
+.bali-share-dialog:not([open]),.bali-smart-dialog:not([open]){display:none!important}
+.bali-share-dialog::backdrop,.bali-smart-dialog::backdrop{
+  background:rgba(0,0,0,.76);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.bali-share-window,.bali-smart-shell{display:grid;gap:14px;padding:clamp(14px,3vw,25px)}
+.bali-share-title,.bali-smart-shell header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.bali-share-title strong,.bali-smart-shell header strong{font:800 14px Manrope,Inter,sans-serif;letter-spacing:.06em}
+.bali-share-title button,.bali-smart-shell header button{border:1px solid #64756a;background:#282e2c;color:white;width:37px;height:37px;border-radius:50%;cursor:pointer}
+.bali-share-status,.bali-smart-status{font:550 12px/1.5 Manrope,Inter,sans-serif;color:#bfcac2;margin:0}
+.bali-share-preview{
+  display:block;width:auto;max-width:100%;height:auto;max-height:min(59dvh,570px);
+  aspect-ratio:9/16;object-fit:contain;justify-self:center;
+  border-radius:10px;border:1px solid #405249;
+}
+.bali-share-preview[hidden]{display:none!important}
+.bali-share-actions,.bali-smart-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bali-share-actions button,.bali-smart-actions button{
+  min-height:45px;padding:8px;border-radius:11px;
+  border:1px solid #a4c186;background:#b9ff51;color:#0c1609;
+  font:800 12px Manrope,Inter,sans-serif;cursor:pointer;
+}
+.bali-share-actions button:last-child,.bali-smart-actions button:first-child{background:#242e28;color:#fff;border-color:#546355}
+.bali-share-actions button:disabled,.bali-smart-actions button:disabled{opacity:.43;cursor:not-allowed}
+.bali-smart-dialog{width:min(910px,calc(100vw - 20px))!important}
+.bali-smart-previews{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}
+.bali-smart-device{display:grid;gap:7px;min-width:0}
+.bali-smart-device strong{font:700 clamp(10px,1.7vw,13px) Manrope,Inter,sans-serif;color:#dae9d6}
+.bali-smart-device img{width:100%;height:auto;display:block;max-height:42dvh;object-fit:cover;border-radius:9px;border:1px solid #526254;background:#1a201c}
+.bali-smart-range{display:grid;gap:5px;font:600 12px Manrope,Inter,sans-serif;color:#ccd9d0}
+.bali-smart-range input{accent-color:#b9ff51;width:100%}
+.bali-privilege-admin{display:grid;gap:14px}
+.bali-privilege-form,.bali-privilege-rules-fields,.bali-privilege-rules-editor form{display:grid;gap:13px}
+.bali-privilege-form label,.bali-privilege-rules-fields label{display:grid;gap:6px}
+.bali-privilege-form input,.bali-privilege-form select,.bali-privilege-form textarea,
+.bali-privilege-rules-fields textarea,.bali-privilege-rules-fields input{
+  display:block;width:100%;box-sizing:border-box;min-height:39px;padding:9px 12px;
+  border:1px solid #485749;border-radius:10px;color:white;background:#12191a;
+}
+.bali-privilege-rules-editor summary{cursor:pointer;color:#d0ffc0;font-weight:750;padding:12px 0}
+.bali-privilege-rules-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+.bali-privilege-rules-fields fieldset{display:grid;gap:10px;min-width:0;border:1px solid #415344;border-radius:11px;padding:13px}
+.bali-privilege-rules-fields legend{padding:0 8px;color:#caff8c;font-weight:750}
+.client-privilege-button{min-height:36px;border:1px solid #789365;color:#d6ffbd;background:#1e2a1f;border-radius:9px;cursor:pointer}
+@media(max-width:600px){
+  .bali-smart-previews{gap:5px}
+  .bali-smart-device img{max-height:33dvh}
+  .bali-privilege-rules-fields{grid-template-columns:1fr}
+}
