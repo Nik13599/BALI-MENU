@@ -23,6 +23,7 @@
 
   <link rel="stylesheet" href="bali-new-features.css?v=20261019-1">
   <link rel="stylesheet" href="bali-bonus-transfer-scaffold.css?v=20261019-1">
+  <link rel="stylesheet" href="bali-mobile-about-admin.css?v=20261019-1">
 </head>
 <body class="bali-admin-theme">
 <header class="topbar">
@@ -608,6 +609,24 @@
             <p class="status" id="baliHomeAboutStatus" role="status" aria-live="polite">Проверяем доступ…</p>
           </form>
         </section>
+        <section class="card bali-mobile-about-editor" data-design-editor="mobileAbout" hidden>
+          <div class="card-heading"><h3>Мобильный блок «О клубе»</h3><span class="tag">Фоны · телефон</span></div>
+          <p class="hint">Верхний блок главной страницы на телефоне: текст и кнопка «О КЛУБЕ» остаются на месте, изображения меняются позади них. Загрузите до 8 фонов, укажите порядок и включите нужные. На ПК оформление не меняется.</p>
+          <div class="bali-design-spec">
+            <div class="bali-design-spec-art bali-design-spec-art-landscape"><span>1200 × 600</span></div>
+            <div><strong>Фон телефона — рекомендуемый 1200 × 600 px</strong><small>Горизонтальное изображение 2:1; по краям возможна обрезка. Размещайте главный объект справа, поскольку слева поверх фона находится текст. PNG, JPEG, WebP, HEIC до 15 МБ.</small></div>
+          </div>
+          <form class="bali-design-form" id="baliMobileAboutUploadForm">
+            <label>Добавить несколько фонов
+              <input type="file" id="baliMobileAboutFiles" accept="image/png,image/jpeg,image/webp,image/heic,image/heif" multiple>
+            </label>
+            <p class="hint">Картинки автоматически сжимаются для сайта. Каждое изображение сохраняется отдельно, поэтому порядок и публикацию можно менять.</p>
+            <button type="submit" id="baliMobileAboutUploadBtn" class="primary">Загрузить выбранные фоны</button>
+            <p id="baliMobileAboutAdminStatus" class="status" role="status" aria-live="polite">Проверяем права администратора…</p>
+          </form>
+          <div class="bali-mobile-about-admin-list-heading"><h4>Загруженные фоны</h4><small>Видимые гостям фоны плавно сменяются каждые 8,5 секунды.</small></div>
+          <div id="baliMobileAboutAdminList" class="bali-mobile-about-admin-list" aria-live="polite"></div>
+        </section>
         <section class="card bali-design-merch-editor" data-design-editor="merch" hidden>
           <div class="card-heading"><h3>BALI MERCH · Витрина</h3><span class="tag">Несколько товаров</span></div>
           <p class="hint">Добавляйте любое количество карточек мерча, загружайте фотографии, указывайте наличие и цену. На главной карточки показываются по очереди. Черновики гостям не видны.</p>
@@ -1066,5 +1085,6 @@
 <script src="bali-icon-atelier.js?v=20261017-58" defer></script>
 <script type="module" src="bali-theme.js?v=20261017-60"></script>
   <script type="module" src="bali-bonus-transfer-scaffold.js?v=20261019-1"></script>
+  <script type="module" src="bali-mobile-about-admin.js?v=20261019-1"></script>
 </body>
 </html>
