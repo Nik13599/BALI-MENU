@@ -69,4 +69,6 @@ jobs:
           node scripts/verify-bali-bank.mjs
 
       - name: Проверка защищённых переводов BALI ID
-        run: node scripts/verify-bali-transfers.mjs
+        run: |
+          node scripts/verify-bali-transfers.mjs
+          node scripts/test-bali-backend.mjs
