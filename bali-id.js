@@ -11,7 +11,7 @@ const DEFAULTS={
   Black:{description:"Специальные привилегии клуба.",criteria:"Назначает администратор.",benefits:[]},
   Private:{description:"Индивидуальные условия BALI.",criteria:"Назначает администратор.",benefits:[]}
 };
-let privilegedUnsub=null,session=0,profile=null,rules=DEFAULTS,privilege=null;
+let privilegedUnsub=null,session=0,profile=null,rules=DEFAULTS,privilege=null,activeUid=null;
 const displayNumber=n=>Number.isSafeInteger(n)&&n>0?String(n).padStart(6,"0"):"— — — — — —";
 const cleanText=x=>typeof x==="string"?x.trim():"";
 const setText=(id,value)=>{if($(id))$(id).textContent=value;};
@@ -59,11 +59,17 @@ $("baliIdSignOut")?.addEventListener("click",()=>$("profileLogoutBtn")?.click())
 window.addEventListener("bali:auth-state",({detail})=>{
   profile=detail?.registered?{name:detail.name}:null;
   render();
+  // A guest may complete the profile after the first Google sign-in event.
+  // Allocate immediately after successful registration, without a reload.
+  const user=auth.currentUser;
+  if(detail?.registered&&user?.emailVerified&&activeUid!==user.uid)
+    void initializeForUser(user);
 });
-onAuthStateChanged(auth,async user=>{
+async function initializeForUser(user){
+  if(user?.uid===activeUid)return;
   const run=++session;
   privilegedUnsub?.();privilegedUnsub=null;
-  profile=null;privilege=null;rules=DEFAULTS;
+  profile=null;privilege=null;rules=DEFAULTS;activeUid=null;
   setText("baliIdStatus","");setText("baliCardNumber","— — — — — —");
   if(!user||!user.emailVerified){render();return;}
   try{
@@ -71,7 +77,7 @@ onAuthStateChanged(auth,async user=>{
     if(run!==session||auth.currentUser?.uid!==user.uid)return;
     const profileData=window.BaliAuth?.getProfile?.();
     if(!profileData){render();return;}
-    profile=profileData;render();
+    activeUid=user.uid;profile=profileData;render();
     setText("baliIdStatus","Загружаем вашу карту...");
     // Register once: the counter and guest number form one atomic transaction.
     await allocate(user.uid,run);
@@ -98,4 +104,5 @@ onAuthStateChanged(auth,async user=>{
   }catch(e){
     if(run===session)setText("baliIdStatus","Не удалось загрузить привилегии: "+(e.code||"ошибка сети"));
   }
-});
+}
+onAuthStateChanged(auth,initializeForUser);
