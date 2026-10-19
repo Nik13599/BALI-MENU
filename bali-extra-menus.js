@@ -104,8 +104,7 @@ const infoSvg=()=>{
   svg.append(circle,path);return svg;
 };
 function drawTeaItem(item){
-  // Use exactly the kitchen menu-item hierarchy and shared kitchen typography,
-  // with only the order controls omitted (their footprint is kept by CSS).
+  // Share kitchen card markup and typography, but render a compact tea-specific size.
   const card=node("article","menu-item bali-tea-item menu-item--no-image");
   const info=node("button","menu-details-btn");
   const hasDetails=Boolean([item.description,item.taste,item.ingredients,item.brewing].some(Boolean));
@@ -120,15 +119,13 @@ function drawTeaItem(item){
   const header=node("div","menu-item-header");
   header.append(node("h3","menu-item-name",item.name));
   header.append(node("span","menu-item-price","BYN "+item.price1.toFixed(2)));
+  // Compact catalog shows just name, price and the ⓘ button.
+  // Origin, tasting notes, ingredients and brewing stay in openTeaInfo().
   inner.append(header);
-  inner.append(node("p","menu-item-description",item.description||""));
   if(item.volume1&&item.volume1!=="Порция"&&item.volume1!=="Цена")
     inner.append(node("span","menu-item-weight",item.volume1));
   if(item.volume2)
     inner.append(node("span","menu-item-weight",item.volume2+" — BYN "+item.price2.toFixed(2)));
-  const placeholder=node("div","bali-tea-actions-spacer");
-  placeholder.setAttribute("aria-hidden","true");
-  inner.append(placeholder);
   card.append(info,inner);
   return card;
 }
