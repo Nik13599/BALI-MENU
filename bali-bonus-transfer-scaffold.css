@@ -1,0 +1,54 @@
+/* Hidden-from-guests preparatory transfers panel, administrator/director only.
+   Execution is disabled until a server-transaction backend is deployed. */
+.bali-transfer-scaffold{
+  box-sizing:border-box;
+  width:100%;
+  padding:clamp(10px,2vw,17px);
+  background:#12191a;
+  border:1px solid rgba(185,255,81,.24);
+  border-radius:16px;
+  color:#e6efe7;
+}
+.bali-transfer-scaffold h3{
+  margin:0 0 9px;
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+  font-weight:800;letter-spacing:.01em;
+}
+.bali-transfer-scaffold h3 small{
+  display:inline-block;
+  font:800 10px/1.1 Manrope,Inter,sans-serif;
+  letter-spacing:.12em;
+  padding:6px 9px;border:1px solid #b8ff51;
+  border-radius:100px;color:#b8ff51;
+}
+.bali-transfer-scaffold p{
+  margin:10px 0;color:#b9c7bc;font-size:13px;line-height:1.5;
+}
+.bali-transfer-scaffold .bali-transfer-fields{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px 14px;
+}
+.bali-transfer-scaffold label{
+  display:grid;gap:6px;margin:8px 0;
+  color:#eef4ee;font-size:12px;
+}
+.bali-transfer-scaffold input,
+.bali-transfer-scaffold select{
+  box-sizing:border-box;width:100%;min-width:0;
+  background:#202a27;border:1px solid #65776b;
+  border-radius:10px;color:white;padding:11px;
+  font:500 14px Manrope,Inter,sans-serif;
+}
+.bali-transfer-scaffold [data-bali-transfer-submit]{
+  margin:13px 0 0;
+  min-height:45px;padding:12px 18px;
+  color:#abb6ab;background:#2d3630;
+  border:1px solid #4b574a;border-radius:10px;
+  cursor:not-allowed;font:780 13px Manrope,Inter,sans-serif;
+}
+.bali-transfer-scaffold [data-bali-transfer-submit]:disabled{opacity:.8}
+.bali-transfer-scaffold .bali-transfer-footnote{font-size:11px;color:#9cae9e}
+@media(max-width:590px){
+  .bali-transfer-scaffold .bali-transfer-fields{grid-template-columns:minmax(0,1fr)}
+}
