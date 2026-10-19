@@ -18,7 +18,7 @@ if(!scene||!track||!front||!back||!dialog||!showBtn||!image){
 // Mouse click remains available on desktop, but tapping the card on a phone
 // does NOT flip it. Keyboard controls work on every device.
 const reducedMotion=window.matchMedia("(prefers-reduced-motion:reduce)");
-let isFlipped=false,gesture=null,suppressTouchClickUntil=0,settling=false;
+let isFlipped=false,gesture=null,suppressTouchClickUntil=0,settling=false,settleTimer=null;
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 const dragDistance=()=>clamp(scene.clientWidth*.58,150,245);
 
@@ -35,6 +35,7 @@ function setFaceState(toBack,{focus=false}={}){
   if(focus)(isFlipped?back:front).focus({preventScroll:true});
 }
 function normalizeRotation(){
+  if(settleTimer){clearTimeout(settleTimer);settleTimer=null;}
   // -180deg and +180deg have the same visible orientation. Normalize without
   // a transition, so the next slow drag always starts at the correct angle.
   track.style.transition="none";
@@ -46,12 +47,13 @@ function normalizeRotation(){
 }
 function flip(toBack,{focus=false}={}){
   gesture=null;
+  if(settleTimer){clearTimeout(settleTimer);settleTimer=null;}
   settling=false;
   track.style.transition="";
   track.style.transform="";
   setFaceState(toBack,{focus});
 }
-function settleDrag(toBack,targetAngle){
+function settleDrag(toBack,targetAngle,currentAngle){
   setFaceState(toBack);
   settling=true;
   // Force the browser to commit the last finger-controlled angle before
@@ -59,7 +61,10 @@ function settleDrag(toBack,targetAngle){
   void track.offsetWidth;
   track.style.transition="";
   track.style.transform="rotateY("+targetAngle+"deg)";
-  if(reducedMotion.matches)normalizeRotation();
+  // Full-distance drags and reduced-motion preference can finish without
+  // a transitionend event, so never leave the card locked in settling state.
+  if(reducedMotion.matches||Math.abs(currentAngle-targetAngle)<.4)normalizeRotation();
+  else settleTimer=setTimeout(()=>{if(settling&&!gesture)normalizeRotation();},850);
 }
 track.addEventListener("transitionend",event=>{
   if(event.target===track&&event.propertyName==="transform"&&settling&&!gesture){
@@ -115,8 +120,9 @@ scene.addEventListener("pointermove",event=>{
   // points toward the nearest 0deg position for the drag direction.
   const base=isFlipped?(dx>=0?-180:180):0;
   const progress=clamp(dx/dragDistance(),-1,1);
+  g.angle=base+progress*180;
   track.style.transition="none";
-  track.style.transform="rotateY("+(base+progress*180)+"deg)";
+  track.style.transform="rotateY("+g.angle+"deg)";
 });
 function endGesture(event,cancelled=false){
   const g=gesture;
@@ -130,13 +136,13 @@ function endGesture(event,cancelled=false){
   const progress=Math.abs(dx)/dragDistance();
   // Slow deliberate drags complete when the card moves almost half a turn;
   // fast, intentional flicks also work with a shorter travel distance.
-  const fast=Math.abs(dx)>=24&&Math.abs(g.velocity)>=.5;
+  const fast=Math.abs(dx)>=24&&Math.abs(g.velocity)>=.5&&performance.now()-g.lastTime<110;
   const completed=!cancelled&&(progress>=.42||fast);
   const next=completed?!isFlipped:isFlipped;
   const target=completed
     ?(isFlipped?0:direction*180)
     :(isFlipped?-direction*180:0);
-  settleDrag(next,target);
+  settleDrag(next,target,g.angle??(isFlipped?180:0));
 }
 scene.addEventListener("pointerup",event=>endGesture(event));
 scene.addEventListener("pointercancel",event=>endGesture(event,true));
