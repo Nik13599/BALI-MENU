@@ -149,7 +149,7 @@ function friendlyError(error) {
 }
 
 els.button.addEventListener("click", () => {
-  // Registered guests always open the full-page BALI ID, on every device.
+  // The user icon opens profile. BALI ID lives on its own page.
   // Unregistered guests open the sign-in/profile-completion form.
   if(user&&profile){
     const link=document.querySelector('[data-bali-nav="profile"]');
