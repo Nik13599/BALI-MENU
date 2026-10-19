@@ -1,6 +1,7 @@
 {
   "firestore": {
-    "rules": "firestore.rules"
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   },
   "hosting": {
     "public": ".",
@@ -16,7 +17,14 @@
       "*.json",
       "*.yaml",
       "*.yml",
-      "**/*.test.js"
+      "**/*.test.js",
+      "functions/**"
     ]
-  }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "bali-id"
+    }
+  ]
 }

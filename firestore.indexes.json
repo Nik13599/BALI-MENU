@@ -1,0 +1,19 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "walletOperations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "guestUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
