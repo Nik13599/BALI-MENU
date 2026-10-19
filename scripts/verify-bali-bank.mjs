@@ -30,7 +30,7 @@ assert(backend.includes('const transferId=digest(uid+":"+requestId)') &&
   "Transfer must be idempotent when the client retries");
 assert(backend.includes('typeof value!=="string"||!/^\\d{6}$/.test(value)'),
   "Receiver must have exactly 6-digit BALI ID");
-assert(backend.includes('transferable===true')&&backend.includes("grant.remaining-=part.quantity"),
+assert(backend.includes('g.transferable!==true')&&backend.includes("grant.remaining-=part.quantity"),
   "Do not transfer unlimited, expired or unavailable benefits");
 assert(backend.includes("where(\"guestUid\",\"==\",uid)") &&
   backend.includes('orderBy("createdAt","desc")') &&
