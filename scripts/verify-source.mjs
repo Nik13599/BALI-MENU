@@ -59,27 +59,32 @@ const desktopLayoutCss=source("bali-desktop-fullwidth.css");
 
 const barPublic=source("bali-bar-menu.js");
 const barCss=source("bali-bar-menu.css");
-// On phones the four menu maps use accessible icon-only square controls,
-// not the previous two-row arrangement of wide text buttons.
+// All devices use the four icons traced from the supplied BALI brand reference.
+// Keep the real menu route buttons (and their age gates) accessible.
+const referenceIcons=source("bali-menu-reference-icons.css");
 for(const [key,label] of [
   ["kitchen","Меню кухни"],["bar","Барная карта"],
   ["hookah","Кальянная карта"],["tea","Чайная карта"]
 ]){
   const tab=html.match(new RegExp('<button[^>]*data-bali-menu-mode="'+key+'"[^>]*>[\\s\\S]*?<\\/button>'));
+  const file="assets/menu-icons/bali-"+key+".svg";
   assert(tab && tab[0].includes('aria-label="'+label+'"') &&
     tab[0].includes('bali-menu-mode-icon') &&
     tab[0].includes('bali-menu-mode-label') &&
-    tab[0].includes('<svg') && tab[0].includes('viewBox="0 0 48 48"'),
-    "Mobile icon button missing or not accessible: "+key);
+    tab[0].includes('src="'+file+'"') &&
+    tab[0].includes('aria-pressed=') &&
+    source(file).includes('viewBox='),
+    "Menu reference icon missing or inaccessible: "+key);
 }
-assert(barCss.includes('@media(max-width:767px)') &&
-  barCss.includes('flex-flow:row nowrap!important') &&
-  barCss.includes('flex:0 0 46px!important') &&
-  barCss.includes('.bali-menu-mode-label{') &&
-  barCss.includes('display:none!important;') &&
-  barCss.includes('.bali-menu-mode-btn[hidden]{display:none!important}') &&
-  barCss.includes('.bali-menu-mode-btn.is-active{'),
-  "Four compact mobile icon-only menu switches must stay on a single row and support hidden/selected states");
+assert(html.includes('bali-menu-reference-icons.css?v=') &&
+  html.includes('<div class="bali-menu-search container" hidden aria-hidden="true">') &&
+  referenceIcons.includes('#menuPage .bali-menu-search') &&
+  referenceIcons.includes('display:none!important;') &&
+  referenceIcons.includes('.bali-menu-mode-btn.is-active') &&
+  referenceIcons.includes('.bali-menu-mode-btn[hidden]') &&
+  referenceIcons.includes('filter:brightness(0) invert(1)') &&
+  barCss.includes('.bali-menu-mode-btn[hidden]{display:none!important}'),
+  "Menu switches must use four reference silhouettes, keep selected/hidden states, and hide guest search.");
 // PC-only improvements: menu tabs and calendar title align with the top of the
 // BALI sidebar logo; six fully functional cards per dish row; fading event edges.
 assert(html.includes('bali-pc-reference.css?v=') &&
