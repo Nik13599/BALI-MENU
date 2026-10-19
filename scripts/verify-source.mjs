@@ -1227,8 +1227,8 @@ const smartClient=source("bali-smart-design.js");
 assert(html.includes('id="baliCardNumber"') &&
   html.includes('id="baliProfileSettings"') &&
   html.includes('id="baliBenefitsList"') &&
-  html.includes('bali-id.js?v=20261019-1') &&
-  html.includes('bali-share.js?v=20261019-1') &&
+  html.includes('bali-id.js?v=20261019-2') &&
+  html.includes('bali-share.js?v=20261019-2') &&
   source("auth.js").includes('data-bali-nav="profile"') &&
   idClient.includes('runTransaction(db,async tx=>') &&
   idClient.includes('doc(db,"baliCounters","guests")') &&
@@ -1252,7 +1252,7 @@ assert(shareClient.includes('canvas.width=WIDTH;canvas.height=HEIGHT') &&
   smartClient.includes('bali-smart-previews') &&
   smartClient.includes('data-smart-crop') &&
   smartClient.includes('data-smart-original') &&
-  admin.includes('bali-smart-design.js?v=20261019-1'),
+  admin.includes('bali-smart-design.js?v=20261019-2'),
   "Share must export 9:16 stories and Smart Design must offer previews and non-destructive crop.");
 
 console.log("BALI source checks passed: " + ids.length + " required UI IDs, 18 priced menu items and security checks.");
