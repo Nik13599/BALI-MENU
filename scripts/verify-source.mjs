@@ -1318,6 +1318,38 @@ assert(html.includes('bali-id-tiers.css?v=') &&
   directorClient.includes('setDoc(doc(db,"guestPrivileges",selectedUid)') &&
   directorHtml.includes('id="directorAssignForm"'),
   "Six-category BALI ID must preserve the default Member and restrict upgrades to director/admin");
+// Exact brand asset on all ID categories; transfer feature is prepared but
+// categorically unavailable to visitors and untrusted browser clients.
+const idLogo=source("assets/bali-id-full-logo.svg");
+const futureTransfer=source("bali-bonus-transfer-scaffold.js");
+const directorTransfer=source("director-id.html");
+assert(idLogo.includes('<svg') &&
+  idLogo.includes('fill-rule="evenodd"') &&
+  idLogo.includes('<path fill="white"') &&
+  idLogo.includes('viewBox="0 0 450 531"') &&
+  idLogo.length>5000 &&
+  html.includes('src="assets/bali-id-full-logo.svg"') &&
+  !html.includes('class="bali-id-seal"') &&
+  !html.includes('✺') &&
+  tierCss.includes('img.bali-id-brand-master') &&
+  tierCss.includes('var(--bali-card-logo-filter'),
+  "BALI ID must display the supplied complete mask, BALI and NIGHTCLUB mark on all tiers");
+assert(!html.includes('data-bali-transfer-form') &&
+  !html.includes('bali-bonus-transfer-scaffold.js') &&
+  admin.includes('data-bali-transfer-form') &&
+  admin.includes('data-bali-transfer-submit disabled') &&
+  directorTransfer.includes('data-bali-transfer-form') &&
+  directorTransfer.includes('data-bali-transfer-submit disabled') &&
+  futureTransfer.includes('enabled: false') &&
+  futureTransfer.includes('endpoint: null') &&
+  futureTransfer.includes('fromCardNumber') &&
+  futureTransfer.includes('toCardNumber') &&
+  !futureTransfer.includes('httpsCallable(') &&
+  !futureTransfer.includes('setDoc(') &&
+  rules.includes('match /guestWallets/{uid}') &&
+  rules.includes('match /bonusTransfers/{transferId}') &&
+  source("BALI_BONUS_TRANSFERS_RESERVED.md").includes('idempotencyKey'),
+  "Future BALI ID bonus transfers must be scaffolded for admin/director, disabled everywhere, and inaccessible to guests");
 const shareStyles=source("bali-new-features.css");
 assert(shareClient.includes('const actions=card.querySelector(".bali-event-actions")') &&
   shareClient.includes('actions.append(button);') &&
