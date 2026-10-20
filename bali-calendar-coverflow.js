@@ -27,10 +27,13 @@ function measure(){
   const area=grid.getBoundingClientRect();
   if(area.width<30||area.height<30)return;
   const phone=mobile();
-  const width=Math.max(92,Math.floor(Math.min(
-    phone?260:310,area.width*(phone?.58:.46),
-    Math.max(92,area.height-(phone?84:104))
-  )));
+  // Use the whole available LEFT desktop column and all phone width.
+  // A large central SQUARE remains fully visible above two action buttons.
+  const width=Math.floor(Math.min(
+    phone?340:500,
+    area.width*(phone?.64:.55),
+    Math.max(100,area.height-(phone?65:76))
+  ));
   if(slideWidth!==width){
     slideWidth=width;
     grid.style.setProperty("--bali-event-slide-width",width+"px");
@@ -41,35 +44,44 @@ function render(){
   const entries=cards(),count=entries.length;
   if(!count){prev.disabled=true;next.disabled=true;return;}
   const stageWidth=grid.clientWidth||500;
-  const firstSlot=Math.min(stageWidth*(mobile()?.38:.36),slideWidth*(mobile()?.80:.77));
+  const angle=reduce.matches?0:58; // Stronger turn than 45°, as in reference
+  // Keep the first side poster distinct from the centre, with a small gap,
+  // while letting its far edge leave the stage naturally (reference crop).
+  const projectedHalf=slideWidth*Math.cos(angle*Math.PI/180)*.9*.5;
+  const gap=mobile()?6:Math.max(10,stageWidth*.012);
+  const slot=Math.max(stageWidth*(mobile()?.41:.395),
+    slideWidth*.5+projectedHalf+gap);
+  // Hard cap on visible poster count: one central + at most one each side.
+  // All other events remain mounted in the queue but are invisible.
+  const center=Math.round(position);
+  const first=Math.max(0,center-1),last=Math.min(count-1,center+1);
   for(const [index,card] of entries.entries()){
-    // dist is fractional while a finger moves: positions follow it continuously.
+    const visible=index>=first&&index<=last;
     const dist=index-position,a=Math.abs(dist),sign=Math.sign(dist);
-    const spread=Math.min(2.7,Math.max(0,a));
-    const x=sign*(Math.min(1,spread)*firstSlot+
-      Math.min(1,Math.max(0,spread-1))*slideWidth*.27+
-      Math.max(0,spread-2)*slideWidth*.09);
-    const turn=reduce.matches?0:-sign*45*Math.min(1,spread);
-    const depth=reduce.matches?0:-Math.min(170,spread*77);
-    const scale=clamp(1-Math.min(1,spread)*.13-Math.max(0,spread-1)*.07,.69,1);
-    const opacity=clamp(1-Math.min(1,spread)*.17-Math.max(0,spread-1)*.12,.44,1);
+    const extra=Math.min(.85,Math.max(0,a-1));
+    const x=sign*(slot*Math.min(1,a)+extra*slideWidth*.18);
+    const turn=reduce.matches?0:-sign*angle*Math.min(1,a);
+    const depth=reduce.matches?0:-Math.min(120,a*66);
+    const scale=Math.max(.84,1-Math.min(1,a)*.1-extra*.08);
+    const fade=Math.max(.12,1-Math.min(1,a)*.15-extra*.75);
+    const selected=index===center;
     card.style.setProperty("--bali-stage-x",x.toFixed(2)+"px");
     card.style.setProperty("--bali-stage-angle",turn.toFixed(2)+"deg");
     card.style.setProperty("--bali-stage-depth",depth.toFixed(2)+"px");
     card.style.setProperty("--bali-stage-scale",scale.toFixed(3));
-    card.style.setProperty("--bali-stage-opacity",opacity.toFixed(3));
-    card.style.setProperty("--bali-stage-brightness",clamp(1-a*.12,.66,1).toFixed(3));
-    card.style.zIndex=String(500-Math.round(a*25));
-    const selected=index===activeIndex;
+    card.style.setProperty("--bali-stage-opacity",visible?fade.toFixed(3):"0");
+    card.style.setProperty("--bali-stage-brightness",Math.max(.69,1-a*.14).toFixed(3));
+    card.style.zIndex=String(500-Math.round(a*40));
+    card.style.visibility=visible?"visible":"hidden";
+    card.style.pointerEvents=selected&&visible?"auto":"none";
+    card.setAttribute("aria-hidden",String(!visible));
     card.classList.toggle("is-active",selected);
-    card.classList.toggle("is-neighbor",Math.abs(index-activeIndex)===1);
+    card.classList.toggle("is-neighbor",visible&&!selected);
     card.setAttribute("aria-current",selected?"true":"false");
-    const image=card.querySelector(".bali-event-poster-wrap");
-    if(image)image.setAttribute("aria-label",
-      (selected?"Подробнее: ":"Выбрать афишу: ")+
+    const poster=card.querySelector(".bali-event-poster-wrap");
+    if(poster)poster.setAttribute("aria-label",
+      (selected?"Подробнее: ":"Афиша: ")+
       (card.querySelector(".bali-event-info h3")?.textContent||"мероприятие"));
-    // All previously passed posters remain in the stage, just behind the
-    // nearest left/right neighbors; none are removed or set display:none.
   }
   prev.disabled=activeIndex===0;
   next.disabled=activeIndex===count-1;
@@ -251,7 +263,7 @@ const decorate=()=>{
       const b=document.createElement("button");
       b.type="button";b.className="event-share";b.title="Поделиться мероприятием";
       b.setAttribute("aria-label","Поделиться мероприятием");
-      b.textContent="↥";
+      b.textContent="↥ Поделиться";
       b.addEventListener("click",()=>void share(card));
       actions.append(b);
     }
