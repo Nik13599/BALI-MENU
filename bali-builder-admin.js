@@ -144,6 +144,23 @@ function initialize(){
  trail.className="bali-builder-layer-trail";
  trail.setAttribute("aria-label","Иерархия элементов страницы");
  inspector.append(trail);
+ const managed=document.createElement("section");
+ managed.id="baliBuilderManagedPromo";
+ managed.className="bali-builder-managed-promo";
+ managed.hidden=true;
+ managed.innerHTML='<strong>Специальное предложение BALI</strong>'+
+  '<p>Размер, расположение и эффекты блока редактируются ниже. Сам баннер, подпись, кнопка «Забронировать заранее», отдельные изображения для телефона/планшета и способы связи хранятся в разделе спецпредложений.</p>'+
+  '<button type="button">Редактировать баннер и кнопку ↗</button>';
+ managed.querySelector("button").addEventListener("click",()=>{
+  if(!authorized)return;
+  const hero=liveNode()?.closest(".bali-pc-hero");
+  const id=hero?.dataset.baliOfferId;
+  if(!id){msg("Дождитесь загрузки спецпредложения, затем выберите баннер.");return;}
+  toggle(false);
+  window.BaliDesignStudio?.select?.("privilege");
+  window.dispatchEvent(new CustomEvent("bali:admin:edit-promo",{detail:{id}}));
+ });
+ inspector.append(managed);
  const content=document.createElement("div");content.className="bali-builder-content";
  content.innerHTML='<label class="bali-builder-field"><span>Текст элемента</span><textarea data-builder-main="text" rows="3" placeholder="Новый текст"></textarea></label>'+
  '<label class="bali-builder-field"><span>Переход кнопки / ссылки</span><select data-builder-main="link"></select><input data-builder-main="url" type="text" placeholder="https://... или tel:+375..." hidden></label>'+
@@ -311,7 +328,7 @@ function renderLayerTrail(){
   button.textContent=name.length>38?name.slice(0,37)+"…":name;
   button.title="Выбрать "+name;
   button.setAttribute("aria-current",i===parents.length-1?"true":"false");
-  button.addEventListener("click",()=>choose(element));
+  button.addEventListener("click",()=>choose(element,{deep:true}));
   trail.append(button);
   if(i<parents.length-1){
    const sep=document.createElement("span");sep.textContent="›";sep.setAttribute("aria-hidden","true");
@@ -322,6 +339,19 @@ function renderLayerTrail(){
 function renderInspector(){
  const node=liveNode(),item=getItem();
  renderLayerTrail();
+ const managed=inspector.querySelector("#baliBuilderManagedPromo");
+ if(managed){
+  const hero=node?.closest?.(".bali-pc-hero");
+  const isManaged=Boolean(hero?.dataset.baliManagedPromo==="true"&&selection?.scope==="main");
+  managed.hidden=!isManaged;
+  if(isManaged){
+   const id=hero.dataset.baliOfferId;
+   managed.querySelector("strong").textContent=id==="bali-new-year-2026"?
+     "Новогодние корпоративы · BALI":"Рекламный баннер · BALI PRIVILEGE";
+   managed.querySelector("button").textContent=id==="bali-new-year-2026"?
+     "Редактировать новогодний баннер ↗":"Редактировать это предложение ↗";
+  }
+ }
  inspector.querySelector("#baliBuilderSelected").textContent=selection?(selection.id?"Новый "+(item?.kind||"элемент"):node?.tagName+" · "+(node?.classList?.[0]||node?.id||"элемент")):"Выберите элемент на сайте";
  inspector.querySelector("#baliBuilderSelector").textContent=selection?.id?selection.id:selection?.selector||"Нажмите на любой текст, кнопку, карточку или изображение";
  const text=inspector.querySelector('[data-builder-main="text"]');
@@ -421,8 +451,11 @@ function attachOverlay(){
  d.addEventListener("scroll",positionOverlay,{passive:true,capture:true});
  d.defaultView.addEventListener("resize",positionOverlay,{passive:true});
 }
-function choose(target){
+function choose(target,{deep=false}={}){
  const d=target?.ownerDocument;if(!d||!target)return;
+ // Promo artwork is often covered by transparent booking hotspots.
+ // Select the entire campaign on normal click; Alt-click selects a nested layer.
+ if(!deep&&d===frameDoc())target=target.closest(".bali-pc-hero")||target;
  const scope=d===aboutDoc()?"about":"main";
  const custom=target.closest("[data-bali-builder-id]");
  if(custom)selection={id:custom.dataset.baliBuilderId,selector:null,scope};
@@ -451,7 +484,7 @@ function attachInteractions(d){
   if(!enabled||event.target===inlineEditor)return;
   event.preventDefault();event.stopImmediatePropagation();
   if(event.target.closest(".bali-builder-selection-overlay"))return;
-  choose(event.target);
+  choose(event.target,{deep:event.altKey});
  },true);
  d.addEventListener("dblclick",event=>{
   if(!enabled||event.target===inlineEditor)return;
