@@ -407,9 +407,9 @@
           <div>
             <div class="eyebrow">КАЛЕНДАРЬ</div>
             <h2 id="eventsHeading">Мероприятия</h2>
-            <p>Управляйте датами и временем закрытия предзаказов.</p>
+            <p>До трёх афиш и самостоятельных списков «Хочу пойти» на одну дату.</p>
           </div>
-          <button type="button" id="addEventBtn" class="primary">+ Новая дата</button>
+          <button type="button" id="addEventBtn" class="primary">+ Новое мероприятие</button>
         </div>
         <div class="editor-layout">
           <section class="card catalog-form-card" id="eventEditorCard">
@@ -446,6 +446,7 @@
                 <p class="hint">Афиша автоматически подгоняется под формат 4:5.</p>
               </div>
               <label class="check availability-toggle"><input id="eventOpen" type="checkbox" checked><span>Разрешить предзаказы</span></label>
+              <p class="hint" id="eventSlotPreorderHint" hidden>Предзаказы пока привязаны к дате и доступны только для мероприятия №1. У мероприятий №2 и №3 остаются собственные афиши, время, цвет и «Хочу пойти».</p>
               <div class="actions">
                 <button type="submit" class="primary">Сохранить мероприятие</button>
                 <button id="clearEvent" type="button">Сбросить</button>
