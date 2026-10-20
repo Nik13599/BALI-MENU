@@ -1,0 +1,30 @@
+/* BALI ID: Resident Bali - DJ, special staff category. */
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="residentdj"]{
+  --bali-card-ink:#ffd29a;
+  --bali-card-main:#ff8c47;
+  --bali-card-shine:rgba(255,93,26,.70);
+  --bali-card-halo:rgba(242,65,12,.42);
+  --bali-card-body:#1b0809;
+  --bali-card-bloom:rgba(253,115,22,.52);
+  --bali-card-ring:rgba(255,136,42,.43);
+  --bali-card-logo-filter:brightness(0) saturate(100%) invert(73%) sepia(82%) saturate(1315%) hue-rotate(339deg) brightness(107%);
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="residentdj"] .bali-id-card{
+  background:radial-gradient(ellipse at 83% -12%,rgba(255,132,35,.30),transparent 56%),
+    radial-gradient(ellipse at 10% 110%,rgba(232,33,13,.25),transparent 57%),
+    linear-gradient(135deg,#080508,#230b0b 61%,#090509)!important;
+  border-color:var(--bali-card-main)!important;
+  box-shadow:0 11px 24px rgba(0,0,0,.48),0 0 0 1px var(--bali-card-ring),
+    0 0 18px var(--bali-card-shine),inset 0 0 17px var(--bali-card-halo)!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="residentdj"] #baliCardTier,
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="residentdj"] #baliCardHeaderTier{
+  font-weight:850!important;font-size:clamp(10px,2.15vw,15px)!important;
+  letter-spacing:.015em!important;white-space:nowrap;
+}
+@media(max-width:767px){
+ body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="residentdj"] #baliCardTier,
+ body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="residentdj"] #baliCardHeaderTier{
+  font-size:clamp(9px,2.5vw,12px)!important;
+ }
+}

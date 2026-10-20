@@ -6,7 +6,8 @@ import {getFirestore,doc,getDoc,setDoc,collection,query,where,limit,getDocs,serv
 import {getFunctions,httpsCallable} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-functions.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
-const TIERS=["Member","Silver","Gold","Platinum","Black","Private"];
+const TIERS=["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ"];
+const displayTier=tier=>tier==="ResidentDJ"?"RESIDENT BALI - DJ":tier.toUpperCase();
 let authorized=false,selectedUid=null,selectedGuestName="",selectedId="",isBusy=false,authRound=0;
 function status(id,text){$(id).textContent=text;}
 function resetGuest(){
@@ -74,7 +75,7 @@ async function findGuest(){
     const personal=privilege.data()?.benefits;
     $("directorGuestName").textContent=selectedGuestName;
     $("directorGuestId").textContent="BALI ID № "+selectedId;
-    $("directorGuestCurrent").textContent="Текущая категория: "+tier.toUpperCase();
+    $("directorGuestCurrent").textContent="Текущая категория: "+displayTier(tier);
     $("directorTier").value=TIERS.includes(tier)?tier:"Member";
     $("directorBenefits").value=Array.isArray(personal)?personal.join("\n"):"";
     $("directorGuestProfile").hidden=false;
@@ -97,7 +98,7 @@ $("directorAssignForm").addEventListener("submit",async event=>{
     status("directorSaveStatus","Допустимо до 10 привилегий по 180 символов.");
     return;
   }
-  if(!confirm("Назначить "+tier.toUpperCase()+" гостю "+selectedGuestName+" (№ "+selectedId+")?"))return;
+  if(!confirm("Назначить "+displayTier(tier)+" гостю "+selectedGuestName+" (№ "+selectedId+")?"))return;
   isBusy=true;
   const submit=$("directorAssignForm").querySelector('button[type="submit"]');
   submit.disabled=true;status("directorSaveStatus","Сохраняем категорию...");
@@ -106,8 +107,8 @@ $("directorAssignForm").addEventListener("submit",async event=>{
       uid:selectedUid,tier,benefits,updatedBy:auth.currentUser.uid,updatedAt:serverTimestamp()
     });
     if(authorized){
-      $("directorGuestCurrent").textContent="Текущая категория: "+tier.toUpperCase();
-      status("directorSaveStatus","Гостю назначена категория "+tier.toUpperCase()+". Карта обновится автоматически.");
+      $("directorGuestCurrent").textContent="Текущая категория: "+displayTier(tier);
+      status("directorSaveStatus","Гостю назначена категория "+displayTier(tier)+". Карта обновится автоматически.");
     }
   }catch(error){
     status("directorSaveStatus","Не удалось назначить категорию: "+(error.code||"unknown")+". Проверьте опубликованные правила Firestore и роль директора.");

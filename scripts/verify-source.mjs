@@ -1492,13 +1492,14 @@ assert(admin.includes('id="baliPrivilegeAssignForm"') &&
 const directorHtml=source("director-id.html");
 const directorClient=source("bali-director-id.js");
 const tierCss=source("bali-id-tiers.css");
-for(const tier of ["Member","Silver","Gold","Platinum","Black","Private"]){
+const residentCss=source("bali-id-resident.css");
+for(const tier of ["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ"]){
   assert(idClient.includes(tier+':{description:') &&
     privilegeClient.includes(tier+':{description:') &&
     admin.includes('<option value="'+tier+'">') &&
     directorHtml.includes('<option value="'+tier+'">'),
     "Six BALI ID status names must match the approved categories: "+tier);
-  assert(tierCss.includes('data-bali-tier="'+tier.toLowerCase()+'"'),
+  assert((tier==="ResidentDJ"?residentCss:tierCss).includes('data-bali-tier="'+tier.toLowerCase()+'"'),
     "Missing the approved color treatment for BALI ID tier "+tier);
 }
 assert(html.includes('bali-id-tiers.css?v=') &&
@@ -1513,13 +1514,13 @@ assert(html.includes('bali-id-tiers.css?v=') &&
   rules.includes("allow update: if (isAdmin() || isDirector())") &&
   rules.includes("function isDirector()") &&
   rules.includes('match /staffRoles/{uid}') &&
-  rules.includes("data.tier in ['Member','Silver','Gold','Platinum','Black','Private']") &&
-  rules.includes("data.levels.keys().hasAll(['Member','Silver','Gold','Platinum','Black','Private'])") &&
+  rules.includes("data.tier in ['Member','Silver','Gold','Platinum','Black','Private','ResidentDJ']") &&
+  rules.includes("data.levels.keys().hasAll(['Member','Silver','Gold','Platinum','Black','Private','ResidentDJ'])") &&
   directorClient.includes('where("number","==",number)') &&
   directorClient.includes('getDoc(doc(db,"staffRoles",user.uid))') &&
   directorClient.includes('setDoc(doc(db,"guestPrivileges",selectedUid)') &&
   directorHtml.includes('id="directorAssignForm"'),
-  "Six-category BALI ID must preserve the default Member and restrict upgrades to director/admin");
+  "BALI ID must preserve default Member and restrict upgrades to director/admin");
 // Exact brand asset on all ID categories; transfer feature is prepared but
 // categorically unavailable to visitors and untrusted browser clients.
 // The central logo must remain measurable on iOS; percent-based heights inside

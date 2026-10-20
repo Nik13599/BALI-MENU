@@ -5,7 +5,7 @@ import {getFirestore,doc,getDoc,setDoc,onSnapshot,runTransaction,serverTimestamp
 const $=id=>document.getElementById(id);
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app);
-const TIERS=["Member","Silver","Gold","Platinum","Black","Private"];
+const TIERS=["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ"];
 // Default copy mirrors the six approved BALI ID category references.
 // These descriptions do not issue free products or discounts.
 const DEFAULTS={
@@ -14,11 +14,13 @@ const DEFAULTS={
   Gold:{description:"Ваш уровень с расширенными преимуществами.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Расширенные клубные привилегии"]},
   Platinum:{description:"Ваш премиальный уровень BALI PRIVILEGE.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Премиальные преимущества"]},
   Black:{description:"Ваш уровень с особыми клубными привилегиями.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Особые клубные привилегии"]},
-  Private:{description:"Закрытый статус по приглашению.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Индивидуальные привилегии по решению администрации"]}
+  Private:{description:"Закрытый статус по приглашению.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Индивидуальные привилегии по решению администрации"]},
+  ResidentDJ:{description:"",criteria:"Только по назначению директора или администратора для DJ-резидентов BALI.",benefits:["Безлимит замесов","Возможность ночевки в клубе","Работать за бесплатно"]}
 };
 let privilegedUnsub=null,rulesUnsub=null,session=0,profile=null,rules=DEFAULTS,privilege=null,activeUid=null;
 const displayNumber=n=>Number.isSafeInteger(n)&&n>0?String(n).padStart(6,"0"):"— — — — — —";
 const cleanText=x=>typeof x==="string"?x.trim():"";
+const displayTier=tier=>tier==="ResidentDJ"?"RESIDENT BALI - DJ":tier.toUpperCase();
 const setText=(id,value)=>{if($(id))$(id).textContent=value;};
 function render(){
   const tier=TIERS.includes(privilege?.tier)?privilege.tier:"Member";
@@ -26,10 +28,12 @@ function render(){
   if(cardScene)cardScene.dataset.baliTier=tier.toLowerCase();
   const config=rules[tier]||DEFAULTS[tier];
   setText("baliCardName",cleanText(profile?.name)||"ГОСТЬ BALI");
-  setText("baliCardTier",tier.toUpperCase());
-  setText("baliBenefitsTier",tier.toUpperCase());
-  setText("baliCardHeaderTier",tier.toUpperCase());
-  setText("baliBenefitsDescription",cleanText(config?.description)||DEFAULTS[tier].description);
+  setText("baliCardTier",displayTier(tier));
+  setText("baliBenefitsTier",displayTier(tier));
+  setText("baliCardHeaderTier",displayTier(tier));
+  const description=cleanText(config?.description)||DEFAULTS[tier].description;
+  setText("baliBenefitsDescription",description);
+  if($("baliBenefitsDescription"))$("baliBenefitsDescription").hidden=!description;
   const values=[...(Array.isArray(config?.benefits)?config.benefits:[]),
     ...(Array.isArray(privilege?.benefits)?privilege.benefits:[])].filter(x=>cleanText(x));
   const list=$("baliBenefitsList");if(list){

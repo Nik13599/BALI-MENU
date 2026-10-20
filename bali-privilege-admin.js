@@ -4,14 +4,15 @@ import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.
 import {getFirestore,doc,getDoc,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
-const TIERS=["Member","Silver","Gold","Platinum","Black","Private"];
+const TIERS=["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ"];
 const defaults={
   Member:{description:"Ваш первый уровень BALI PRIVILEGE.",criteria:"Автоматически после регистрации.",benefits:["Персональная цифровая карта гостя"]},
   Silver:{description:"Ваш уровень с первыми дополнительными привилегиями.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Дополнительные клубные преимущества"]},
   Gold:{description:"Ваш уровень с расширенными преимуществами.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Расширенные клубные привилегии"]},
   Platinum:{description:"Ваш премиальный уровень BALI PRIVILEGE.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Премиальные преимущества"]},
   Black:{description:"Ваш уровень с особыми клубными привилегиями.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Особые клубные привилегии"]},
-  Private:{description:"Закрытый статус по приглашению.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Индивидуальные привилегии по решению администрации"]}
+  Private:{description:"Закрытый статус по приглашению.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Индивидуальные привилегии по решению администрации"]},
+  ResidentDJ:{description:"",criteria:"Только по назначению директора или администратора для DJ-резидентов BALI.",benefits:["Безлимит замесов","Возможность ночевки в клубе","Работать за бесплатно"]}
 };
 let authorized=false,selected=null;
 const line=()=>document.createElement("div");
@@ -22,7 +23,7 @@ function renderRules(values=defaults){
   for(const tier of TIERS){
     const d=values[tier]||defaults[tier];
     const fieldset=document.createElement("fieldset");
-    const legend=document.createElement("legend");legend.textContent=tier;fieldset.append(legend);
+    const legend=document.createElement("legend");legend.textContent=tier==="ResidentDJ"?"Resident Bali - DJ":tier;fieldset.append(legend);
     for(const [key,label,multi,max] of [
       ["description","Описание статуса",false,180],
       ["criteria","Условия ручного назначения",false,250],
@@ -75,7 +76,7 @@ $("baliPrivilegeAssignForm")?.addEventListener("submit",async e=>{
     await setDoc(doc(db,"guestPrivileges",selected),{
       uid:selected,tier,benefits,updatedBy:auth.currentUser.uid,updatedAt:serverTimestamp()
     });
-    setStatus("baliPrivilegeAssignStatus","Статус "+tier+" назначен и сохранён в Firebase.");
+    setStatus("baliPrivilegeAssignStatus","Статус "+(tier==="ResidentDJ"?"Resident Bali - DJ":tier)+" назначен и сохранён в Firebase.");
   }catch(error){
     setStatus("baliPrivilegeAssignStatus","Не удалось сохранить: "+(error.code||"unknown")+
       ". Проверьте опубликованные firestore.rules.");
@@ -94,7 +95,7 @@ $("baliPrivilegeRulesForm")?.addEventListener("submit",async e=>{
   const submit=e.currentTarget.querySelector('button[type="submit"]');submit.disabled=true;
   try{
     await setDoc(doc(db,"privilegeRules","main"),{levels,updatedAt:serverTimestamp()});
-    setStatus("baliPrivilegeRulesStatus","Условия и преимущества шести уровней сохранены.");
+    setStatus("baliPrivilegeRulesStatus","Условия и преимущества всех категорий сохранены.");
   }catch(err){
     setStatus("baliPrivilegeRulesStatus","Не удалось сохранить правила: "+(err.code||"unknown"));
   }finally{submit.disabled=false;}
