@@ -195,6 +195,9 @@ function editableTextNode(node){
  if(node.matches(".bali-bottom-nav [data-bali-nav]"))return node.querySelector("small")||node;
  if(node.matches("button,a")&&node.querySelector(":scope > strong"))return node.querySelector(":scope > strong");
  if(node.matches("#menuNavBtn"))return node.querySelector(":scope > span strong")||node;
+ if(node.matches(".bali-social-btn"))return node.querySelector(".bali-pc-contact-label")||node;
+ if(node.matches(".bali-home-map"))return node.querySelector(".bali-yandex-address")||node;
+ if(node.matches(".bali-pc-contact-phone,[data-bali-contact]"))return node.querySelector(":scope > span:not([aria-hidden])")||node;
  if(node.matches(".bali-pc-id-card"))return node.querySelector(".bali-id-showcase-copy > strong")||node;
  return node;
 }
