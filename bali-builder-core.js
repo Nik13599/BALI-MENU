@@ -208,7 +208,7 @@ function mount(doc,model,view,options={}){
    if(typeof rule.text==="string"){
     if(node.matches("input,textarea")){const prev=node.placeholder;node.placeholder=rule.text;restored.push(()=>node.placeholder=prev);}
     else{
-     const t=[...node.childNodes].find(n=>n.nodeType===3);
+     const t=[...node.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());
      if(t){const old=t.textContent;t.textContent=rule.text;restored.push(()=>t.textContent=old);}
      else if(!node.children.length){const old=node.textContent;node.textContent=rule.text;restored.push(()=>node.textContent=old);}
     }
