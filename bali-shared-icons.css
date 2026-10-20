@@ -9,8 +9,8 @@
   .bali-pc-nav-icon:not(.has-custom-icon)::before{
     content:"";
     display:block;
-    width:clamp(22px,1.75vw,30px);
-    height:clamp(22px,1.75vw,30px);
+    width:26px;
+    height:26px;
     flex:0 0 auto;
     background-color:currentColor!important;
     mask-size:contain!important;
@@ -62,8 +62,8 @@
   body.bali-guest-theme .header #baliMobileProfileBtn.bali-mobile-profile-fab::before{
     content:"";
     display:block;
-    flex:0 0 29px;
-    width:29px;height:29px;
+    flex:0 0 25px;
+    width:27px;height:25px;
     background-color:var(--bali-mobile-neon,var(--bt-primary,#b9ff51))!important;
     -webkit-mask-position:center!important;
     -webkit-mask-size:contain!important;
