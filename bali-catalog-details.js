@@ -37,6 +37,5 @@ export function openCatalogDetails(item,kind){
     const value=typeof item[key]==='string'?item[key].trim():'';
     if(value)body.append(node('h3','bali-menu-details-label',label),node('p','bali-menu-details-copy',value));
   }
-  if(kind==='tea'&&item.sourcePage)body.append(node('p','bali-tea-details-source','Описание составлено по чайной методичке, страница '+item.sourcePage+'.'));
   if(!dialog.open)dialog.showModal();
 }

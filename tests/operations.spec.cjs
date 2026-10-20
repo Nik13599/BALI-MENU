@@ -67,4 +67,6 @@ test('tea typography is readable without changing names, prices or approved grid
  await cards.first().locator('.bali-tea-readmore').click();
  await expect(page.locator('#baliTeaDetailsDialog')).toBeVisible();
  await expect(page.locator('#baliTeaDetailsDialog')).toContainText('Колодец Дракона');
+ await expect(page.locator('#baliTeaDetailsDialog')).not.toContainText(/методичк|страниц|Описание составлено/i);
+ await expect(page.locator('#baliTeaDetailsDialog .bali-tea-details-source')).toHaveCount(0);
 });
