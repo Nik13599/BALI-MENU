@@ -347,7 +347,7 @@ function attachOverlay(){
    if(node){
     if(drag.mode==="size"){node.style.setProperty("width",item.props.width,"important");node.style.setProperty("height",item.props.height,"important");}
     else if(selection.id){node.style.left=item.x+"%";node.style.top=item.y+"px";}
-    else node.style.setProperty("transform","translate("+item.props.translateX+"px,"+item.props.translateY+"px)","important");
+    else node.style.setProperty("translate",item.props.translateX+"px "+item.props.translateY+"px","important");
    }
    positionOverlay();
   });
