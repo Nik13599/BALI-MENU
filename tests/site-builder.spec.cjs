@@ -237,3 +237,23 @@ test("visual editor replaces active picture artwork and restores tablet/mobile s
  expect(result.restored.srcset).toBe("https://example.com/previous.webp");
  expect(result.restored.backgroundImage).toBe("");
 });
+
+
+test("unfinished uploaded-photo slots stay visible to editors but hidden from visitors",async({page})=>{
+ await page.goto("/index.html?bali-admin-design-preview=1",{waitUntil:"domcontentloaded"});
+ await page.waitForFunction(()=>Boolean(window.BaliBuilderCore));
+ const result=await page.evaluate(()=>{
+  const core=window.BaliBuilderCore,m=core.emptyModel();
+  m.desktop.blocks.push({id:"bali-empty-image-slot",page:"home",kind:"image",image:"",
+   text:"",link:"route:home",x:12,y:50,props:{width:"230px",height:"160px"}});
+  core.mount(document,m,"desktop",{editor:true});
+  const editorSlot=document.querySelector('[data-bali-builder-id="bali-empty-image-slot"]');
+  const editable=editorSlot?.tagName==="IMG"&&!editorSlot.hasAttribute("src");
+  core.mount(document,m,"desktop",{editor:false});
+  const hidden=document.querySelector('[data-bali-builder-id="bali-empty-image-slot"]')===null;
+  document.__baliBuilderRestore();
+  return {editable,hidden};
+ });
+ expect(result.editable).toBe(true);
+ expect(result.hidden).toBe(true);
+});
