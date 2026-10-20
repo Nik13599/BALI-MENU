@@ -51,7 +51,7 @@ function sanitizeProps(src){
 function sanitizeDevice(raw){
  const out=emptyDevice();if(!raw||typeof raw!=="object")return out;
  for(const [selector,item] of Object.entries(raw.rules||{}).slice(0,140)){
-   if(!selector||selector.length>300||/[{}<>;\n\r]/.test(selector)||!item||typeof item!=="object")continue;
+   if(!selector||selector.length>300||/[{}<;\n\r]/.test(selector)||!item||typeof item!=="object")continue;
    out.rules[selector]={props:sanitizeProps(item.props)};
    if(typeof item.text==="string")out.rules[selector].text=item.text.slice(0,1500);
    if(safeLink(item.link))out.rules[selector].link=item.link;
