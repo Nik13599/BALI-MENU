@@ -56,7 +56,13 @@ body.bali-guest-theme #baliIdSection .bali-id-flip-track {
 body.bali-guest-theme #baliIdSection .bali-id-flip-scene .bali-id-card {
   border-radius:var(--bali-id-round)!important;
   overflow:hidden!important;
-  -webkit-mask-image:-webkit-radial-gradient(white,black);
+  /* Clip the entire rotating face, including its glossy pseudo-elements,
+     to a single rounded silhouette. A normal border-radius alone leaves
+     rectangular children and corner highlights visible in 3D. */
+  -webkit-clip-path:inset(0 round var(--bali-id-round))!important;
+  clip-path:inset(0 round var(--bali-id-round))!important;
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
   box-shadow:0 13px 30px rgba(0,0,0,.36),inset 0 1px rgba(255,255,255,.13)!important;
 }
 body.bali-guest-theme #baliIdSection .bali-id-3d-edge {
@@ -68,10 +74,24 @@ body.bali-guest-theme #baliIdSection .bali-id-3d-edge-right {
   top:calc(var(--bali-id-round) * .50)!important;
   height:calc(100% - var(--bali-id-round))!important;
 }
+body.bali-guest-theme #baliIdSection .bali-id-3d-edge-left,
+body.bali-guest-theme #baliIdSection .bali-id-3d-edge-right {
+  /* A rounded-card side is an elongated capsule, not a rectangle.
+     Pull it away from each corner, round the ends, and fade the final
+     few pixels. This keeps the visible 90° thickness without corners. */
+  top:var(--bali-id-round)!important;
+  height:calc(100% - 2 * var(--bali-id-round))!important;
+  border:0!important;
+  border-radius:999px!important;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 9%,#000 91%,transparent 100%)!important;
+  mask-image:linear-gradient(to bottom,transparent 0%,#000 9%,#000 91%,transparent 100%)!important;
+  box-shadow:inset 0 0 7px rgba(0,0,0,.45)!important;
+}
 body.bali-guest-theme #baliIdSection .bali-id-3d-edge-top,
 body.bali-guest-theme #baliIdSection .bali-id-3d-edge-bottom {
-  left:calc(var(--bali-id-round) * .50)!important;
-  width:calc(100% - var(--bali-id-round))!important;
+  /* Y-only rotation: horizontal slab walls protruded into the rounded
+     corners. They are invisible in a natural horizontal flip and removed. */
+  display:none!important;
 }
 /* The click's camera move is independent from swipe-following. */
 body.bali-guest-theme #baliIdSection .bali-id-flip-scene.is-cinematic::before {
