@@ -329,3 +329,43 @@ test("full-width mobile banner can use manual crop, aspect and safe layer contro
  expect(result.denied.overflow).toBeUndefined();
  expect(result.denied.zIndex).toBe(100);
 });
+
+test("homepage composer adds content into existing cards without resizing the grid",async({page})=>{
+ await page.goto("/index.html?bali-admin-design-preview=1",{waitUntil:"domcontentloaded"});
+ await page.waitForFunction(()=>Boolean(window.BaliBuilderCore&&window.BaliIconAtelier));
+ const result=await page.evaluate(()=>{
+  const core=window.BaliBuilderCore,model=core.emptyModel();
+  const nav=document.querySelector('.bali-pc-navigation [data-bali-nav="events"]');
+  const bottom=document.querySelector('.bali-bottom-nav [data-bali-nav="events"]');
+  const card=document.querySelector(".bali-pc-about");
+  const originalNav=nav.textContent,originalBottom=bottom.querySelector("small").textContent;
+  const initialStyle={width:card.style.width,height:card.style.height};
+  model.desktop.rules[core.selectorFor(nav)]={props:{iconName:"star"},text:"АФИША"};
+  model.phone.rules[core.selectorFor(bottom)]={props:{iconName:"calendar-heart"},text:"СОБЫТИЯ"};
+  model.desktop.blocks.push({
+   id:"bali-home-overlay-test",page:"home",kind:"text",anchor:core.selectorFor(card),
+   text:"Новый текст",link:"route:home",x:10,y:16,props:{fontSize:19,width:"160px"}
+  });
+  const sanitized=core.cleanModel(model);
+  core.mount(document,model,"desktop",{editor:true});
+  const pc={
+   label:nav.textContent,
+   icon:nav.querySelector(".bali-builder-custom-art")?.tagName,
+   anchored:card.querySelector('[data-bali-builder-id="bali-home-overlay-test"]')?.textContent,
+   unchangedSize:card.style.width===initialStyle.width&&card.style.height===initialStyle.height,
+   anchorSaved:sanitized.desktop.blocks[0].anchor===core.selectorFor(card)
+  };
+  core.mount(document,model,"phone",{editor:true});
+  const phone={text:bottom.querySelector("small")?.textContent,icon:bottom.querySelector(".bali-builder-custom-art")?.tagName};
+  document.__baliBuilderRestore();
+  return {pc,phone,restored:nav.textContent===originalNav&&bottom.querySelector("small").textContent===originalBottom&&!card.querySelector('[data-bali-builder-id="bali-home-overlay-test"]')};
+ });
+ expect(result.pc.anchored).toBe("Новый текст");
+ expect(result.pc.label).toContain("АФИША");
+ expect(result.pc.icon).toBe("svg");
+ expect(result.pc.unchangedSize).toBe(true);
+ expect(result.pc.anchorSaved).toBe(true);
+ expect(result.phone.text).toBe("СОБЫТИЯ");
+ expect(result.phone.icon).toBe("svg");
+ expect(result.restored).toBe(true);
+});
