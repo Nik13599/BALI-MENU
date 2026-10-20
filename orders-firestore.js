@@ -68,17 +68,19 @@ async function save(payload, editId = null) {
   const profile = window.BaliAuth?.getProfile?.();
   if (!profile || profile.uid !== user.uid) throw new Error("Заполните личный профиль перед заказом.");
   const eventDate = String(payload.event_date || "");
+  const eventId = String(payload.event_id || eventDate);
   const tableNumber = String(payload.table_number || "").trim();
   const bookingId = String(payload.booking_id || "").trim();
   const notes = String(payload.notes || "").trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate) ||
+      ![eventDate,eventDate+"__2",eventDate+"__3"].includes(eventId) ||
       tableNumber.length > 20 || bookingId.length > 60 ||
       (!tableNumber && !bookingId) || notes.length > 500) {
     throw new Error("Выберите мероприятие и укажите столик или ID бронирования.");
   }
   const lines = normalizeItems(payload.items);
   // Проверка на клиенте улучшает UX; Firestore Rules повторяет обязательные проверки.
-  const eventRef = doc(db, "events", eventDate);
+  const eventRef = doc(db, "events", eventId);
   const eventSnap = await getDoc(eventRef);
   if (!eventSnap.exists() || !dateOpen(eventSnap.data())) {
     throw new Error("Приём предзаказов на эту дату закрыт. Выберите другое мероприятие.");
@@ -107,7 +109,7 @@ async function save(payload, editId = null) {
         const next=(counter.exists()?counter.data().count:0)+1;
         if(!Number.isSafeInteger(next)||next>999999)throw new Error("Счётчик заказов переполнен.");
         tx.set(counterRef,{date:eventDate,count:next,lastOrderId:orderRef.id,updatedAt:serverTimestamp()});
-        tx.update(orderRef,{eventDate,orderNumber:next,tableNumber,bookingId,notes,updatedAt:serverTimestamp()});
+        tx.update(orderRef,{eventDate,eventId,orderNumber:next,tableNumber,bookingId,notes,updatedAt:serverTimestamp()});
         oldItems.docs.forEach(row=>{if(!retained.has(row.id))tx.delete(row.ref);});
         priced.forEach(line=>tx.set(doc(orderRef,"items",String(line.id)),line));
         return next;
@@ -116,7 +118,7 @@ async function save(payload, editId = null) {
       orderNumber=old.data().orderNumber||null;
       const batch=writeBatch(db);
       oldItems.docs.forEach(row=>{if(!retained.has(row.id))batch.delete(row.ref);});
-      batch.update(orderRef,{tableNumber,bookingId,notes,updatedAt:serverTimestamp()});
+      batch.update(orderRef,{eventId,tableNumber,bookingId,notes,updatedAt:serverTimestamp()});
       priced.forEach(line=>batch.set(doc(orderRef,"items",String(line.id)),line));
       await batch.commit();
     }
@@ -133,7 +135,7 @@ async function save(payload, editId = null) {
       tx.set(orderRef,{
         ownerUid:user.uid,email:user.email,
         customerName:profile.name,customerPhone:profile.phone,
-        eventDate,orderNumber:next,tableNumber,bookingId,notes,
+        eventDate,eventId,orderNumber:next,tableNumber,bookingId,notes,
         status:"pending",createdAt:serverTimestamp(),updatedAt:serverTimestamp()
       });
       priced.forEach(line=>tx.set(doc(orderRef,"items",String(line.id)),line));

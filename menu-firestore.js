@@ -27,10 +27,12 @@ onSnapshot(collection(db, "menu"), (snapshot) => {
 });
 
 onSnapshot(collection(db, "events"), (snapshot) => {
-  const events = snapshot.docs.map((entry) => ({ ...entry.data() }))
+  const events = snapshot.docs.map((entry) => ({ ...entry.data(), id:entry.id }))
     .filter((event) => typeof event.date === "string" && 
       /^\d{4}-\d{2}-\d{2}$/.test(event.date))
-    .sort((a, b) => a.date.localeCompare(b.date));
+    .sort((a, b) => a.date.localeCompare(b.date) ||
+      (a.startTime||"").localeCompare(b.startTime||"") ||
+      a.id.localeCompare(b.id));
   notify("bali:events", { events });
 }, (error) => {
   console.warn("BALI events read:", error.code);

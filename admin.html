@@ -408,18 +408,30 @@
           <div>
             <div class="eyebrow">КАЛЕНДАРЬ</div>
             <h2 id="eventsHeading">Мероприятия</h2>
-            <p>Управляйте датами и временем закрытия предзаказов.</p>
+            <p>До трёх афиш и самостоятельных списков «Хочу пойти» на одну дату.</p>
           </div>
-          <button type="button" id="addEventBtn" class="primary">+ Новая дата</button>
+          <button type="button" id="addEventBtn" class="primary">+ Новое мероприятие</button>
         </div>
         <div class="editor-layout">
           <section class="card catalog-form-card" id="eventEditorCard">
             <div class="card-heading"><h3>Настройки мероприятия</h3><span class="tag">Минск</span></div>
             <form id="eventForm">
               <label>Дата мероприятия <input type="date" id="eventDateAdmin" required></label>
+              <label>Мероприятие в эту дату
+                <select id="eventSlotAdmin" aria-label="Номер мероприятия в выбранный день">
+                  <option value="1">№ 1 — основное</option>
+                  <option value="2">№ 2 — дополнительное</option>
+                  <option value="3">№ 3 — дополнительное</option>
+                </select>
+                <small class="hint">Можно создать до трёх отдельных мероприятий на одну дату. У каждого будет своя афиша, описание, время, цвет точки и отметка «Хочу пойти».</small>
+              </label>
               <label>Название мероприятия <input id="eventTitle" minlength="2" maxlength="150" placeholder="Например, BALI ICE NIGHT" required></label>
               <label>Описание мероприятия
                 <textarea id="eventDescription" maxlength="600" rows="3" placeholder="Кратко расскажите о программе, артистах или атмосфере"></textarea>
+              </label>
+              <label>Цвет точки этого мероприятия в календаре
+                <input id="eventDotColor" type="color" value="#b9ff51" aria-label="Цвет точки мероприятия">
+                <small class="hint">Выбирается отдельно для каждой афиши. Даты в «Моих планах» подсвечиваются зелёным с чёрными точками.</small>
               </label>
               <div class="double">
                 <label>Начало мероприятия (Минск) <input id="eventStartTime" type="time" value="23:00"></label>
@@ -435,6 +447,7 @@
                 <p class="hint">Афиша автоматически подгоняется под формат 4:5.</p>
               </div>
               <label class="check availability-toggle"><input id="eventOpen" type="checkbox" checked><span>Разрешить предзаказы</span></label>
+              <p class="hint" id="eventSlotPreorderHint" hidden>Для каждого мероприятия предзаказ включается отдельно. Гость выбирает дату, название мероприятия и позиции кухни.</p>
               <div class="actions">
                 <button type="submit" class="primary">Сохранить мероприятие</button>
                 <button id="clearEvent" type="button">Сбросить</button>
@@ -1050,7 +1063,7 @@
 </main>
 
 <script src="firebase-config.js?v=20261020-2"></script>
-<script type="module" src="admin-firestore.js?v=20261020-3"></script>
+<script type="module" src="admin-firestore.js?v=20261020-dot1"></script>
 <script type="module" src="bali-admin-bar.js?v=20261020-1"></script>
 <script type="module" src="bali-admin-cards.js?v=20261020-1"></script>
 <script type="module" src="bali-menu-visibility.js?v=20261017-72"></script>

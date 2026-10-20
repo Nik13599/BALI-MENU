@@ -1039,7 +1039,7 @@ assert(!html.includes('id="plannedEventsCount"') &&
   "Calendar filters must be removed; profile My Plans stays accessible and Calendar opens all events");
 assert(app.includes('Хочу пойти') &&
   app.includes('Хочет пойти: ') &&
-  app.includes('guestInterestDates.has(event.date)'), "Event cards must display RSVP button and public counts");
+  app.includes('guestInterestDates.has(event.id||event.date)'), "Event cards must display RSVP button and public counts");
 assert(app.includes('window.setInterval(()=>') &&
   app.includes('renderUpcomingEvents();'), "Past events must disappear automatically from My Plans");
 assert(app.includes('details.append(name,times,description,interested,message);') &&
@@ -1172,7 +1172,7 @@ assert(app.includes('const card=document.createElement("article");') &&
   app.includes('function toggleGuestInterest(date,message)') &&
   app.includes('window.BaliInterests.toggle(date)') &&
   app.includes('click.stopPropagation()') &&
-  app.includes('void toggleGuestInterest(event.date,document.getElementById("homeInterestFeedback"))') &&
+  app.includes('void toggleGuestInterest(event.id||event.date,document.getElementById("homeInterestFeedback"))') &&
   app.includes('function syncInterestVisuals(){') &&
   app.includes('requestAnimationFrame(()=>{\n            track.scrollLeft='),
   "Home RSVP hearts must persist through Firebase and not activate the event overlay or reset carousel scroll");
@@ -1332,7 +1332,7 @@ assert(app.includes('function initEventCarousel()') &&
   app.includes('track.addEventListener("wheel"') &&
   app.includes('track.addEventListener("keydown"'),
   "Events must scroll by desktop wheel and keyboard");
-assert(app.includes('const previousDate=previousCards[previousIndex]?.dataset.eventDate') &&
+assert(app.includes('const previousDate=previousCards[previousIndex]?.dataset.eventId||previousCards[previousIndex]?.dataset.eventDate') &&
   app.includes('centerEventCard(grid,cards[restoreIndex],false)'),
   "Realtime RSVP refreshes must preserve carousel position");
 assert(carouselCss.includes('scroll-snap-type:x mandatory') &&

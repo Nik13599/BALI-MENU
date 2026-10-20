@@ -76,6 +76,8 @@ test('storage failure does not break the cart or a successful checkout', async (
   });
   await cartTrigger(page).click();
   await page.locator('#checkoutBtn').click();
+  // Preorders require the date first; only then can a named event be chosen.
+  await page.locator('#eventDateSelect').selectOption('2099-10-24');
   await page.locator('#eventSelect').selectOption('2099-10-24');
   await page.locator('#tableNumber').fill('12');
   await page.locator('.submit-order-btn').click();
@@ -83,6 +85,41 @@ test('storage failure does not break the cart or a successful checkout', async (
   await page.locator('#closeSuccess').click();
   await expect(page.locator('#baliDockCount')).toHaveText('0');
   expect(errors).toEqual([]);
+});
+
+test('guest chooses a date and one of multiple named parties for a preorder',async({page})=>{
+  await menu(page);
+  await page.evaluate(()=>{
+    window.dispatchEvent(new CustomEvent('bali:events',{detail:{events:[
+      {id:'2099-10-24',date:'2099-10-24',title:'Основная вечеринка',startTime:'19:00',
+       preorderEnabled:true,closesAt:{toDate:()=>new Date('2099-10-24T20:00:00Z')}},
+      {id:'2099-10-24__2',date:'2099-10-24',title:'Вечеринка VIP',startTime:'23:00',
+       preorderEnabled:true,closesAt:{toDate:()=>new Date('2099-10-24T20:00:00Z')}},
+      {id:'2099-10-24__3',date:'2099-10-24',title:'Только афиша',
+       preorderEnabled:false,closesAt:{toDate:()=>new Date('2099-10-24T20:00:00Z')}}
+    ]}}));
+    window.savedPreorder=null;
+    addToCart(1);
+    window.BaliOrders.save=async payload=>{
+      window.savedPreorder=payload;
+      return {success:true,order_id:'test-party-order',order_number:15};
+    };
+  });
+  await cartTrigger(page).click();
+  await page.locator('#checkoutBtn').click();
+  await expect(page.locator('#eventSelect')).toBeDisabled();
+  await page.locator('#eventDateSelect').selectOption('2099-10-24');
+  await expect(page.locator('#eventSelect')).toBeEnabled();
+  await expect(page.locator('#eventSelect option')).toHaveCount(3);
+  await expect(page.locator('#eventSelect option').nth(1)).toContainText('Основная вечеринка');
+  await expect(page.locator('#eventSelect option').nth(2)).toContainText('Вечеринка VIP');
+  await page.locator('#eventSelect').selectOption('2099-10-24__2');
+  await page.locator('#tableNumber').fill('12');
+  await page.locator('.submit-order-btn').click();
+  await expect(page.locator('#successModal')).toHaveClass(/active/);
+  const order=await page.evaluate(()=>window.savedPreorder);
+  expect(order.event_date).toBe('2099-10-24');
+  expect(order.event_id).toBe('2099-10-24__2');
 });
 
 test('cancelled editing creates a new order and failed submit stays usable', async ({page}) => {
@@ -100,6 +137,10 @@ test('cancelled editing creates a new order and failed submit stays usable', asy
     await openCheckout();
   });
   page.on('dialog', d => d.accept());
+  // Opening a new checkout must not reuse the prior edit state; select date
+  // and the specific event, then test the recoverable server error.
+  await page.locator('#eventDateSelect').selectOption('2099-10-24');
+  await page.locator('#eventSelect').selectOption('2099-10-24');
   await page.locator('.submit-order-btn').click();
   await expect(page.locator('.submit-order-btn')).toBeEnabled();
   await expect(page.locator('.submit-order-btn')).toHaveText('Отправить предзаказ');

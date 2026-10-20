@@ -393,9 +393,10 @@ function menuRender() {
 
 function eventRender() {
   const list = $("eventList");list.replaceChildren();
-  for (const event of [...events.values()].sort((a,b)=>a.date.localeCompare(b.date))) {
+  for (const event of [...events.entries()].map(([id,data])=>({...data,id})).sort((a,b)=>a.date.localeCompare(b.date)||(a.id.localeCompare(b.id)))) {
+    const slot=event.id===event.date?1:Number(event.id.slice(event.date.length+2));
     list.append(createEntry(
-      event.date + " — " + event.title,
+      event.date + " · №"+slot+" — " + event.title,
       (event.preorderEnabled ? "Приём включён" : "Приём выключен") +
         (event.startTime && event.endTime ? " · "+event.startTime+"–"+event.endTime : "") +
         (event.cutoff ? " · Предзаказ до " + event.cutoff + " по Минску" : "") +
@@ -403,8 +404,12 @@ function eventRender() {
       () => {
         $("eventDateAdmin").value=event.date;
         $("eventDateAdmin").readOnly=true;
+        $("eventSlotAdmin").value=String(slot);
+        $("eventSlotAdmin").disabled=true;
+        updateEventPreorderControl();
         $("eventTitle").value=event.title;
         $("eventDescription").value=event.description||"";
+        $("eventDotColor").value=/^#[0-9a-fA-F]{6}$/.test(event.dotColor||"")?event.dotColor:"#b9ff51";
         $("eventStartTime").value=event.startTime||"";
         $("eventEndTime").value=event.endTime||"";
         $("eventCutoff").value=event.cutoff;
@@ -416,8 +421,8 @@ function eventRender() {
         $("eventForm").scrollIntoView({behavior:"smooth",block:"center"});
       },
       async () => {
-        if(!confirm("Удалить мероприятие "+event.date+"?"))return;
-        try { await deleteDoc(doc(db,"events",event.date));renderStatus("eventStatus","Мероприятие удалено."); }
+        if(!confirm("Удалить мероприятие "+event.title+" ("+event.date+", №"+slot+")?"))return;
+        try { await deleteDoc(doc(db,"events",event.id));renderStatus("eventStatus","Мероприятие удалено."); }
         catch(e){renderStatus("eventStatus","Ошибка: "+(e.code || "unknown"));}
       },
       event.poster_url||""
@@ -444,10 +449,25 @@ function clearEvent() {
   pendingEventPoster="";
   imagePreview("eventPosterPreview","");
   $("eventForm").reset();
+  $("eventDotColor").value="#b9ff51";
+  $("eventSlotAdmin").value="1";
+  $("eventSlotAdmin").disabled=false;
   $("eventDateAdmin").readOnly=false;
   $("eventOpen").checked=true;
+  updateEventPreorderControl();
 }
 
+// Preorders are currently tied to a DATE (not a unique evening slot). Until
+// order schema migration, expose them only on legacy slot №1 rather than
+// promising unavailable orders for slots №2/№3.
+function updateEventPreorderControl(){
+  // All three event slots may accept their OWN orders, chosen explicitly
+  // by eventId in the guest form and validated by Firestore Rules.
+  $("eventOpen").disabled=false;
+  const help=$("eventSlotPreorderHint");
+  if(help)help.hidden=true;
+}
+$("eventSlotAdmin").addEventListener("change",updateEventPreorderControl);
 $("clearEvent").addEventListener("click", clearEvent);
 
 $("menuForm").addEventListener("submit",async event=>{
@@ -526,16 +546,21 @@ $("eventForm").addEventListener("submit",async (event)=>{
   event.preventDefault();
   if(!authorized)return;
   const date=$("eventDateAdmin").value,title=$("eventTitle").value.trim(),
+    slot=Number($("eventSlotAdmin").value),
     cutoff=$("eventCutoff").value||"",
     description=$("eventDescription").value.trim(),
+    dotColor=$("eventDotColor").value||"#b9ff51",
     startTime=$("eventStartTime").value||"",
     endTime=$("eventEndTime").value||"";
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || title.length<2) {
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || title.length<2 || ![1,2,3].includes(slot)) {
     renderStatus("eventStatus","Укажите дату и название мероприятия.");return;
   }
   // Start/end describe the party itself. Cutoff controls preorders separately.
   // Overnight events (e.g. 22:00–03:00) are valid.
   const validTime=/^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+  if(!/^#[0-9a-fA-F]{6}$/.test(dotColor)){
+    renderStatus("eventStatus","Выберите цвет точки в формате #RRGGBB.");return;
+  }
   if(description.length>600 || (!!startTime!==!!endTime) ||
      (startTime && (!validTime.test(startTime)||!validTime.test(endTime)))) {
     renderStatus("eventStatus","Заполните оба времени в формате ЧЧ:ММ или оставьте оба пустыми. Описание — до 600 символов.");
@@ -545,7 +570,17 @@ $("eventForm").addEventListener("submit",async (event)=>{
   if (!Number.isFinite(closesAt.getTime()) || closesAt <= new Date()) {
     renderStatus("eventStatus","Время окончания приёма должно быть в будущем (по Минску)."); return;
   }
-  const poster = pendingEventPoster || events.get(date)?.poster_url || "";
+  const eventId=slot===1?date:date+"__"+slot;
+  const isEditing=$("eventDateAdmin").readOnly;
+  if(!isEditing && events.has(eventId)){
+    renderStatus("eventStatus","Мероприятие №"+slot+" на эту дату уже создано. Выберите свободный номер или откройте существующее для редактирования.");
+    return;
+  }
+  if(!isEditing && [...events.values()].filter(item=>item.date===date).length>=3){
+    renderStatus("eventStatus","На эту дату уже создано три мероприятия — максимальное количество.");
+    return;
+  }
+  const poster = pendingEventPoster || events.get(eventId)?.poster_url || "";
   if (poster && (poster.length > 150000 ||
       (!/^https:\/\/[^ ]+$/.test(poster) && !isImageDataUri(poster)))) {
     renderStatus("eventStatus","Афиша не прошла проверку формата или размера. Выберите другое изображение.");
@@ -558,13 +593,13 @@ $("eventForm").addEventListener("submit",async (event)=>{
   renderStatus("eventStatus","Сохраняем мероприятие...");
   try{
     const payload={
-      date, title, cutoff, preorderEnabled:$("eventOpen").checked,
+      date, title, cutoff, dotColor, preorderEnabled:$("eventOpen").checked,
       closesAt: Timestamp.fromDate(closesAt),
       updatedAt:serverTimestamp()
     };
     // Leave absent metadata absent on older events to preserve edits under
     // previously deployed Firestore Rules. New metadata requires v46 Rules.
-    const saved=events.get(date)||{};
+    const saved=events.get(eventId)||{};
     if(description || Object.hasOwn(saved,"description"))payload.description=description;
     if((startTime&&endTime) || Object.hasOwn(saved,"startTime") || Object.hasOwn(saved,"endTime")){
       payload.startTime=startTime;
@@ -574,7 +609,7 @@ $("eventForm").addEventListener("submit",async (event)=>{
     // Для настоящих афиш необходимы опубликованные Firebase Rules с poster_url.
     if(poster)payload.poster_url=poster;
     // merge сохраняет interestCount при изменении афиши/названия администратором.
-    await setDoc(doc(db,"events",date),payload,{merge:true});
+    await setDoc(doc(db,"events",eventId),payload,{merge:true});
     clearEvent();
     renderStatus("eventStatus","Мероприятие сохранено.");
   }catch(e){
