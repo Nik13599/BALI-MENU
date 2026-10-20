@@ -1418,12 +1418,10 @@ assert(html.includes('id="baliCardNumber"') &&
   html.includes('id="baliMobileProfileBtn"') &&
   html.includes('id="baliMobileIdBtn"') &&
   source("bali-id-flip.js").includes('httpsCallable(functions,"issueGuestQr")') &&
-  html.includes('bali-id-motion.js?v=') &&
-  source("bali-id-motion.js").includes('scene.addEventListener("pointermove"') &&
-  source("bali-id-motion.js").includes('scene.addEventListener("pointerup"') &&
-  source("bali-id-motion.js").includes('frame(g.current+progress*180)') &&
-  source("bali-id-motion.js").includes('lastTouchTap') &&
-  source("bali-id-motion.js").includes('window.BaliIdMotion=Object.freeze') &&
+  source("bali-id-flip.js").includes('pointermove') &&
+  source("bali-id-flip.js").includes('pointerup') &&
+  source("bali-id-flip.js").includes('track.style.transform="rotateY("+g.angle+"deg)"') &&
+  source("bali-id-flip.js").includes('suppressTouchClickUntil') &&
   source("bali-id-flip.css").includes('justify-self:center!important') &&
   source("auth.js").includes('data-bali-nav="profile"') &&
   idClient.includes('runTransaction(db,async tx=>') &&
