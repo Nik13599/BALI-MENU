@@ -4,6 +4,10 @@
   const summary=document.getElementById("baliPcAboutPreview");
   if(!summary)return;
   summary.addEventListener("click",event=>{
+    if(event.target.closest(".bali-pc-about-events-link")){
+      event.stopPropagation();
+      return;
+    }
     event.preventDefault();
     const details=summary.closest("details");
     if(details)details.open=false;
