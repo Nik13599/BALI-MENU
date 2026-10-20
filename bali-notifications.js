@@ -2,6 +2,7 @@
 (() => {
   const labels={pending:"ожидает подтверждения",confirmed:"подтверждён",completed:"выполнен",cancelled:"отменён"};
   let uid=null,scope=null,known=new Map(),feed=[],initialized=false;
+  let giftUid=null,gifts=[];
   const cursorKey=()=> "bali-order-notices-v1:"+scope+":"+uid;
   const feedKey=()=> "bali-order-notice-feed-v2:"+scope+":"+uid;
   const el=id=>document.getElementById(id);
@@ -63,7 +64,10 @@
     if(!dialog())return;
     if(scope!=="guest"&&!window.BaliAuth?.isRegistered?.()){window.BaliAuth?.open?.();return;}
     if(!dialog().open)dialog().showModal();
-    markRead();render();
+    markRead();
+    gifts=gifts.map(x=>({...x,read:true}));
+    if(giftUid)try{localStorage.setItem("bali-gifts-read:"+giftUid,JSON.stringify(gifts.map(x=>x.id).slice(0,100)))}catch(_){}
+    render();
   }
   function openItem(item){
     if(dialog()?.open)dialog().close();
@@ -80,7 +84,7 @@
     window.baliNoticeTimer=setTimeout(()=>{live.hidden=true;},8000);
   }
   function render(){
-    const unread=feed.filter(x=>!x.read).length;
+    const unread=feed.filter(x=>!x.read).length+gifts.filter(x=>!x.read).length;
     const badge=el("baliProfileNoticeBadge");
     if(badge){badge.hidden=!(scope==="guest"&&unread);badge.textContent=unread>99?"99+":String(unread);}
     const bell=el("baliProfileNoticeBtn");
@@ -88,7 +92,12 @@
     const list=scope==="admin"?el("baliOrderNoticeList"):el("baliProfileNoticeList");
     if(list){
       list.replaceChildren();
-      if(!feed.length){const p=document.createElement("p");p.textContent="Новых уведомлений пока нет. Обновления появятся, пока сайт открыт.";list.append(p);}
+      if(!feed.length&&!gifts.length){const p=document.createElement("p");p.textContent="Новых уведомлений пока нет.";list.append(p);}
+      if(scope!=="admin")for(const gift of gifts){
+        const btn=document.createElement("button");btn.type="button";btn.textContent=gift.text+" →";
+        btn.addEventListener("click",()=>{if(dialog()?.open)dialog().close();location.hash="id";document.getElementById("baliIdHistoryOpen")?.click()});
+        list.append(btn);
+      }
       for(const item of feed){
         const btn=document.createElement("button");btn.type="button";btn.textContent=item.text+" →";
         btn.addEventListener("click",()=>openItem(item));
@@ -97,8 +106,20 @@
     }
     const adminCount=el("baliNoticeCount");
     if(adminCount)adminCount.textContent=unread?" ("+unread+")":"";
-    if(el("baliProfileNoticeClear"))el("baliProfileNoticeClear").hidden=feed.length===0;
+    if(el("baliProfileNoticeClear"))el("baliProfileNoticeClear").hidden=feed.length===0&&gifts.length===0;
   }
+  window.addEventListener("bali:transfer-inbox",event=>{
+    const d=event.detail||{};
+    if(d.error)return;
+    giftUid=d.uid||null;
+    let read=[];try{read=JSON.parse(localStorage.getItem("bali-gifts-read:"+giftUid)||"[]")}catch(_){}
+    gifts=(d.items||[]).map(x=>({id:x.id,read:read.includes(x.id),text:
+      (x.senderName||"Гость BALI")+" · BALI ID "+(x.senderNumber||"—")+" перевёл вам "+
+      (x.items||[]).map(i=>i.quantity+" "+({shot:"шотов",cocktail:"коктейлей",hookah:"кальянов",entry:"входов"}[i.kind]||i.kind)).join(", ")+
+      (x.comment?" · Пожелание: «"+x.comment+"»":"")}));
+    for(const g of d.fresh||[])if(!read.includes(g.id))announce("Подарок от "+(g.senderName||"гостя BALI")+(g.comment?" · «"+g.comment+"»":""));
+    render();
+  });
   window.addEventListener("bali:orders",event=>snapshot(event.detail?.ownerUid,"guest",event.detail?.orders));
   window.addEventListener("bali:admin:orders",event=>{if("orders" in (event.detail||{}))snapshot(event.detail.ownerUid,"admin",event.detail.orders);});
   window.addEventListener("bali:admin:session",event=>reset(event.detail?.uid,"admin"));
@@ -115,7 +136,7 @@
     }else{
       el("baliProfileNoticeBtn")?.addEventListener("click",showDialog);
       el("baliProfileNoticeClose")?.addEventListener("click",()=>dialog()?.close());
-      el("baliProfileNoticeClear")?.addEventListener("click",()=>{feed=[];saveFeed();render();});
+      el("baliProfileNoticeClear")?.addEventListener("click",()=>{feed=[];saveFeed();gifts=[];render();});
     }
     const live=document.createElement("div");live.id="baliOrderNoticeLive";live.className="bali-notice-live";live.role="status";live.setAttribute("aria-live","polite");live.hidden=true;
     const open=document.createElement("button");open.type="button";open.className="bali-notice-open";live.append(open);
