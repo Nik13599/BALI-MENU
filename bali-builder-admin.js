@@ -69,6 +69,11 @@ const metadata=[
  ["alignItems","Выравнивание по высоте","select","",[["stretch","Растянуть"],["flex-start","Сверху"],["center","По центру"],["flex-end","Снизу"],["baseline","По базовой линии"]]],
  ["objectFit","Масштаб фото","select","",[["cover","Заполнить с обрезкой"],["contain","Вместить полностью"],["fill","Растянуть"],["none","Без масштабирования"],["scale-down","Уменьшать по размеру"]]],
  ["backgroundPosition","Позиция фона","select","",[["center","По центру"],["top","Сверху"],["bottom","Снизу"],["left","Слева"],["right","Справа"]]],
+ ["backgroundSize","Заполнение фона","select","",[["cover","Заполнить с обрезкой"],["contain","Показать полностью"],["auto","Исходный размер"],["100% 100%","Растянуть на весь блок"]]],
+ ["objectPosition","Положение изображения","select","",[["center","По центру"],["top","Верхняя часть"],["bottom","Нижняя часть"],["left","Левый край"],["right","Правый край"]]],
+ ["aspectRatio","Пропорции блока","select","",[["auto","Автоматически"],["1 / 1","Квадрат 1:1"],["16 / 9","Широкий 16:9"],["4 / 3","Горизонтальный 4:3"],["3 / 4","Вертикальный 3:4"],["9 / 16","Сторис 9:16"]]],
+ ["overflow","Обрезка за пределами блока","select","",[["visible","Показывать"],["hidden","Скрывать"],["clip","Обрезать"],["auto","Прокрутка по необходимости"]]],
+ ["zIndex","Уровень слоя","number","от −10 до 100",0],
  ["animation","Анимация","select","",animations],
  ["animationDuration","Длительность","number","секунды · 0.2–20",3],
  ["animationDelay","Задержка","number","секунды · 0–15",0],
@@ -80,7 +85,7 @@ const metadata=[
 ];
 const titleGroups=[
  ["Габариты и позиция",["width","height","minWidth","maxWidth","minHeight","maxHeight","translateX","translateY","padding","marginTop","marginBottom","marginLeft","marginRight","borderRadius"]],
- ["Макет и медиа",["display","flexDirection","justifyContent","alignItems","gap","objectFit","backgroundPosition"]],
+ ["Макет и медиа",["display","flexDirection","justifyContent","alignItems","gap","objectFit","objectPosition","backgroundPosition","backgroundSize","aspectRatio","overflow","zIndex"]],
  ["Шрифты и текст",["fontFamily","fontSize","fontWeight","fontStyle","textAlign","textTransform","lineHeight","letterSpacing"]],
  ["Цвета и кнопки",["color","backgroundColor","borderColor","borderWidth","opacity","shadow","buttonStyle"]],
  ["Анимация и эффекты",["animation","animationDuration","animationDelay","animationIteration","animationEasing","effect","rotate","scale"]]
@@ -245,7 +250,7 @@ function changeProp(k,v){
   item.props||={};
   if(!v&&v!=="0"){delete item.props[k];return;}
   if(["width","height","minWidth","maxWidth","minHeight","maxHeight"].includes(k))item.props[k]=v;
-  else if(["fontSize","padding","borderRadius","borderWidth","letterSpacing","translateX","translateY","marginTop","marginBottom","marginLeft","marginRight","gap","lineHeight","opacity","rotate","scale","animationDuration","animationDelay"].includes(k))item.props[k]=Number(v);
+  else if(["fontSize","padding","borderRadius","borderWidth","letterSpacing","translateX","translateY","marginTop","marginBottom","marginLeft","marginRight","gap","lineHeight","opacity","rotate","scale","animationDuration","animationDelay","zIndex"].includes(k))item.props[k]=Number(v);
   else item.props[k]=v;
  });
 }
@@ -272,7 +277,8 @@ function valueFromComputed(k,node){
  backgroundColor:"backgroundColor",borderColor:"borderColor",borderWidth:"borderWidth",
  opacity:"opacity",borderRadius:"borderTopLeftRadius",padding:"paddingTop",
  display:"display",flexDirection:"flexDirection",justifyContent:"justifyContent",
- alignItems:"alignItems",gap:"gap",objectFit:"objectFit",backgroundPosition:"backgroundPosition",
+ alignItems:"alignItems",gap:"gap",objectFit:"objectFit",objectPosition:"objectPosition",backgroundPosition:"backgroundPosition",
+ backgroundSize:"backgroundSize",aspectRatio:"aspectRatio",overflow:"overflow",zIndex:"zIndex",
  maxWidth:"maxWidth",minWidth:"minWidth",maxHeight:"maxHeight",
  marginTop:"marginTop",marginBottom:"marginBottom",marginLeft:"marginLeft",marginRight:"marginRight"};
  if(!ref[k])return "";
