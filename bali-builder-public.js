@@ -12,8 +12,15 @@ if(!isAdminPreview){
  const render=()=>{
   if(!data||busy)return;
   busy=true;
-  try{core.mount(document,data,core.device(window));lastDevice=core.device(window);}
-  finally{busy=false;}
+  try{
+   const view=core.device(window);
+   core.mount(document,data,view);
+   const nested=document.querySelector("#baliAboutFrame");
+   let aboutDoc=null;
+   try{aboutDoc=nested?.contentDocument;}catch{}
+   if(aboutDoc?.body)core.mount(aboutDoc,data,view,{scope:"about"});
+   lastDevice=view;
+  }finally{busy=false;}
  };
  const schedule=()=>{
   if(needs)return;needs=true;
@@ -23,6 +30,8 @@ if(!isAdminPreview){
   data=core.cleanModel(snapshot.exists()?snapshot.data():core.emptyModel());
   schedule();
  },error=>console.warn("BALI published page builder:",error.code||error));
+ const aboutFrame=document.getElementById("baliAboutFrame");
+ aboutFrame?.addEventListener("load",schedule);
  window.addEventListener("resize",()=>{if(core.device(window)!==lastDevice)schedule();},{passive:true});
  for(const eventName of ["bali:home-interface","bali:menu-mode-changed","bali:events-updated"]){
   window.addEventListener(eventName,()=>schedule());
