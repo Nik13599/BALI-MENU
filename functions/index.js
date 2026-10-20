@@ -228,15 +228,24 @@ exports.issueBaliQuantity=api("issueBaliQuantity",async req=>{
   const guestUid=textValue(req.data?.uid,128),kind=req.data?.kind;
   const quantity=req.data?.quantity,transferable=req.data?.transferable===true;
   const reason=textValue(req.data?.reason,200);
-  if(!/^[a-zA-Z0-9_-]{12,128}$/.test(guestUid)||!kinds.has(kind)||
-    !Number.isInteger(quantity)||quantity<1||quantity>500||reason.length<5)
+  if(!/^[a-zA-Z0-9_-]{12,128}$/.test(guestUid)||typeof kind!=="string"||!(/^[a-z][a-z0-9_-]{1,24}$/.test(kind))||
+    !Number.isInteger(quantity)||quantity<1||quantity>999||reason.length<5)
     fail("invalid-argument","Укажите гостя, вид, количество и причину от 5 символов.");
+  if(!kinds.has(kind)){
+    const custom=await db.doc("baliBonusKinds/"+kind).get();
+    if(!custom.exists||custom.data().active!==true)fail("invalid-argument","Направление бонусов неактивно.");
+  }
   const ref=db.doc("guestWallets/"+guestUid),guestRef=db.doc("baliIds/"+guestUid);
   const id=randomBytes(16).toString("hex"),opRef=db.doc("walletOperations/"+id);
   await db.runTransaction(async tx=>{
     const [guest,old]=await Promise.all([tx.get(guestRef),tx.get(ref)]);
     if(!guest.exists)fail("not-found","BALI ID гостя не найдена.");
     const w=wallet(guestUid,old);
+    const now=Date.now();
+    const balance=w.grants.filter(g=>g.kind===kind&&Number.isInteger(g.remaining)&&g.remaining>0&&
+      (!g.expiresAt||typeof g.expiresAt.toMillis==="function"&&g.expiresAt.toMillis()>now))
+      .reduce((sum,g)=>sum+g.remaining,0);
+    if(balance+quantity>999)fail("resource-exhausted","Лимит — 999 бонусов каждого вида.");
     if(w.grants.length>=80)fail("resource-exhausted","Превышено максимальное число начислений.");
     const at=TS.now();
     w.grants.push({
@@ -245,7 +254,8 @@ exports.issueBaliQuantity=api("issueBaliQuantity",async req=>{
     });
     tx.set(ref,{...w,updatedAt:at});
     tx.create(opRef,{
-      type:"grant",guestUid,kind,count:quantity,reason,staffUid,
+      type:"grant",guestUid,kind,count:quantity,reason,staffUid,source:"staff-grant",
+      balanceAfter:balance+quantity,receiptExpiresAt:TS.fromMillis(at.toMillis()+30*86400000),
       transferable,createdAt:at
     });
   });
