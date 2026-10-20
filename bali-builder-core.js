@@ -2,6 +2,7 @@
 (() => {
 "use strict";
 const ROOTS={home:"#homeSection",events:"#eventsSection",menu:"#menuPage",info:"#contactsSection",profile:"#profileSection",id:"#baliIdSection",about:"#baliAboutSection"};
+const iconNames=["home","calendar","calendar-heart","book","user","users","bag","receipt","ticket","search","pin","phone","send","spark","palette","diamond","check","plus","chevron-right","arrow-right","arrow-left","external","logout","bolt","star"];
 const fonts=["Manrope, sans-serif","Unbounded, sans-serif","Inter, sans-serif","Arial, sans-serif","Georgia, serif","Trebuchet MS, sans-serif","system-ui, sans-serif","monospace"];
 const safeUrl=x=>typeof x==="string"&&(/^https:\/\/[^\s"'<>]{1,2048}$/i.test(x)||/^data:image\/webp;base64,[A-Za-z0-9+/=]{1,180000}$/.test(x));
 const safeLink=x=>typeof x==="string"&&(/^(route:(home|events|menu|info|profile|id|about|cart))$/.test(x)||/^https:\/\/[^\s"'<>]{1,2048}$/i.test(x)||/^tel:\+?[0-9]{5,22}$/.test(x));
@@ -44,6 +45,9 @@ function sanitizeProps(src){
    else if(k==="animationEasing"&&["linear","ease","ease-in","ease-out","ease-in-out"].includes(v))r[k]=v;
    else if(k==="effect"&&["none","glass","neon","grayscale","sepia","blur","saturate","hover-lift","hover-glow"].includes(v))r[k]=v;
    else if(k==="buttonStyle"&&["none","solid","outline","glass","pill"].includes(v))r[k]=v;
+   else if(k==="icon"&&safeUrl(v))r[k]=v;
+   else if(k==="iconName"&&iconNames.includes(v))r[k]=v;
+   else if(k==="iconSize"){const a=num(v,12,72);if(a!==null)r[k]=a;}
    else if(k==="image"&&safeUrl(v))r[k]=v;
  }
  return r;
@@ -60,6 +64,7 @@ function sanitizeDevice(raw){
  .filter(b=>b&&typeof b==="object"&&/^[a-z0-9-]{4,60}$/i.test(b.id||"")&&["text","button","image","panel"].includes(b.kind)&&ROOTS[b.page])
  .map(b=>({id:b.id,kind:b.kind,page:b.page,text:typeof b.text==="string"?b.text.slice(0,1500):"",
  link:safeLink(b.link)?b.link:"route:home",image:safeUrl(b.image)?b.image:"",
+  anchor:typeof b.anchor==="string"&&b.anchor.length<=300&&!/[{}<;\n\r]/.test(b.anchor)?b.anchor:"",
  x:num(b.x,0,95)||0,y:num(b.y,0,5000)||0,props:sanitizeProps(b.props)}));
  return out;
 }
@@ -185,6 +190,44 @@ function selectorFor(el){
  const val=seg.join(" > ");return val.length<=300?val:null;
 }
 function findPage(el){for(const [page,sel] of Object.entries(ROOTS))if(el.closest(sel))return page;return "home";}
+function editableTextNode(node){
+ if(node.matches(".bali-bottom-nav [data-bali-nav]"))return node.querySelector("small")||node;
+ if(node.matches("button,a")&&node.querySelector(":scope > strong"))return node.querySelector(":scope > strong");
+ return node;
+}
+function setVisualText(node,text,restored){
+ const target=editableTextNode(node);
+ if(target.matches("input,textarea")){
+  const old=target.placeholder;target.placeholder=text;restored.push(()=>target.placeholder=old);return;
+ }
+ const t=[...target.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());
+ if(t){const old=t.textContent;t.textContent=text;restored.push(()=>t.textContent=old);}
+ else if(!target.children.length){const old=target.textContent;target.textContent=text;restored.push(()=>target.textContent=old);}
+}
+function setVisualIcon(node,props,restored){
+ const source=props.icon,kind=props.iconName;
+ if(!source&&!kind)return;
+ const holder=node.matches(".bali-pc-nav-icon,.bali-nav-glyph")?node:
+  node.querySelector(":scope > .bali-pc-nav-icon, :scope > .bali-nav-glyph, :scope > .bali-menu-banner-icon");
+ const slot=holder||node;
+ const icon=source?docIconImage(node.ownerDocument,source):window.BaliIconAtelier?.createIcon?.(kind);
+ if(!icon)return;
+ icon.classList.add("bali-builder-custom-art");
+ icon.style.width=(props.iconSize||24)+"px";
+ icon.style.height=(props.iconSize||24)+"px";
+ icon.setAttribute("aria-hidden","true");
+ if(holder){
+  const original=[...slot.childNodes];
+  slot.replaceChildren(icon);
+  restored.push(()=>slot.replaceChildren(...original));
+ }else{
+  slot.insertBefore(icon,slot.firstChild);
+  restored.push(()=>icon.remove());
+ }
+}
+function docIconImage(doc,src){
+ const img=doc.createElement("img");img.src=src;img.alt="";img.decoding="async";return img;
+}
 function mount(doc,model,view,options={}){
  if(!doc?.body)return;
  const scope=options.scope==="about"?"about":"main";
@@ -210,14 +253,8 @@ function mount(doc,model,view,options={}){
   for(const node of nodes){
    if(node.closest(".bali-builder-added"))continue;
    css(node,rule.props,save);
-   if(typeof rule.text==="string"){
-    if(node.matches("input,textarea")){const prev=node.placeholder;node.placeholder=rule.text;restored.push(()=>node.placeholder=prev);}
-    else{
-     const t=[...node.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());
-     if(t){const old=t.textContent;t.textContent=rule.text;restored.push(()=>t.textContent=old);}
-     else if(!node.children.length){const old=node.textContent;node.textContent=rule.text;restored.push(()=>node.textContent=old);}
-    }
-   }
+   if(typeof rule.text==="string")setVisualText(node,rule.text,restored);
+   if(rule.props?.icon||rule.props?.iconName)setVisualIcon(node,rule.props,restored);
    if(rule.link&&node.matches("a,button")){
     const old=node.getAttribute("href");
     if(node.tagName==="A")node.setAttribute("href",rule.link.startsWith("route:")?"#":rule.link);
@@ -232,7 +269,12 @@ function mount(doc,model,view,options={}){
   if(scope==="main"&&block.page==="about")continue;
   // Keep a pickable placeholder in the editor without exposing a broken img to guests.
   if(block.kind==="image"&&!block.image&&!block.props?.image&&!options.editor)continue;
-  const root=scope==="about"?doc.body:doc.querySelector(ROOTS[block.page]);if(!root)continue;
+  let root=scope==="about"?doc.body:doc.querySelector(ROOTS[block.page]);
+  if(block.anchor){
+   try{const anchor=doc.querySelector(block.anchor);if(anchor&&root?.contains(anchor))root=anchor;else continue;}
+   catch{continue;}
+  }
+  if(!root)continue;
   save(root,"position");root.style.setProperty("position","relative");
   const el=doc.createElement(block.kind==="image"?"img":block.kind==="button"?"a":"div");
   el.className="bali-builder-added";el.dataset.kind=block.kind;el.dataset.baliBuilderId=block.id;
@@ -246,6 +288,7 @@ function mount(doc,model,view,options={}){
   el.style.width=block.props.width||"240px";el.style.minHeight=block.kind==="panel"?"80px":"32px";
   if(block.kind==="image")el.style.height=block.props.height||"150px";
   css(el,block.props);
+  if((block.props?.icon||block.props?.iconName)&&block.kind==="button")setVisualIcon(el,block.props,restored);
   if(block.kind==="button"){
    el.href=block.link.startsWith("route:")?"#":block.link;
    el.addEventListener("click",e=>{e.preventDefault();if(!options.editor)navigate(doc.defaultView,block.link);});
@@ -254,5 +297,5 @@ function mount(doc,model,view,options={}){
  }
  doc.__baliBuilderRestore=()=>{for(const n of added)n.remove();for(const f of restored.reverse())f();};
 }
-window.BaliBuilderCore=Object.freeze({emptyModel,cleanModel,sanitizeDevice,sanitizeProps,safeUrl,safeLink,device,mount,selectorFor,findPage,ROOTS,fonts,navigate});
+window.BaliBuilderCore=Object.freeze({emptyModel,cleanModel,sanitizeDevice,sanitizeProps,safeUrl,safeLink,device,mount,selectorFor,findPage,ROOTS,fonts,iconNames,navigate});
 })();
