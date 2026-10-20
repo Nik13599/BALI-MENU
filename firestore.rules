@@ -691,7 +691,7 @@ service cloud.firestore {
         ])
         && data.keys().hasOnly([
           'ownerUid','email','customerName','customerPhone','eventDate',
-          'tableNumber','bookingId','notes','status','archived','orderNumber','createdAt','updatedAt'
+          'tableNumber','bookingId','notes','status','archived','orderNumber','eventId','createdAt','updatedAt'
         ])
         && (!('archived' in data) || data.archived is bool)
         && (!('orderNumber' in data) || (data.orderNumber is int
@@ -704,6 +704,8 @@ service cloud.firestore {
         && data.customerPhone.matches('^\\+[1-9][0-9]{7,14}$')
         && data.eventDate is string
         && data.eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && (!('eventId' in data) || (data.eventId is string &&
+          (data.eventId == data.eventDate || data.eventId == data.eventDate + '__2' || data.eventId == data.eventDate + '__3')))
         && data.tableNumber is string && data.tableNumber.size() <= 20
         && data.bookingId is string && data.bookingId.size() <= 60
         && (data.tableNumber.size() > 0 || data.bookingId.size() > 0)
@@ -737,7 +739,7 @@ service cloud.firestore {
         && (!('archived' in request.resource.data) || request.resource.data.archived == false)
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time
-        && canOrderFor(request.resource.data.eventDate);
+        && canOrderFor(request.resource.data.get('eventId', request.resource.data.eventDate));
 
       allow update: if orderShape(request.resource.data)
         && (
@@ -761,9 +763,9 @@ service cloud.firestore {
             && (
               (
                 request.resource.data.status == 'pending'
-                && canOrderFor(request.resource.data.eventDate)
+                && canOrderFor(request.resource.data.get('eventId', request.resource.data.eventDate))
                 && request.resource.data.diff(resource.data).affectedKeys()
-                    .hasOnly(['eventDate','orderNumber','tableNumber','bookingId','notes','updatedAt'])
+                    .hasOnly(['eventDate','eventId','orderNumber','tableNumber','bookingId','notes','updatedAt'])
               )
               || (
                 request.resource.data.status == 'cancelled'
@@ -778,7 +780,7 @@ service cloud.firestore {
             isAdmin()
             && request.resource.data.diff(resource.data).affectedKeys()
                 .hasOnly([
-                  'customerName','customerPhone','eventDate','orderNumber','tableNumber','bookingId',
+                  'customerName','customerPhone','eventDate','eventId','orderNumber','tableNumber','bookingId',
                   'notes','status','archived','updatedAt'
                 ])
             && (
