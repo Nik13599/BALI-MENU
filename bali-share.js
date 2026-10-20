@@ -25,7 +25,7 @@
       const button=document.createElement("button");
       button.type="button";button.className="bali-share-trigger";
       button.setAttribute("aria-label","Создать сторис с афишей "+(card.querySelector("h3")?.textContent||"BALI"));
-      button.textContent="↗ SHARE";
+      button.textContent="↥ Поделиться";
       button.addEventListener("click",event=>{
         event.preventDefault();event.stopPropagation();void start(getData(card));
       });
