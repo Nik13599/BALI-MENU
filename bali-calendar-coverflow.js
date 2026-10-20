@@ -49,8 +49,12 @@ function render(){
   // while letting its far edge leave the stage naturally (reference crop).
   const projectedHalf=slideWidth*Math.cos(angle*Math.PI/180)*.9*.5;
   const gap=mobile()?6:Math.max(10,stageWidth*.012);
+  // Leave a real visible gap between the side planes and the centered
+  // square. Perspective makes their bounding boxes wider than the naive
+  // cosine projection; compensate without shrinking the hero image.
+  const safety=mobile()?Math.max(25,slideWidth*.10):Math.max(50,slideWidth*.11);
   const slot=Math.max(stageWidth*(mobile()?.41:.395),
-    slideWidth*.5+projectedHalf+gap);
+    slideWidth*.5+projectedHalf+gap)+safety;
   // Hard cap on visible poster count: one central + at most one each side.
   // All other events remain mounted in the queue but are invisible.
   const center=Math.round(position);
