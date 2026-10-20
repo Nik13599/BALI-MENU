@@ -107,3 +107,8 @@ body.bali-guest-theme #baliIdSection .bali-id-flip-scene{
     top:0!important;font-size:12px!important;
   }
 }
+
+/* Match the soft shadow rhythm to the longer, smoother 3D flip. */
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene.is-cinematic::before{
+  animation-duration:1150ms!important;
+}
