@@ -174,9 +174,9 @@ function initialize(){
  inspector.append(actions);
  renderInspector();
 }
-function doc(){try{return frame.contentDocument;}catch{return null;}}
+function frameDoc(){try{return frame.contentDocument;}catch{return null;}}
 function liveNode(){
- const d=doc();if(!d||!selection)return null;
+ const d=frameDoc();if(!d||!selection)return null;
  if(selection.id)return d.querySelector('[data-bali-builder-id="'+selection.id+'"]');
  try{return d.querySelector(selection.selector);}catch{return null;}
 }
@@ -264,7 +264,7 @@ function clearOverlay(){
 }
 function positionOverlay(){
  if(!overlay||!selection)return;
- const node=liveNode(),d=doc();
+ const node=liveNode(),d=frameDoc();
  if(!node||!d){overlay.style.display="none";return;}
  const rect=node.getBoundingClientRect();
  overlay.style.display="block";
@@ -272,7 +272,7 @@ function positionOverlay(){
 }
 function attachOverlay(){
  clearOverlay();
- const d=doc();if(!d)return;
+ const d=frameDoc();if(!d)return;
  if(!d.getElementById("baliBuilderEditingOverlayStyle")){
   const st=d.createElement("style");st.id="baliBuilderEditingOverlayStyle";
   st.textContent=".bali-builder-selection-overlay{position:fixed;z-index:2147483000;pointer-events:none;outline:2px solid #b9ff51;outline-offset:1px}"+
@@ -330,7 +330,7 @@ function attachOverlay(){
  d.defaultView.addEventListener("resize",positionOverlay,{passive:true});
 }
 function choose(target){
- const d=doc();if(!d||!target)return;
+ const d=frameDoc();if(!d||!target)return;
  const custom=target.closest("[data-bali-builder-id]");
  if(custom)selection={id:custom.dataset.baliBuilderId,selector:null};
  else {
@@ -342,13 +342,13 @@ function choose(target){
  renderInspector();
 }
 function refreshCanvas(){
- const d=doc();if(!d||!d.body||!d.defaultView?.BaliBuilderCore)return;
+ const d=frameDoc();if(!d||!d.body||!d.defaultView?.BaliBuilderCore)return;
  d.defaultView.BaliBuilderCore.mount(d,model,currentDevice,{editor:true});
  if(overlay&&!overlay.isConnected)attachOverlay();
  if(selection)renderInspector();
 }
 function attachFrame(){
- const d=doc();if(!d?.body)return;
+ const d=frameDoc();if(!d?.body)return;
  // Old inspector and site scripts do not handle interactions while Builder mode is on.
  d.addEventListener("click",event=>{
   if(!enabled)return;
@@ -440,8 +440,8 @@ function toggle(on){
  enabled=on;
  panel.classList.toggle("bali-builder-active",on);
  view.mode.textContent=on?"Открыть прежние настройки блоков":"Вернуться в конструктор";
- if(on){selection=null;if(!overlay&&doc()?.body)attachOverlay();refreshCanvas();renderInspector();}
- else {clearOverlay();doc()?.__baliBuilderRestore?.();}
+ if(on){selection=null;if(!overlay&&frameDoc()?.body)attachOverlay();refreshCanvas();renderInspector();}
+ else {clearOverlay();frameDoc()?.__baliBuilderRestore?.();}
 }
 function init(){
  initialize();
