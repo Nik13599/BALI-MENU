@@ -40,7 +40,7 @@ if(image&&title&&description&&counter&&action&&hero){
   function validOffer(v){
     return typeof v?.title==="string"&&(v.title.trim().length===0||v.title.trim().length>=2)&&
       typeof v.description==="string"&&typeof v.imageUrl==="string"&&
-      ["none","menu","events","contacts"].includes(v.destination)&&
+      ["none","menu","events","contacts","contact-modal"].includes(v.destination)&&
       typeof v.buttonText==="string"&&Number.isInteger(v.sort)&&v.published===true;
   }
   function show(){
@@ -86,6 +86,10 @@ if(image&&title&&description&&counter&&action&&hero){
   action.addEventListener("click",()=>{
     const page=offers[index]?.destination;
     if(!page||page==="none")return;
+    if(page==="contact-modal"){
+      window.dispatchEvent(new CustomEvent("bali:promo-contacts",{detail:{offer:offers[index]}}));
+      return;
+    }
     document.querySelector('.bali-pc-navigation [data-bali-nav="'+page+'"]')?.click();
   });
   hero.addEventListener("mouseenter",()=>{pause=true;});
