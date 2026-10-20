@@ -38,7 +38,7 @@ function render(){
     ...(Array.isArray(privilege?.benefits)?privilege.benefits:[])].filter(x=>cleanText(x));
   const list=$("baliBenefitsList");if(list){
     list.replaceChildren();
-    for(const text of new Set(values)){
+    for(const text of [...new Set(values)].slice(0,5)){
       const line=document.createElement("li");line.textContent=text;list.append(line);
     }
     if(!values.length){const li=document.createElement("li");li.textContent="Индивидуальные предложения появятся здесь после назначения администратором.";list.append(li);}
@@ -124,7 +124,7 @@ async function initializeForUser(user){
       rules=Object.fromEntries(Object.keys(DEFAULTS).map(tier=>[tier,{
         description:cleanText(values[tier]?.description)||DEFAULTS[tier].description,
         criteria:cleanText(values[tier]?.criteria)||DEFAULTS[tier].criteria,
-        benefits:Array.isArray(values[tier]?.benefits)?values[tier].benefits.filter(v=>typeof v==="string").slice(0,10):DEFAULTS[tier].benefits
+        benefits:Array.isArray(values[tier]?.benefits)?values[tier].benefits.filter(v=>typeof v==="string").slice(0,5):DEFAULTS[tier].benefits
       }]));
     }
     if(assigned)privilege=assigned;
@@ -135,7 +135,7 @@ async function initializeForUser(user){
       rules=Object.fromEntries(Object.keys(DEFAULTS).map(tier=>[tier,{
         description:cleanText(values[tier]?.description)||DEFAULTS[tier].description,
         criteria:cleanText(values[tier]?.criteria)||DEFAULTS[tier].criteria,
-        benefits:Array.isArray(values[tier]?.benefits)?values[tier].benefits.filter(v=>typeof v==="string").slice(0,10):DEFAULTS[tier].benefits
+        benefits:Array.isArray(values[tier]?.benefits)?values[tier].benefits.filter(v=>typeof v==="string").slice(0,5):DEFAULTS[tier].benefits
       }]));
       render();
     });

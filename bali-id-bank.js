@@ -45,6 +45,7 @@ const createRequestId=()=>{
   return Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");
 };
 function renderBalance(){
+  const strip=$("baliIdBonusStrip");if(strip)strip.hidden=true;
   const host=$("baliIdWalletList");if(!host)return;
   host.replaceChildren();
   const wallet=host.closest(".bali-bank-wallet");
@@ -56,13 +57,19 @@ function renderBalance(){
     if(["shot","cocktail","hookah","entry"].includes(grant.kind)&&grant.remaining>0)
       aggregates.set(grant.kind,(aggregates.get(grant.kind)||0)+grant.remaining);
   }
+  for(const kind of ["entry","shot","cocktail","hookah"]){
+    const output=document.querySelector(`[data-bali-bonus-count="${kind}"]`);
+    if(output){const amount=aggregates.get(kind)||0;output.textContent=amount>999?"999+":String(amount);
+      output.closest(".bali-id-bonus")?.setAttribute("aria-label",(names[kind]||kind)+": "+amount);}
+  }
+  if(strip)strip.hidden=false;
   for(const [kind,qty] of aggregates){
     const card=node("div","bali-bank-balance");
     card.append(node("span","",names[kind]||kind),node("strong","",String(qty)));
     host.append(card);
   }
   // An empty wallet does not occupy space on the fixed ID screen.
-  if(wallet)wallet.hidden=aggregates.size===0;
+  if(wallet)wallet.hidden=true; // Balances displayed on back of the card.
 }
 function resetTransfer(){
   ++run;
@@ -276,7 +283,7 @@ function authReset(){
 onAuthStateChanged(auth,user=>{
   authReset();
   if(!user?.emailVerified)return;
-  uid=user.uid;renderBalance();
+  uid=user.uid;
   walletStop=onSnapshot(doc(db,"guestWallets",user.uid),snapshot=>{
     if(uid!==user.uid)return;
     grants=Array.isArray(snapshot.data()?.grants)?snapshot.data().grants:[];
@@ -291,6 +298,6 @@ onAuthStateChanged(auth,user=>{
 });
 window.addEventListener("bali:auth-state",event=>{
   if(!event.detail?.registered)authReset();
-  else renderBalance();
+  else if(grants.length)renderBalance();
 });
 renderBalance();
