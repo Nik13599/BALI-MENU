@@ -80,7 +80,7 @@ body.bali-guest-theme #baliIdSection .bali-id-3d-edge-right {
      Pull it away from each corner, round the ends, and fade the final
      few pixels. This keeps the visible 90° thickness without corners. */
   top:var(--bali-id-round)!important;
-  height:calc(100% - 2 * var(--bali-id-round))!important;
+  height:calc(100% - var(--bali-id-round) - var(--bali-id-round))!important;
   border:0!important;
   border-radius:999px!important;
   -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 9%,#000 91%,transparent 100%)!important;
