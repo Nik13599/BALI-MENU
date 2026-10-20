@@ -131,9 +131,9 @@ function syncCards(){
   if(entries.length){
     const same=lastCardDate?entries.findIndex(c=>c.dataset.eventDate===lastCardDate):-1;
     if(firstSync){
-      // The reference opens with a central poster and a visible neighbor on
-      // BOTH sides whenever at least three events have been published.
-      activeIndex=entries.length>=3?1:0;position=activeIndex;firstSync=false;
+      // Start on the very first upcoming event: no nonexistent previous
+      // poster on the left, however many events are queued on the right.
+      activeIndex=0;position=0;firstSync=false;
     }
     else if(same>=0){activeIndex=same;position=same;}
     else{activeIndex=clamp(activeIndex,0,entries.length-1);position=activeIndex;}
