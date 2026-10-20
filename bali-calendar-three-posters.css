@@ -137,19 +137,19 @@ body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-want-to-go{
   color:#12200e!important;
   border:1px solid #c3fb61!important;
 }
-body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-share{
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-share-trigger{
   flex:1 1 0!important;
   background:rgba(4,8,7,.52)!important;
   color:#eef4e9!important;
   border:1px solid rgba(231,239,225,.6)!important;
   font-size:clamp(9px,.84vw,12.5px)!important;
 }
-body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-share:hover{
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-share-trigger:hover{
   border-color:#c3fb61!important;
   color:#c3fb61!important;
 }
 body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-want-to-go:focus-visible,
-body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-share:focus-visible{
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-share-trigger:focus-visible{
   outline:2px solid #e9ffaf!important;
   outline-offset:2px!important;
 }
@@ -204,7 +204,7 @@ body.bali-guest-theme #eventsSection #eventsGrid>.event-card:not(.is-active){
     margin-inline:0!important;
     padding-inline:0!important;
   }
-  body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-share{
+  body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-share-trigger{
     font-size:clamp(10px,2.8vw,13px)!important;
   }
   body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-want-to-go{
