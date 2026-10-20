@@ -1,0 +1,64 @@
+name: BALI — Firestore rules (promo contacts)
+# Scoped rules deployment only. No Hosting, functions, indexes or data writes.
+# The push trigger runs on initial addition or a future modification of this workflow.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/firestore-promo-rules.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: bali-firestore-rules-production
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Validate current Firestore rules in emulators
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run test:firebase
+
+  deploy:
+    name: Deploy rules to bali-menu-5a48b
+    runs-on: ubuntu-latest
+    needs: verify
+    environment: firebase-production
+    env:
+      FIREBASE_PROJECT_ID: bali-menu-5a48b
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check Firebase production identity configuration
+        env:
+          PROVIDER: ${{ vars.FIREBASE_WIF_PROVIDER }}
+          SERVICE_ACCOUNT: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          test "$FIREBASE_PROJECT_ID" = "bali-menu-5a48b"
+          test -n "$PROVIDER" || (echo "::error::Missing FIREBASE_WIF_PROVIDER" && exit 1)
+          test -n "$SERVICE_ACCOUNT" || (echo "::error::Missing FIREBASE_DEPLOY_SERVICE_ACCOUNT" && exit 1)
+      - name: Authenticate to Google Cloud without stored key
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.FIREBASE_WIF_PROVIDER }}
+          service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+      - name: Deploy only Firestore rules
+        run: firebase deploy --project "$FIREBASE_PROJECT_ID" --only firestore:rules --non-interactive
