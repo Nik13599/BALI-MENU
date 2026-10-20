@@ -15,7 +15,29 @@ if(image&&title&&description&&counter&&action&&hero){
   const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
   const db=getFirestore(app);
   const collator=new Intl.Collator("ru",{numeric:true,sensitivity:"base"});
-  let offers=[],index=0,pause=false;
+  let offers=[],index=0,pause=false,activeHotspot=null;
+  const artHotspot=document.createElement("button");
+  artHotspot.type="button";
+  artHotspot.className="bali-pc-artwork-hotspot";
+  artHotspot.hidden=true;
+  hero.append(artHotspot);
+  artHotspot.addEventListener("click",()=>action.click());
+  function positionHotspot(){
+    if(!activeHotspot||artHotspot.hidden)return;
+    const h=hero.getBoundingClientRect(),box=image.getBoundingClientRect();
+    const imgW=image.naturalWidth||box.width,imgH=image.naturalHeight||box.height;
+    const style=getComputedStyle(image);
+    const ratio=(style.objectFit==="cover"?Math.max:Math.min)(box.width/imgW,box.height/imgH);
+    const drawW=imgW*ratio,drawH=imgH*ratio;
+    const x=box.left-h.left+(box.width-drawW)/2,y=box.top-h.top+(box.height-drawH)/2;
+    artHotspot.style.left=(x+drawW*activeHotspot.left/100)+"px";
+    artHotspot.style.top=(y+drawH*activeHotspot.top/100)+"px";
+    artHotspot.style.width=(drawW*activeHotspot.width/100)+"px";
+    artHotspot.style.height=(drawH*activeHotspot.height/100)+"px";
+  }
+  image.addEventListener("load",positionHotspot);
+  window.addEventListener("resize",positionHotspot);
+  if(typeof ResizeObserver!=="undefined")new ResizeObserver(positionHotspot).observe(hero);
   const fallbackText="Особые предложения клуба. Скоро здесь появятся новые возможности для гостей.";
   const validImage=value=>typeof value==="string"&&
     ((value.startsWith("https://")&&value.length<=2048)||
@@ -40,7 +62,7 @@ if(image&&title&&description&&counter&&action&&hero){
   function validOffer(v){
     return typeof v?.title==="string"&&(v.title.trim().length===0||v.title.trim().length>=2)&&
       typeof v.description==="string"&&typeof v.imageUrl==="string"&&
-      ["none","menu","events","contacts"].includes(v.destination)&&
+      ["none","menu","events","contacts","contact-modal"].includes(v.destination)&&
       typeof v.buttonText==="string"&&Number.isInteger(v.sort)&&v.published===true;
   }
   function show(){
@@ -54,6 +76,7 @@ if(image&&title&&description&&counter&&action&&hero){
       hero.classList.remove("has-artwork","is-image-only","has-no-action");
       counter.textContent="— / —";
       action.hidden=true;
+      artHotspot.hidden=true;activeHotspot=null;
     }else{
       setPoster(offer);
       const hasArtwork=validImage(offer.imageUrl);
@@ -65,8 +88,16 @@ if(image&&title&&description&&counter&&action&&hero){
       hero.classList.toggle("is-image-only",hasArtwork&&!offer.title.trim()&&!offer.description.trim());
       hero.classList.toggle("has-no-action",offer.destination==="none");
       counter.textContent=String(index+1).padStart(2,"0")+" / "+String(offers.length).padStart(2,"0");
-      action.hidden=offer.destination==="none";
+      const spot=offer.contactHotspot;
+      activeHotspot=hasArtwork&&offer.destination==="contact-modal"&&spot?.enabled===true
+        &&["left","top","width","height"].every(k=>Number.isInteger(spot[k]))
+        &&spot.left>=0&&spot.top>=0&&spot.width>=1&&spot.height>=1
+        &&spot.left+spot.width<=100&&spot.top+spot.height<=100?spot:null;
+      artHotspot.hidden=!activeHotspot;
+      artHotspot.setAttribute("aria-label",offer.buttonText||"Связаться с менеджером BALI");
+      action.hidden=offer.destination==="none"||!!activeHotspot;
       if(!action.hidden)action.firstChild.textContent=offer.buttonText||"Подробнее ";
+      if(activeHotspot)positionHotspot();
     }
     const slideControls=hero.querySelector(".bali-pc-hero-controls");
     if(slideControls)slideControls.hidden=offers.length<2;
@@ -86,6 +117,10 @@ if(image&&title&&description&&counter&&action&&hero){
   action.addEventListener("click",()=>{
     const page=offers[index]?.destination;
     if(!page||page==="none")return;
+    if(page==="contact-modal"){
+      window.dispatchEvent(new CustomEvent("bali:promo-contacts",{detail:{offer:offers[index]}}));
+      return;
+    }
     document.querySelector('.bali-pc-navigation [data-bali-nav="'+page+'"]')?.click();
   });
   hero.addEventListener("mouseenter",()=>{pause=true;});

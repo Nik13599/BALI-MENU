@@ -368,16 +368,50 @@ service cloud.firestore {
 
     // BALI PRIVILEGE: visitors may query ONLY published offers.
     // Drafts and editing are restricted to verified staff admins.
+    function validPromoContactLinks(links) {
+      return links is map
+        && links.keys().hasAll(['phone','telegram','instagram','whatsapp','viber']) && links.keys().hasOnly(['phone','telegram','instagram','whatsapp','viber'])
+        && links.phone is string && links.phone.size() <= 300
+        && links.telegram is string && links.telegram.size() <= 300
+        && links.instagram is string && links.instagram.size() <= 300
+        && links.whatsapp is string && links.whatsapp.size() <= 300
+        && links.viber is string && links.viber.size() <= 300;
+    }
+    function validPromoContactEnabled(enabled) {
+      return enabled is map
+        && enabled.keys().hasAll(['phone','telegram','instagram','whatsapp','viber']) && enabled.keys().hasOnly(['phone','telegram','instagram','whatsapp','viber'])
+        && enabled.phone is bool
+        && enabled.telegram is bool
+        && enabled.instagram is bool
+        && enabled.whatsapp is bool
+        && enabled.viber is bool;
+    }
+    function validPromoHotspot(spot) {
+      return spot is map
+        && spot.keys().hasAll(['enabled','left','top','width','height'])
+        && spot.keys().hasOnly(['enabled','left','top','width','height'])
+        && spot.enabled is bool
+        && spot.left is int && spot.left >= 0
+        && spot.top is int && spot.top >= 0
+        && spot.width is int && spot.width >= 1
+        && spot.height is int && spot.height >= 1
+        && spot.left + spot.width <= 100 && spot.top + spot.height <= 100;
+    }
     function validPromotion(data) {
       return data.keys().hasAll(['title','description','imageUrl','imageTabletUrl','imageMobileUrl','destination','buttonText','sort','published','updatedAt'])
-        && data.keys().hasOnly(['title','description','imageUrl','imageTabletUrl','imageMobileUrl','destination','buttonText','sort','published','updatedAt'])
+        && data.keys().hasOnly(['title','description','imageUrl','imageTabletUrl','imageMobileUrl','destination','buttonText','contactTitle','contactLinks','contactEnabled','contactHotspot','sort','published','updatedAt'])
+        && (!('contactTitle' in data) || (data.contactTitle is string && data.contactTitle.size() <= 70))
+        && (!('contactLinks' in data) || validPromoContactLinks(data.contactLinks))
+        && (!('contactEnabled' in data) || validPromoContactEnabled(data.contactEnabled))
+        && (!('contactHotspot' in data) || validPromoHotspot(data.contactHotspot))
         && data.title is string && (data.title.size() == 0 || (data.title.size() >= 2 && data.title.size() <= 100))
         && data.description is string && data.description.size() <= 260
         && validDesignImage(data.imageUrl, 155000)
         && validDesignImage(data.imageTabletUrl, 155000)
         && validDesignImage(data.imageMobileUrl, 155000)
-        && data.destination in ['none','menu','events','contacts']
-        && data.buttonText is string && data.buttonText.size() <= 35
+        && data.destination in ['none','menu','events','contacts','contact-modal']
+        && data.buttonText is string && data.buttonText.size() <= 65
+        && (data.destination != 'contact-modal' || data.keys().hasAll(['contactTitle','contactLinks','contactEnabled']))
         && data.sort is int && data.sort >= 0 && data.sort <= 100000
         && data.published is bool
         && (data.title.size() > 0 || data.description.size() > 0 || data.imageUrl.size() > 0)
