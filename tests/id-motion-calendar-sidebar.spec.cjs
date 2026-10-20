@@ -209,7 +209,7 @@ test('BALI privilege miniatures follow real card face layout without oversized m
   await expect(c.locator('.bali-id-showcase-mini')).toHaveCount(3);
   await expect(c.locator('.bali-id-mini-heading')).toHaveCount(3);
   await expect(c.locator('.bali-id-mini-footer')).toHaveCount(3);
-  await expect(c.locator('.bali-id-showcase-mini img')).toHaveAttribute('src',/bali-id-card-readable\.svg/,);
+  await expect(c.locator('.bali-id-showcase-mini img').first()).toHaveAttribute('src',/bali-id-card-readable\.svg/);
   if(page.viewportSize().width>=1180){
     const fonts=await c.locator('.bali-id-mini-heading').first().evaluate(n=>({
       size:parseFloat(getComputedStyle(n).fontSize),
