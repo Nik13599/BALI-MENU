@@ -283,7 +283,10 @@ test('past party dates are ruby red, while today stays emerald even in my plans'
   for(const dot of await past.locator('.bali-calendar-event-dot').all())
     await expect(dot).toHaveCSS('background-color','rgb(255, 89, 103)');
   await past.click();
-  await expect(past).toHaveCSS('background-color','rgba(210, 65, 77, 0.22)');
+  await expect(past).toHaveAttribute('data-selected','true');
+  // A hovering pointer intensifies the ruby tint from .22 to .23.
+  const selectedColor=await past.evaluate(el=>getComputedStyle(el).backgroundColor);
+  expect(['rgba(210, 65, 77, 0.22)','rgba(210, 65, 77, 0.23)']).toContain(selectedColor);
   const future=await locate(dates.future);
   await expect(future).toHaveAttribute('data-past','false');
   await expect(future.locator('.bali-calendar-event-dot')).toHaveCSS('background-color','rgb(185, 255, 81)');
