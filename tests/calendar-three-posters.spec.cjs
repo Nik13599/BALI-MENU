@@ -33,7 +33,7 @@ async function prepare(page,count=10){
     root.replaceChildren(frag);
   },count);
   await expect(page.locator('#eventsGrid .event-card')).toHaveCount(count);
-  await expect(page.locator('#eventsGrid .event-share')).toHaveCount(count);
+  await expect(page.locator('#eventsGrid .bali-share-trigger')).toHaveCount(count);
   await page.waitForTimeout(150);
 }
 async function geometry(page){
