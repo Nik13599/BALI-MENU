@@ -1,0 +1,255 @@
+/* BALI calendar — faithful final poster presentation: three visual planes
+   maximum, no footer/panel, and full-width phone canvas. Scope: events only. */
+
+/* Desktop: spend the ENTIRE left column on the 3D artwork, not the calendar. */
+@media(min-width:1180px){
+  body.bali-guest-theme #eventsSection .bali-event-calendar-layout{
+    column-gap:clamp(12px,1.1vw,20px)!important;
+    align-items:stretch!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-calendar-layout>#baliCalendarPanel{
+    flex:0 0 clamp(232px,24%,318px)!important;
+    width:clamp(232px,24%,318px)!important;
+    max-width:318px!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-calendar-layout>#eventsCarouselShell{
+    flex:1 1 0!important;
+    width:0!important;
+    min-width:0!important;
+    max-width:none!important;
+    margin:0!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsCarouselShell .bali-poster-nav{
+    top:clamp(80px,31%,205px)!important;
+  }
+}
+/* The scene takes the entire allocated width; the image is the only card.
+   No panel/rectangle below the image, no name, time or summary. */
+body.bali-guest-theme #eventsSection #eventsCarouselShell,
+body.bali-guest-theme #eventsSection #eventsGrid,
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card,
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body,
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-actions {
+  border:0!important;
+  outline:none!important;
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+  height:auto!important;
+  min-height:0!important;
+  max-height:100%!important;
+  overflow:visible!important;
+  border-radius:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:0!important;
+  /* Do NOT render card-shell pseudo-elements around the poster. */
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card::before,
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card::after,
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body::before,
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body::after{
+  display:none!important;
+  content:none!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.bali-event-poster-wrap{
+  display:block!important;
+  width:100%!important;
+  flex:0 0 auto!important;
+  aspect-ratio:1 / 1!important;
+  height:auto!important;
+  border:1px solid rgba(201,255,105,.6)!important;
+  border-radius:5px!important;
+  overflow:hidden!important;
+  background:#060907!important;
+  cursor:pointer!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card:not(.is-active)>.bali-event-poster-wrap{
+  border-color:rgba(170,207,158,.12)!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active>.bali-event-poster-wrap{
+  border-color:#c9ff86!important;
+  box-shadow:0 0 2px rgba(201,255,134,.8),0 0 26px rgba(172,246,58,.25),
+    0 12px 29px rgba(0,0,0,.5)!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body{
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  flex:0 0 auto!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  padding:0!important;
+  margin:0!important;
+  border-radius:0!important;
+  opacity:1!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card:not(.is-active)>.event-card-body{
+  display:none!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-info{
+  display:none!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-actions{
+  box-sizing:border-box!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:stretch!important;
+  justify-content:space-between!important;
+  gap:clamp(5px,1.1vw,12px)!important;
+  width:100%!important;
+  min-width:0!important;
+  padding:clamp(8px,1.45dvh,15px) 0 0!important;
+  margin:0!important;
+  height:auto!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-actions>button{
+  box-sizing:border-box!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:0!important;
+  min-width:0!important;
+  min-height:34px!important;
+  height:clamp(34px,5dvh,43px)!important;
+  padding:5px clamp(4px,.8vw,11px)!important;
+  margin:0!important;
+  border-radius:5px!important;
+  line-height:1.12!important;
+  font-family:Manrope,Inter,Arial,sans-serif!important;
+  font-size:clamp(9px,.9vw,13px)!important;
+  font-weight:720!important;
+  white-space:nowrap!important;
+  letter-spacing:0!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-want-to-go{
+  flex:1.15 1 0!important;
+  background:#c3fb61!important;
+  color:#12200e!important;
+  border:1px solid #c3fb61!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-share-trigger{
+  flex:1 1 0!important;
+  background:rgba(4,8,7,.52)!important;
+  color:#eef4e9!important;
+  border:1px solid rgba(231,239,225,.6)!important;
+  font-size:clamp(9px,.84vw,12.5px)!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-share-trigger:hover{
+  border-color:#c3fb61!important;
+  color:#c3fb61!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-want-to-go:focus-visible,
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-share-trigger:focus-visible{
+  outline:2px solid #e9ffaf!important;
+  outline-offset:2px!important;
+}
+/* Exactly three visible. Off-window events are still stored in DOM;
+   their visual layer is hidden by the JS scene, not rendered as piles. */
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card[aria-hidden="true"]{
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card:not(.is-active){
+  pointer-events:none!important;
+}
+@media(max-width:1179px){
+  body.bali-guest-theme #eventsSection{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    padding-inline:0!important;
+  }
+  body.bali-guest-theme #eventsSection>.container{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-calendar-layout{
+    width:100%!important;
+    max-width:none!important;
+    padding-inline:0!important;
+    margin-inline:0!important;
+    gap:clamp(5px,.9dvh,10px)!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-calendar-layout>#baliCalendarPanel{
+    width:100%!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    padding-inline:clamp(1px,.6vw,5px)!important;
+    margin-inline:0!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-calendar-layout>#eventsCarouselShell{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin-inline:0!important;
+    padding-inline:0!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsGrid{
+    width:100%!important;
+    max-width:100%!important;
+    margin-inline:0!important;
+    padding-inline:0!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-share-trigger{
+    font-size:clamp(10px,2.8vw,13px)!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-want-to-go{
+    font-size:clamp(10px,2.8vw,13px)!important;
+  }
+}
+
+/* Theme-specific bundled rules carry an extra :root attribute selector.
+   Override at equal-or-higher specificity to actually remove their grey
+   event-card body and action backgrounds in the published LIME theme. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-actions{
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+/* The original compiled site gives .is-active / .is-neighbor desktop cards
+   a higher-specificity scale() transform. It completely neutralises our
+   calculated 3D scene, making full-size images pile on each other.
+   Reassert exactly one real 3D transform for ALL three roles. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-neighbor{
+  transform:translate3d(calc(-50% + var(--bali-stage-x,0px)),0,var(--bali-stage-depth,0px))
+    rotateY(var(--bali-stage-angle,0deg)) scale(var(--bali-stage-scale,1))!important;
+  opacity:var(--bali-stage-opacity,1)!important;
+  filter:brightness(var(--bali-stage-brightness,1))!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  transition:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card,
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active,
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-neighbor{
+    transform:translate3d(calc(-50% + var(--bali-stage-x,0px)),0,0)
+      scale(var(--bali-stage-scale,1))!important;
+  }
+}
