@@ -809,7 +809,7 @@ service cloud.firestore {
             && request.auth.token.email_verified == true
             && getAfter(parentPath()).data.ownerUid == request.auth.uid
             && getAfter(parentPath()).data.status == 'pending'
-            && canOrderFor(getAfter(parentPath()).data.eventDate);
+            && canOrderFor(getAfter(parentPath()).data.get('eventId',getAfter(parentPath()).data.eventDate));
         }
         function validItem(data) {
           return data.keys().hasAll(['id','name','unitPrice','quantity'])
