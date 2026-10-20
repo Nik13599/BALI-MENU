@@ -199,3 +199,41 @@ test("button links from embedded About navigate on the main site, not inside the
  expect(actual.parentPage).toBe("menu");
  expect(actual.nestedLocation).toContain("about.html");
 });
+
+
+test("visual editor replaces active picture artwork and restores tablet/mobile source sets",async({page})=>{
+ await page.goto("/index.html?bali-admin-design-preview=1",{waitUntil:"domcontentloaded"});
+ await page.waitForFunction(()=>Boolean(window.BaliBuilderCore));
+ const result=await page.evaluate(()=>{
+  const core=window.BaliBuilderCore,m=core.emptyModel();
+  const picture=document.createElement("picture");
+  const source=document.createElement("source");
+  const image=document.createElement("img");
+  const wrapper=document.createElement("div");
+  const original="https://example.com/previous.webp",replacement="https://example.com/new-poster.webp";
+  wrapper.id="baliBuilderPictureTestWrap";image.id="baliBuilderPictureTestImage";
+  source.media="(max-width:767px)";source.setAttribute("srcset",original);
+  image.setAttribute("src","https://example.com/original.webp");
+  picture.append(source,image);wrapper.append(picture);
+  document.getElementById("homeSection").append(wrapper);
+  m.desktop.rules["#baliBuilderPictureTestImage"]={props:{image:replacement}};
+  m.desktop.rules["#baliBuilderPictureTestWrap"]={props:{backgroundPosition:"top",image:replacement}};
+  core.mount(document,m,"desktop",{editor:true});
+  const applied={
+   src:image.getAttribute("src"),srcset:source.getAttribute("srcset"),
+   backgroundPosition:wrapper.style.backgroundPosition
+  };
+  document.__baliBuilderRestore();
+  const restored={
+   src:image.getAttribute("src"),srcset:source.getAttribute("srcset"),
+   backgroundImage:wrapper.style.backgroundImage
+  };
+  wrapper.remove();return{applied,restored};
+ });
+ expect(result.applied.src).toBe("https://example.com/new-poster.webp");
+ expect(result.applied.srcset).toBe("https://example.com/new-poster.webp");
+ expect(result.applied.backgroundPosition).toContain("top");
+ expect(result.restored.src).toBe("https://example.com/original.webp");
+ expect(result.restored.srcset).toBe("https://example.com/previous.webp");
+ expect(result.restored.backgroundImage).toBe("");
+});
