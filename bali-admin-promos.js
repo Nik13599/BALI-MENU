@@ -29,6 +29,18 @@ if(form&&list&&status){
   const variants=makeImageVariants("baliPromo","design-hero",message=>say(message));
 
   // Each promotional slide can define its own contact dialog.
+  const holidayId="bali-new-year-2026";
+  const holidayArt="assets/BALI_banner_badge_rectangular_only.png";
+  const holidayPreset={
+    id:holidayId,title:"БРОНИРОВАНИЕ НОВОГОДНИХ КОРПОРАТИВОВ",
+    description:"Проведите незабываемый праздник в центре Минска. Выберите дату заранее.",
+    imageUrl:"",imageTabletUrl:"",imageMobileUrl:"",
+    destination:"contact-modal",buttonText:"Забронировать заранее",
+    contactTitle:"Забронировать новогодний корпоратив",contactLinks:{},
+    contactEnabled:{phone:true,telegram:true,instagram:true,whatsapp:true,viber:true},
+    contactHotspot:{enabled:true,left:4,top:69,width:30,height:17},
+    sort:0,published:true
+  };
   const contactKinds=["phone","telegram","instagram","whatsapp","viber"];
   const contactId=name=>"baliPromoContact"+name.charAt(0).toUpperCase()+name.slice(1);
   const contactSettings=el("baliPromoContactSettings");
@@ -139,7 +151,7 @@ if(form&&list&&status){
     el("baliPromoDescription").value=item.description??"";
     selectedImage=item.imageUrl.startsWith("data:image/")?item.imageUrl:"";
     urlInput.value=item.imageUrl.startsWith("https://")?item.imageUrl:"";
-    showPreview(item.imageUrl);
+    showPreview(item.imageUrl||(item.id===holidayId?holidayArt:""));
     variants.set({tablet:item.imageTabletUrl,mobile:item.imageMobileUrl});
     el("baliPromoDestination").value=item.destination;
     el("baliPromoButton").value=item.buttonText;
@@ -159,28 +171,42 @@ if(form&&list&&status){
     el("baliPromoPublished").checked=item.published;
     save.textContent="Сохранить изменения";
     form.scrollIntoView({behavior:"smooth",block:"start"});
-    say("Редактирование: "+(item.title||"Баннер без заголовка"));
+    say("Редактирование: "+(item.title||"Баннер без заголовка")+(item.id===holidayId?" · Исходная картинка сохранится, пока вы не загрузите новую.":""));
   }
+  // The holiday campaign exists on the public site even before anyone saves it
+  // in Firestore. Make that shipped campaign editable instead of invisible here.
+  window.addEventListener("bali:admin:edit-promo",event=>{
+    if(!canEdit){say("Войдите как активный администратор.");return;}
+    const id=event.detail?.id;
+    const item=records.get(id)||(id===holidayId?holidayPreset:null);
+    if(!item){say("Это предложение не найдено. Выберите его в списке ниже.");return;}
+    edit(item);
+  });
   function draw(){
     list.replaceChildren();
-    const sorted=[...records.values()].sort((a,b)=>a.sort-b.sort||collator.compare(a.title,b.title));
+    const otherNewYear=[...records.values()].some(item=>item.id!==holidayId&&/новогодн/i.test(item.title));
+    const sorted=[...records.values()];
+    if(!records.has(holidayId)&&!otherNewYear)sorted.unshift(holidayPreset);
+    sorted.sort((a,b)=>a.sort-b.sort||collator.compare(a.title,b.title));
     if(!sorted.length){
       list.append(node("p","hint","Предложений пока нет. Добавьте первый баннер и опубликуйте его."));
       return;
     }
     for(const item of sorted){
       const row=node("div","bali-promo-item");
-      if(validImage(item.imageUrl)&&item.imageUrl){
+      const displayArt=item.imageUrl||(item.id===holidayId?holidayArt:"");
+      if((validImage(displayArt)&&displayArt)||displayArt===holidayArt){
         const picture=node("img","bali-promo-preview");
-        picture.loading="lazy";picture.src=item.imageUrl;picture.alt="";
+        picture.loading="lazy";picture.src=displayArt;picture.alt="";
         row.append(picture);
       }
       const info=node("div","bali-promo-copy");
+      const isBuiltin=item.id===holidayId&&!records.has(holidayId);
       info.append(node("strong","",item.title||"Баннер без заголовка"),
-        node("small","",item.published?"Опубликовано":"Черновик"),
+        node("small","",isBuiltin?"Встроенный баннер · можно настроить":item.published?"Опубликовано":"Черновик"),
         ...(item.description?[node("p","",item.description)]:[]));
       const controls=node("div","bali-promo-actions");
-      const editButton=node("button","","Изменить");editButton.type="button";
+      const editButton=node("button","",isBuiltin?"Настроить":"Изменить");editButton.type="button";
       editButton.addEventListener("click",()=>edit(item));
       const remove=node("button","","Удалить");remove.type="button";
       remove.addEventListener("click",async()=>{
@@ -193,7 +219,9 @@ if(form&&list&&status){
         }catch(error){say("Не удалось удалить: "+(error.code||"ошибка"));}
         finally{remove.disabled=false;}
       });
-      controls.append(editButton,remove);row.append(info,controls);list.append(row);
+      controls.append(editButton);
+      if(!isBuiltin)controls.append(remove);
+      row.append(info,controls);list.append(row);
     }
   }
   form.addEventListener("submit",async event=>{
