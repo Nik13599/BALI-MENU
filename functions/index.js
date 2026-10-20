@@ -253,3 +253,31 @@ exports.issueBaliQuantity=api("issueBaliQuantity",async req=>{
 });
 
 Object.assign(exports,require("./bonus-qr")({api,admin,db,TS,verified,privileged,fail,nameAndId,wallet}));
+
+/* Short-lived, opaque BALI ID recipient QR. The QR never exposes a UID or phone. */
+const QRForCard=require("qrcode");
+exports.issueGuestQr=api("issueGuestQr",async req=>{
+  const uid=verified(req),guest=await nameAndId(uid);
+  const code=randomBytes(24).toString("hex");
+  const expiresAt=Date.now()+5*60*1000;
+  await db.doc("guestRecipientQr/"+digest(code)).create({
+    uid,createdAt:TS.now(),expiresAt:TS.fromMillis(expiresAt)
+  });
+  const url="https://nik13599.github.io/BALI-MENU/?baliRecipientQr="+code+"#id";
+  const qrDataUrl=await QRForCard.toDataURL(url,{errorCorrectionLevel:"M",width:340,margin:3,
+    color:{dark:"#0b0d0e",light:"#ffffff"}});
+  return {qrDataUrl,expiresAt,number:guest.number};
+});
+exports.previewBaliRecipientQr=api("previewBaliRecipientQr",async req=>{
+  const uid=verified(req),code=req.data?.code;
+  if(typeof code!=="string"||!/^[a-f0-9]{48}$/.test(code))
+    fail("invalid-argument","Неверный QR-код карты.");
+  await nameAndId(uid);
+  await limitPreview(uid);
+  const row=await db.doc("guestRecipientQr/"+digest(code)).get();
+  if(!row.exists||row.data().expiresAt?.toMillis?.()<=Date.now())
+    fail("failed-precondition","QR-код карты истёк. Попросите гостя обновить QR.");
+  if(row.data().uid===uid)fail("failed-precondition","Нельзя перевести себе.");
+  const receiver=await nameAndId(row.data().uid);
+  return {name:receiver.name,number:receiver.number};
+});

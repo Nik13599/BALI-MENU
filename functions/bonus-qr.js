@@ -108,7 +108,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,wallet})=>{
       const walletSnap=await db.doc("guestWallets/"+uid).get();
       const available=d.action==="debit"?balance(wallet(uid,walletSnap),d.kind,Date.now()):null;
       return {name:d.name,kind:d.kind,action:d.action,mode:d.mode,
-        quantity:d.quantity,maxQuantity:d.maxQuantity,available};
+        quantity:d.action==="debit"?1:d.quantity,maxQuantity:d.maxQuantity,available};
     }),
     applyBaliBonusQR:api("applyBaliBonusQR",async req=>{
       const uid=verified(req),code=req.data?.code,requestId=req.data?.requestId;
