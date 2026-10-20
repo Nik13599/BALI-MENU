@@ -1172,7 +1172,7 @@ assert(app.includes('const card=document.createElement("article");') &&
   app.includes('function toggleGuestInterest(date,message)') &&
   app.includes('window.BaliInterests.toggle(date)') &&
   app.includes('click.stopPropagation()') &&
-  app.includes('void toggleGuestInterest(event.date,document.getElementById("homeInterestFeedback"))') &&
+  app.includes('void toggleGuestInterest(event.id||event.date,document.getElementById("homeInterestFeedback"))') &&
   app.includes('function syncInterestVisuals(){') &&
   app.includes('requestAnimationFrame(()=>{\n            track.scrollLeft='),
   "Home RSVP hearts must persist through Firebase and not activate the event overlay or reset carousel scroll");
