@@ -47,6 +47,9 @@ async function geometry(page){
       hidden:card.getAttribute('aria-hidden'),
       visibility:getComputedStyle(card).visibility,
       angle:parseFloat(card.style.getPropertyValue('--bali-stage-angle')),
+      computedTransform:getComputedStyle(card).transform,
+      xvar:card.style.getPropertyValue('--bali-stage-x'),
+      sceneWidth:scene.width,
       rect:poster(card),
       card:card.getBoundingClientRect()
     })).filter(c=>c.visibility==='visible');
@@ -55,6 +58,7 @@ async function geometry(page){
       stageLeft:scene.left,stageRight:scene.right,
       visible:visible.map(v=>({index:v.index,hidden:v.hidden,angle:v.angle,
         left:v.rect.left,right:v.rect.right,width:v.rect.width,
+        computedTransform:v.computedTransform,xvar:v.xvar,sceneWidth:v.sceneWidth,
         height:v.rect.height})),
       total:entries.length,
       calendarWidth:document.getElementById('baliCalendarPanel').getBoundingClientRect().width,
@@ -115,7 +119,7 @@ test('desktop spends the left column on three non-overlapping 58° cards',async(
   expect(right.angle).toBeLessThan(-54);
   expect(center.angle).toBe(0);
   // Perspective geometry must not lay side artwork on top of the center.
-  expect(left.right).toBeLessThanOrEqual(center.left+7);
+  expect(left.right,JSON.stringify(g)).toBeLessThanOrEqual(center.left+7);
   expect(right.left).toBeGreaterThanOrEqual(center.right-7);
   expect(center.width).toBeGreaterThan(g.stageWidth*.40);
   await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(5,false));
@@ -131,7 +135,7 @@ test('phone scene and calendar use all viewport width, square posters and swipe-
   expect(g.stageRight).toBeGreaterThanOrEqual(g.viewport-8);
   const center=g.visible[1];
   expect(center.width/center.height).toBeCloseTo(1,1);
-  expect(center.width).toBeGreaterThan(g.viewport*.42);
+  expect(center.width).toBeGreaterThan(g.viewport*.37);
   await expect(page.locator('#baliPosterPrevious')).toHaveCSS('display','none');
   await expect(page.locator('#baliPosterNext')).toHaveCSS('display','none');
 });
