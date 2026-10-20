@@ -56,3 +56,6 @@ body[data-bali-admin-section="design"] .admin-tab[data-admin-tab="design"]{font-
 @media(max-width:1190px){.bali-builder-grid{grid-template-columns:1fr}}
 @media(max-width:1020px){.bali-builder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:550px){.bali-builder-toolbar button,.bali-builder-toolbar select{flex:1 1 auto}.bali-builder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bali-builder-top{padding:11px}}
+
+.bali-builder-viewport-field{display:flex;flex-direction:column;gap:3px;font:600 10px Manrope,Inter,sans-serif;color:#b5c8b7}
+.bali-builder-viewport-field input{width:92px;box-sizing:border-box;min-height:38px;border:1px solid #405a48;border-radius:8px;background:#132017;color:#e3fbe5;padding:6px 9px;font:700 12px Manrope,Inter,sans-serif}
