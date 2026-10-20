@@ -211,3 +211,18 @@ body.bali-guest-theme #eventsSection #eventsGrid>.event-card:not(.is-active){
     font-size:clamp(10px,2.8vw,13px)!important;
   }
 }
+
+/* Theme-specific bundled rules carry an extra :root attribute selector.
+   Override at equal-or-higher specificity to actually remove their grey
+   event-card body and action backgrounds in the published LIME theme. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-actions{
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
