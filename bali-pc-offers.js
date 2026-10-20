@@ -16,6 +16,8 @@ if(image&&title&&description&&counter&&action&&hero){
   const db=getFirestore(app);
   const collator=new Intl.Collator("ru",{numeric:true,sensitivity:"base"});
   const holidayId="bali-new-year-2026";
+  const holidayArt="assets/BALI_banner_badge_rectangular_only.png";
+  const holidayExtraSpot={left:67,top:55,width:27,height:29};
   // The campaign lives in the shipped site until staff replace it with
   // a published Firestore offer. No existing offers are overwritten.
   const holidayOffer={
@@ -25,28 +27,39 @@ if(image&&title&&description&&counter&&action&&hero){
     destination:"contact-modal",buttonText:"ЗАБРОНИРОВАТЬ ДАТУ",
     contactTitle:"Забронировать новогодний корпоратив",
     contactLinks:{},contactEnabled:{phone:true,telegram:true,instagram:true,whatsapp:true,viber:true},
-    contactHotspot:{enabled:false,left:25,top:68,width:50,height:18},
+    contactHotspot:{enabled:true,left:41,top:55,width:25,height:29},
     sort:-1,published:true
   };
-  let offers=[holidayOffer],index=0,pause=false,activeHotspot=null;
+  let offers=[holidayOffer],index=0,pause=false,activeHotspot=null,activeSecondarySpot=null;
   const artHotspot=document.createElement("button");
   artHotspot.type="button";
   artHotspot.className="bali-pc-artwork-hotspot";
   artHotspot.hidden=true;
   hero.append(artHotspot);
   artHotspot.addEventListener("click",()=>action.click());
+  const secondaryHotspot=document.createElement("button");
+  secondaryHotspot.type="button";
+  secondaryHotspot.className="bali-pc-artwork-hotspot bali-pc-artwork-hotspot-secondary";
+  secondaryHotspot.hidden=true;
+  secondaryHotspot.setAttribute("aria-label","Связаться с BALI для новогоднего корпоратива");
+  hero.append(secondaryHotspot);
+  secondaryHotspot.addEventListener("click",()=>action.click());
   function positionHotspot(){
     if(!activeHotspot||artHotspot.hidden)return;
     const h=hero.getBoundingClientRect(),box=image.getBoundingClientRect();
     const imgW=image.naturalWidth||box.width,imgH=image.naturalHeight||box.height;
+    if(!imgW||!imgH||!box.width||!box.height)return;
     const style=getComputedStyle(image);
     const ratio=(style.objectFit==="cover"?Math.max:Math.min)(box.width/imgW,box.height/imgH);
     const drawW=imgW*ratio,drawH=imgH*ratio;
     const x=box.left-h.left+(box.width-drawW)/2,y=box.top-h.top+(box.height-drawH)/2;
-    artHotspot.style.left=(x+drawW*activeHotspot.left/100)+"px";
-    artHotspot.style.top=(y+drawH*activeHotspot.top/100)+"px";
-    artHotspot.style.width=(drawW*activeHotspot.width/100)+"px";
-    artHotspot.style.height=(drawH*activeHotspot.height/100)+"px";
+    for(const [button,spot] of [[artHotspot,activeHotspot],[secondaryHotspot,activeSecondarySpot]]){
+      if(!spot||button.hidden)continue;
+      button.style.left=(x+drawW*spot.left/100)+"px";
+      button.style.top=(y+drawH*spot.top/100)+"px";
+      button.style.width=(drawW*spot.width/100)+"px";
+      button.style.height=(drawH*spot.height/100)+"px";
+    }
   }
   image.addEventListener("load",positionHotspot);
   window.addEventListener("resize",positionHotspot);
@@ -56,7 +69,8 @@ if(image&&title&&description&&counter&&action&&hero){
     ((value.startsWith("https://")&&value.length<=2048)||
      (value.startsWith("data:image/webp;base64,")&&value.length<=155000));
   function setPoster(offer){
-    const primary=validImage(offer?.imageUrl)?offer.imageUrl:"";
+    // For the seasonal card, display the original customer-approved PNG, unchanged.
+    const primary=offer?.id===holidayId?holidayArt:(validImage(offer?.imageUrl)?offer.imageUrl:"");
     const tablet=validImage(offer?.imageTabletUrl)?offer.imageTabletUrl:primary;
     const mobile=validImage(offer?.imageMobileUrl)?offer.imageMobileUrl:primary;
     image.hidden=!primary;
@@ -91,7 +105,7 @@ if(image&&title&&description&&counter&&action&&hero){
       hero.classList.remove("has-artwork","is-image-only","has-no-action");
       counter.textContent="— / —";
       action.hidden=true;
-      artHotspot.hidden=true;activeHotspot=null;
+      artHotspot.hidden=true;secondaryHotspot.hidden=true;activeHotspot=null;activeSecondarySpot=null;
     }else{
       const seasonal=offer.id===holidayId;
       hero.classList.toggle("is-seasonal",seasonal);
@@ -99,11 +113,11 @@ if(image&&title&&description&&counter&&action&&hero){
       const kicker=hero.querySelector(".bali-pc-kicker");
       if(kicker)kicker.textContent=seasonal?"НОВЫЙ ГОД · BALI":"BALI NIGHT CLUB";
       setPoster(offer);
-      const hasArtwork=validImage(offer.imageUrl);
+      const hasArtwork=seasonal||validImage(offer.imageUrl);
       title.textContent=offer.title;
-      title.hidden=!offer.title.trim();
+      title.hidden=seasonal||!offer.title.trim();
       description.textContent=offer.description;
-      description.hidden=!offer.description.trim();
+      description.hidden=seasonal||!offer.description.trim();
       hero.classList.toggle("has-artwork",hasArtwork);
       hero.classList.toggle("is-image-only",hasArtwork&&!offer.title.trim()&&!offer.description.trim());
       hero.classList.toggle("has-no-action",offer.destination==="none");
@@ -113,7 +127,9 @@ if(image&&title&&description&&counter&&action&&hero){
         &&["left","top","width","height"].every(k=>Number.isInteger(spot[k]))
         &&spot.left>=0&&spot.top>=0&&spot.width>=1&&spot.height>=1
         &&spot.left+spot.width<=100&&spot.top+spot.height<=100?spot:null;
+      activeSecondarySpot=seasonal?holidayExtraSpot:null;
       artHotspot.hidden=!activeHotspot;
+      secondaryHotspot.hidden=!activeSecondarySpot;
       artHotspot.setAttribute("aria-label",offer.buttonText||"Связаться с менеджером BALI");
       action.hidden=offer.destination==="none"||!!activeHotspot;
       if(!action.hidden)action.firstChild.textContent=offer.buttonText||"Подробнее ";
