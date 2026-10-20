@@ -1,0 +1,58 @@
+/* BALI mobile calendar: all 5/6 week rows stay visible, compressed into
+   approximately two fewer former date-cell heights. The saved space belongs
+   to the square poster stage, not to a new footer or moved action buttons. */
+@media(max-width:767px){
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection
+  .bali-event-calendar-layout>#baliCalendarPanel{
+    flex:0 0 auto!important;
+    height:auto!important;
+    max-height:none!important;
+    min-height:0!important;
+    gap:clamp(2px,.34dvh,4px)!important;
+    padding-top:0!important;
+    padding-bottom:0!important;
+    overflow:visible!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-grid{
+    gap:2px!important;
+    width:100%!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-weekdays{
+    margin-bottom:1px!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarDays{
+    display:grid!important;
+    grid-template-columns:repeat(7,minmax(0,1fr))!important;
+    grid-auto-rows:clamp(24px,3.1dvh,27px)!important;
+    gap:0!important;
+    overflow:visible!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarDays>.bali-calendar-day{
+    box-sizing:border-box!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    aspect-ratio:auto!important;
+    padding:0 0 2px!important;
+    line-height:1!important;
+    font-size:clamp(10px,2.7vw,12px)!important;
+    gap:0!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-event-dots{
+    bottom:1px!important;
+  }
+  /* The month grid is content-sized; stage absorbs its saved height. */
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection
+  .bali-event-calendar-layout>#eventsCarouselShell{
+    flex:1 1 0!important;
+    min-height:0!important;
+    max-height:100%!important;
+  }
+  /* Align the 100%-height stage cards to the top: the former 2–4px
+     absolute offset pushed bottom action buttons beyond the stage. */
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+    top:0!important;
+  }
+  /* The two buttons keep their original size and lower alignment. */
+}
