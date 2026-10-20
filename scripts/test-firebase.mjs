@@ -31,6 +31,7 @@ try{
   await env.withSecurityRulesDisabled(async context=>{
    const seed=context.firestore();
    await setDoc(doc(seed,'events',eventDate),{date:eventDate,title:'Тестовое событие',preorderEnabled:true,closesAt:Timestamp.fromDate(new Date('2099-10-24T20:00:00Z'))});
+   await setDoc(doc(seed,'events',eventDate+'__2'),{date:eventDate,title:'Вторая вечеринка',preorderEnabled:true,closesAt:Timestamp.fromDate(new Date('2099-10-24T20:00:00Z'))});
    await setDoc(doc(seed,'menu','1'),{id:1,name:'Тестовое блюдо',price:25,available:true});
    await setDoc(doc(seed,'admins','admin-emulator'),{active:true});
   });
@@ -47,6 +48,18 @@ try{
    assert.equal(saved.total,50);assert.equal(saved.order_number,1);
    const order=await window.BaliOrders.getOrderWithItems(orderId);
    assert.equal(order.items[0].unitPrice,25);
+   assert.equal(order.eventTitle,'Тестовое событие');
+   assert.equal(order.eventId,eventDate);
+  });
+  await t.test('two parties on one date retain distinct IDs and verified titles',async()=>{
+   const second=await window.BaliOrders.save({...payload,event_id:eventDate+'__2'});
+   const order=await window.BaliOrders.getOrderWithItems(second.order_id);
+   assert.equal(order.eventId,eventDate+'__2');
+   assert.equal(order.eventDate,eventDate);
+   assert.equal(order.eventTitle,'Вторая вечеринка');
+   assert.equal(second.order_number,2);
+   await assertFails(updateDoc(doc(db,'orders',second.order_id),
+     {eventTitle:'Поддельное название',updatedAt:serverTimestamp()}));
   });
   const uid=auth.currentUser.uid;
   const stranger=env.authenticatedContext('stranger',{email:'stranger@example.test',email_verified:true}).firestore();

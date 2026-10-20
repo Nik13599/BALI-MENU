@@ -7,13 +7,15 @@ import {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBat
   serverTimestamp,runTransaction,query,limit,orderBy} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
-let unsubOrders=null,unsubMenu=null,generation=0,authorized=false,orders=[],catalog=[];
+let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=false,orders=[],catalog=[];
+let events=new Map();
 let editOrder=null,editLines=[],originalIds=new Set();
 const statuses={pending:"Ожидает подтверждения",confirmed:"Подтверждён",completed:"Выполнен",cancelled:"Отменён"};
 const fmt=n=>Number(n||0).toFixed(2)+" BYN";
 const orderLabel = o => Number.isInteger(o.orderNumber)
   ? String(o.orderNumber).padStart(2,"0") : o.id;
 const setStatus=text=>{$("ordersAdminStatus").textContent=text;};
+const eventTitle=o=>o.eventTitle||events.get(o.eventId||o.eventDate)?.title||"Название мероприятия не сохранено";
 function node(tag,text="",cls=""){
   const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e;
 }
@@ -34,7 +36,8 @@ function printOrder(o){
   area.replaceChildren();
   for(const [tag,line] of [
     ["h1","BALI — ПРЕДЗАКАЗ"],["h2","№ "+orderLabel(o)],
-    ["p","Дата: "+o.eventDate+" · Статус: "+(statuses[o.status]||o.status)],
+    ["p","Дата: "+o.eventDate+" · Мероприятие: "+eventTitle(o)],
+    ["p","Статус: "+(statuses[o.status]||o.status)],
     ["p","Столик: "+(o.tableNumber||"—")+" · Бронь: "+(o.bookingId||"—")],
     ["p","Гость: "+o.customerName+" · "+o.customerPhone],["p",o.email]
   ])area.append(node(tag,line));
@@ -86,7 +89,8 @@ function renderOrders(){
   for(const o of shown){
     const card=node("article","","admin-order-card");
     card.append(node("h3","№ "+orderLabel(o)+" · "+statuses[o.status]+(o.archived?" · Архив":"")));
-    card.append(node("p",o.eventDate+" · "+(o.tableNumber?"Столик "+o.tableNumber:"Бронь "+o.bookingId)));
+    card.append(node("p",o.eventDate+" · "+eventTitle(o)));
+    card.append(node("p",o.tableNumber?"Столик "+o.tableNumber:"Бронь "+o.bookingId));
     card.append(node("p",o.customerName+" · "+o.customerPhone+" · "+o.email));
     for(const line of o.items)card.append(node("p",line.name+" × "+line.quantity+" — "+fmt(line.unitPrice*line.quantity),"admin-line-item"));
     card.append(node("strong","Итого: "+fmt(o.total)));
@@ -118,6 +122,23 @@ function renderDates(){
 }
 $("ordersDateFilter").addEventListener("change",renderOrders);
 $("showArchivedOrders")?.addEventListener("change",renderOrders);
+function fillOrderEventOptions(preferredId=""){
+  const select=$("editOrderEvent"),date=$("editOrderDate").value;
+  const previous=preferredId||select.value;
+  select.replaceChildren(new Option("Выберите мероприятие",""));
+  for(const [id,event] of [...events].filter(([,event])=>event.date===date)
+    .sort((a,b)=>(a[1].startTime||"").localeCompare(b[1].startTime||"")||a[0].localeCompare(b[0]))){
+    select.add(new Option(event.title+(event.startTime?" · "+event.startTime:""),id));
+  }
+  // Existing orders remain editable even when an older event was removed.
+  if(editOrder?.eventDate===date){
+    const originalId=editOrder.eventId||date;
+    if(![...select.options].some(o=>o.value===originalId))
+      select.add(new Option(eventTitle(editOrder)+" · архивное мероприятие",originalId));
+  }
+  if([...select.options].some(o=>o.value===previous))select.value=previous;
+}
+$("editOrderDate").addEventListener("change",()=>fillOrderEventOptions());
 function menuSelect() {
   const select=$("editOrderAddProduct"),value=select.value;
   select.replaceChildren(new Option("Выберите блюдо",""));
@@ -181,6 +202,7 @@ async function openEditor(id){
     originalIds=new Set(o.items.map(x=>String(x.id)));
     $("orderEditTitle").textContent="Заказ № "+orderLabel(o);
     $("editOrderDate").value=o.eventDate;
+    fillOrderEventOptions(o.eventId||o.eventDate);
     $("editOrderStatus").value=o.status;
     $("editOrderName").value=o.customerName;
     $("editOrderPhone").value=o.customerPhone;
@@ -201,18 +223,26 @@ $("orderEditForm").addEventListener("submit",async event=>{
   if(!editOrder||!authorized)return;
   const status=$("editOrderStatus").value;
   const eventDate=$("editOrderDate").value;
+  const eventId=$("editOrderEvent").value;
+  const selectedEvent=events.get(eventId);
+  const samePreviousEvent=eventDate===editOrder.eventDate &&
+    eventId===(editOrder.eventId||editOrder.eventDate);
+  const chosenTitle=selectedEvent?.title||(samePreviousEvent?editOrder.eventTitle:"");
+  const eventFields={eventId,...(chosenTitle?{eventTitle:chosenTitle}:{})};
   const customerName=$("editOrderName").value.trim();
   const customerPhone=$("editOrderPhone").value.trim();
   const tableNumber=$("editOrderTable").value.trim();
   const bookingId=$("editOrderBooking").value.trim();
   const notes=$("editOrderNotes").value.trim();
   if(!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)
+      ||!eventId || (!selectedEvent&&!samePreviousEvent) ||
+      (selectedEvent&&selectedEvent.date!==eventDate)
       ||customerName.length<2||customerName.length>100
       ||!/^[+]?[1-9][0-9]{7,14}$/.test(customerPhone)
       ||(!tableNumber&&!bookingId)||tableNumber.length>20||bookingId.length>60
       ||notes.length>500||!Object.keys(statuses).includes(status)
       ||!editLines.length||editLines.length>12) {
-    $("orderEditStatus").textContent="Заполните дату, столик или бронь, оставьте от 1 до 12 разных блюд.";return;
+    $("orderEditStatus").textContent="Выберите дату и мероприятие, столик или бронь и от 1 до 12 блюд.";return;
   }
   const submit=event.currentTarget.querySelector('[type="submit"]');
   submit.disabled=true;
@@ -254,7 +284,7 @@ $("orderEditForm").addEventListener("submit",async event=>{
         const next=(counter.exists()?counter.data().count:0)+1;
         if(!Number.isSafeInteger(next)||next>999999)throw new Error("Счётчик заказов переполнен.");
         tx.set(counterRef,{date:eventDate,count:next,lastOrderId:editOrder.id,updatedAt:serverTimestamp()});
-        tx.update(ref,{eventDate,orderNumber:next,customerName,customerPhone,
+        tx.update(ref,{eventDate,...eventFields,orderNumber:next,customerName,customerPhone,
           tableNumber,bookingId,notes,status,updatedAt:serverTimestamp()});
         for(const id of originalIds)if(!present.has(id))tx.delete(doc(ref,"items",id));
         for(const line of touched)tx.set(doc(ref,"items",String(line.id)),{
@@ -265,7 +295,7 @@ $("orderEditForm").addEventListener("submit",async event=>{
       editOrder.orderNumber=assignedNumber;
     } else {
       const batch=writeBatch(db);
-      batch.update(ref,{customerName,customerPhone,tableNumber,bookingId,notes,status,updatedAt:serverTimestamp()});
+      batch.update(ref,{...eventFields,customerName,customerPhone,tableNumber,bookingId,notes,status,updatedAt:serverTimestamp()});
       for(const id of originalIds)if(!present.has(id))batch.delete(doc(ref,"items",id));
       for(const line of touched)batch.set(doc(ref,"items",String(line.id)),{
         id:line.id,name:line.name,unitPrice:line.unitPrice,quantity:line.quantity
@@ -283,8 +313,9 @@ $("orderEditForm").addEventListener("submit",async event=>{
 async function subscribe(user) {
   if(unsubOrders){unsubOrders();unsubOrders=null;}
   if(unsubMenu){unsubMenu();unsubMenu=null;}
+  if(unsubEvents){unsubEvents();unsubEvents=null;}
   const current=++generation;
-  orders=[];catalog=[];authorized=false;
+  orders=[];catalog=[];events=new Map();authorized=false;
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
   $("ordersAdminList").textContent="Проверяем права...";
   if(!user||!user.emailVerified)return;
@@ -294,6 +325,11 @@ async function subscribe(user) {
       $("ordersAdminList").textContent="Нет прав администратора.";return;
     }
     authorized=true;
+    unsubEvents=onSnapshot(collection(db,"events"),snap=>{
+      events=new Map(snap.docs.map(row=>[row.id,row.data()]));
+      renderOrders();
+      if($("orderEditDialog").open)fillOrderEventOptions($("editOrderEvent").value);
+    },e=>setStatus("Ошибка списка мероприятий: "+(e.code||"unknown")));
     unsubMenu=onSnapshot(collection(db,"menu"),snap=>{
       catalog=snap.docs.map(x=>x.data()).filter(x=>Number.isSafeInteger(x.id)&&Number.isFinite(x.price));
       menuSelect();

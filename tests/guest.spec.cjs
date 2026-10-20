@@ -120,6 +120,28 @@ test('guest chooses a date and one of multiple named parties for a preorder',asy
   const order=await page.evaluate(()=>window.savedPreorder);
   expect(order.event_date).toBe('2099-10-24');
   expect(order.event_id).toBe('2099-10-24__2');
+  expect(order.event_title).toBe('Вечеринка VIP');
+});
+
+test('editing a preorder restores the date and exact party even with multiple events', async ({page}) => {
+  await menu(page);
+  await page.evaluate(async () => {
+    const events=[
+      {id:'2099-10-24',date:'2099-10-24',title:'Основная вечеринка',
+        preorderEnabled:true,closesAt:{toDate:()=>new Date('2099-10-24T20:00:00Z')}},
+      {id:'2099-10-24__2',date:'2099-10-24',title:'Вечеринка VIP',
+        preorderEnabled:true,closesAt:{toDate:()=>new Date('2099-10-24T20:00:00Z')}}
+    ];
+    window.dispatchEvent(new CustomEvent('bali:events',{detail:{events}}));
+    window.BaliOrders.getOrderWithItems=async()=>({
+      status:'pending',eventDate:'2099-10-24',eventId:'2099-10-24__2',
+      tableNumber:'5',bookingId:'',notes:'',items:[{id:1,quantity:2}]
+    });
+    await editMyOrder('preorder-vip');
+  });
+  await expect(page.locator('#checkoutModal')).toHaveClass(/active/);
+  await expect(page.locator('#eventDateSelect')).toHaveValue('2099-10-24');
+  await expect(page.locator('#eventSelect')).toHaveValue('2099-10-24__2');
 });
 
 test('cancelled editing creates a new order and failed submit stays usable', async ({page}) => {

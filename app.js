@@ -327,6 +327,7 @@ window.addEventListener('bali:events', ({ detail }) => {
     availableEvents=incoming;
     receivedEventSnapshot=true;
     if(unchangedPosters){
+        // Preorder dates and titles do not change with RSVP counts.
         const counts=new Map(incoming.map(event=>[event.id||event.date,
             Number.isSafeInteger(event.interestCount)&&event.interestCount>=0?event.interestCount:0]));
         for(const [selector,countClass] of [
@@ -346,8 +347,12 @@ window.addEventListener('bali:events', ({ detail }) => {
     renderHomeEvents();
 });
 window.addEventListener('bali:events-error', () => {
-    const select = document.getElementById('eventSelect');
-    if (select) select.innerHTML = '<option value="">Не удалось загрузить мероприятия</option>';
+    availableEvents=[];
+    populateEvents();
+    const date=document.getElementById('eventDateSelect');
+    if(date)date.options[0].textContent="Не удалось загрузить даты";
+    const select=document.getElementById('eventSelect');
+    if(select)select.options[0].textContent="Не удалось загрузить мероприятия";
 });
 // Клиентские разделы BALI: URL/история браузера работают без перезагрузки.
 const BALI_GUEST_PAGES = new Set(["home","menu","events","profile","id","contacts","about"]);
@@ -1593,6 +1598,8 @@ async function openCheckout() {
         .join('');
 
     elements.checkoutTotal.textContent = `${calculateTotal().toFixed(2)} BYN`;
+    // The events snapshot can change while a guest is browsing the kitchen.
+    populateEvents();
 
     elements.checkoutModal.classList.add('active');
     elements.overlay.classList.add('active');
@@ -1657,8 +1664,9 @@ async function handleCheckout(e) {
     const eventId = document.getElementById('eventSelect').value;
     const tableNumber = document.getElementById('tableNumber').value.trim();
     const bookingId = document.getElementById('bookingId').value.trim();
-    if (!availablePreorderEvents().some(e =>
-        e.date===eventDate && (e.id||e.date)===eventId)) {
+    const selectedEvent=availablePreorderEvents().find(e =>
+        e.date===eventDate && (e.id||e.date)===eventId);
+    if(!selectedEvent){
         alert('Выберите доступное мероприятие из списка.');
         return;
     }
@@ -1674,6 +1682,7 @@ async function handleCheckout(e) {
         customer_email: customer.email,
         event_date: eventDate,
         event_id: eventId,
+        event_title: selectedEvent.title,
         table_number: tableNumber,
         booking_id: bookingId,
         notes: document.getElementById('orderNotes').value,
@@ -1781,7 +1790,11 @@ function renderMyOrders() {
             ? String(order.orderNumber).padStart(2,'0') : order.id)
             +' · '+(statusText[order.status]||order.status);
         const meta = document.createElement('p');
-        meta.textContent=order.eventDate+' · '+(order.tableNumber?'Столик '+order.tableNumber:'ID '+order.bookingId);
+        const eventTitle=order.eventTitle ||
+            availableEvents.find(e=>(e.id||e.date)===(order.eventId||order.eventDate))?.title ||
+            'Название мероприятия не сохранено';
+        meta.textContent=order.eventDate+' · '+eventTitle+' · '+
+            (order.tableNumber?'Столик '+order.tableNumber:'ID '+order.bookingId);
         const items = document.createElement('ul');
         for(const item of order.items||[]) {
             const li = document.createElement('li');
@@ -1827,9 +1840,13 @@ async function editMyOrder(orderId) {
         editingOrderId=orderId;
         closeMyOrders();
         await openCheckout();
-        const select=document.getElementById('eventSelect');
-        select.value=order.eventDate;
+        const dateSelect=document.getElementById('eventDateSelect');
+        dateSelect.value=order.eventDate;
+        populateEventNames(order.eventId||order.eventDate);
         document.getElementById('eventDate').value=order.eventDate;
+        if(!dateSelect.value || !document.getElementById('eventSelect').value){
+            alert('Предзаказ на это мероприятие закрыт. Выберите другую доступную дату и вечеринку.');
+        }
         document.getElementById('tableNumber').value=order.tableNumber;
         document.getElementById('bookingId').value=order.bookingId;
         document.getElementById('orderNotes').value=order.notes||'';
