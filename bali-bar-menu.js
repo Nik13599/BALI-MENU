@@ -5,7 +5,9 @@
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getFirestore,collection,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-import {categoryLabel,catalogCard,catalogGroup} from "./bali-menu-cards.js?v=20261020-1";
+import {categoryLabel,catalogCard,catalogGroup} from "./bali-menu-cards.js?v=20261020-2";
+
+import {hasCatalogDetails,catalogDetailsAction,openCatalogDetails} from "./bali-catalog-details.js?v=20261020-1";
 
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const db=getFirestore(app);
@@ -31,7 +33,9 @@ function validItem(raw,id){
     id,name:raw.name.trim(),category:raw.category.trim(),
     volume1:raw.volume1.trim(),price1:raw.price1,
     volume2:raw.volume2.trim(),price2:raw.price2,
-    sort:Number.isInteger(raw.sort)?raw.sort:100
+    sort:Number.isInteger(raw.sort)?raw.sort:100,
+    description:typeof raw.description==="string"?raw.description.trim().slice(0,2400):"",
+    ingredients:typeof raw.ingredients==="string"?raw.ingredients.trim().slice(0,2400):""
   };
 }
 function draw(){
@@ -65,7 +69,10 @@ function draw(){
     groups.get(item.category).push(item);
   }
   for(const [category,items] of groups){
-    host.append(catalogGroup(category,items,catalogCard));
+    host.append(catalogGroup(category,items,item=>catalogCard(item,{
+      detailsLabel:catalogDetailsAction("bar"),
+      onDetails:hasCatalogDetails(item)?()=>openCatalogDetails(item,"bar"):undefined
+    })));
   }
 }
 search?.addEventListener("input",()=>{

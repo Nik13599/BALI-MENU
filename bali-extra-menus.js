@@ -2,12 +2,12 @@
    Tea seed uses the owner's menu; detailed tasting notes cite the attached manual. */
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getFirestore,collection,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import {node,categoryLabel,catalogCard,catalogGroup} from "./bali-menu-cards.js?v=20261020-1";
+import {node,categoryLabel,catalogCard,catalogGroup} from "./bali-menu-cards.js?v=20261020-2";
+import {hasCatalogDetails,catalogDetailsAction,openCatalogDetails} from "./bali-catalog-details.js?v=20261020-1";
 import {BALI_TEA_SEED} from "./bali-tea-seed.js";
 
 const firebase=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const db=getFirestore(firebase);
-const rub=new Intl.NumberFormat("ru-RU",{minimumFractionDigits:2,maximumFractionDigits:2});
 const collator=new Intl.Collator("ru",{numeric:true,sensitivity:"base"});
 const schemas=[
   {prefix:"baliHookah",collection:"hookah_menu",title:"Кальянная карта",all:"Вся кальянная карта"},
@@ -43,51 +43,6 @@ function mergeTeaItems(firebaseItems){
     result.set(key,{...result.get(key),...item,id:key});
   }
   return [...result.values()].filter(x=>x.hidden!==true).sort(sortItems);
-}
-let teaDialog;
-function getTeaDialog(){
-  if(teaDialog)return teaDialog;
-  const dialog=node("dialog","bali-menu-details-dialog bali-tea-details-dialog");
-  dialog.id="baliTeaDetailsDialog";
-  dialog.setAttribute("aria-labelledby","baliTeaDetailsTitle");
-  const head=node("div","bali-menu-details-head");
-  const title=node("span","", "ИНФОРМАЦИЯ О ЧАЕ");title.id="baliTeaDetailsTitle";
-  const close=node("button","","✕");close.type="button";close.className="bali-tea-details-close";
-  close.setAttribute("aria-label","Закрыть информацию о чае");
-  close.addEventListener("click",()=>dialog.close());
-  head.append(title,close);
-  const body=node("div","bali-menu-details-body");
-  body.id="baliTeaDetailsBody";
-  dialog.append(head,body);
-  dialog.addEventListener("click",event=>{
-    if(event.target===dialog)dialog.close();
-  });
-  document.body.append(dialog);
-  teaDialog=dialog;return dialog;
-}
-function openTeaInfo(item){
-  const hasDetails=Boolean([item.description,item.taste,item.ingredients,item.brewing].some(Boolean));
-  if(!hasDetails)return;
-  const dialog=getTeaDialog(),body=document.getElementById("baliTeaDetailsBody");
-  body.replaceChildren();
-  body.append(node("h2","bali-menu-details-name",item.name));
-  const prices=[[item.volume1,item.price1],[item.volume2,item.price2]].filter(x=>x[0]);
-  body.append(node("strong","bali-menu-details-price",prices.map(x=>
-    (x[0]==="Порция"?"":x[0]+" · ")+rub.format(x[1])+" BYN").join(" / ")));
-  for(const [label,value] of [
-    ["Описание",item.description],["Состав",item.ingredients],
-    ["Вкус и аромат",item.taste],["Рекомендации по завариванию",item.brewing]]){
-    if(!value)continue;
-    body.append(node("h3","bali-menu-details-label",label),
-                node("p","bali-menu-details-copy",value));
-  }
-  if(item.sourcePage)
-    body.append(node("p","bali-tea-details-source","Описание составлено по чайной методичке, страница "+item.sourcePage+"."));
-  if(!dialog.open)dialog.showModal();
-}
-function drawTeaItem(item){
-  const hasDetails=Boolean([item.description,item.taste,item.ingredients,item.brewing].some(Boolean));
-  return catalogCard(item,{tea:true,onDetails:hasDetails?()=>openTeaInfo(item):undefined});
 }
 function setup({prefix,collection:collectionName,title,all}){
   const list=document.getElementById(prefix+"List");
@@ -125,7 +80,10 @@ function setup({prefix,collection:collectionName,title,all}){
       grouped.get(item.category).push(item);
     }
     for(const [category,items] of grouped){
-      list.append(catalogGroup(category,items,isTea?drawTeaItem:catalogCard));
+      list.append(catalogGroup(category,items,item=>catalogCard(item,{
+        tea:isTea,detailsLabel:catalogDetailsAction(mode),
+        onDetails:hasCatalogDetails(item)?()=>openCatalogDetails(item,mode):undefined
+      })));
     }
   }
   search?.addEventListener("input",()=>{

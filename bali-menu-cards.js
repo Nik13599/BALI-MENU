@@ -7,7 +7,7 @@ export const node=(tag,className,text)=>{
 };
 export const categoryLabel=value=>value===value.toLocaleUpperCase('ru-RU')?value.slice(0,1)+value.slice(1).toLocaleLowerCase('ru-RU'):value;
 const money=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:2});
-export function catalogCard(item,{tea=false,onDetails}={}){
+export function catalogCard(item,{tea=false,onDetails,detailsLabel='Подробнее'}={}){
   const card=node('article','menu-item bali-catalog-card menu-item--no-image'+(tea?' bali-tea-item':''));
   const inner=node('div','menu-item-content');
   const header=node('div','menu-item-header');
@@ -23,9 +23,10 @@ export function catalogCard(item,{tea=false,onDetails}={}){
   }
   header.append(portions);inner.append(header);
   if(onDetails){
-    card.classList.add('has-tea-details');
-    const more=node('button','bali-menu-readmore bali-tea-readmore','Подробнее о чае');
-    more.type='button';more.setAttribute('aria-label','Подробнее о чае: '+item.name);
+    card.classList.add('has-catalog-details');
+    if(tea)card.classList.add('has-tea-details');
+    const more=node('button','bali-menu-readmore bali-catalog-readmore'+(tea?' bali-tea-readmore':''),detailsLabel);
+    more.type='button';more.setAttribute('aria-label',detailsLabel+': '+item.name);
     const arrow=node('span','','→');arrow.setAttribute('aria-hidden','true');more.append(arrow);
     more.addEventListener('click',onDetails);inner.append(more);
   }else{

@@ -11,7 +11,7 @@
 
   <link rel="icon" href="assets/bali-favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/manrope-variable.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" data-bali-bundle="admin" href="generated/admin.css?v=42d08879cf56">
+  <link rel="stylesheet" data-bali-bundle="admin" href="generated/admin.css?v=45f02cb54f07">
 <script src="bali-content-readiness.js?v=20261020-2"></script>
 </head>
 <body class="bali-admin-theme">
@@ -375,6 +375,13 @@
               <label>Порядок сортировки
                 <input id="baliAdminBarSort" type="number" min="0" max="100000" step="1" value="100" required>
               </label>
+              <label class="bali-catalog-info-field">Подробное описание (необязательно)
+                <textarea id="baliAdminBarDescription" maxlength="2400" rows="4" placeholder="Особенности напитка, происхождение и подача"></textarea>
+              </label>
+              <label class="bali-catalog-info-field">Состав (необязательно)
+                <textarea id="baliAdminBarIngredients" maxlength="2400" rows="3" placeholder="Ингредиенты напитка"></textarea>
+              </label>
+              <p id="baliAdminBarDetailsHint" class="hint bali-catalog-info-field" role="status">Без текста кнопка «Подробнее» не показывается.</p>
               <div class="bali-admin-bar-buttons">
                 <button type="submit" id="baliAdminBarSave" class="primary">Сохранить позицию</button>
                 <button type="button" id="baliAdminBarClear">Очистить форму</button>
@@ -957,11 +964,11 @@
       <section class="bali-admin-product-details" aria-label="Подробная информация о блюде">
         <div class="bali-product-details-toggle">
           <input id="menuDetailsEnabled" type="checkbox" hidden aria-hidden="true" tabindex="-1">
-          <strong>ⓘ Информация о блюде</strong>
+          <strong>Подробная информация о блюде</strong>
         </div>
-        <p id="menuDetailsAvailability" class="bali-admin-details-status" role="status">Без подробного описания значок информации будет серым и неактивным.</p>
+        <p id="menuDetailsAvailability" class="bali-admin-details-status" role="status">Без подробного описания кнопка «Подробнее о блюде» не показывается.</p>
         <div id="menuDetailsFields" class="bali-product-details-fields">
-          <p class="hint">Добавьте подробное описание — значок ⓘ в меню станет активным автоматически. Без текста он останется неактивным. Название, цена, вес и состав берутся из полей выше.</p>
+          <p class="hint">Добавьте подробное описание — после сохранения в меню появится кнопка «Подробнее о блюде». Очистите описание и сохраните товар, чтобы убрать кнопку. Название, цена, вес и состав берутся из полей выше.</p>
           <label>Подробное описание (необязательно)
             <textarea id="menuDetailsText" maxlength="2400" rows="6" placeholder="Как приготовлено блюдо, состав, ингредиенты, особенности вкуса и подачи"></textarea>
           </label>
@@ -1008,9 +1015,9 @@
 </main>
 
 <script src="firebase-config.js?v=20261020-2"></script>
-<script type="module" src="admin-firestore.js?v=20261020-2"></script>
-<script type="module" src="bali-admin-bar.js?v=20261017-65"></script>
-<script type="module" src="bali-admin-cards.js?v=20261019-1"></script>
+<script type="module" src="admin-firestore.js?v=20261020-3"></script>
+<script type="module" src="bali-admin-bar.js?v=20261020-1"></script>
+<script type="module" src="bali-admin-cards.js?v=20261020-1"></script>
 <script type="module" src="bali-menu-visibility.js?v=20261017-72"></script>
 <script type="module" src="bali-admin-promos.js?v=20261020-2"></script>
 <script type="module" src="bali-home-design-admin.js?v=20261020-2"></script>

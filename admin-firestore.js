@@ -37,8 +37,7 @@ $("menuImageFile").addEventListener("change",async event=>{
     renderStatus("menuStatus","Фото обработано: 1:1, WebP. Нажмите «Сохранить товар».");
   }catch(error){pendingProductImage="";imagePreview("menuImagePreview","");renderStatus("menuStatus",error.message);}
 });
-// The details icon is always visible on guest cards. A non-empty detailed
-// description turns it on automatically, without a second checkbox or publish step.
+// A non-empty detailed description makes the guest details button visible.
 function updateDetailsFields() {
   const hasText=Boolean($("menuDetailsText").value.trim());
   $("menuDetailsEnabled").checked=hasText;
@@ -46,8 +45,8 @@ function updateDetailsFields() {
   $("menuDetailsText").required=false;
   const hint=$("menuDetailsAvailability");
   if(hint)hint.textContent=hasText
-    ?"● Значок ⓘ будет активным. Нажмите «Сохранить товар», чтобы опубликовать описание."
-    :"○ Без подробного описания значок ⓘ у блюда будет серым и неактивным.";
+    ?"Кнопка «Подробнее о блюде» появится после сохранения товара."
+    :"Кнопка «Подробнее о блюде» скрыта: подробное описание не заполнено.";
 }
 $("menuDetailsText").addEventListener("input",updateDetailsFields);
 $("menuDetailsImageFile").addEventListener("change",async event=>{

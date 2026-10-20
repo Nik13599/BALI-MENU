@@ -57,3 +57,16 @@ Workflow использует [google-github-actions/auth](https://github.com/go
 - https://firebase.google.com/docs/firestore/security/get-started
 - https://firebase.google.com/docs/hosting/github-integration
 - https://firebase.google.com/docs/cli
+
+
+## Подробные описания бара и кальянов
+
+Чтобы новые поля из админки сохранялись, опубликуйте текущий `firestore.rules` в проекте `bali-menu-5a48b`: Firebase Console → Firestore Database → Rules → вставить содержимое файла → Publish. Изменение добавляет только необязательные строки `description` и `ingredients` (до 2400 символов) в позиции `bar_menu` и `hookah_menu`; редактирование остаётся доступным только активным администраторам. Переносить товары или переимпортировать меню не нужно.
+
+При авторизованном Firebase CLI из корня репозитория:
+
+```sh
+npx firebase deploy --only firestore:rules --project bali-menu-5a48b
+```
+
+После публикации: открыть позицию бара/кальянов в админке, заполнить «Подробное описание», сохранить; в гостевой карте должна появиться кнопка «Подробнее». Очистить описание и состав, сохранить — кнопка исчезнет. В чайной карте очистить также вкус/заваривание, если они заполнены. Кухонные состав и краткое описание не управляют этой кнопкой: используется поле «Подробное описание».

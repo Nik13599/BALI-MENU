@@ -202,14 +202,14 @@
 }
 
 /* Tea details, editable from the same admin menu area. */
-#baliAdminTeaPane .bali-tea-info-field{
+:is(#baliAdminBarPane,#baliAdminHookahPane,#baliAdminTeaPane) .bali-catalog-info-field{
   grid-column:1/-1;
   display:grid;gap:8px;
   min-width:0;
   font:640 12px/1.4 Manrope,sans-serif;
   color:#d8e0dc;
 }
-#baliAdminTeaPane .bali-tea-info-field textarea{
+:is(#baliAdminBarPane,#baliAdminHookahPane,#baliAdminTeaPane) .bali-catalog-info-field textarea{
   display:block;
   width:100%;min-height:90px;box-sizing:border-box;
   margin:0;padding:12px 13px;
