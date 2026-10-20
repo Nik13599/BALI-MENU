@@ -40,7 +40,7 @@ async function insertEvents(page){
     grid.replaceChildren(fragment);
   });
   await expect(page.locator('#eventsGrid .event-card')).toHaveCount(3);
-  await expect(page.locator('#eventsGrid .event-share')).toHaveCount(3);
+  await expect(page.locator('#eventsGrid .bali-share-trigger')).toHaveCount(3);
   await page.waitForTimeout(200);
 }
 test('two responsive reference layouts keep a background-free calendar',async({page})=>{
