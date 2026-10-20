@@ -145,3 +145,58 @@ test('phone scene and calendar use all viewport width, square posters and swipe-
   await expect(page.locator('#baliPosterPrevious')).toHaveCSS('display','none');
   await expect(page.locator('#baliPosterNext')).toHaveCSS('display','none');
 });
+
+test('planned day turns lime with black number and all per-event colored dots',async({page})=>{
+  await prepare(page,4);
+  await page.evaluate(()=>{
+    const events=[
+      {id:'2026-12-25',date:'2026-12-25',title:'BALI Xmas Main',dotColor:'#123456'},
+      {id:'2026-12-25__2',date:'2026-12-25',title:'BALI Xmas Special',dotColor:'#ee8855'},
+      {id:'2026-12-25__3',date:'2026-12-25',title:'BALI Xmas Afterparty',dotColor:'#7744cc'}
+    ];
+    window.dispatchEvent(new CustomEvent('bali:events',{detail:{events}}));
+    window.dispatchEvent(new CustomEvent('bali:calendar:plans-changed',{detail:{dates:['2026-12-25']}}));
+    // December 2026
+    const now=document.getElementById('baliCalendarMonthName').textContent;
+    const month=document.getElementById('baliCalendarPanel');
+    // Navigate calendar months via existing arrow controls, without stubbing the module clock.
+  });
+  // December is selectable via the public calendar UI.
+  for(let attempts=0;attempts<24;attempts++){
+    const label=await page.locator('#baliCalendarMonthName').textContent();
+    if(label.includes('декабрь')&&label.includes('2026'))break;
+    const monthNumber=new Date().getMonth()+1;
+    await page.locator('#baliCalendarNext').click();
+  }
+  const day=page.locator('#baliCalendarDays [data-date="2026-12-25"]');
+  await expect(day).toBeVisible();
+  await expect(day).toHaveAttribute('data-planned','true');
+  await expect(day).toHaveAttribute('data-event-count','3');
+  await expect(day.locator('.bali-calendar-event-dot')).toHaveCount(3);
+  expect(await day.evaluate(n=>getComputedStyle(n).backgroundColor)).toBe('rgb(185, 255, 81)');
+  expect(await day.locator('.bali-calendar-day-number').evaluate(n=>getComputedStyle(n).color))
+    .toBe('rgb(16, 26, 10)');
+  for(const dot of await day.locator('.bali-calendar-event-dot').all())
+    expect(await dot.evaluate(n=>getComputedStyle(n).backgroundColor)).toBe('rgb(16, 26, 10)');
+  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('bali:calendar:plans-changed',{detail:{dates:[]}})));
+  await expect(day).toHaveAttribute('data-planned','false');
+  const colors=await day.locator('.bali-calendar-event-dot').evaluateAll(nodes=>nodes.map(n=>getComputedStyle(n).backgroundColor));
+  expect(colors).toEqual(['rgb(18, 52, 86)','rgb(238, 136, 85)','rgb(119, 68, 204)']);
+});
+test('poster edges dissolve while the desktop page heading is absent',async({page})=>{
+  await prepare(page,6);
+  await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(2,false));
+  await expect(page.locator('#eventsSection .events-topbar')).toHaveCSS('display','none');
+  await expect(page.locator('#eventsGrid .event-card[data-stage-side="left"]')).toHaveCount(1);
+  await expect(page.locator('#eventsGrid .event-card[data-stage-side="right"]')).toHaveCount(1);
+  const fades=await page.locator('#eventsGrid').evaluate(n=>({
+    left:getComputedStyle(n,'::before').backgroundImage,
+    right:getComputedStyle(n,'::after').backgroundImage,
+    mask:getComputedStyle(n.querySelector('.event-card[data-stage-side="left"]')).maskImage,
+    crisp:getComputedStyle(n.querySelector('.event-card.is-active')).maskImage
+  }));
+  expect(fades.left).toContain('linear-gradient');
+  expect(fades.right).toContain('linear-gradient');
+  expect(fades.mask).toContain('linear-gradient');
+  expect(fades.crisp).toBe('none');
+});
