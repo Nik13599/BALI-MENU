@@ -27,11 +27,13 @@ function measure(){
   const area=grid.getBoundingClientRect();
   if(area.width<30||area.height<30)return;
   const phone=mobile();
-  // Use the whole available LEFT desktop column and all phone width.
-  // A large central SQUARE remains fully visible above two action buttons.
+  const narrow=matchMedia("(max-width:767px)").matches;
+  // The compact date grid gives the portrait poster more vertical room.
+  // Make ONLY the phone's central square wider; tablets and desktops retain
+  // their geometry. 80px remain reserved for the existing bottom buttons.
   const width=Math.floor(Math.min(
     phone?390:500,
-    area.width*(phone?.76:.60),
+    area.width*(narrow?.88:phone?.76:.60),
     Math.max(100,area.height-(phone?80:76))
   ));
   if(slideWidth!==width){
