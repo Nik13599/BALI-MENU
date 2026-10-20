@@ -208,6 +208,34 @@ function initialize(){
  '<label class="bali-builder-field"><span>Переход кнопки / ссылки</span><select data-builder-main="link"></select><input data-builder-main="url" type="text" placeholder="https://... или tel:+375..." hidden></label>'+
  '<label class="bali-builder-field"><span>Фоновое изображение или фото</span><input data-builder-main="image" type="text" placeholder="https://..."><input data-builder-main="upload" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif"><small>Загруженная картинка сжимается перед сохранением</small></label>';
  inspector.append(content);
+ const iconBox=document.createElement("section");
+ iconBox.className="bali-builder-icon-editor";
+ iconBox.hidden=true;
+ iconBox.innerHTML='<strong>Значок выбранной кнопки</strong>'+
+  '<p>Выберите фирменную иконку или загрузите свою. Все переходы и действия кнопки сохранятся.</p>'+
+  '<label class="bali-builder-field"><span>Готовые иконки BALI</span><select data-builder-icon-name></select></label>'+
+  '<label class="bali-builder-field"><span>Своя иконка · HTTPS или WebP</span><input data-builder-icon-url type="text" placeholder="https://..."></label>'+
+  '<label class="bali-builder-field"><span>Загрузить PNG / JPG / WebP</span><input data-builder-icon-file type="file" accept="image/png,image/jpeg,image/webp"></label>'+
+  '<label class="bali-builder-field"><span>Размер иконки, px</span><input data-builder-icon-size type="number" min="12" max="72" value="24"></label>'+
+  '<button type="button" data-builder-icon-reset>Вернуть исходную иконку</button>';
+ const iconList=iconBox.querySelector("[data-builder-icon-name]");
+ iconList.append(optionList([["","Исходная иконка"],...core.iconNames.map(name=>[name,name])]));
+ iconList.addEventListener("change",()=>changeIcon("iconName",iconList.value));
+ iconBox.querySelector("[data-builder-icon-url]").addEventListener("change",e=>changeIcon("icon",e.target.value.trim()));
+ iconBox.querySelector("[data-builder-icon-size]").addEventListener("change",e=>changeProp("iconSize",e.target.value));
+ iconBox.querySelector("[data-builder-icon-reset]").addEventListener("click",()=>commit(()=>{const it=ensureItem();if(it){delete it.props.icon;delete it.props.iconName;delete it.props.iconSize;}}));
+ iconBox.querySelector("[data-builder-icon-file]").addEventListener("change",async e=>{
+  const file=e.target.files?.[0];if(!file||!authorized||!selection)return;
+  const identity=selection.id||selection.selector;
+  writingImage=true;setControls();msg("Обрабатываем иконку…");
+  try{
+   const url=await prepareImage(file,"design-about");
+   if(!core.safeUrl(url))throw Error("Слишком большой файл иконки");
+   if((selection?.id||selection?.selector)===identity)changeIcon("icon",url);
+  }catch(err){msg("Ошибка загрузки: "+(err.message||"ошибка"));}
+  finally{writingImage=false;e.target.value="";setControls();}
+ });
+ inspector.append(iconBox);
  const linkSelect=inspector.querySelector('[data-builder-main="link"]');
  linkSelect.append(optionList([
  ["","Не менять переход"],["route:home","Главная"],["route:events","Календарь"],["route:menu","Меню"],
@@ -302,6 +330,17 @@ function ensureItem(){
  if(selection.id)return getItem();
  return model[currentDevice].rules[selection.selector] ||= {props:{}};
 }
+function changeIcon(k,value){
+ if(!selection)return;
+ if(k==="icon"&&value&&!core.safeUrl(value)){msg("Нужна HTTPS-ссылка или WebP.");return;}
+ commit(()=>{
+  const item=ensureItem();if(!item)return;
+  item.props||={};
+  if(k==="icon"&&value){item.props.icon=value;delete item.props.iconName;}
+  else if(k==="iconName"&&value){item.props.iconName=value;delete item.props.icon;}
+  else {delete item.props.icon;delete item.props.iconName;}
+ });
+}
 function changeProp(k,v){
  if(!selection)return;
  commit(()=>{
@@ -381,6 +420,12 @@ function renderLayerTrail(){
 function renderInspector(){
  const node=liveNode(),item=getItem();
  renderLayerTrail();
+ const iconBox=inspector.querySelector(".bali-builder-icon-editor");
+ const isButton=Boolean(node?.matches("button,a")||(selection?.id&&item?.kind==="button"));
+ iconBox.hidden=!isButton;
+ iconBox.querySelector("[data-builder-icon-name]").value=item?.props?.iconName||"";
+ iconBox.querySelector("[data-builder-icon-url]").value=item?.props?.icon||"";
+ iconBox.querySelector("[data-builder-icon-size]").value=item?.props?.iconSize||24;
  const managed=inspector.querySelector("#baliBuilderManagedPromo");
  if(managed){
   const hero=node?.closest?.(".bali-pc-hero");
