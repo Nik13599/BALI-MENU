@@ -26,7 +26,7 @@ if(image&&title&&description&&counter&&action&&hero){
     contactTitle:"Забронировать новогодний корпоратив",
     contactLinks:{},contactEnabled:{phone:true,telegram:true,instagram:true,whatsapp:true,viber:true},
     contactHotspot:{enabled:false,left:25,top:68,width:50,height:18},
-    sort:0,published:true
+    sort:-1,published:true
   };
   let offers=[holidayOffer],index=0,pause=false,activeHotspot=null;
   const artHotspot=document.createElement("button");
