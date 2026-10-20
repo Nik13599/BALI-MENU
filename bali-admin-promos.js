@@ -102,7 +102,7 @@ if(form&&list&&status){
   }
   function showPreview(image){
     preview.replaceChildren();
-    if(validImage(image)&&image){
+    if((validImage(image)&&image)||image===holidayArt){
       const element=node("img");element.src=image;element.alt="Предпросмотр баннера BALI PRIVILEGE";
       preview.append(element);
     }else preview.append(node("span","","Предпросмотр баннера без обрезки"));
