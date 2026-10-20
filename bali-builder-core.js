@@ -132,6 +132,7 @@ function makeStyle(doc){
  ".bali-builder-added[data-kind=text]{white-space:pre-wrap}"+
  ".bali-builder-added[data-kind=button]{display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;background:#b9ff51;color:#10140f;border:0;border-radius:8px;padding:12px;font-weight:750}"+
  ".bali-builder-added[data-kind=image]{object-fit:cover;display:block}"+
+ ".bali-builder-added[data-kind=image]:not([src]){background:repeating-linear-gradient(45deg,#18271f,#18271f 10px,#274131 10px,#274131 20px)!important;border:2px dashed #b9ff51!important}"+
  "[data-bali-builder-effect=glass]{background:rgba(255,255,255,.12)!important;backdrop-filter:blur(15px)!important;border:1px solid rgba(255,255,255,.25)!important}"+
  "[data-bali-builder-effect=neon]{text-shadow:0 0 12px currentColor;box-shadow:0 0 20px rgba(185,255,81,.38)}"+
  "[data-bali-builder-effect=grayscale]{filter:grayscale(1)}[data-bali-builder-effect=sepia]{filter:sepia(.8)}"+
@@ -224,11 +225,17 @@ function mount(doc,model,view,options={}){
  for(const block of data.blocks){
   if(scope==="about"&&block.page!=="about")continue;
   if(scope==="main"&&block.page==="about")continue;
+  // Keep a pickable placeholder in the editor without exposing a broken img to guests.
+  if(block.kind==="image"&&!block.image&&!block.props?.image&&!options.editor)continue;
   const root=scope==="about"?doc.body:doc.querySelector(ROOTS[block.page]);if(!root)continue;
   save(root,"position");root.style.setProperty("position","relative");
   const el=doc.createElement(block.kind==="image"?"img":block.kind==="button"?"a":"div");
   el.className="bali-builder-added";el.dataset.kind=block.kind;el.dataset.baliBuilderId=block.id;
-  if(block.kind==="image"){if(block.image)el.src=block.image;el.alt=block.text||"";}
+  if(block.kind==="image"){
+   if(block.image)el.src=block.image;
+   else if(!block.props?.image)el.title="Добавьте изображение в свойствах справа";
+   el.alt=block.text||"";
+  }
   else el.textContent=block.text||({button:"Кнопка",panel:"Новый блок",text:"Ваш текст"}[block.kind]);
   el.style.position="absolute";el.style.left=block.x+"%";el.style.top=block.y+"px";
   el.style.width=block.props.width||"240px";el.style.minHeight=block.kind==="panel"?"80px":"32px";
