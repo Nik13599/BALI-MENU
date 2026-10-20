@@ -1494,12 +1494,16 @@ assert(idLogo.includes('<svg') &&
   idLogo.includes('<path fill="white"') &&
   idLogo.includes('viewBox="0 0 450 531"') &&
   idLogo.length>5000 &&
-  html.includes('src="assets/bali-id-full-logo.svg"') &&
+  html.includes('src="assets/bali-id-card-readable.svg?v=20261020-no-subtitle"') &&
+  html.includes('bali-id-premium-refine.css?v=') &&
+  !html.includes('ЛИЧНЫЙ МИР ГОСТЯ') &&
+  source("assets/bali-id-card-readable.svg").includes('transform="translate(0 54)"') &&
+  !source("assets/bali-id-card-readable.svg").includes('NIGHT CLUB</text>') &&
   !html.includes('class="bali-id-seal"') &&
   !html.includes('✺') &&
   tierCss.includes('img.bali-id-brand-master') &&
   tierCss.includes('var(--bali-card-logo-filter'),
-  "BALI ID must display the supplied complete mask, BALI and NIGHTCLUB mark on all tiers");
+  "BALI ID must preserve its original mask/BALI emblem without a subtitle on all tiers");
 assert(!html.includes('data-bali-transfer-form') &&
   !html.includes('bali-bonus-transfer-scaffold.js') &&
   admin.includes('data-bali-transfer-form') &&
