@@ -82,9 +82,14 @@ async function save(payload, editId = null) {
   // Проверка на клиенте улучшает UX; Firestore Rules повторяет обязательные проверки.
   const eventRef = doc(db, "events", eventId);
   const eventSnap = await getDoc(eventRef);
-  if (!eventSnap.exists() || !dateOpen(eventSnap.data())) {
-    throw new Error("Приём предзаказов на эту дату закрыт. Выберите другое мероприятие.");
+  if (!eventSnap.exists() || !dateOpen(eventSnap.data()) ||
+      eventSnap.data().date !== eventDate) {
+    throw new Error("Приём предзаказов на это мероприятие закрыт. Выберите другое.");
   }
+  // The title comes from Firestore, never from a browser-controlled field.
+  const eventTitle = eventSnap.data().title;
+  if(typeof eventTitle !== "string" || eventTitle.length < 2 || eventTitle.length > 150)
+    throw new Error("У выбранного мероприятия не указано корректное название.");
   const priced = await menuSnapshot(lines);
   let orderRef;
   let orderNumber;
@@ -109,7 +114,7 @@ async function save(payload, editId = null) {
         const next=(counter.exists()?counter.data().count:0)+1;
         if(!Number.isSafeInteger(next)||next>999999)throw new Error("Счётчик заказов переполнен.");
         tx.set(counterRef,{date:eventDate,count:next,lastOrderId:orderRef.id,updatedAt:serverTimestamp()});
-        tx.update(orderRef,{eventDate,eventId,orderNumber:next,tableNumber,bookingId,notes,updatedAt:serverTimestamp()});
+        tx.update(orderRef,{eventDate,eventId,eventTitle,orderNumber:next,tableNumber,bookingId,notes,updatedAt:serverTimestamp()});
         oldItems.docs.forEach(row=>{if(!retained.has(row.id))tx.delete(row.ref);});
         priced.forEach(line=>tx.set(doc(orderRef,"items",String(line.id)),line));
         return next;
@@ -118,7 +123,7 @@ async function save(payload, editId = null) {
       orderNumber=old.data().orderNumber||null;
       const batch=writeBatch(db);
       oldItems.docs.forEach(row=>{if(!retained.has(row.id))batch.delete(row.ref);});
-      batch.update(orderRef,{eventId,tableNumber,bookingId,notes,updatedAt:serverTimestamp()});
+      batch.update(orderRef,{eventId,eventTitle,tableNumber,bookingId,notes,updatedAt:serverTimestamp()});
       priced.forEach(line=>batch.set(doc(orderRef,"items",String(line.id)),line));
       await batch.commit();
     }
@@ -135,7 +140,7 @@ async function save(payload, editId = null) {
       tx.set(orderRef,{
         ownerUid:user.uid,email:user.email,
         customerName:profile.name,customerPhone:profile.phone,
-        eventDate,eventId,orderNumber:next,tableNumber,bookingId,notes,
+        eventDate,eventId,eventTitle,orderNumber:next,tableNumber,bookingId,notes,
         status:"pending",createdAt:serverTimestamp(),updatedAt:serverTimestamp()
       });
       priced.forEach(line=>tx.set(doc(orderRef,"items",String(line.id)),line));
