@@ -197,6 +197,9 @@ function syncInterestVisuals(){
         button.title=selected?"Нажмите, чтобы убрать мероприятие из планов":"Добавить мероприятие в планы";
         button.disabled=waiting;
     }
+    window.dispatchEvent(new CustomEvent("bali:calendar:plans-changed",{
+        detail:{dates:[...guestInterestDates]}
+    }));
 }
 function setInterestSelection(date,selected){
     if(selected)guestInterestDates.add(date);
@@ -693,6 +696,8 @@ function renderUpcomingEvents() {
         const card=document.createElement("article");
         card.className="event-card";
         card.dataset.eventDate=event.date;
+        if(typeof event.dotColor==="string"&&/^#[0-9a-fA-F]{6}$/.test(event.dotColor))
+            card.dataset.dotColor=event.dotColor;
         const posterWrap=document.createElement("div");
         posterWrap.className="bali-event-poster-wrap";
         const poster=document.createElement("img");
