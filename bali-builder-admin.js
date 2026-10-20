@@ -126,7 +126,8 @@ function setControls(){
  view.undo.disabled=!history.length;view.redo.disabled=!future.length;
  view.copy.disabled=!can;
  for(const b of view.addButtons)b.disabled=!can;
- for(const control of inspector.querySelectorAll("input,select,textarea,button"))control.disabled=!can||!selection;
+ for(const control of inspector.querySelectorAll("input,select,textarea,button"))
+  control.disabled=control.id==="baliBuilderHomeBlock"?!can:!can||!selection;
 }
 function mark(){dirty=true;msg("Изменения только в предпросмотре. Сохраните черновик или опубликуйте.");setControls();}
 const clone=x=>JSON.parse(JSON.stringify(x));
@@ -453,6 +454,7 @@ function renderInspector(){
   node?.matches(".bali-bottom-nav [data-bali-nav]")?node.querySelector("small")?.textContent?.trim()||"":
   textNode?.textContent?.trim()||(!node?.children.length?node?.textContent?.trim():"")||""));
  const value=item?.link||"";
+ link.dataset.customButton=selection?.id&&item?.kind==="button"?"true":"false";
  link.value=value.startsWith("route:")?value:value?"custom":"";
  url.hidden=link.value!=="custom";url.value=value&&link.value==="custom"?value:"";
  image.value=(selection?.id?item?.image:item?.props?.image)||"";
@@ -648,6 +650,9 @@ function add(kind){
  }
  const node=liveNode(),anchor=node?.closest(homeCardSelector);
  if(!anchor){msg("Сначала выберите блок главной, в который добавить текст или кнопку.");return;}
+ if(anchor.matches("button,a")){
+  msg("Эта карточка уже является кнопкой: меняйте надпись и иконку, не вкладывая одну кнопку в другую.");return;
+ }
  const anchorSelector=core.selectorFor(anchor);
  if(!anchorSelector){msg("Не удалось определить область блока.");return;}
  const page=currentPage;
