@@ -116,3 +116,39 @@ test("About page stays isolated while inline layouts and animations work inside 
   expect(actual.single).toBe(true);
   expect(actual.restored).toBe(true);
 });
+
+
+test("advanced responsive layout controls are opt-in and revert cleanly",async({page})=>{
+ await page.goto("/index.html?bali-admin-design-preview=1",{waitUntil:"domcontentloaded"});
+ await page.waitForFunction(()=>Boolean(window.BaliBuilderCore));
+ const result=await page.evaluate(()=>{
+  const core=window.BaliBuilderCore,model=core.emptyModel();
+  const element=document.getElementById("baliMenuHeading");
+  model.desktop.rules["#baliMenuHeading"]={props:{
+   width:"75%",maxWidth:"550px",marginTop:18,marginBottom:4,gap:12,
+   fontSize:26,fontWeight:"600",fontStyle:"italic",textTransform:"uppercase",
+   backgroundPosition:"top",objectFit:"contain",animation:"float"
+  }};
+  core.mount(document,model,"desktop",{editor:true});
+  const props=["width","max-width","margin-top","margin-bottom","gap","text-transform","object-fit","background-position"];
+  const values=Object.fromEntries(props.map(key=>[key,element.style.getPropertyValue(key)]));
+  const bad=core.sanitizeProps({display:"expression(alert(1))",objectFit:"bad",gap:99999,
+   maxWidth:"javascript:alert(1)",marginLeft:-999999});
+  document.__baliBuilderRestore();
+  const clean=props.every(key=>!element.style.getPropertyValue(key));
+  return {values,bad,clean};
+ });
+ expect(result.values.width).toBe("75%");
+ expect(result.values["max-width"]).toBe("550px");
+ expect(result.values["margin-top"]).toBe("18px");
+ expect(result.values.gap).toBe("12px");
+ expect(result.values["text-transform"]).toBe("uppercase");
+ expect(result.values["object-fit"]).toBe("contain");
+ expect(result.values["background-position"]).toBe("top");
+ expect(result.bad.display).toBeUndefined();
+ expect(result.bad.objectFit).toBeUndefined();
+ expect(result.bad.maxWidth).toBeUndefined();
+ expect(result.bad.gap).toBe(3000);
+ expect(result.bad.marginLeft).toBe(-2000);
+ expect(result.clean).toBe(true);
+});
