@@ -67,11 +67,15 @@
   body.bali-guest-theme .header #baliMobileProfileBtn>svg{
     display:none!important;
   }
+  body.bali-guest-theme .header #baliMobileIdBtn{
+    padding:2px 1px!important;
+    gap:1px!important;
+  }
   body.bali-guest-theme .header #baliMobileIdBtn::before{
     content:"";
     display:block;
-    flex:0 0 31px;
-    width:31px;height:31px;
+    flex:0 0 27px;
+    width:29px;height:27px;
     background:currentColor;
     mask:url("assets/nav-icons/id-card.svg") center/contain no-repeat;
     -webkit-mask:url("assets/nav-icons/id-card.svg") center/contain no-repeat;
