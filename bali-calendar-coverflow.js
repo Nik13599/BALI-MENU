@@ -1,5 +1,6 @@
-/* BALI calendar 2026: responsive coverflow matched to supplied reference.
-   Native touch scrolling + perspective frames; no invented event data. */
+/* BALI CALENDAR / a true anchored 3D poster stage.
+   All published event cards stay mounted, including older cards.
+   No native horizontal scroll, DOM reordering or destructive pruning. */
 (()=>{
 "use strict";
 const section=document.getElementById("eventsSection");
@@ -9,84 +10,180 @@ const dialog=document.getElementById("baliEventDetailDialog");
 const prev=document.getElementById("baliPosterPrevious");
 const next=document.getElementById("baliPosterNext");
 if(!section||!grid||!shell||!dialog||!prev||!next)return;
+// A legacy high-specificity layout declaration can otherwise re-enable
+// native horizontal scrolling. The CSSOM override guarantees one stage.
+grid.style.setProperty("overflow-x","hidden","important");
+grid.style.setProperty("overflow-y","hidden","important");
+grid.style.setProperty("scroll-snap-type","none","important");
+grid.scrollLeft=0;
 const reduce=matchMedia("(prefers-reduced-motion: reduce)");
 const mobile=()=>matchMedia("(max-width:1179px)").matches;
 const cards=()=>[...grid.querySelectorAll(".event-card[data-event-date]")];
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
-let activeIndex=0,raf=0,wheelTime=0,gesture=null,ignoreTapUntil=0,scrollIdle=0;
-const update=()=>{
-  raf=0;
-  const entries=cards(),center=grid.scrollLeft+grid.clientWidth/2;
-  if(!entries.length){
-    activeIndex=0;prev.disabled=true;next.disabled=true;return;
+let activeIndex=0,position=0,animation=null,raf=0,gesture=null;
+let wheelAt=-Infinity,ignoreTapUntil=0,slideWidth=180,firstSync=true,lastCardDate="";
+const ease=t=>t*t*(3-2*t);
+function measure(){
+  const area=grid.getBoundingClientRect();
+  if(area.width<30||area.height<30)return;
+  const phone=mobile();
+  const width=Math.max(92,Math.floor(Math.min(
+    phone?260:310,area.width*(phone?.58:.46),
+    Math.max(92,area.height-(phone?84:104))
+  )));
+  if(slideWidth!==width){
+    slideWidth=width;
+    grid.style.setProperty("--bali-event-slide-width",width+"px");
   }
-  let nearest=0,shortest=Infinity;
+  render();
+}
+function render(){
+  const entries=cards(),count=entries.length;
+  if(!count){prev.disabled=true;next.disabled=true;return;}
+  const stageWidth=grid.clientWidth||500;
+  const firstSlot=Math.min(stageWidth*(mobile()?.38:.36),slideWidth*(mobile()?.80:.77));
   for(const [index,card] of entries.entries()){
-    const midpoint=card.offsetLeft+card.offsetWidth/2;
-    const gap=midpoint-center;
-    const raw=gap/Math.max(1,card.offsetWidth+parseFloat(getComputedStyle(grid).columnGap||"0"));
-    const x=clamp(raw,-2,2),a=Math.min(1,Math.abs(x));
-    if(Math.abs(gap)<shortest){shortest=Math.abs(gap);nearest=index;}
-    const angle=reduce.matches?0:clamp(-x*35,-57,57);
-    const depth=reduce.matches?0:-a*68;
-    const scale=1-a*(mobile()?.21:.17);
-    card.style.setProperty("--bali-poster-angle",angle.toFixed(1)+"deg");
-    card.style.setProperty("--bali-poster-depth",depth.toFixed(1)+"px");
-    card.style.setProperty("--bali-poster-scale",scale.toFixed(3));
-    card.style.setProperty("--bali-poster-opacity",(1-a*.38).toFixed(3));
-    card.style.setProperty("--bali-poster-brightness",(1-a*.30).toFixed(3));
-    card.style.setProperty("--bali-poster-sat",(1-a*.2).toFixed(3));
-    card.style.setProperty("--bali-poster-z",String(10-Math.round(a*4)));
+    // dist is fractional while a finger moves: positions follow it continuously.
+    const dist=index-position,a=Math.abs(dist),sign=Math.sign(dist);
+    const spread=Math.min(2.7,Math.max(0,a));
+    const x=sign*(Math.min(1,spread)*firstSlot+
+      Math.min(1,Math.max(0,spread-1))*slideWidth*.27+
+      Math.max(0,spread-2)*slideWidth*.09);
+    const turn=reduce.matches?0:-sign*45*Math.min(1,spread);
+    const depth=reduce.matches?0:-Math.min(170,spread*77);
+    const scale=clamp(1-Math.min(1,spread)*.13-Math.max(0,spread-1)*.07,.69,1);
+    const opacity=clamp(1-Math.min(1,spread)*.17-Math.max(0,spread-1)*.12,.44,1);
+    card.style.setProperty("--bali-stage-x",x.toFixed(2)+"px");
+    card.style.setProperty("--bali-stage-angle",turn.toFixed(2)+"deg");
+    card.style.setProperty("--bali-stage-depth",depth.toFixed(2)+"px");
+    card.style.setProperty("--bali-stage-scale",scale.toFixed(3));
+    card.style.setProperty("--bali-stage-opacity",opacity.toFixed(3));
+    card.style.setProperty("--bali-stage-brightness",clamp(1-a*.12,.66,1).toFixed(3));
+    card.style.zIndex=String(500-Math.round(a*25));
+    const selected=index===activeIndex;
+    card.classList.toggle("is-active",selected);
+    card.classList.toggle("is-neighbor",Math.abs(index-activeIndex)===1);
+    card.setAttribute("aria-current",selected?"true":"false");
+    const image=card.querySelector(".bali-event-poster-wrap");
+    if(image)image.setAttribute("aria-label",
+      (selected?"Подробнее: ":"Выбрать афишу: ")+
+      (card.querySelector(".bali-event-info h3")?.textContent||"мероприятие"));
+    // All previously passed posters remain in the stage, just behind the
+    // nearest left/right neighbors; none are removed or set display:none.
   }
-  activeIndex=nearest;
-  prev.disabled=nearest===0;
-  next.disabled=nearest===entries.length-1;
-};
-const schedule=()=>{if(!raf)raf=requestAnimationFrame(update);};
-const focusIndex=(index,animate=true)=>{
-  const entries=cards(),card=entries[clamp(index,0,entries.length-1)];
-  if(!card)return;
-  const left=card.offsetLeft+card.offsetWidth/2-grid.clientWidth/2;
-  grid.scrollTo({left:Math.max(0,left),behavior:animate&&!reduce.matches?"smooth":"instant"});
-  window.dispatchEvent(new CustomEvent("bali:calendar:active-event",{
+  prev.disabled=activeIndex===0;
+  next.disabled=activeIndex===count-1;
+  const counter=document.getElementById("eventsCarouselPosition");
+  if(counter)counter.textContent=String(activeIndex+1).padStart(2,"0")+" / "+String(count).padStart(2,"0");
+}
+function notify(){
+  const card=cards()[activeIndex];
+  if(card)window.dispatchEvent(new CustomEvent("bali:calendar:active-event",{
     detail:{date:card.dataset.eventDate,forced:true}
   }));
-  schedule();
-};
-const move=direction=>focusIndex(activeIndex+direction);
+}
+function animateTo(next,smooth=true){
+  if(animation){cancelAnimationFrame(animation.raf);animation=null;}
+  const last=cards().length-1;
+  if(last<0)return;
+  next=clamp(next,0,last);
+  activeIndex=next;
+  lastCardDate=cards()[next]?.dataset.eventDate||"";
+  notify();
+  if(!smooth||reduce.matches||Math.abs(position-next)<.001){
+    position=next;render();return;
+  }
+  const initial=position,delta=next-initial;
+  const started=performance.now(),duration=clamp(570+Math.abs(delta)*145,580,1150);
+  const running={raf:0};
+  animation=running;
+  const tick=now=>{
+    if(animation!==running)return;
+    const progress=clamp((now-started)/duration,0,1);
+    position=initial+delta*ease(progress);
+    render();
+    if(progress<1)running.raf=requestAnimationFrame(tick);
+    else{position=next;animation=null;render();}
+  };
+  running.raf=requestAnimationFrame(tick);
+}
+function focusIndex(index,smooth=true){animateTo(index,smooth)}
+function move(delta){focusIndex(activeIndex+delta,true)}
+function syncCards(){
+  const entries=cards();
+  // Preserve the active event by DATE when Firebase replaces the HTML cards.
+  if(entries.length){
+    const same=lastCardDate?entries.findIndex(c=>c.dataset.eventDate===lastCardDate):-1;
+    if(firstSync){
+      // The reference opens with a central poster and a visible neighbor on
+      // BOTH sides whenever at least three events have been published.
+      activeIndex=entries.length>=3?1:0;position=activeIndex;firstSync=false;
+    }
+    else if(same>=0){activeIndex=same;position=same;}
+    else{activeIndex=clamp(activeIndex,0,entries.length-1);position=activeIndex;}
+    lastCardDate=entries[activeIndex].dataset.eventDate||"";
+  }else{activeIndex=0;position=0;lastCardDate="";}
+  if(animation){cancelAnimationFrame(animation.raf);animation=null;}
+  measure();render();
+}
 prev.addEventListener("click",()=>move(-1));
 next.addEventListener("click",()=>move(1));
 shell.addEventListener("wheel",event=>{
-  // Reference convention: wheel DOWN goes LEFT, wheel UP goes RIGHT.
-  if(mobile()||event.ctrlKey||Math.abs(event.deltaY)<=4||Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
+  if(mobile()||event.ctrlKey||Math.abs(event.deltaY)<4)return;
+  if(Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
   event.preventDefault();
   event.stopPropagation();
   event.stopImmediatePropagation();
   const now=performance.now();
-  if(now-wheelTime<490)return;
-  wheelTime=now;
-  move(event.deltaY>0?-1:1);
+  if(now-wheelAt<400)return;
+  wheelAt=now;
+  // DOWN: centre moves to the LEFT and the next right card moves to centre.
+  // UP: reverse, previously viewed posters slide back from the left.
+  move(event.deltaY>0?1:-1);
 },{capture:true,passive:false});
+grid.addEventListener("keydown",event=>{
+  if(event.target.closest("button")&&event.target!==grid)return;
+  if(event.key!=="ArrowLeft"&&event.key!=="ArrowRight")return;
+  event.preventDefault();move(event.key==="ArrowRight"?1:-1);
+});
 grid.addEventListener("pointerdown",event=>{
-  if(event.target.closest("button"))return;
-  gesture={x:event.clientX,y:event.clientY,id:event.pointerId};
-  grid.classList.add("is-swipe-active");
+  if(!event.isPrimary||event.button!==0||event.target.closest("button"))return;
+  if(animation){cancelAnimationFrame(animation.raf);animation=null;}
+  gesture={id:event.pointerId,x:event.clientX,y:event.clientY,
+    start:position,startIndex:activeIndex,dragged:false};
 },{passive:true});
 grid.addEventListener("pointermove",event=>{
-  if(!gesture||gesture.id!==event.pointerId)return;
-  if(Math.abs(event.clientX-gesture.x)>12){
-    ignoreTapUntil=performance.now()+300;
+  const g=gesture;
+  if(!g||event.pointerId!==g.id)return;
+  const dx=event.clientX-g.x,dy=event.clientY-g.y;
+  if(!g.dragged&&Math.abs(dx)>7&&Math.abs(dx)>Math.abs(dy)*.7){
+    g.dragged=true;grid.classList.add("is-swipe-active");
+    if(event.pointerType==="mouse"){
+      try{grid.setPointerCapture(event.pointerId)}catch{}
+    }
   }
-},{passive:true});
-const endSwipe=()=>{
-  gesture=null;
-  clearTimeout(scrollIdle);
-  scrollIdle=setTimeout(()=>{grid.classList.remove("is-swipe-active");schedule()},180);
-};
-grid.addEventListener("pointerup",endSwipe,{passive:true});
-grid.addEventListener("pointercancel",endSwipe,{passive:true});
-grid.addEventListener("scroll",schedule,{passive:true});
-grid.addEventListener("scrollend",schedule,{passive:true});
+  if(!g.dragged)return;
+  if(event.cancelable)event.preventDefault();
+  const step=Math.max(75,slideWidth*(mobile()?.75:.79));
+  position=clamp(g.start-dx/step,0,Math.max(0,cards().length-1));
+  ignoreTapUntil=performance.now()+450;
+  render();
+},{passive:false});
+function endGesture(event,cancel=false){
+  const g=gesture;if(!g||event.pointerId!==g.id)return;
+  gesture=null;grid.classList.remove("is-swipe-active");
+  try{if(grid.hasPointerCapture(event.pointerId))grid.releasePointerCapture(event.pointerId)}catch{}
+  const dx=event.clientX-g.x;
+  if(cancel||!g.dragged||Math.abs(dx)<19){
+    focusIndex(g.startIndex,true);return;
+  }
+  // Drag LEFT = posters move left = next event; drag RIGHT = previous.
+  const step=clamp(Math.round(Math.abs(dx)/Math.max(75,slideWidth*.75)),1,3);
+  focusIndex(g.startIndex+(dx<0?step:-step),true);
+}
+grid.addEventListener("pointerup",event=>endGesture(event),{passive:true});
+grid.addEventListener("pointercancel",event=>endGesture(event,true),{passive:true});
+grid.addEventListener("lostpointercapture",event=>{if(gesture)endGesture(event,true)});
 const close=document.getElementById("baliEventDetailClose");
 if(close)close.addEventListener("click",()=>dialog.close());
 dialog.addEventListener("click",event=>{if(event.target===dialog)dialog.close()});
@@ -137,9 +234,17 @@ const decorate=()=>{
       poster.setAttribute("role","button");
       poster.tabIndex=0;
       poster.setAttribute("aria-label","Подробности: "+(card.querySelector(".bali-event-info h3")?.textContent||"мероприятие"));
-      poster.addEventListener("click",()=>{if(performance.now()<ignoreTapUntil)return;openDetails(card)});
+      poster.addEventListener("click",()=>{
+        if(performance.now()<ignoreTapUntil)return;
+        const index=cards().indexOf(card);
+        openDetails(card);
+      });
       poster.addEventListener("keydown",event=>{
-        if(event.key==="Enter"||event.key===" "){event.preventDefault();openDetails(card)}
+        if(event.key==="Enter"||event.key===" "){
+          event.preventDefault();
+          const index=cards().indexOf(card);
+          openDetails(card);
+        }
       });
     }
     if(actions&&!actions.querySelector(".event-share")){
@@ -151,11 +256,20 @@ const decorate=()=>{
       actions.append(b);
     }
   }
-  schedule();
+  syncCards();
 };
 new MutationObserver(decorate).observe(grid,{childList:true});
-window.addEventListener("resize",schedule,{passive:true});
-window.addEventListener("bali:calendar:open",()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{decorate();schedule()})));
+window.addEventListener("resize",measure,{passive:true});
+if(typeof ResizeObserver==="function"){
+  const observer=new ResizeObserver(()=>measure());
+  observer.observe(grid);
+}
+window.addEventListener("bali:calendar:open",()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{decorate();measure()})));
+window.BaliCalendarShowcase=Object.freeze({
+  mode:"stage",move,focusIndex,refresh:syncCards,
+  getState:()=>({activeIndex,cardCount:cards().length,position,animating:!!animation,
+    wheelDirection:"down:left-up:right"})
+});
 decorate();
-window.BaliCalendarShowcase=Object.freeze({move,focusIndex,getState:()=>({activeIndex,cardCount:cards().length})});
+measure();
 })();

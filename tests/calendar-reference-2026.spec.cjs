@@ -72,10 +72,10 @@ test('two responsive reference layouts keep a background-free calendar',async({p
 test('posters stay image-only with caption outside and details open on click',async({page})=>{
   await openCalendar(page);
   await insertEvents(page);
-  const poster=page.locator('#eventsGrid .bali-event-poster-wrap').first();
+  const poster=page.locator('#eventsGrid .event-card.is-active .bali-event-poster-wrap');
   await expect(poster).toHaveAttribute('role','button');
   await expect(page.locator('#eventsGrid .bali-event-date-badge')).toHaveCount(0);
-  const content=await page.locator('#eventsGrid .event-card').first().evaluate(n=>{
+  const content=await page.locator('#eventsGrid .event-card.is-active').evaluate(n=>{
     const wrapper=n.querySelector('.bali-event-poster-wrap').getBoundingClientRect();
     const body=n.querySelector('.event-card-body').getBoundingClientRect();
     const image=n.querySelector('.event-poster');
@@ -88,23 +88,41 @@ test('posters stay image-only with caption outside and details open on click',as
   expect(content.desc).toBe('none');
   await poster.click();
   await expect(page.locator('#baliEventDetailDialog')).toHaveAttribute('open','');
-  await expect(page.locator('#baliEventDetailTitle')).toHaveText('Событие 1');
-  await expect(page.locator('#baliEventDetailDescription')).toContainText('Подробное описание');
+  await expect(page.locator('#baliEventDetailTitle')).toHaveText('Событие 2');
+  await expect(page.locator('#baliEventDetailDescription')).toContainText('Подробное описание мероприятия 2');
   await page.locator('#baliEventDetailClose').click();
   await expect(page.locator('#baliEventDetailDialog')).not.toHaveAttribute('open','');
 });
-test('desktop arrows move carousel and inverted wheel maps down to left',async({page})=>{
+test('desktop arrows and inverted wheel move fixed-center 3D posters in reference directions',async({page})=>{
   await openCalendar(page);await insertEvents(page);
   if(page.viewportSize().width<1180)return;
-  const next=page.locator('#baliPosterNext');
-  await next.click();
+  await expect(page.locator('#eventsGrid')).toHaveCSS('overflow-x','hidden');
+  await expect.poll(()=>page.evaluate(()=>window.BaliCalendarShowcase.getState().activeIndex)).toBe(1);
+  const angles=await page.locator('#eventsGrid .event-card').evaluateAll(nodes=>nodes.map(n=>({
+    angle:n.style.getPropertyValue('--bali-stage-angle'),
+    x:parseFloat(n.style.getPropertyValue('--bali-stage-x'))
+  })));
+  expect(parseFloat(angles[0].angle)).toBeGreaterThan(40);
+  expect(angles[0].x).toBeLessThan(0);
+  expect(parseFloat(angles[2].angle)).toBeLessThan(-40);
+  expect(angles[2].x).toBeGreaterThan(0);
+  // Arrow next pushes the central card to the left.
+  await page.locator('#baliPosterNext').click();
+  await expect.poll(()=>page.evaluate(()=>window.BaliCalendarShowcase.getState().activeIndex),
+    {timeout:6000}).toBe(2);
+  // Wheel UP: current card moves right, previously viewed card returns.
+  await page.locator('#eventsCarouselShell').evaluate(node=>{
+    node.dispatchEvent(new WheelEvent('wheel',{bubbles:true,cancelable:true,deltaY:-140}));
+  });
   await expect.poll(()=>page.evaluate(()=>window.BaliCalendarShowcase.getState().activeIndex),
     {timeout:6000}).toBe(1);
+  await page.waitForTimeout(470);
+  // Wheel DOWN: center moves left and next moves into center.
   await page.locator('#eventsCarouselShell').evaluate(node=>{
     node.dispatchEvent(new WheelEvent('wheel',{bubbles:true,cancelable:true,deltaY:140}));
   });
   await expect.poll(()=>page.evaluate(()=>window.BaliCalendarShowcase.getState().activeIndex),
-    {timeout:6000}).toBe(0);
+    {timeout:6000}).toBe(2);
 });
 test('BALI ID keeps all four sides of the card on-screen, and shows right-hand title',async({page})=>{
   await page.goto('/index.html#id');
@@ -136,4 +154,82 @@ test('BALI ID keeps all four sides of the card on-screen, and shows right-hand t
   const rect=await scene.boundingBox();
   await page.mouse.click(rect.x+rect.width*.5,rect.y+rect.height*.5);
   await expect.poll(()=>page.evaluate(()=>window.BaliIdMotion.getState().flipped)).toBe(true);
+});
+
+test('3D carousel keeps older posters mounted through several changes',async({page})=>{
+  await openCalendar(page);await insertEvents(page);
+  const grid=page.locator('#eventsGrid');
+  // Expand with three more posters to prove history stays on both sides.
+  await page.evaluate(()=>{
+    const grid=document.getElementById('eventsGrid');
+    for(let n=4;n<=6;n++){
+      const clone=grid.querySelector('.event-card');
+      const copy=clone.cloneNode(true);
+      copy.dataset.eventDate='2026-11-0'+n;
+      copy.querySelector('h3').textContent='Событие '+n;
+      copy.querySelector('.bali-event-description').textContent='Описание '+n;
+      grid.append(copy);
+    }
+  });
+  await expect(grid.locator('.event-card')).toHaveCount(6);
+  await expect.poll(()=>page.evaluate(()=>window.BaliCalendarShowcase.getState().cardCount)).toBe(6);
+  await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(4,false));
+  const layout=await grid.locator('.event-card').evaluateAll(nodes=>nodes.map((n,i)=>({
+    i,angle:parseFloat(n.style.getPropertyValue('--bali-stage-angle')),
+    x:parseFloat(n.style.getPropertyValue('--bali-stage-x')),
+    display:getComputedStyle(n).display,
+    z:parseInt(n.style.zIndex,10)
+  })));
+  expect(layout).toHaveLength(6);
+  expect(layout.every(card=>card.display!=='none')).toBe(true);
+  expect(layout[0].x).toBeLessThan(layout[3].x);
+  expect(layout[2].z).toBeLessThan(layout[3].z);
+  expect(layout[3].x).toBeLessThan(0);
+  expect(layout[4].x).toBeCloseTo(0,0);
+  expect(layout[5].x).toBeGreaterThan(0);
+});
+test('mobile has no top BALI calendar heading, square close posters and no carousel arrows',async({page})=>{
+  await openCalendar(page);await insertEvents(page);
+  if(page.viewportSize().width>767)return;
+  await expect(page.locator('#eventsSection .events-topbar')).toHaveCSS('display','none');
+  await expect(page.locator('#baliPosterPrevious')).toHaveCSS('display','none');
+  const layout=await page.evaluate(()=>{
+    const grid=document.getElementById('eventsGrid');
+    const card=grid.querySelector('.event-card.is-active');
+    const wrapper=card.querySelector('.bali-event-poster-wrap').getBoundingClientRect();
+    const calendar=document.getElementById('baliCalendarPanel').getBoundingClientRect();
+    const positions=[...grid.querySelectorAll('.event-card')].map(n=>parseFloat(n.style.getPropertyValue('--bali-stage-x')));
+    return {ratio:wrapper.width/wrapper.height,
+      positions,calendarBottom:calendar.bottom,posterTop:wrapper.top,
+      scroll:parseFloat(getComputedStyle(grid).overflowX==='hidden'?0:1)};
+  });
+  expect(layout.ratio).toBeCloseTo(1,1);
+  expect(layout.positions[0]).toBeLessThan(0);
+  expect(layout.positions[1]).toBeCloseTo(0,0);
+  expect(layout.positions[2]).toBeGreaterThan(0);
+  expect(layout.positions[2]).toBeLessThan(260);
+  expect(layout.calendarBottom).toBeLessThan(layout.posterTop+15);
+  expect(layout.scroll).toBe(0);
+});
+test('touch swipes directly move the 3D cards left and right without native scrolling',async({page})=>{
+  await openCalendar(page);await insertEvents(page);
+  const result=await page.evaluate(()=>{
+    const grid=document.getElementById('eventsGrid');
+    const rect=grid.getBoundingClientRect(),x=rect.left+rect.width*.5,y=rect.top+Math.min(55,rect.height*.25);
+    const pointer=(type,id,dx)=>grid.dispatchEvent(new PointerEvent(type,{
+      bubbles:true,isPrimary:true,button:0,pointerType:'touch',pointerId:id,
+      clientX:x+dx,clientY:y
+    }));
+    pointer('pointerdown',70,0);
+    pointer('pointermove',70,-120);
+    const progress=window.BaliCalendarShowcase.getState().position;
+    const visual=grid.querySelector('.event-card').style.getPropertyValue('--bali-stage-x');
+    pointer('pointerup',70,-120);
+    return {progress,visual,index:window.BaliCalendarShowcase.getState().activeIndex,
+      scrollLeft:grid.scrollLeft};
+  });
+  expect(result.progress).toBeGreaterThan(.25);
+  expect(result.visual).toContain('px');
+  expect(result.index).toBe(2);
+  expect(result.scrollLeft).toBe(0);
 });

@@ -110,10 +110,15 @@
    const exact=cards.find(c=>c.dataset.eventDate===s);
    const next=exact||cards.find(c=>c.dataset.eventDate>=s);
    if(next){
-     const viewport=grid.getBoundingClientRect(),rect=next.getBoundingClientRect();
-     const left=grid.scrollLeft+rect.left+rect.width/2-viewport.left-viewport.width/2;
-     grid.scrollTo({left:Math.max(0,left),
-       behavior:window.matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"});
+     if(window.BaliCalendarShowcase?.mode==="stage"){
+       const index=cards.indexOf(next);
+       if(index>=0)window.BaliCalendarShowcase.focusIndex(index,true);
+     }else{
+       const viewport=grid.getBoundingClientRect(),rect=next.getBoundingClientRect();
+       const left=grid.scrollLeft+rect.left+rect.width/2-viewport.left-viewport.width/2;
+       grid.scrollTo({left:Math.max(0,left),
+         behavior:window.matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"});
+     }
    }
    // The calendar stays on the exact day chosen even if only a later poster exists.
    // Scrolling the carousel after the selection synchronizes it to the visible poster.
