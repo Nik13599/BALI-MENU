@@ -810,7 +810,7 @@ function populateEvents() {
     if (!select) return;
     const chosen = select.value;
     select.replaceChildren(new Option('Выбери мероприятие', ''));
-    for (const event of availableEvents.filter(e => e.preorderEnabled && e.date >= minskDateToday() && e.closesAt?.toDate?.() > new Date())) {
+    for (const event of availableEvents.filter(e => (e.id||e.date)===e.date && e.preorderEnabled && e.date >= minskDateToday() && e.closesAt?.toDate?.() > new Date())) {
         const opt = new Option(event.date + ' — ' + event.title, event.date);
         select.add(opt);
     }
