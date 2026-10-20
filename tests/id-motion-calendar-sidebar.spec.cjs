@@ -24,6 +24,12 @@ test('BALI ID retains exact original artwork bounds and has a legible NIGHT CLUB
   expect(src).toContain('viewBox="0 0 450 531"');
   expect(src).toContain('NIGHT CLUB');
   expect(src).toContain('textLength="358"');
+  const original=await (await page.request.get('/assets/bali-id-full-logo.svg')).text();
+  const originalPath=original.match(/<path[^>]*d="([^"]+)"/)[1];
+  const cardPath=src.match(/<path[^>]*d="([^"]+)"/)[1];
+  // Lettering becomes legible while the entire original BALI illustration
+  // (all art above the old microscopic footer) stays path-for-path intact.
+  expect(originalPath.endsWith(cardPath)).toBe(true);
   await expect(page.locator('#baliIdSection .bali-id-3d-edge')).toHaveCount(4);
   const thickness=await page.locator('#baliIdSection .bali-id-3d-edge-left').evaluate(n=>parseFloat(getComputedStyle(n).width));
   expect(thickness).toBeGreaterThanOrEqual(14);
