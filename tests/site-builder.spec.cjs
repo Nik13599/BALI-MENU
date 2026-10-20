@@ -144,7 +144,7 @@ test("advanced responsive layout controls are opt-in and revert cleanly",async({
  expect(result.values.gap).toBe("12px");
  expect(result.values["text-transform"]).toBe("uppercase");
  expect(result.values["object-fit"]).toBe("contain");
- expect(result.values["background-position"]).toBe("top");
+ expect(result.values["background-position"]).toBe("center top");
  expect(result.bad.display).toBeUndefined();
  expect(result.bad.objectFit).toBeUndefined();
  expect(result.bad.maxWidth).toBeUndefined();
