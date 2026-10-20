@@ -330,15 +330,36 @@ service cloud.firestore {
         && d.updatedAt == request.time;
     }
 
+    // Visual site builder stores unpublished drafts separately from public layouts.
+    // Presentation overrides cannot write menus, orders, BALI ID or staff privileges.
+    function validSiteBuilderDevice(device) {
+      return device is map
+        && device.keys().hasAll(['rules','blocks'])
+        && device.keys().hasOnly(['rules','blocks'])
+        && device.rules is map && device.rules.size() <= 140
+        && device.blocks is list && device.blocks.size() <= 30;
+    }
+    function validSiteBuilder(d) {
+      return d.keys().hasAll(['schemaVersion','desktop','tablet','phone','updatedAt'])
+        && d.keys().hasOnly(['schemaVersion','desktop','tablet','phone','updatedAt'])
+        && d.schemaVersion == 1
+        && validSiteBuilderDevice(d.desktop)
+        && validSiteBuilderDevice(d.tablet)
+        && validSiteBuilderDevice(d.phone)
+        && d.updatedAt == request.time;
+    }
+
     match /settings/{settingId} {
-      allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder'];
+      allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder','siteBuilderPublished']
+        || (settingId == 'siteBuilderDraft' && isAdmin());
       allow list: if false;
       allow create, update: if isAdmin()
         && ((settingId == 'appearance' && validAppearance(request.resource.data))
             || (settingId == 'menuVisibility' && validMenuVisibility(request.resource.data))
             || (settingId == 'homeDesign' && validHomeDesign(request.resource.data))
             || (settingId == 'homeInterface' && validHomeInterface(request.resource.data))
-            || (settingId == 'homeEventPlaceholder' && validHomeEventPlaceholder(request.resource.data)));
+            || (settingId == 'homeEventPlaceholder' && validHomeEventPlaceholder(request.resource.data))
+            || (settingId in ['siteBuilderDraft','siteBuilderPublished'] && validSiteBuilder(request.resource.data)));
       allow delete: if false;
     }
 
