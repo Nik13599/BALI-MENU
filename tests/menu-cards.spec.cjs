@@ -89,7 +89,7 @@ test('kitchen photos fit cards and failed photos collapse without covering purch
  ]}})));
  const first=page.locator('#menuGrid .bali-catalog-card').first(),second=page.locator('#menuGrid .bali-catalog-card').nth(1);
  await expect(first.locator('img')).toBeVisible();
- expect(await first.locator('img').evaluate(n=>n.complete&&n.naturalWidth>0)).toBe(true);
+ await expect.poll(()=>first.locator('img').evaluate(n=>n.complete&&n.naturalWidth>0),{timeout:5000}).toBe(true);
  expect(await first.evaluate(n=>n.querySelector('img').getBoundingClientRect().width<=n.getBoundingClientRect().width)).toBe(true);
  await expect(second.locator('img')).toHaveCount(0);
  await expect(second).toHaveClass(/menu-item--no-image/);
