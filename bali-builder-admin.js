@@ -1,7 +1,7 @@
 /* BALI Site Builder — admin-only visual editor, separate drafts and publishing. */
 import {getApp,getApps,initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {getFirestore,doc,getDoc,onSnapshot,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getFirestore,doc,getDoc,onSnapshot,setDoc,writeBatch,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {prepareImage} from "./image-compressor.js?v=20261020-2";
 const $=id=>document.getElementById(id),core=window.BaliBuilderCore,frame=$("baliDesignLiveFrame");
 const panel=$("adminDesignPanel"),inspector=$("baliBuilderInspector");
@@ -406,7 +406,12 @@ async function save(publish=false){
  if(size>600000){msg("Черновик слишком большой ("+Math.round(size/1024)+" КБ). Используйте HTTPS-картинки вместо встроенных файлов.");return;}
  saving=true;setControls();msg(publish?"Публикуем сайт для посетителей…":"Сохраняем черновик…");
  try{
-  await setDoc(publish?publishedRef:draftRef,payload);
+  if(publish){
+   const batch=writeBatch(db);
+   batch.set(publishedRef,payload);
+   batch.set(draftRef,payload);
+   await batch.commit();
+  }else await setDoc(draftRef,payload);
   if(publish)published=clone(clean);
   dirty=false;history=[];future=[];
   msg(publish?"Опубликовано в Firestore: изменения доступны посетителям на устройствах соответствующего типа.":"Черновик сохранён. Публичный сайт не изменился.");
@@ -431,7 +436,7 @@ function toggle(on){
  enabled=on;
  panel.classList.toggle("bali-builder-active",on);
  view.mode.textContent=on?"Открыть прежние настройки блоков":"Вернуться в конструктор";
- if(on){selection=null;refreshCanvas();renderInspector();}
+ if(on){selection=null;if(!overlay&&doc()?.body)attachOverlay();refreshCanvas();renderInspector();}
  else {clearOverlay();doc()?.__baliBuilderRestore?.();}
 }
 function init(){
