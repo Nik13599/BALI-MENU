@@ -449,7 +449,9 @@ function renderInspector(){
  const url=inspector.querySelector('[data-builder-main="url"]');
  const image=inspector.querySelector('[data-builder-main="image"]');
  const textNode=node&&[...node.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());
- text.value=item?.text??(selection?.id?"":(textNode?.textContent?.trim()||(!node?.children.length?node?.textContent?.trim():"")||""));
+ text.value=item?.text??(selection?.id?"":(
+  node?.matches(".bali-bottom-nav [data-bali-nav]")?node.querySelector("small")?.textContent?.trim()||"":
+  textNode?.textContent?.trim()||(!node?.children.length?node?.textContent?.trim():"")||""));
  const value=item?.link||"";
  link.value=value.startsWith("route:")?value:value?"custom":"";
  url.hidden=link.value!=="custom";url.value=value&&link.value==="custom"?value:"";
@@ -479,6 +481,9 @@ function positionOverlay(){
  const node=liveNode(),d=activeDoc();
  if(!node||!d||!node.getClientRects().length){overlay.style.display="none";return;}
  const rect=node.getBoundingClientRect();
+ const added=Boolean(selection?.id);
+ overlay.querySelector(".bali-builder-bounding-label").hidden=!added;
+ overlay.querySelector(".bali-builder-handle").hidden=!added;
  overlay.style.display="block";
  Object.assign(overlay.style,{left:Math.max(0,rect.left)+"px",top:Math.max(0,rect.top)+"px",width:Math.max(8,rect.width)+"px",height:Math.max(8,rect.height)+"px"});
 }
@@ -498,7 +503,7 @@ function attachOverlay(){
  d.body.append(overlay);
  for(const [handle,mode] of [[overlay.querySelector(".bali-builder-bounding-label"),"move"],[overlay.querySelector(".bali-builder-handle"),"size"]]){
   handle.addEventListener("pointerdown",event=>{
-   if(!authorized||!selection)return;
+   if(!authorized||!selection?.id)return;
    event.preventDefault();event.stopPropagation();
    const node=liveNode();if(!node)return;
    const rect=node.getBoundingClientRect();
@@ -546,6 +551,7 @@ function choose(target,{deep=false}={}){
  // Promo artwork is often covered by transparent booking hotspots.
  // Select the entire campaign on normal click; Alt-click selects a nested layer.
  if(!deep&&d===frameDoc())target=target.closest(".bali-pc-hero")||target;
+ if(!deep&&d===frameDoc()&&target.closest("button,a"))target=target.closest("button,a");
  const scope=d===aboutDoc()?"about":"main";
  const custom=target.closest("[data-bali-builder-id]");
  if(custom)selection={id:custom.dataset.baliBuilderId,selector:null,scope};
@@ -637,13 +643,20 @@ function doRedo(){
 }
 function add(kind){
  if(!authorized)return;
+ if(!["text","button"].includes(kind)){
+  msg("На главной добавляются текст и кнопки в существующие карточки. Фон задаётся для выбранного блока.");return;
+ }
+ const node=liveNode(),anchor=node?.closest(homeCardSelector);
+ if(!anchor){msg("Сначала выберите блок главной, в который добавить текст или кнопку.");return;}
+ const anchorSelector=core.selectorFor(anchor);
+ if(!anchorSelector){msg("Не удалось определить область блока.");return;}
  const page=currentPage;
  const id="bali-"+kind+"-"+Date.now().toString(36)+"-"+Math.floor(Math.random()*1e5).toString(36);
  commit(()=>model[currentDevice].blocks.push({
-  id,page,kind,x:15,y:20,text:kind==="button"?"Новая кнопка":kind==="text"?"Новый текст":"Новый блок",
+  id,page:"home",kind,anchor:anchorSelector,x:8,y:20,text:kind==="button"?"Новая кнопка":"Новый текст",
   image:"",link:"route:home",props:{width:kind==="panel"?"300px":"220px",height:kind==="image"?"180px":kind==="panel"?"120px":"50px",fontSize:16}
  }));
- selection={id,selector:null,scope:page==="about"?"about":"main"};renderInspector();
+ selection={id,selector:null,scope:"main"};renderInspector();
 }
 async function save(publish=false){
  if(!authorized||saving)return;
@@ -702,7 +715,10 @@ function onBuilderShortcut(event){
 function init(){
  initialize();
  window.addEventListener("keydown",onBuilderShortcut);
- view.page.addEventListener("change",()=>updatePage(view.page.value));
+ view.page.value="home";
+ view.page.disabled=true;
+ view.page.title="Конструктор первого этапа: главная страница";
+ view.page.addEventListener("change",()=>updatePage("home"));
  for(const field of [view.viewportWidth,view.viewportHeight]){
   field?.addEventListener("change",()=>{
    window.BaliDesignStudio?.viewport?.(view.viewportWidth.value,view.viewportHeight.value);
