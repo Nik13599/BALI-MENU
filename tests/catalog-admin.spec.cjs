@@ -74,7 +74,7 @@ test('admin creates three different parties on the same date, with independent a
     await page.locator('#eventTitle').fill(name);
     await page.locator('#eventDotColor').fill(color);
     await page.locator('#eventCutoff').fill('23:59');
-    if(slot!==1)await expect(page.locator('#eventOpen')).toBeDisabled();
+    await expect(page.locator('#eventOpen')).toBeEnabled();
     await page.locator('#eventForm button[type="submit"]').click();
     await expect(page.locator('#eventStatus')).toContainText('сохранено');
   };
@@ -87,8 +87,8 @@ test('admin creates three different parties on the same date, with independent a
   expect(stored['events/2026-12-31'].title).toBe('Новый год — BALI Main');
   expect(stored['events/2026-12-31__2'].dotColor).toBe('#ff8800');
   expect(stored['events/2026-12-31__3'].dotColor).toBe('#aa44ff');
-  expect(stored['events/2026-12-31__2'].preorderEnabled).toBe(false);
-  expect(stored['events/2026-12-31__3'].preorderEnabled).toBe(false);
+  expect(stored['events/2026-12-31__2'].preorderEnabled).toBe(true);
+  expect(stored['events/2026-12-31__3'].preorderEnabled).toBe(true);
   // Trying the same slot twice must NOT overwrite an existing party.
   await page.locator('#eventDateAdmin').fill('2026-12-31');
   await page.locator('#eventSlotAdmin').selectOption('2');
