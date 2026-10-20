@@ -89,7 +89,7 @@ test('posters stay image-only with caption outside and details open on click',as
   await poster.click();
   await expect(page.locator('#baliEventDetailDialog')).toHaveAttribute('open','');
   await expect(page.locator('#baliEventDetailTitle')).toHaveText('Событие 2');
-  await expect(page.locator('#baliEventDetailDescription')).toContainText('Подробное описание 2');
+  await expect(page.locator('#baliEventDetailDescription')).toContainText('Подробное описание мероприятия 2');
   await page.locator('#baliEventDetailClose').click();
   await expect(page.locator('#baliEventDetailDialog')).not.toHaveAttribute('open','');
 });
