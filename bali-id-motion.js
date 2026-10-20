@@ -91,11 +91,11 @@
     scene.classList.add("is-cinematic");
     const travel=target-current;
     const keyframes=[
-      {offset:0,transform:"rotateY("+current+"deg) translateZ(0px) scale(1)"},
-      {offset:.2,transform:"rotateY("+(current+travel*.11)+"deg) translateZ(-56px) scale(.975)"},
-      {offset:.48,transform:"rotateY("+(current+travel*.48)+"deg) translateZ(-98px) scale(.945)"},
-      {offset:.74,transform:"rotateY("+(current+travel*.83)+"deg) translateZ(-65px) scale(.975)"},
-      {offset:1,transform:"rotateY("+target+"deg) translateZ(0px) scale(1)"}
+      {offset:0,transform:"translateZ(0px) rotateY("+current+"deg) scale(1)"},
+      {offset:.2,transform:"translateZ(-56px) rotateY("+(current+travel*.11)+"deg) scale(.975)"},
+      {offset:.48,transform:"translateZ(-98px) rotateY("+(current+travel*.48)+"deg) scale(.945)"},
+      {offset:.74,transform:"translateZ(-65px) rotateY("+(current+travel*.83)+"deg) scale(.975)"},
+      {offset:1,transform:"translateZ(0px) rotateY("+target+"deg) scale(1)"}
     ];
     track.style.transition="none";
     cinematicEffect=track.animate(keyframes,{
