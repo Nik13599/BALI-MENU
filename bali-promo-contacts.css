@@ -1,0 +1,61 @@
+/* Contact selector for BALI promotional banners and its admin editor. */
+.bali-promo-contact-settings[hidden]{display:none!important}
+.bali-promo-contact-settings{
+  margin:12px 0;padding:18px;border:1px solid rgba(180,242,89,.26);
+  border-radius:14px;background:rgba(164,216,86,.035)
+}
+.bali-promo-contact-settings legend{padding:0 8px;font-weight:800;letter-spacing:.02em}
+.bali-promo-contact-settings>.hint{margin:5px 0 14px}
+.bali-promo-contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px}
+.bali-promo-contact-grid .bali-promo-contact-channel{display:flex;flex-direction:column;gap:8px;min-width:0}
+.bali-promo-contact-channel>span{display:flex;align-items:center;gap:8px;font-weight:700}
+.bali-promo-contact-channel input[type=checkbox]{width:17px;height:17px;flex:none;accent-color:#c3f36d}
+.bali-promo-contact-channel input[type=text]{box-sizing:border-box;width:100%;min-width:0}
+.bali-promo-contact-dialog{
+  box-sizing:border-box;inset:0;margin:auto;width:min(520px,calc(100vw - 26px));
+  max-width:calc(100vw - 26px);max-height:min(90dvh,760px);
+  padding:0;overflow:auto;border:1px solid rgba(193,241,104,.42);
+  border-radius:22px;background:
+    radial-gradient(circle at 80% 0%,rgba(189,245,96,.13),transparent 42%),
+    linear-gradient(150deg,#181b15 0%,#090b09 66%,#10130d 100%);
+  color:#f6f6f3;box-shadow:0 26px 110px rgba(0,0,0,.75);
+  font-family:Manrope,Inter,Arial,sans-serif;z-index:99999
+}
+.bali-promo-contact-dialog::backdrop{background:rgba(0,0,0,.77);backdrop-filter:blur(8px)}
+.bali-promo-contact-inner{position:relative;padding:clamp(20px,5vw,32px)}
+.bali-promo-contact-topline{display:block;padding-right:45px;color:#c9f378;font-size:11px;font-weight:800;letter-spacing:.25em;text-transform:uppercase}
+.bali-promo-contact-dialog h2{margin:15px 48px 10px 0;color:#fff;font-size:clamp(23px,5vw,32px);line-height:1.18;font-weight:800}
+.bali-promo-contact-dialog p{margin:0 0 20px;color:#c0c5b8;font-size:14px;line-height:1.55}
+.bali-promo-contact-close{
+  position:absolute;top:16px;right:16px;display:grid;place-items:center;
+  width:40px;height:40px;border:1px solid rgba(255,255,255,.22);border-radius:11px;
+  background:rgba(255,255,255,.07);color:#fff;font-size:20px;cursor:pointer
+}
+.bali-promo-contact-close:hover,.bali-promo-contact-close:focus-visible{
+  border-color:#c3f36d;color:#c3f36d
+}
+.bali-promo-contact-list{display:grid;gap:9px}
+.bali-promo-contact-link{
+  display:grid;grid-template-columns:42px 1fr 20px;align-items:center;gap:12px;
+  box-sizing:border-box;min-height:65px;padding:11px 14px;
+  border:1px solid rgba(255,255,255,.13);border-radius:13px;
+  color:#f4f4f1;text-decoration:none;background:rgba(255,255,255,.04);
+  transition:background .18s,border-color .18s,transform .18s
+}
+.bali-promo-contact-link:hover,.bali-promo-contact-link:focus-visible{
+  background:rgba(193,241,104,.11);border-color:#b5e768;transform:translateY(-1px);outline-offset:3px
+}
+.bali-promo-contact-icon{display:grid;place-items:center;width:42px;height:42px;
+  border:1px solid rgba(193,241,104,.35);border-radius:11px;background:rgba(193,241,104,.08);
+  color:#caf580;font-size:21px;font-weight:700}
+.bali-promo-contact-link strong{font-size:15px;font-weight:800;line-height:1.25}
+.bali-promo-contact-link small{display:block;margin-top:4px;color:#a6aea0;font-size:11px;font-weight:500}
+.bali-promo-contact-arrow{color:#c5f178;font-size:20px;text-align:right}
+.bali-promo-contact-empty{padding:16px;border:1px dashed rgba(255,255,255,.22);border-radius:12px;color:#deded8}
+@media(max-width:500px){
+  .bali-promo-contact-inner{padding:22px 17px 20px}
+  .bali-promo-contact-dialog{border-radius:18px;max-height:calc(100dvh - 24px)}
+  .bali-promo-contact-link{grid-template-columns:40px 1fr 16px;gap:9px;min-height:60px;padding:9px}
+  .bali-promo-contact-dialog h2{font-size:24px}
+}
+@media(prefers-reduced-motion:reduce){.bali-promo-contact-link{transition:none}}
