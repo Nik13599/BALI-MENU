@@ -26,6 +26,7 @@ body[data-bali-admin-section="design"] .admin-tab[data-admin-tab="design"]{font-
 .bali-builder-inspector-heading strong{font:800 16px Manrope,Inter,sans-serif;color:#f1ffe9}
 .bali-builder-inspector-heading small{font:500 11px/1.45 Manrope,Inter,sans-serif;color:#b3bdb6}
 .bali-builder-content{display:grid;gap:12px}
+.bali-builder-content[hidden]{display:none!important}
 .bali-builder-field{display:flex;flex-direction:column;gap:6px;min-width:0;font:650 11px/1.3 Manrope,Inter,sans-serif;color:#dbe7dd}
 .bali-builder-field>span{display:block}
 .bali-builder-field>small{font-weight:450;color:#9fafa8}
