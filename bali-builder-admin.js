@@ -322,7 +322,7 @@ function renderInspector(){
  const link=inspector.querySelector('[data-builder-main="link"]');
  const url=inspector.querySelector('[data-builder-main="url"]');
  const image=inspector.querySelector('[data-builder-main="image"]');
- const textNode=node&&[...node.childNodes].find(n=>n.nodeType===3);
+ const textNode=node&&[...node.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());
  text.value=item?.text??(selection?.id?"":(textNode?.textContent?.trim()||(!node?.children.length?node?.textContent?.trim():"")||""));
  const value=item?.link||"";
  link.value=value.startsWith("route:")?value:value?"custom":"";
