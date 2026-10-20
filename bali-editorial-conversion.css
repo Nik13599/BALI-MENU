@@ -1,0 +1,228 @@
+/* BALI · editorial conversion layer · 2026-10-20
+   Built on the established LIME SHADOW design system, without changing
+   navigation, menu ordering, age gate, profile, or BALI ID logic. */
+
+body.bali-guest-theme {
+  --bali-editorial-line:rgba(239,246,233,.16);
+  --bali-editorial-ink:#f2f5ef;
+  --bali-editorial-muted:#bac6bc;
+  --bali-editorial-accent:var(--bt-primary,#b9ff51);
+}
+
+/* The About tile remains a single route to the existing About page.
+   The embedded links offer two immediate, distinct guest journeys. */
+@media (min-width:1180px) {
+  body.bali-guest-theme #homeSection .bali-pc-about > summary {
+    cursor:pointer;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about > summary::after {
+    background:linear-gradient(180deg,rgba(4,7,8,.08) 0%,rgba(3,7,8,.36) 34%,rgba(3,7,8,.94) 78%,rgba(3,7,8,.99) 100%)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-kicker {
+    display:inline-flex!important;
+    align-items:center;
+    gap:8px;
+    color:var(--bali-editorial-ink)!important;
+    letter-spacing:.13em!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-kicker::before {
+    content:"";
+    width:6px;
+    height:6px;
+    flex:none;
+    border-radius:50%;
+    background:var(--bali-editorial-accent);
+    box-shadow:0 0 0 3px rgba(255,255,255,.07);
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-hook {
+    max-width:23ch!important;
+    font-family:var(--bali-font-display,Manrope,Arial,sans-serif)!important;
+    font-size:clamp(16px,1.28vw,23px)!important;
+    font-weight:600!important;
+    line-height:1.14!important;
+    letter-spacing:-.055em!important;
+    text-wrap:balance;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-facts > span {
+    border:1px solid var(--bali-editorial-line)!important;
+    background:rgba(12,19,19,.68)!important;
+    color:#e7f0e4!important;
+    border-radius:7px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-actions {
+    position:relative;
+    z-index:4;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:clamp(7px,.7vw,12px);
+    width:100%;
+    margin-top:clamp(4px,.65dvh,9px);
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-booking-link {
+    position:relative;
+    z-index:5;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    min-height:34px;
+    padding:7px clamp(10px,.9vw,15px);
+    border:1px solid transparent;
+    border-radius:8px;
+    background:var(--bali-editorial-accent);
+    color:#07110a;
+    text-decoration:none;
+    font:800 clamp(10px,.78vw,13px)/1.2 Manrope,Arial,sans-serif;
+    transition:filter .2s ease,transform .2s ease;
+    white-space:nowrap;
+    -webkit-tap-highlight-color:transparent;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-booking-link:hover {
+    filter:brightness(1.10);
+    transform:translateY(-1px);
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-booking-link:focus-visible,
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-events-link:focus-visible {
+    outline:2px solid #fff!important;
+    outline-offset:3px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-action {
+    display:inline-flex!important;
+    width:auto!important;
+    margin:0!important;
+    color:#e7f0e4!important;
+    font-weight:700!important;
+    gap:4px!important;
+    white-space:nowrap;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-action > span {
+    color:var(--bali-editorial-accent);
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-events-link {
+    margin-top:1px;
+    color:var(--bali-editorial-muted)!important;
+    text-decoration-color:rgba(220,231,219,.45)!important;
+    transition:color .2s ease;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-events-link:hover {
+    color:#fff!important;
+  }
+}
+@media (min-width:1180px) and (max-height:740px) {
+  body.bali-guest-theme #homeSection .bali-pc-about > summary {
+    padding-top:clamp(40px,6dvh,70px)!important;
+    gap:clamp(3px,.5dvh,7px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-booking-link {
+    min-height:29px;
+    padding:5px 9px;
+    font-size:10px;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-actions {
+    gap:5px 8px;
+    margin-top:3px;
+  }
+}
+@media (min-width:1180px) and (max-height:605px) {
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-action,
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-events-link {
+    display:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about .bali-pc-about-hook {
+    font-size:16px!important;
+  }
+}
+
+/* Compact editorial hero on phones: one headline, one promise, one action.
+   Retains the fixed-height layout and the live background photography. */
+@media (max-width:767px) {
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero-copy {
+    align-items:flex-start!important;
+    text-align:left!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero h1 {
+    text-wrap:balance;
+    letter-spacing:-.055em!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-hero-tagline {
+    max-width:30ch;
+    line-height:1.33!important;
+    color:#f0f3eb!important;
+  }
+  body.bali-guest-theme #homeSection #baliMobileAboutBtn.bali-mobile-about-action {
+    width:auto!important;
+    max-width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    min-height:40px!important;
+    justify-content:center!important;
+    padding:9px clamp(11px,3.8vw,18px)!important;
+    border:1px solid rgba(245,252,239,.24)!important;
+    border-radius:9px!important;
+    font:800 clamp(10px,2.6vw,12px)/1.18 Manrope,Arial,sans-serif!important;
+    letter-spacing:.035em!important;
+    text-align:center!important;
+    white-space:normal!important;
+    box-shadow:0 6px 20px rgba(0,0,0,.25)!important;
+  }
+  body.bali-guest-theme #homeSection #baliMobileAboutBtn.bali-mobile-about-action:focus-visible {
+    outline:2px solid #fff!important;
+    outline-offset:3px!important;
+  }
+}
+
+/* Product scanning: reinforce category -> name -> price -> controls while
+   keeping the existing six-up desktop and stacked mobile card logic intact. */
+body.bali-guest-theme #menuPage .menu-category-title {
+  text-wrap:balance;
+}
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .bali-catalog-card {
+  border-color:var(--bali-editorial-line)!important;
+  background:linear-gradient(135deg,#17201e,#101617)!important;
+  transition:border-color .18s ease,background .18s ease,transform .18s ease!important;
+}
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .bali-catalog-card .menu-item-name {
+  color:var(--bali-editorial-ink)!important;
+  letter-spacing:-.025em!important;
+}
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .bali-catalog-card .menu-item-price {
+  color:#f6f8f2!important;
+  font-variant-numeric:tabular-nums;
+}
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .bali-catalog-card .menu-item-description {
+  color:var(--bali-editorial-muted)!important;
+}
+@media (hover:hover) and (pointer:fine) {
+  body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+    .menu-category-block .bali-catalog-card:hover {
+    border-color:rgba(212,236,201,.48)!important;
+    transform:translateY(-2px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-home-event-card:hover {
+    transform:translateY(-2px);
+  }
+}
+body.bali-guest-theme #homeSection .bali-home-event-card {
+  transition:transform .2s ease,border-color .2s ease;
+}
+body.bali-guest-theme #homeSection .bali-home-event-card:focus-within,
+body.bali-guest-theme #menuPage .bali-catalog-card:focus-within {
+  outline:2px solid var(--bali-editorial-accent)!important;
+  outline-offset:3px!important;
+}
+body.bali-guest-theme #homeSection .bali-id-showcase:focus-visible {
+  outline:2px solid var(--bali-editorial-accent)!important;
+  outline-offset:3px!important;
+}
+@media (prefers-reduced-motion:reduce) {
+  body.bali-guest-theme #homeSection :is(.bali-home-event-card,.bali-pc-about-booking-link,.bali-pc-about-events-link),
+  body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList) .bali-catalog-card {
+    transition:none!important;
+    transform:none!important;
+  }
+}

@@ -4,7 +4,7 @@
   const summary=document.getElementById("baliPcAboutPreview");
   if(!summary)return;
   summary.addEventListener("click",event=>{
-    if(event.target.closest(".bali-pc-about-events-link")){
+    if(event.target.closest(".bali-pc-about-events-link, .bali-pc-about-booking-link")){
       event.stopPropagation();
       return;
     }
