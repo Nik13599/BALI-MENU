@@ -36,11 +36,11 @@ if(aboutImage){
       imageUrl:v.aboutImageUrl,tabletUrl:v.aboutImageTabletUrl,mobileUrl:v.aboutImageMobileUrl
     });
     const card=document.querySelector(".bali-pc-about");
-    const summary=card?.querySelector("summary");
-    if(summary)summary.setAttribute("aria-label",(v.aboutTitle?.trim()||"О клубе BALI")+". Открыть подробности");
+    // The redesigned PC preview has two distinct links, not an accordion.
+    // Keep the accessible card name and promotional copy independent of art.
+    if(card)card.setAttribute("aria-label",(v.aboutTitle?.trim()||"О клубе BALI")+". Площадка для мероприятий и вечеринки.");
     const hasArtwork=validImage(v.aboutImageUrl);
     card?.classList.toggle("has-photo",hasArtwork);
-    card?.classList.toggle("is-image-only",hasArtwork&&
-      !v.aboutTitle?.trim()&&!v.aboutSubtitle?.trim()&&!v.aboutDescription?.trim());
+    card?.classList.remove("is-image-only");
   },error=>{if(error.code!=="permission-denied")console.warn("BALI home About:",error.code);});
 }
