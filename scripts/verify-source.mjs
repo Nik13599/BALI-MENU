@@ -1332,7 +1332,7 @@ assert(app.includes('function initEventCarousel()') &&
   app.includes('track.addEventListener("wheel"') &&
   app.includes('track.addEventListener("keydown"'),
   "Events must scroll by desktop wheel and keyboard");
-assert(app.includes('const previousDate=previousCards[previousIndex]?.dataset.eventDate') &&
+assert(app.includes('const previousDate=previousCards[previousIndex]?.dataset.eventId||previousCards[previousIndex]?.dataset.eventDate') &&
   app.includes('centerEventCard(grid,cards[restoreIndex],false)'),
   "Realtime RSVP refreshes must preserve carousel position");
 assert(carouselCss.includes('scroll-snap-type:x mandatory') &&
