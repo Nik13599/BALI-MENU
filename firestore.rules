@@ -38,8 +38,8 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Private profile avatar: only the verified owner may read or write it.
-    // Cropped/encoded WebP is capped below 94 KB and stored separately from users/{uid}.
+    // Verified guests can read/update only their own compact profile avatar.
+    // Avatar data never appears in the publicly readable user profile.
     match /users/{uid}/profileMedia/{mediaId} {
       allow get: if mediaId == 'avatar' && signedInAs(uid);
       allow list, delete: if false;
@@ -803,7 +803,6 @@ service cloud.firestore {
 )
         && request.resource.data.updatedAt == request.time;
     }
-
     // BALI ID: a globally sequential six-digit-or-longer guest number.
     // ID and counter MUST be created/updated in the SAME Firestore transaction.
     // The counter's lastUid is a witness to prevent arbitrary increments or gaps.
