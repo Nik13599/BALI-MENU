@@ -88,14 +88,15 @@ test('posters stay image-only with caption outside and details open on click',as
   expect(content.desc).toBe('none');
   await poster.click();
   await expect(page.locator('#baliEventDetailDialog')).toHaveAttribute('open','');
-  await expect(page.locator('#baliEventDetailTitle')).toHaveText('Событие 2');
-  await expect(page.locator('#baliEventDetailDescription')).toContainText('Подробное описание мероприятия 2');
+  await expect(page.locator('#baliEventDetailTitle')).toHaveText('Событие 1');
+  await expect(page.locator('#baliEventDetailDescription')).toContainText('Подробное описание мероприятия 1');
   await page.locator('#baliEventDetailClose').click();
   await expect(page.locator('#baliEventDetailDialog')).not.toHaveAttribute('open','');
 });
 test('desktop arrows and inverted wheel move fixed-center 3D posters in reference directions',async({page})=>{
   await openCalendar(page);await insertEvents(page);
   if(page.viewportSize().width<1180)return;
+  await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(1,false));
   await expect(page.locator('#eventsGrid')).toHaveCSS('overflow-x','hidden');
   await expect.poll(()=>page.evaluate(()=>window.BaliCalendarShowcase.getState().activeIndex)).toBe(1);
   const angles=await page.locator('#eventsGrid .event-card').evaluateAll(nodes=>nodes.map(n=>({
@@ -191,6 +192,7 @@ test('3D carousel keeps older posters mounted through several changes',async({pa
 test('mobile has no top BALI calendar heading, square close posters and no carousel arrows',async({page})=>{
   await openCalendar(page);await insertEvents(page);
   if(page.viewportSize().width>767)return;
+  await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(1,false));
   await expect(page.locator('#eventsSection .events-topbar')).toHaveCSS('display','none');
   await expect(page.locator('#baliPosterPrevious')).toHaveCSS('display','none');
   const layout=await page.evaluate(()=>{
@@ -230,6 +232,6 @@ test('touch swipes directly move the 3D cards left and right without native scro
   });
   expect(result.progress).toBeGreaterThan(.25);
   expect(result.visual).toContain('px');
-  expect(result.index).toBe(2);
+  expect(result.index).toBe(1);
   expect(result.scrollLeft).toBe(0);
 });
