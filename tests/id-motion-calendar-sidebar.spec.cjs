@@ -14,25 +14,55 @@ async function showId(page){
   await expect.poll(()=>page.evaluate(()=>!!window.BaliIdMotion)).toBe(true);
 }
 
-test('BALI ID retains exact original artwork bounds and has a legible NIGHT CLUB subtitle',async({page})=>{
+test('BALI ID preserves original emblem without footer, and rounds its real 3D sides',async({page})=>{
   await showId(page);
   const logo=page.locator('#baliIdSection .bali-id-brand-master');
   await expect(logo).toHaveAttribute('width','450');
   await expect(logo).toHaveAttribute('height','531');
-  await expect(logo).toHaveAttribute('src','assets/bali-id-card-readable.svg');
+  await expect(logo).toHaveAttribute('src',/assets\/bali-id-card-readable\.svg\?v=/);
   const src=await (await page.request.get('/assets/bali-id-card-readable.svg')).text();
   expect(src).toContain('viewBox="0 0 450 531"');
-  expect(src).toContain('NIGHT CLUB');
-  expect(src).toContain('textLength="358"');
+  expect(src).not.toContain('<text');
+  expect(src).toContain('transform="translate(0 54)"');
   const original=await (await page.request.get('/assets/bali-id-full-logo.svg')).text();
   const originalPath=original.match(/<path[^>]*d="([^"]+)"/)[1];
   const cardPath=src.match(/<path[^>]*d="([^"]+)"/)[1];
-  // Lettering becomes legible while the entire original BALI illustration
-  // (all art above the old microscopic footer) stays path-for-path intact.
+  // The original BALI illustration is path-for-path intact; only the footer
+  // is dropped and the same art is visually re-centred in its original box.
   expect(originalPath.endsWith(cardPath)).toBe(true);
   await expect(page.locator('#baliIdSection .bali-id-3d-edge')).toHaveCount(4);
   const thickness=await page.locator('#baliIdSection .bali-id-3d-edge-left').evaluate(n=>parseFloat(getComputedStyle(n).width));
   expect(thickness).toBeGreaterThanOrEqual(14);
+  const radii=await page.locator('#baliIdFront').evaluate(n=>{
+    const s=getComputedStyle(n);return {radius:parseFloat(s.borderTopLeftRadius),
+      overflow:s.overflow,box:n.getBoundingClientRect().width};
+  });
+  expect(radii.radius).toBeGreaterThanOrEqual(16);
+  expect(radii.overflow).toBe('hidden');
+  const edgeCorners=await page.locator('.bali-id-3d-edge-left').evaluate(n=>({
+    radius:parseFloat(getComputedStyle(n).borderTopLeftRadius),
+    height:n.getBoundingClientRect().height,
+    cardHeight:document.getElementById('baliIdFront').getBoundingClientRect().height
+  }));
+  expect(edgeCorners.radius).toBeGreaterThan(4);
+  expect(edgeCorners.height).toBeLessThan(edgeCorners.cardHeight);
+  const corners=await page.locator('#baliIdFlipScene').evaluate(scene=>{
+    const face=scene.querySelector('.bali-id-card-front');
+    const wall=scene.querySelector('.bali-id-3d-edge-left');
+    return {
+      clip:getComputedStyle(face).clipPath,
+      sideMask:getComputedStyle(wall).maskImage,
+      sideRadius:getComputedStyle(wall).borderRadius,
+      top:getComputedStyle(scene.querySelector('.bali-id-3d-edge-top')).display,
+      bottom:getComputedStyle(scene.querySelector('.bali-id-3d-edge-bottom')).display
+    };
+  });
+  expect(corners.clip).toContain('inset(');
+  expect(corners.clip).toContain('round');
+  expect(corners.sideMask).toContain('linear-gradient');
+  expect(corners.sideRadius).toContain('999px');
+  expect(corners.top).toBe('none');
+  expect(corners.bottom).toBe('none');
   const dims=await logo.evaluate(n=>{const r=n.getBoundingClientRect();return [r.width,r.height]});
   expect(dims[0]).toBeGreaterThan(25);
   expect(dims[1]).toBeGreaterThan(45);
@@ -141,4 +171,91 @@ test('original homepage and desktop sidebar are untouched by isolated ID/calenda
   await page.goto('/index.html');
   await expect(page.locator('#homeSection')).toBeVisible();
   await expect(page.locator('.bali-pc-sidebar .bali-pc-brand')).toHaveCount(1);
+});
+
+test('BALI ID floats without a grey panel, shows title only, and the click uses real depth and moving shadow',async({page})=>{
+  await showId(page);
+  await expect(page.locator('#baliIdPageHeading')).toHaveText('BALI ID');
+  await expect(page.locator('#baliIdSection .bali-id-heading')).toHaveCount(0);
+  const backing=await page.locator('#baliIdSection .bali-profile-card').evaluate(n=>{
+    const s=getComputedStyle(n);return {color:s.backgroundColor,image:s.backgroundImage,border:s.borderWidth,shadow:s.boxShadow};
+  });
+  expect(backing.color).toBe('rgba(0, 0, 0, 0)');
+  expect(backing.image).toBe('none');
+  expect(backing.shadow).toBe('none');
+  const before=await page.locator('#baliIdFlipScene').evaluate(n=>({
+    shadow:getComputedStyle(n,'::before').content,
+    radius:getComputedStyle(document.getElementById('baliIdFront')).borderRadius
+  }));
+  expect(before.shadow).not.toBe('none');
+  expect(before.radius).not.toBe('0px');
+  const r=await page.locator('#baliIdFlipScene').boundingBox();
+  await page.mouse.click(r.x+r.width*.51,r.y+r.height*.49);
+  expect(await page.evaluate(()=>window.BaliIdMotion.getState().flipped)).toBe(true);
+  expect(await page.evaluate(()=>window.BaliIdMotion.getState().cinematic)).toBe(true);
+  expect(await page.locator('#baliIdFlipTrack').evaluate(n=>n.getAnimations().length)).toBeGreaterThan(0);
+  await expect.poll(()=>page.evaluate(()=>window.BaliIdMotion.getState().cinematic),{timeout:2200}).toBe(false);
+});
+
+test('manual swipe follows finger without cinematic retreat and the shadow responds',async({page})=>{
+  await showId(page);
+  const result=await page.evaluate(()=>{
+    const scene=document.getElementById('baliIdFlipScene');
+    const bounds=scene.getBoundingClientRect();
+    const x=bounds.left+bounds.width*.35,y=bounds.top+bounds.height*.5;
+    const fire=(name,dx)=>scene.dispatchEvent(new PointerEvent(name,{
+      bubbles:true,isPrimary:true,pointerType:'touch',button:0,pointerId:455,clientX:x+dx,clientY:y
+    }));
+    fire('pointerdown',0);
+    const before=scene.style.getPropertyValue('--bali-id-shadow-scale');
+    fire('pointermove',85);
+    const during=scene.style.getPropertyValue('--bali-id-shadow-scale');
+    const cinematic=scene.classList.contains('is-cinematic');
+    const drag=scene.classList.contains('is-dragging');
+    fire('pointerup',85);
+    return {before,during,cinematic,drag};
+  });
+  expect(result.drag).toBe(true);
+  expect(result.cinematic).toBe(false);
+  expect(result.before).not.toBe(result.during);
+});
+
+test('BALI privilege miniatures follow real card face layout without oversized member lettering',async({page})=>{
+  await page.goto('/index.html');
+  const c=page.locator('#baliHomeIdCard');
+  await expect(c.locator('.bali-id-showcase-mini')).toHaveCount(3);
+  await expect(c.locator('.bali-id-mini-heading')).toHaveCount(3);
+  await expect(c.locator('.bali-id-mini-footer')).toHaveCount(3);
+  await expect(c.locator('.bali-id-showcase-mini img').first()).toHaveAttribute('src',/bali-id-card-readable\.svg/);
+  if(page.viewportSize().width>=1180){
+    const fonts=await c.locator('.bali-id-mini-heading').first().evaluate(n=>({
+      size:parseFloat(getComputedStyle(n).fontSize),
+      cardWidth:n.closest('.bali-id-showcase-mini').getBoundingClientRect().width
+    }));
+    expect(fonts.size).toBeLessThan(8);
+    expect(fonts.cardWidth).toBeGreaterThan(40);
+  }
+});
+
+test('desktop About card uses its full height while preserving original hero and sidebar',async({page})=>{
+  await page.goto('/index.html');
+  if(page.viewportSize().width<1180)return;
+  const p=await page.locator('#homeSection .bali-pc-about').evaluate(root=>{
+    const content=root.querySelector('.bali-pc-about-content');
+    const title=root.querySelector('.bali-pc-about-kicker').getBoundingClientRect();
+    const facts=root.querySelector('.bali-pc-about-facts').getBoundingClientRect();
+    const box=content.getBoundingClientRect();
+    return {display:getComputedStyle(content).display,
+      titleFromTop:title.top-box.top,
+      factsFromTop:facts.top-box.top,
+      factsBottom:facts.bottom-box.top,
+      cardHeight:box.height,scrollHeight:content.scrollHeight,
+      clientHeight:content.clientHeight};
+  });
+  expect(p.display).toBe('grid');
+  expect(p.titleFromTop).toBeLessThan(p.cardHeight*.25);
+  expect(p.factsFromTop).toBeGreaterThan(p.cardHeight*.48);
+  expect(p.scrollHeight).toBeLessThanOrEqual(p.clientHeight+4);
+  await expect(page.locator('.bali-pc-sidebar .bali-pc-navigation [data-bali-nav="home"]')).toHaveCount(1);
+  await expect(page.locator('#baliMobileAboutBtn')).toHaveText('ПОДРОБНЕЕ О КЛУБЕ');
 });
