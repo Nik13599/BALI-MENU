@@ -13,11 +13,11 @@ async function loadHoliday(page){
   await page.goto("/index.html");
   const source=fs.readFileSync(path.join(__dirname,"..","bali-pc-offers.js"),"utf8");
   const isolated=source.replace(/^import\s+.*?;\s*$/gm,"");
-  await page.addScriptTag({content:`
+  await page.addScriptTag({content:`(()=>{
     const initializeApp=()=>({}),getApps=()=>[],getApp=()=>({});
     const getFirestore=()=>({}),collection=()=>({}),query=()=>({}),where=()=>({});
     const onSnapshot=()=>()=>{};
-    `+isolated});
+    `+isolated+"\n})();"});
   await expect(page.locator(".bali-pc-hero")).toHaveClass(/is-seasonal/);
   await page.locator("#baliPcHeroPoster").evaluate(image=>image.decode());
 }
