@@ -81,3 +81,18 @@ body[data-bali-admin-section="design"] .admin-tab[data-admin-tab="design"]{font-
  border-color:#b9ff51;outline:0
 }
 .bali-builder-layer-trail>span{color:#839b89;font-size:14px}
+
+/* A live Firestore promotion is edited through its own authenticated form. */
+.bali-builder-managed-promo[hidden]{display:none!important}
+.bali-builder-managed-promo{
+ display:grid;gap:9px;padding:13px 14px;
+ border:1px solid rgba(185,255,81,.46);border-radius:12px;
+ background:linear-gradient(135deg,#1c3024,#13231b);
+}
+.bali-builder-managed-promo strong{font:800 13px/1.35 Manrope,Inter,sans-serif;color:#e5ffca}
+.bali-builder-managed-promo p{margin:0;color:#c3d5c4;font:500 11px/1.6 Manrope,Inter,sans-serif}
+.bali-builder-managed-promo button{
+ border:1px solid #b9ff51;background:#b9ff51;color:#162414;border-radius:9px;
+ padding:11px 12px;font:800 12px/1.3 Manrope,Inter,sans-serif;cursor:pointer;
+}
+.bali-builder-managed-promo button:disabled{opacity:.5;cursor:not-allowed}
