@@ -7,6 +7,8 @@ const CONFIG = {
     CURRENCY_SYMBOL: 'BYN'
 };
 
+const MENU_PRICE_FORMAT = new Intl.NumberFormat("ru-RU",{maximumFractionDigits:2});
+
 const BALI_API_CONFIGURED = /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(CONFIG.API_URL);
 
 // State
@@ -1137,24 +1139,18 @@ function createMenuItemHTML(item) {
     const withImage=Boolean(imageSource&&safeImage!=="https://placehold.co/400x200?text=BALI");
     const hasDetails=Boolean(String(item.detailText||"").trim());
     return `
-        <div class="menu-item ${unavailable ? 'unavailable' : ''} ${withImage ? '' : 'menu-item--no-image'}" data-id="${id}">
-            <button type="button" class="menu-details-btn ${hasDetails ? 'has-details' : 'no-details'}"
-                    data-menu-action="details" data-id="${id}"
-                    aria-label="${hasDetails ? 'Подробная информация: ' : 'Подробное описание отсутствует: '}${escapeHTML(item.name)}"
-                    title="${hasDetails ? 'Информация о блюде' : 'Подробное описание пока не добавлено'}"
-                    ${hasDetails ? '' : 'disabled aria-disabled="true"'}>
-              <svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.2"/><path d="M12 10.7v5.5M12 7.65h.01"/></svg>
-            </button>
+        <div class="menu-item bali-catalog-card ${unavailable ? 'unavailable' : ''} ${withImage ? '' : 'menu-item--no-image'}" data-id="${id}">
             ${withImage ? `<img src="${safeImage}" loading="lazy" decoding="async"
                 alt="${escapeHTML(item.name)}" class="menu-item-image">` : ''}
             <div class="menu-item-content">
                 <span class="menu-item-category">${escapeHTML(item.category)}</span>
                 <div class="menu-item-header">
                     <h3 class="menu-item-name">${escapeHTML(item.name)}</h3>
-                    <span class="menu-item-price">${CONFIG.CURRENCY_SYMBOL} ${price.toFixed(2)}</span>
+                    <span class="menu-item-price"><span class="bali-menu-amount">${MENU_PRICE_FORMAT.format(price)}</span><small class="bali-menu-currency">BYN</small></span>
                 </div>
                 <p class="menu-item-description">${escapeHTML(item.description)}</p>
                 ${item.weight ? `<span class="menu-item-weight">${escapeHTML(item.weight)}</span>` : ''}
+                ${hasDetails ? `<button type="button" class="bali-menu-readmore" data-menu-action="details" data-id="${id}" aria-label="Подробнее о блюде: ${escapeHTML(item.name)}">Подробнее о блюде <span aria-hidden="true">→</span></button>` : ''}
                 ${unavailable
                     ? '<span class="unavailable-badge">Недоступно</span>'
                     : `<div class="menu-purchase-controls">
@@ -1181,7 +1177,7 @@ elements.menuGrid?.addEventListener("error",event=>{
     item?.classList.add("menu-item--no-image");
 },true);
 
-// The information icon is always displayed, but only text-filled products open.
+// A plain-language details action appears only for products with a description.
 // The modal uses the existing cart and quantity data, not a second checkout flow.
 let openMenuDetailsProductId=null;
 function syncMenuQuantityInCard(id){

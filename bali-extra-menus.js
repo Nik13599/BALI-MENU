@@ -2,6 +2,7 @@
    Tea seed uses the owner's menu; detailed tasting notes cite the attached manual. */
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getFirestore,collection,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {node,categoryLabel,catalogCard,catalogGroup} from "./bali-menu-cards.js?v=20261020-1";
 import {BALI_TEA_SEED} from "./bali-tea-seed.js";
 
 const firebase=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
@@ -12,12 +13,6 @@ const schemas=[
   {prefix:"baliHookah",collection:"hookah_menu",title:"Кальянная карта",all:"Вся кальянная карта"},
   {prefix:"baliTea",collection:"tea_menu",title:"Чайная карта",all:"Вся чайная карта"}
 ];
-const node=(tag,className,txt)=>{
-  const element=document.createElement(tag);
-  if(className)element.className=className;
-  if(txt!==undefined)element.textContent=txt;
-  return element;
-};
 const validText=(value,max=120)=>typeof value==="string"&&value.trim().length>0&&value.trim().length<=max;
 const validPrice=value=>typeof value==="number"&&Number.isFinite(value)&&value>=0&&value<=20000;
 const textField=(value,max=2400)=>typeof value==="string"?value.trim().slice(0,max):"";
@@ -36,8 +31,6 @@ function normalize(data,id){
     hidden:data.hidden===true
   };
 }
-const categoryLabel=value=>value===value.toLocaleUpperCase("ru-RU")?value.slice(0,1)+value.slice(1).toLocaleLowerCase("ru-RU"):value;
-const teaPrice=new Intl.NumberFormat("ru-RU",{maximumFractionDigits:2});
 const sortItems=(a,b)=>a.sort-b.sort||collator.compare(a.category,b.category)||collator.compare(a.name,b.name);
 function mergeTeaItems(firebaseItems){
   // Seed is a full locally available menu; an edited Firestore document overrides
@@ -93,33 +86,8 @@ function openTeaInfo(item){
   if(!dialog.open)dialog.showModal();
 }
 function drawTeaItem(item){
-  // Share kitchen card markup and typography, but render a compact tea-specific size.
-  const card=node("article","menu-item bali-tea-item menu-item--no-image");
   const hasDetails=Boolean([item.description,item.taste,item.ingredients,item.brewing].some(Boolean));
-  card.classList.toggle("has-tea-details",hasDetails);
-  const inner=node("div","menu-item-content");
-  inner.append(node("span","menu-item-category",item.category));
-  const header=node("div","menu-item-header");
-  header.append(node("h3","menu-item-name",item.name));
-  const price=node("span","menu-item-price");
-  price.append(node("span","bali-tea-amount",teaPrice.format(item.price1)),node("small","bali-tea-currency","BYN"));
-  header.append(price);
-  // A compact name/price preview opens details through a plain-language action.
-  // Origin, tasting notes, ingredients and brewing stay in openTeaInfo().
-  inner.append(header);
-  if(item.volume1&&item.volume1!=="Порция"&&item.volume1!=="Цена")
-    inner.append(node("span","menu-item-weight",item.volume1));
-  if(item.volume2)
-    inner.append(node("span","menu-item-weight",item.volume2+" — BYN "+item.price2.toFixed(2)));
-  if(hasDetails){
-    const more=node("button","bali-tea-readmore","Подробнее о чае");
-    more.type="button";
-    more.setAttribute("aria-label","Подробнее о чае: "+item.name);
-    const arrow=node("span","","→");arrow.setAttribute("aria-hidden","true");more.append(arrow);
-    more.addEventListener("click",()=>openTeaInfo(item));inner.append(more);
-  }else{const space=node("span","bali-tea-footer-space");space.setAttribute("aria-hidden","true");inner.append(space);}
-  card.append(inner);
-  return card;
+  return catalogCard(item,{tea:true,onDetails:hasDetails?()=>openTeaInfo(item):undefined});
 }
 function setup({prefix,collection:collectionName,title,all}){
   const list=document.getElementById(prefix+"List");
@@ -134,7 +102,7 @@ function setup({prefix,collection:collectionName,title,all}){
     const categories=[...new Set(state.items.map(x=>x.category))];
     if(state.selected!=="all"&&!categories.includes(state.selected))state.selected="all";
     for(const [category,label] of [["all",all],...categories.map(x=>[x,x])]){
-      const button=node("button","bali-bar-filter"+(state.selected===category?" is-active":""),isTea?categoryLabel(label):label);
+      const button=node("button","bali-bar-filter"+(state.selected===category?" is-active":""),categoryLabel(label));
       button.type="button";button.dataset.extraMenuCategory=category;
       button.setAttribute("aria-pressed",String(state.selected===category));filters.append(button);
     }
@@ -157,36 +125,7 @@ function setup({prefix,collection:collectionName,title,all}){
       grouped.get(item.category).push(item);
     }
     for(const [category,items] of grouped){
-      if(isTea){
-        // Same sections/headings/six-column (desktop) and list (mobile) as kitchen.
-        const group=node("section","menu-category-block");
-        const heading=node("div","menu-category-heading");
-        heading.append(node("h3","menu-category-title",categoryLabel(category)));
-        const count=items.length;
-        const ending=count===1?"позиция":(count%10>=2&&count%10<=4&&(count%100<12||count%100>14)?"позиции":"позиций");
-        heading.append(node("span","menu-category-count",count+" "+ending));
-        const grid=node("div","menu-grid menu-category-products");
-        for(const item of items)grid.append(drawTeaItem(item));
-        group.append(heading,grid);list.append(group);
-        continue;
-      }
-      const group=node("section","bali-bar-group");
-      group.append(node("h3","bali-bar-category-name",category));
-      const table=node("div","bali-bar-table"+(isTea?" bali-tea-card-grid":""));
-      for(const item of items){
-        const row=node("div","bali-bar-row");
-        row.append(node("strong","bali-bar-product-name",item.name));
-        const portions=node("div","bali-bar-portions");
-        for(const [volume,price] of [[item.volume1,item.price1],[item.volume2,item.price2]]){
-          if(!volume)continue;
-          const p=node("div","bali-bar-portion");
-          p.append(node("span","bali-bar-volume",volume),
-                   node("span","bali-bar-price",rub.format(price)+" BYN"));
-          portions.append(p);
-        }
-        row.append(portions);table.append(row);
-      }
-      group.append(table);list.append(group);
+      list.append(catalogGroup(category,items,isTea?drawTeaItem:catalogCard));
     }
   }
   search?.addEventListener("input",()=>{

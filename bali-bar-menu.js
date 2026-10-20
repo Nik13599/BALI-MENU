@@ -5,6 +5,8 @@
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getFirestore,collection,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
+import {categoryLabel,catalogCard,catalogGroup} from "./bali-menu-cards.js?v=20261020-1";
+
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const db=getFirestore(app);
 const host=document.getElementById("baliBarList");
@@ -13,7 +15,6 @@ const current={items:[],category:"all",term:""};
 const search=document.getElementById("baliMenuSearch");
 const validText=(value,max=120)=>typeof value==="string"&&value.trim().length>0&&value.trim().length<=max;
 const validPrice=value=>typeof value==="number"&&Number.isFinite(value)&&value>=0&&value<=20000;
-const formatPrice=value=>new Intl.NumberFormat("ru-RU",{minimumFractionDigits:2,maximumFractionDigits:2}).format(value)+" BYN";
 const collator=new Intl.Collator("ru",{numeric:true,sensitivity:"base"});
 const make=(tag,cls,text)=>{
   const el=document.createElement(tag);
@@ -40,7 +41,7 @@ function draw(){
   const categories=[...new Set(current.items.map(x=>x.category))];
   if(current.category!=="all"&&!categories.includes(current.category))current.category="all";
   for(const [value,label] of [["all","Вся барная карта"],...categories.map(x=>[x,x])]){
-    const button=make("button","bali-bar-filter"+(current.category===value?" is-active":""),label);
+    const button=make("button","bali-bar-filter"+(current.category===value?" is-active":""),categoryLabel(label));
     button.type="button";
     button.dataset.barCategory=value;
     button.setAttribute("aria-pressed",String(current.category===value));
@@ -64,25 +65,7 @@ function draw(){
     groups.get(item.category).push(item);
   }
   for(const [category,items] of groups){
-    const group=make("section","bali-bar-group");
-    const heading=make("h3","bali-bar-category-name",category);
-    group.append(heading);
-    const table=make("div","bali-bar-table");
-    for(const item of items){
-      const row=make("div","bali-bar-row");
-      const title=make("strong","bali-bar-product-name",item.name);
-      const prices=make("div","bali-bar-portions");
-      for(const [volume,price] of [[item.volume1,item.price1],[item.volume2,item.price2]]){
-        if(!volume)continue;
-        const option=make("div","bali-bar-portion");
-        option.append(make("span","bali-bar-volume",volume),make("span","bali-bar-price",formatPrice(price)));
-        prices.append(option);
-      }
-      row.append(title,prices);
-      table.append(row);
-    }
-    group.append(table);
-    host.append(group);
+    host.append(catalogGroup(category,items,catalogCard));
   }
 }
 search?.addEventListener("input",()=>{
