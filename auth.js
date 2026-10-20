@@ -255,6 +255,7 @@ window.BaliAuth = {
   getProfile: () => user && profile ? { ...profile } : null,
   getIdToken: async () => auth?.currentUser ? auth.currentUser.getIdToken() : null,
   open: show,
+  close: hide,
   requireProfile: async () => {
     await ready;
     if (!isConfigured || !user || !user.emailVerified || !profile) {

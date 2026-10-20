@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>if("scrollRestoration" in history)history.scrollRestoration="manual";</script>
     <meta name="theme-color" content="#080b11">
-    <title>Bali</title>
+    <title>BALI NIGHTCLUB · Минск</title>
     <meta name="description"
         content="Bali — события, меню, предзаказы и контакты ночного клуба в Минске.">
     <meta name="robots" content="noindex, nofollow">
@@ -45,20 +45,19 @@
     <link rel="stylesheet" href="bali-id-bank.css?v=20261019-3">
     <link rel="stylesheet" href="bali-info-page.css?v=20261019-2">
     <link rel="stylesheet" href="bali-mobile-about-hero.css?v=20261019-6">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
     <link rel="stylesheet" href="bali-tea-cards.css?v=20261019-3">
     <link rel="stylesheet" href="bali-about-shell.css?v=20261019-fluid2">
     <link rel="stylesheet" href="bali-mobile-glass.css?v=20261019-1">
     <link rel="stylesheet" href="bali-pc-id-home.css?v=20261019-1">
     <link rel="stylesheet" href="bali-calendar.css?v=20261019-2">
+  <link rel="icon" href="assets/bali-favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/manrope-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="bali-brand-system.css?v=20261020-1">
 </head>
 
 <body class="bali-guest-theme">
     <div class="bali-preview-banner" role="status">
-      Тестовый режим · Предзаказы работают после публикации правил Firestore. Оплата онлайн недоступна, заказ подтверждает администратор.
+      Тестовый режим · Предзаказ подтверждает администратор. Онлайн-оплата недоступна.
     </div>
     <!-- BALI: минимальная шапка с профилем -->
     <header class="header">
@@ -691,17 +690,17 @@
     </button>
 
     <!-- Shopping Cart Sidebar -->
-    <div class="cart-sidebar" id="cartSidebar">
+    <div class="cart-sidebar" id="cartSidebar" role="dialog" aria-modal="true" aria-label="Корзина" aria-hidden="true">
         <div class="cart-header">
             <h3>Корзина</h3>
-            <button class="close-cart" id="closeCart">✕</button>
+            <button class="close-cart" id="closeCart" type="button" aria-label="Закрыть">✕</button>
         </div>
 
         <div class="cart-items" id="cartItems">
             <div class="empty-cart">
                 <span class="empty-icon">🛒</span>
-                <p>Your cart is empty</p>
-                <p class="empty-subtitle">Add items from the menu</p>
+                <p>Корзина пока пуста</p>
+                <p class="empty-subtitle">Выберите блюда в меню</p>
             </div>
         </div>
 
@@ -728,7 +727,7 @@
         <div class="account-panel">
           <p class="auth-help">Для регистрации войдите через Google. Почтовый адрес подтверждается вашим Google-аккаунтом и используется для последующих входов. Имя и телефон обязательны.</p>
           <p class="auth-status" id="authMessage" role="status" aria-live="polite"></p>
-          <p class="auth-help" id="authBuild">Версия авторизации: 17.10.2026-10</p>
+
           <div class="auth-actions">
             <button class="auth-btn" type="button" id="authGoogleBtn">Войти через Google</button>
             <button class="auth-outline-btn" type="button" id="authSignOutBtn" hidden>Выйти из аккаунта</button>
@@ -766,11 +765,11 @@
       <div id="baliMenuDetailsActions" class="bali-menu-details-actions" aria-label="Добавление блюда в корзину"></div>
     </dialog>
     <!-- Checkout Modal -->
-    <div class="modal" id="checkoutModal">
+    <div class="modal" id="checkoutModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="checkoutTitle">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Данные предзаказа</h3>
-                <button class="close-modal" id="closeCheckout">✕</button>
+                <h3 id="checkoutTitle">Данные предзаказа</h3>
+                <button class="close-modal" id="closeCheckout" type="button" aria-label="Закрыть">✕</button>
             </div>
 
             <form class="checkout-form" id="checkoutForm">
@@ -806,7 +805,7 @@
 
                 <div class="form-group">
                     <label for="orderNotes">Пожелания к заказу (необязательно)</label>
-                    <textarea id="orderNotes" rows="2" placeholder="Например, уточнение по времени подачи"></textarea>
+                    <textarea id="orderNotes" rows="2" maxlength="500" placeholder="Например, уточнение по времени подачи"></textarea>
                 </div>
 
                 <div class="order-summary">
@@ -841,10 +840,10 @@
     </div>
 
     <!-- Success Modal -->
-    <div class="modal" id="successModal">
+    <div class="modal" id="successModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="successTitle">
         <div class="modal-content success-content">
             <div class="success-icon">✓</div>
-            <h3>Предзаказ отправлен</h3>
+            <h3 id="successTitle">Предзаказ отправлен</h3>
             <p>Предзаказ отправлен администратору. Ожидайте подтверждения.</p>
             <div class="order-id-box">
                 <span>Номер предзаказа:</span>
@@ -869,12 +868,13 @@
         </div>
       </div>
     </dialog>
+    <script src="bali-dialogs.js?v=20261020-1" defer></script>
     <script src="firebase-config.js?v=20261017-10"></script>
     <script type="module" src="bali-age-gate.js?v=20261018-98"></script>
-    <script src="app.js?v=20261019-calendar1"></script>
+    <script src="app.js?v=20261020-1"></script>
     <script src="bali-calendar.js?v=20261019-1" defer></script>
     <script src="bali-pc-reference.js?v=20261019-1" defer></script>
-    <script type="module" src="auth.js?v=20261019-1"></script>
+    <script type="module" src="auth.js?v=20261020-1"></script>
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>
     <script type="module" src="bali-bar-menu.js?v=20261017-85"></script>
     <script type="module" src="bali-extra-menus.js?v=20261019-3"></script>
@@ -885,7 +885,7 @@
     <script type="module" src="bali-mobile-about-hero.js?v=20261019-1"></script>
     <script type="module" src="bali-home-placeholder.js?v=20261018-92"></script>
 
-    <script type="module" src="bali-pc-offers.js?v=20261018-106"></script>
+    <script type="module" src="bali-pc-offers.js?v=20261020-1"></script>
     <script type="module" src="orders-firestore.js?v=20261017-28"></script>
     <script type="module" src="event-interests.js?v=20261017-26"></script>
     <script src="bali-icon-atelier.js?v=20261017-58" defer></script>

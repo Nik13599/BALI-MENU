@@ -1,0 +1,113 @@
+/* BALI brand system. Loaded last: existing phone/PC compositions remain the base.
+   New visual changes belong here instead of another versioned theme override. */
+@font-face{font-family:Manrope;src:url('assets/fonts/manrope-variable.woff2') format('woff2');font-weight:400 800;font-style:normal;font-display:swap}
+@font-face{font-family:Unbounded;src:url('assets/fonts/unbounded-variable.woff2') format('woff2');font-weight:500 700;font-style:normal;font-display:swap}
+:root{
+  --bali-font-body:Manrope,Arial,sans-serif;
+  --bali-font-display:Unbounded,Manrope,Arial,sans-serif;
+  --bali-surface:#14181d;
+  --bali-line:rgba(242,245,240,.15);
+  --bali-muted:#b0b7bd;
+  color-scheme:dark;
+}
+body,button,input,textarea,select{font-family:var(--bali-font-body)!important}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input,select,textarea{font-size:inherit}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+button{touch-action:manipulation}
+body :is(h1,h2,h3,p){text-wrap:pretty}
+body :is(h1,h2){letter-spacing:-.035em}
+body.bali-guest-theme :is(#baliMenuHeading,.events-heading h2,.bali-profile-kicker,.bali-info-hero h1),
+body.bali-guest-theme #homeSection .bali-pc-hero:not(.is-image-only) #baliPcOfferTitle,
+body.bali-guest-theme #homeSection .bali-mobile-home-hero h1,
+body .hero h1,body .sec-header h2{
+  font-family:var(--bali-font-display)!important;font-weight:600!important;line-height:1.2!important;letter-spacing:-.045em!important;
+}
+body.bali-guest-theme .bali-preview-banner{
+  color:#bdc4c8!important;font-size:11px!important;line-height:1.4!important;
+  background:#14181b!important;border-color:var(--bali-line)!important;
+}
+body.bali-guest-theme .header #accountBtn{font-weight:700!important}
+body.bali-guest-theme .cart-sidebar:not(.active){visibility:hidden;pointer-events:none}
+body.bali-guest-theme .cart-sidebar.active{visibility:visible}
+body.bali-guest-theme .modal-content{background:#14181d!important;border:1px solid var(--bali-line)!important;border-radius:22px!important}
+body.bali-guest-theme .modal-header h3{font-size:21px;letter-spacing:-.03em}
+body.bali-guest-theme .auth-help{color:var(--bali-muted)!important;font-size:13px!important;line-height:1.65!important}
+body.bali-guest-theme :is(.close-modal,.close-cart,.remove-item){min-width:40px;min-height:40px}
+body.bali-guest-theme .form-group :is(input,select,textarea){min-height:46px;font-size:16px!important;border-radius:10px!important}
+body.bali-guest-theme :is(.cart-total,.menu-item-price,#baliDockTotal,.bali-calendar-clock){font-variant-numeric:tabular-nums}
+body.bali-guest-theme #menuPage #baliMenuModeSwitch .bali-menu-mode-btn{box-shadow:none!important}
+body.bali-guest-theme #menuPage #baliSharedCategories :is(.category-btn,.bali-bar-filter){font-size:12px!important;min-height:40px!important}
+body.bali-guest-theme #menuPage #menuGrid .menu-category-block .menu-category-heading{
+  border-bottom:1px solid var(--bali-line)!important;margin-bottom:16px!important;padding-bottom:12px!important;
+}
+body.bali-guest-theme #menuPage #menuGrid .menu-category-block .menu-category-title{
+  color:#f3f4ef!important;font-size:clamp(18px,1.65vw,25px)!important;line-height:1.25!important;letter-spacing:-.035em!important;
+}
+body.bali-guest-theme #menuPage .menu-category-title::before{background:var(--bt-primary)!important;width:3px!important}
+body.bali-guest-theme #menuPage .menu-category-count{font-size:12px!important;color:var(--bali-muted)!important}
+body.bali-guest-theme #menuPage #menuGrid .menu-category-block .menu-item{
+  border:1px solid var(--bali-line)!important;background:var(--bali-surface)!important;border-radius:14px!important;
+  padding:0!important;box-shadow:none!important;transition:border-color .18s ease,background-color .18s ease;
+}
+body.bali-guest-theme #menuPage #menuGrid .menu-category-block .menu-item-content{padding:10px!important;gap:6px!important}
+body.bali-guest-theme #menuPage #menuGrid .menu-category-block .menu-item-name{
+  font-size:13px!important;font-weight:750!important;line-height:1.4!important;letter-spacing:-.025em!important;padding-right:14px!important;
+}
+body.bali-guest-theme #menuPage #menuGrid .menu-category-block .menu-item-price{font-size:15px!important;line-height:1.4!important;font-weight:800!important}
+body.bali-guest-theme #menuPage #menuGrid .menu-category-block .menu-item-description{
+  color:var(--bali-muted)!important;font-size:12px!important;line-height:1.6!important;
+
+}
+body.bali-guest-theme #menuPage #menuGrid .menu-category-block .menu-item-weight{color:#d1d7d9!important;font-size:12px!important;line-height:1.5!important}
+body.bali-guest-theme #menuPage #menuGrid .menu-category-block .menu-purchase-controls{margin-top:auto!important;padding-top:9px!important;gap:8px!important}
+body.bali-guest-theme #menuPage #menuGrid .menu-category-block :is(.menu-quantity-btn,.add-to-cart-btn){min-height:38px!important;font-size:13px!important;border-radius:9px!important}
+body.bali-guest-theme #menuPage #menuGrid .menu-category-block .menu-quantity-value{font-size:14px!important}
+body.bali-guest-theme #menuPage .loading-state{color:var(--bali-muted);padding:32px 20px!important;line-height:1.7}
+body.bali-guest-theme #menuPage .loading-state button{margin-top:14px}
+body.bali-guest-theme #homeSection .bali-pc-hero:not(.has-artwork){
+  background:radial-gradient(ellipse at 100% 0,rgba(185,255,81,.065),transparent 60%),linear-gradient(125deg,#181d22,#090d11)!important;
+  border-color:var(--bali-line)!important;
+}
+body.bali-guest-theme #homeSection .bali-pc-hero:not(.has-artwork)::before{opacity:.025!important}
+body.bali-guest-theme #homeSection .bali-pc-hero:not(.has-artwork)::after{color:#f3f4ef!important;opacity:.045!important}
+body.bali-guest-theme #homeSection .bali-pc-hero-visual img[hidden]{display:none!important}
+body.bali-guest-theme #homeSection .bali-pc-kicker{font-size:11px!important;letter-spacing:.22em!important;color:var(--bt-text)!important}
+body.bali-guest-theme #homeSection .bali-pc-hero:not(.is-image-only) #baliPcOfferDescription{color:#bec6cb!important;line-height:1.7!important;letter-spacing:0!important}
+body.bali-guest-theme #homeSection .bali-home-event-card{border-color:var(--bali-line)!important;border-radius:16px!important}
+body.bali-guest-theme #homeSection .bali-home-event-info h3{font-size:14px!important;font-weight:800!important;line-height:1.3!important;letter-spacing:-.025em!important}
+body.bali-guest-theme #homeSection .bali-home-event-hours{font-size:11px!important;line-height:1.4!important}
+body.bali-guest-theme #homeSection .bali-home-menu-banner{border-color:var(--bali-line)!important}
+body.bali-guest-theme #homeSection .bali-home-menu-banner strong{font-family:var(--bali-font-display)!important;font-size:21px!important;font-weight:500!important}
+body.bali-guest-theme .bali-bottom-nav button{font-size:11px!important;letter-spacing:0!important}
+@media(hover:hover){
+  body.bali-guest-theme #menuPage #menuGrid .menu-category-block .menu-item:hover{border-color:rgba(242,245,240,.35)!important;background:#1a1f25!important}
+}
+@media(min-width:1180px){
+  body.bali-guest-theme #menuPage #menuGrid .menu-category-block{margin-bottom:34px!important}
+  body.bali-guest-theme #menuPage .bali-menu-heading-row #baliMenuHeading{font-size:24px!important}
+  body.bali-guest-theme #homeSection .bali-pc-hero:not(.is-image-only) #baliPcOfferTitle{font-size:clamp(29px,3.1vw,65px)!important;max-width:95%!important}
+  body.bali-guest-theme #homeSection .bali-pc-hero-content{padding:clamp(24px,2.5vw,50px)!important}
+  body.bali-guest-theme .bali-pc-navigation button{font-size:12px!important;font-weight:700!important;letter-spacing:.03em!important}
+  body.bali-guest-theme .bali-pc-sidebar{overflow-y:auto!important;scrollbar-width:thin}
+  body.bali-guest-theme .bali-pc-contacts-heading{font-size:10px!important;letter-spacing:.06em!important;font-weight:700!important}
+}
+@media(max-width:767px){
+  body.bali-guest-theme .bali-preview-banner{font-size:10px!important;max-height:none!important;padding:5px 12px!important}
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero h1{font-size:clamp(17px,4.5vw,27px)!important;line-height:1.4!important}
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero h1 em{font-style:normal!important}
+  body.bali-guest-theme #homeSection .bali-mobile-hero-tagline{font-size:13px!important;line-height:1.5!important;color:#bcc5ca!important}
+  body.bali-guest-theme #homeSection .bali-pc-hero:not(.is-image-only) #baliPcOfferTitle{font-size:20px!important}
+  body.bali-guest-theme #homeSection .bali-pc-hero:not(.is-image-only) #baliPcOfferDescription{font-size:12px!important}
+
+  body.bali-guest-theme #menuPage #menuGrid .menu-category-block .menu-item-content{padding:13px!important}
+  body.bali-guest-theme #menuPage #menuGrid .menu-category-block .menu-item-description{font-size:12px!important}
+  body.bali-guest-theme #menuPage #menuGrid .menu-category-block :is(.menu-quantity-btn,.add-to-cart-btn){min-height:40px!important}
+  body.bali-guest-theme #menuPage #menuGrid .menu-category-block .menu-purchase-controls{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)!important}
+  body.bali-guest-theme .form-group :is(input,select,textarea){font-size:16px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+/* Visibility changes immediately; only the off-canvas position is animated. */
+body.bali-guest-theme #cartSidebar{transition-property:right!important}

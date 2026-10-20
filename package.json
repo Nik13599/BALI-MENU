@@ -1,0 +1,15 @@
+{
+  "name": "bali-menu",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BALI NIGHTCLUB guest menu and staff dashboard",
+  "scripts": {
+    "test": "node scripts/verify-source.mjs && node scripts/verify-bali-bank.mjs && node scripts/verify-bali-transfers.mjs && node scripts/test-bali-backend.mjs",
+    "test:browser": "playwright test",
+    "start": "python3 -m http.server 8000"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
+    "@playwright/test": "^1.58.2"
+  }
+}

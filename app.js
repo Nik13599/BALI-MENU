@@ -19,11 +19,13 @@ let baliVisibleMenuSections=Object.fromEntries(baliMenuSectionKeys.map(key=>[key
 let baliMenuSearchText = '';
 let availableEvents = [];
 let receivedEventSnapshot=false;
+let receivedMenuSnapshot=false;
 let guestInterestDates=new Set();
 const pendingInterestDates=new Set();
 let showOnlyPlannedEvents=false;
 let lastRenderedEventsView=false;
 let lastWheelSlideAt=0;
+let openOrdersAfterSignIn=new URLSearchParams(location.search).get('view')==='orders';
 
 // Карточки могут иметь разную ширину на ПК и мобильном экране.
 // Индекс рассчитывается по реальным позициям, а не по фиксированным пикселям.
@@ -281,6 +283,7 @@ function handleMenuGridClick(event) {
 
 // Публичный каталог и календарь поступают из Firestore.
 window.addEventListener('bali:menu', ({ detail }) => {
+    receivedMenuSnapshot=true;
     menuItems = detail.items;
     // Цены в старой корзине никогда не используем: пересчитываем по свежему каталогу.
     const actual = new Map(menuItems.filter(x => x.available).map(x => [Number(x.id), x]));
@@ -296,7 +299,7 @@ window.addEventListener('bali:menu', ({ detail }) => {
     updateCategoryButtons();
     displayMenuItems(menuItems);
 });
-window.addEventListener('bali:menu-error', () => showError('Не удалось загрузить меню из Firestore. Проверьте правила доступа.'));
+window.addEventListener('bali:menu-error', () => showError('Не удалось загрузить меню. Проверьте соединение и попробуйте обновить страницу.'));
 window.addEventListener('bali:events', ({ detail }) => {
     const incoming=detail.events||[];
     // An RSVP transaction changes interestCount, not the poster or event data.
@@ -377,6 +380,8 @@ function renderGuestPage(page,{scroll=true}={}) {
     const dock=document.getElementById("baliCartDock");
     if(dock)dock.hidden=selected!=="menu"||baliActiveMenuMode!=="kitchen";
     document.body.dataset.baliPage=selected;
+    document.title = ({home:'BALI NIGHTCLUB · Минск',menu:'Меню · BALI',events:'Календарь · BALI',
+        profile:'Личный кабинет · BALI',id:'BALI ID',contacts:'Информация · BALI',about:'О клубе · BALI'})[selected];
     // Корзина не остаётся открытой при переходе из меню.
     if(selected!=="menu" && typeof closeCart==="function")closeCart();
     if(selected!=="about"){
@@ -392,7 +397,8 @@ function renderGuestPage(page,{scroll=true}={}) {
 function switchBaliMenuMode(nextMode) {
     // The administrator controls visibility, not product existence.
     const available=baliMenuSectionKeys.filter(key=>baliVisibleMenuSections[key]);
-    const mode=available.includes(nextMode)?nextMode:(available[0]||null);
+    // Auto-selection must never open a restricted map without consent.
+    const mode=available.includes(nextMode)?nextMode:(available.find(key=>key==='kitchen'||key==='tea')||null);
     const changedMode=baliActiveMenuMode!==mode;
     baliActiveMenuMode=mode;
     window.BaliActiveMenuMode=mode;
@@ -836,6 +842,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initStickyCategories();
     initEventCarousel();
     renderGuestPage(routeFromLocation());
+    if(openOrdersAfterSignIn)void openMyOrders();
     // Safari can reapply saved scroll positions once layout/fonts become ready.
     // Do a second Y-only reset after the first painted frame.
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
@@ -982,6 +989,7 @@ function attachEventListeners() {
         else window.BaliAuth?.open();
     });
     window.addEventListener("bali:auth-state",({detail})=>{
+        if(detail?.registered && openOrdersAfterSignIn)void openMyOrders();
         const mobileId=document.getElementById("baliMobileIdBtn");
         const mobileProfile=document.getElementById("baliMobileProfileBtn");
         if(mobileId)mobileId.setAttribute("aria-label",detail?.registered?"Открыть мою BALI ID карту":"Войти, чтобы получить BALI ID");
@@ -1050,10 +1058,6 @@ function attachEventListeners() {
     const shareBtn = document.getElementById('shareLocationBtn');
     if (shareBtn) shareBtn.addEventListener('click', handleShareLocation);
 
-    // Reload on success close
-    document.getElementById('closeSuccess').addEventListener('click', () => {
-        window.location.reload();
-    });
 }
 
 // ============================================
@@ -1062,6 +1066,9 @@ function attachEventListeners() {
 
 async function fetchMenuItems() {
     elements.menuGrid.innerHTML = '<div class="loading-state"><p>Загружаем меню BALI...</p></div>';
+    window.setTimeout(()=>{
+        if(!receivedMenuSnapshot)showError('Меню загружается дольше обычного. Проверьте соединение и обновите страницу.');
+    },15000);
 }
 
 let editingOrderId = null;
@@ -1083,7 +1090,7 @@ async function placeOrder(orderData) {
 function displayMenuItems(items) {
     if (!items || items.length === 0) {
         elements.menuGrid.classList.remove('menu-categories-layout');
-        elements.menuGrid.innerHTML = '<div class="loading-state"><p>Меню ещё не заполнено администратором.</p></div>';
+        elements.menuGrid.innerHTML = '<div class="loading-state"><p>Меню скоро появится. Уточнить ассортимент можно по телефону клуба.</p></div>';
         return;
     }
     // Даже при «Всё меню» карточки организованы внутри своих категорий.
@@ -1138,7 +1145,7 @@ function createMenuItemHTML(item) {
                     ${hasDetails ? '' : 'disabled aria-disabled="true"'}>
               <svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.2"/><path d="M12 10.7v5.5M12 7.65h.01"/></svg>
             </button>
-            ${withImage ? `<img src="${safeImage}"
+            ${withImage ? `<img src="${safeImage}" loading="lazy" decoding="async"
                 alt="${escapeHTML(item.name)}" class="menu-item-image">` : ''}
             <div class="menu-item-content">
                 <span class="menu-item-category">${escapeHTML(item.category)}</span>
@@ -1278,7 +1285,7 @@ function showLoading() {
     elements.menuGrid.innerHTML = `
         <div class="loading-state">
             <div class="spinner"></div>
-            <p>Loading menu...</p>
+            <p>Загружаем меню...</p>
         </div>
     `;
 }
@@ -1286,9 +1293,11 @@ function showLoading() {
 function showError(message) {
     elements.menuGrid.innerHTML = `
         <div class="loading-state">
-            <p style="color: var(--error-color)">❌ ${message}</p>
+            <p role="status">${escapeHTML(message)}</p>
+            <button type="button" class="auth-outline-btn" data-menu-retry>Обновить страницу</button>
         </div>
     `;
+    elements.menuGrid.querySelector('[data-menu-retry]')?.addEventListener('click',()=>location.reload());
 }
 
 // ============================================
@@ -1328,6 +1337,10 @@ function addToCart(itemId, quantity = 1) {
     if (!item || !item.available) return false;
     if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > MAX_MENU_QUANTITY) return false;
     const existingItem = cart.find(i => i.id === itemId);
+    if(!existingItem && cart.length >= (window.BaliOrders?.maxItems || 12)) {
+        alert('В предзаказе может быть не более 12 разных блюд. Количество уже выбранных блюд можно увеличить.');
+        return false;
+    }
     const amountAlreadyInCart = existingItem?.quantity || 0;
     if (amountAlreadyInCart + quantity > MAX_MENU_QUANTITY) {
         alert('Не более 50 единиц одного блюда в корзине. Сейчас в корзине: ' + amountAlreadyInCart + '.');
@@ -1385,8 +1398,8 @@ function updateCartUI() {
         elements.cartItems.innerHTML = `
             <div class="empty-cart">
                 <span class="empty-icon">🛒</span>
-                <p>Your cart is empty</p>
-                <p class="empty-subtitle">Add items from the menu</p>
+                <p>Корзина пока пуста</p>
+                <p class="empty-subtitle">Выберите блюда в меню</p>
             </div>
         `;
         document.getElementById('checkoutBtn').disabled = true;
@@ -1417,13 +1430,13 @@ function createCartItemHTML(item) {
         <div class="cart-item" data-id="${item.id}">
             <div class="cart-item-header">
                 <span class="cart-item-name">${escapeHTML(item.name)}</span>
-                <button class="remove-item" data-id="${item.id}">✕</button>
+                <button type="button" class="remove-item" data-id="${item.id}" aria-label="Удалить: ${escapeHTML(item.name)}">✕</button>
             </div>
             <div class="cart-item-details">
                 <div class="quantity-controls">
-                    <button class="qty-btn qty-minus" data-id="${item.id}">-</button>
+                    <button type="button" class="qty-btn qty-minus" data-id="${item.id}" aria-label="Уменьшить количество: ${escapeHTML(item.name)}">−</button>
                     <span class="qty-value">${item.quantity}</span>
-                    <button class="qty-btn qty-plus" data-id="${item.id}">+</button>
+                    <button type="button" class="qty-btn qty-plus" data-id="${item.id}" aria-label="Увеличить количество: ${escapeHTML(item.name)}">+</button>
                 </div>
                 <span class="cart-item-price">${(item.price * item.quantity).toFixed(2)} BYN</span>
             </div>
@@ -1461,24 +1474,27 @@ function calculateTotal() {
 }
 
 function saveCart() {
-    localStorage.setItem('foodhub_cart', JSON.stringify(cart));
+    // Private browsing or a full storage quota must not interrupt an order.
+    try { localStorage.setItem('foodhub_cart', JSON.stringify(cart)); } catch (_) {}
 }
 
 function loadCart() {
     try {
         const parsed = JSON.parse(localStorage.getItem('foodhub_cart') || '[]');
+        const seen = new Set();
         cart = Array.isArray(parsed) ? parsed.slice(0, 100).filter(item =>
-            Number.isSafeInteger(Number(item.id)) &&
+            item && Number.isSafeInteger(Number(item.id)) && Number(item.id)>0 &&
             Number.isFinite(Number(item.price)) &&
             Number(item.price) >= 0 &&
             Number.isInteger(Number(item.quantity)) &&
-            Number(item.quantity) >= 1 && Number(item.quantity) <= 99
+            Number(item.quantity) >= 1 && Number(item.quantity) <= 50 &&
+            !seen.has(Number(item.id)) && seen.add(Number(item.id))
         ).map(item => ({
             id: Number(item.id),
             name: String(item.name ?? '').slice(0, 150),
             price: Number(item.price),
             quantity: Number(item.quantity)
-        })) : [];
+        })).slice(0,12) : [];
     } catch (error) {
         cart = [];
     }
@@ -1543,6 +1559,7 @@ async function openCheckout() {
 }
 
 function closeCheckout() {
+    editingOrderId = null;
     elements.checkoutModal.classList.remove('active');
     elements.overlay.classList.remove('active');
 }
@@ -1635,7 +1652,7 @@ async function handleCheckout(e) {
             : result.order_id;
 
         // Store order ID for tracking
-        localStorage.setItem('last_order_id', result.order_id);
+        try { localStorage.setItem('last_order_id', result.order_id); } catch (_) {}
 
         closeCheckout();
         showSuccess();
@@ -1648,9 +1665,9 @@ async function handleCheckout(e) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Отправить предзаказ';
     } else {
-        alert('Failed to place order: ' + (result.error || 'Unknown error'));
+        alert('Не удалось отправить предзаказ: ' + (result.error || 'Попробуйте ещё раз.'));
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<span>Place Order</span><span class="btn-icon">→</span>';
+        submitBtn.textContent = 'Отправить предзаказ';
     }
 }
 
@@ -1675,6 +1692,12 @@ window.addEventListener('bali:orders-error', ({detail}) => {
 });
 async function openMyOrders() {
     if (!window.BaliAuth || !(await window.BaliAuth.requireProfile())) return;
+    openOrdersAfterSignIn=false;
+    const url=new URL(location.href);
+    if(url.searchParams.get('view')==='orders'){
+        url.searchParams.delete('view');
+        history.replaceState(history.state,'',url);
+    }
     closeCart();
     closeCheckout();
     document.getElementById('myOrdersModal').classList.add('active');
@@ -1775,6 +1798,7 @@ async function editMyOrder(orderId) {
 // ============================================
 
 function closeAllModals() {
+    window.BaliAuth?.close?.();
     closeCart();
     closeCheckout();
     closeSuccess();
