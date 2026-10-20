@@ -80,7 +80,7 @@ if(image&&title&&description&&counter&&action&&hero){
     ((value.startsWith("https://")&&value.length<=2048)||
      (value.startsWith("data:image/webp;base64,")&&value.length<=155000));
   function setPoster(offer){
-    // For the seasonal card, display the original customer-approved PNG, unchanged.
+    // Keep the approved PNG as fallback; let a published holiday offer replace it.
     const primary=validImage(offer?.imageUrl)?offer.imageUrl:(offer?.id===holidayId?holidayArt:"");
     const tablet=validImage(offer?.imageTabletUrl)?offer.imageTabletUrl:primary;
     const mobile=validImage(offer?.imageMobileUrl)?offer.imageMobileUrl:primary;
