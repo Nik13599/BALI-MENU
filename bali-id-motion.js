@@ -11,7 +11,7 @@
   const reduce=matchMedia("(prefers-reduced-motion: reduce)");
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   let flipped=false,drag=null,finishTimer=0,wheelAt=0,lastTouchTap=null;
-  let displayedAngle=0;
+  let displayedAngle=0,cinematicEffect=null;
   function faceState(backVisible,focus=false){
     flipped=!!backVisible;
     track.classList.toggle("is-flipped",flipped);
@@ -30,11 +30,19 @@
       return Number.isFinite(degrees)?degrees:displayedAngle;
     }catch{return displayedAngle;}
   }
-  function stopTimer(){clearTimeout(finishTimer);finishTimer=0;}
+  function stopTimer(){
+    clearTimeout(finishTimer);finishTimer=0;
+    if(cinematicEffect){cinematicEffect.cancel();cinematicEffect=null;}
+    scene.classList.remove("is-cinematic");
+  }
   function frame(angle){
     displayedAngle=angle;
     track.style.transition="none";
     track.style.transform="rotateY("+angle+"deg)";
+    // The cast shadow narrows as the physical edge turns toward the viewer.
+    const full=Math.abs(Math.cos(angle*Math.PI/180));
+    scene.style.setProperty("--bali-id-shadow-scale",(.36+full*.64).toFixed(3));
+    scene.style.setProperty("--bali-id-shadow-strength",(.29+(1-full)*.31).toFixed(3));
   }
   function normalize(){
     stopTimer();
@@ -62,16 +70,40 @@
   }
   function reset(){
     drag=null;lastTouchTap=null;
+    scene.classList.remove("is-dragging");
     faceState(false);
     normalize();
   }
   function toggle(focus=false){
     if(drag)drag=null;
-    // Pick the nearest equivalent half-turn from current visual position.
+    // Click / double-tap: camera pulls back first, rotates, then approaches.
+    // Manual dragging does NOT use this cinematic depth animation.
     const current=readAngle();
     const candidates=flipped?[-360,0,360]:[-180,180,540];
     const target=candidates.reduce((a,b)=>Math.abs(b-current)<Math.abs(a-current)?b:a);
-    animate(target,!flipped,{focus});
+    if(reduce.matches||typeof track.animate!=="function"){
+      animate(target,!flipped,{focus});
+      return;
+    }
+    stopTimer();
+    frame(current);
+    faceState(!flipped,focus);
+    scene.classList.add("is-cinematic");
+    const travel=target-current;
+    const keyframes=[
+      {offset:0,transform:"rotateY("+current+"deg) translateZ(0px) scale(1)"},
+      {offset:.2,transform:"rotateY("+(current+travel*.11)+"deg) translateZ(-56px) scale(.975)"},
+      {offset:.48,transform:"rotateY("+(current+travel*.48)+"deg) translateZ(-98px) scale(.945)"},
+      {offset:.74,transform:"rotateY("+(current+travel*.83)+"deg) translateZ(-65px) scale(.975)"},
+      {offset:1,transform:"rotateY("+target+"deg) translateZ(0px) scale(1)"}
+    ];
+    track.style.transition="none";
+    cinematicEffect=track.animate(keyframes,{
+      duration:960,easing:"cubic-bezier(.16,.64,.2,1)",fill:"forwards"
+    });
+    const running=cinematicEffect;
+    running.addEventListener("finish",()=>{if(cinematicEffect===running&&!drag)normalize();},{once:true});
+    finishTimer=setTimeout(()=>{if(cinematicEffect===running&&!drag)normalize();},1060);
   }
   track.addEventListener("transitionend",event=>{
     if(event.target===track&&event.propertyName==="transform"&&!drag)normalize();
@@ -83,6 +115,7 @@
     const current=readAngle();
     stopTimer();
     frame(current);
+    scene.classList.remove("is-dragging");
     const rect=scene.getBoundingClientRect();
     drag={
       id:event.pointerId,type:event.pointerType,
@@ -105,6 +138,7 @@
     if(!g.axis&&Math.abs(dx)+Math.abs(dy)>3)
       g.axis=Math.abs(dx)>=Math.abs(dy)*.72?"horizontal":"vertical";
     if(g.axis!=="horizontal")return;
+    scene.classList.add("is-dragging");
     const now=performance.now(),dt=now-g.lastTime;
     if(dt>0)g.velocity=(event.clientX-g.lastX)/dt;
     g.lastX=event.clientX;g.lastTime=now;
@@ -116,6 +150,7 @@
     const g=drag;
     if(!g||g.id!==event.pointerId)return;
     drag=null;
+    scene.classList.remove("is-dragging");
     try{if(scene.hasPointerCapture(event.pointerId))scene.releasePointerCapture(event.pointerId);}catch{}
     const dx=g.dx,elapsed=performance.now()-g.started;
     const threshold=Math.abs(dx)/dragDistance();
@@ -175,6 +210,6 @@
   scene.addEventListener("click",event=>{
     if(event.detail>0&&event.pointerType==="touch")event.preventDefault();
   });
-  window.BaliIdMotion=Object.freeze({reset,toggle,getState:()=>({flipped,dragging:!!drag})});
+  window.BaliIdMotion=Object.freeze({reset,toggle,getState:()=>({flipped,dragging:!!drag,cinematic:scene.classList.contains("is-cinematic")})});
   reset();
 })();
