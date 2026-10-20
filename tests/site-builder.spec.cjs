@@ -288,3 +288,44 @@ test("editing a button label keeps its icon and adjacent markup unchanged",async
  expect(result.applied.duplicates).toBe(false);
  expect(result.restored).toBe(true);
 });
+
+
+test("full-width mobile banner can use manual crop, aspect and safe layer controls",async({page})=>{
+ await page.goto("/index.html?bali-admin-design-preview=1",{waitUntil:"domcontentloaded"});
+ await page.waitForFunction(()=>Boolean(window.BaliBuilderCore));
+ const result=await page.evaluate(()=>{
+  const core=window.BaliBuilderCore,model=core.emptyModel();
+  const div=document.createElement("div");div.id="baliBuilderCoverTest";
+  document.getElementById("homeSection").append(div);
+  model.phone.rules["#baliBuilderCoverTest"]={props:{
+   width:"100%",minHeight:"240px",aspectRatio:"16 / 9",
+   image:"https://example.com/event-banner.webp",backgroundSize:"100% 100%",
+   backgroundPosition:"top",overflow:"hidden",zIndex:5
+  }};
+  core.mount(document,model,"phone",{editor:true});
+  const applied={
+   size:div.style.backgroundSize,position:div.style.backgroundPosition,
+   aspect:div.style.aspectRatio,overflow:div.style.overflow,
+   zIndex:div.style.zIndex,width:div.style.width
+  };
+  document.__baliBuilderRestore();
+  const restored=!div.style.backgroundImage&&!div.style.aspectRatio&&!div.style.zIndex;
+  div.remove();
+  const denied=core.sanitizeProps({
+   backgroundSize:"url(javascript:alert(1))",aspectRatio:"11 / 0",
+   zIndex:99999,overflow:"url(alert(1))"
+  });
+  return {applied,restored,denied};
+ });
+ expect(result.applied.size).toBe("100% 100%");
+ expect(result.applied.position).toContain("top");
+ expect(result.applied.aspect).toBe("16 / 9");
+ expect(result.applied.overflow).toBe("hidden");
+ expect(result.applied.zIndex).toBe("5");
+ expect(result.applied.width).toBe("100%");
+ expect(result.restored).toBe(true);
+ expect(result.denied.backgroundSize).toBeUndefined();
+ expect(result.denied.aspectRatio).toBeUndefined();
+ expect(result.denied.overflow).toBeUndefined();
+ expect(result.denied.zIndex).toBe(100);
+});
