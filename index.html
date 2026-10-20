@@ -17,6 +17,8 @@
   <link rel="preload" href="assets/fonts/manrope-variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" data-bali-bundle="index" href="generated/index.css?v=1b1bc6a1bed1">
   <link rel="stylesheet" href="bali-profile-viewport.css?v=20261020-1">
+  <link rel="stylesheet" href="bali-home-hover.css?v=20261020-1">
+  <link rel="stylesheet" href="bali-id-showcase.css?v=20261020-1">
 </head>
 
 <body class="bali-guest-theme">
@@ -153,17 +155,23 @@
             <p id="baliPcAboutDescription">Ночной клуб BALI в Минске. Музыка, события и встречи в одной атмосфере.</p>
             <button type="button" data-bali-nav="contacts">Контакты клуба →</button>
           </details>
-          <button type="button" class="bali-pc-id-card" id="baliHomeIdCard"
-            aria-label="Открыть свою цифровую карту BALI ID" title="Открыть BALI ID"
+          <button type="button" class="bali-pc-id-card bali-id-showcase" id="baliHomeIdCard"
+            aria-label="BALI ID — программа привилегий. Перейти к своей карте" title="Открыть свою BALI ID"
             data-bali-tier="member">
-            <div class="bali-pc-id-card-face">
-              <div class="bali-pc-id-top"><span>BALI ID · PRIVILEGE</span><span id="baliHomeIdTier">MEMBER</span></div>
-              <img class="bali-pc-id-logo" src="assets/bali-id-full-logo.svg" alt="BALI NIGHTCLUB" loading="lazy" decoding="async">
-              <div class="bali-pc-id-bottom">
-                <span><strong id="baliHomeIdName">ВАША КАРТА BALI ID</strong><small id="baliHomeIdHint">Войти и получить карту</small></span>
-                <strong class="bali-pc-id-number" id="baliHomeIdNumber">— — — — — —</strong>
-              </div>
-            </div>
+            <span class="bali-id-showcase-kicker">BALI ID · PRIVILEGE</span>
+            <span class="bali-id-showcase-layout">
+              <span class="bali-id-showcase-deck" aria-hidden="true">
+                <span class="bali-id-showcase-mini bali-id-showcase-mini-back"><img src="assets/bali-id-full-logo.svg" alt="" loading="lazy"></span>
+                <span class="bali-id-showcase-mini bali-id-showcase-mini-mid"><img src="assets/bali-id-full-logo.svg" alt="" loading="lazy"></span>
+                <span class="bali-id-showcase-mini bali-id-showcase-mini-front"><span class="bali-id-showcase-mini-top">BALI ID</span><img src="assets/bali-id-full-logo.svg" alt="" loading="lazy"><span id="baliHomeIdTier">MEMBER</span></span>
+              </span>
+              <span class="bali-id-showcase-copy">
+                <strong>6 уровней привилегий</strong>
+                <span>Карты постоянных гостей с персональными предложениями и бонусами.</span>
+                <small>MEMBER · SILVER · GOLD · PLATINUM · BLACK · PRIVATE</small>
+              </span>
+            </span>
+            <span class="bali-id-showcase-link">Посмотреть свою карту <span aria-hidden="true">↗</span></span>
           </button>
         </aside>
         <button type="button" id="menuNavBtn" class="bali-home-menu-banner" aria-controls="menuPage">
@@ -878,7 +886,7 @@
     <script src="bali-mobile-reference.js?v=20261019-shell1" defer></script>
     <script type="module" src="bali-profile-media.js?v=20261020-1"></script>
     <script type="module" src="bali-id.js?v=20261019-6"></script>
-    <script src="bali-pc-id-home.js?v=20261019-1" defer></script>
+    <script src="bali-pc-id-home.js?v=20261020-showcase1" defer></script>
     <script type="module" src="bali-id-flip.js?v=20261019-4"></script>
     <script type="module" src="bali-id-bank.js?v=20261019-2"></script>
     <script src="bali-share.js?v=20261019-4" defer></script>
