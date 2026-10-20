@@ -459,7 +459,11 @@ function renderInspector(){
  const link=inspector.querySelector('[data-builder-main="link"]');
  const url=inspector.querySelector('[data-builder-main="url"]');
  const image=inspector.querySelector('[data-builder-main="image"]');
- const textNode=node&&[...node.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());
+ const preferredLabel=node?.matches("#menuNavBtn")?node.querySelector("strong"):
+  node?.matches(".bali-social-btn")?node.querySelector(".bali-pc-contact-label"):
+  node?.matches(".bali-home-map")?node.querySelector(".bali-yandex-address"):
+  node?.matches(".bali-pc-id-card")?node.querySelector(".bali-id-showcase-copy > strong"):null;
+ const textNode=(preferredLabel||node)&&[...(preferredLabel||node).childNodes].find(n=>n.nodeType===3&&n.textContent.trim());
  text.value=item?.text??(selection?.id?"":(
   node?.matches(".bali-bottom-nav [data-bali-nav]")?node.querySelector("small")?.textContent?.trim()||"":
   textNode?.textContent?.trim()||(!node?.children.length?node?.textContent?.trim():"")||""));
