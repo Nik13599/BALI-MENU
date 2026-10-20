@@ -65,3 +65,36 @@ test('kitchen admin description controls guest details without a separate switch
  await dialog.getByRole('button',{name:'Сохранить товар',exact:true}).click();await expect(dialog).toBeHidden();
  expect(await page.evaluate(()=>({text:window.__adminStore['menu/1'].detailText,enabled:window.__adminStore['menu/1'].detailEnabled}))).toEqual({text:'',enabled:false});
 });
+
+test('admin creates three different parties on the same date, with independent artwork, dot colors and IDs',async({page})=>{
+  await page.evaluate(()=>{document.getElementById('adminEventsPanel').hidden=false});
+  const create=async(slot,name,color)=>{
+    await page.locator('#eventDateAdmin').fill('2026-12-31');
+    await page.locator('#eventSlotAdmin').selectOption(String(slot));
+    await page.locator('#eventTitle').fill(name);
+    await page.locator('#eventDotColor').fill(color);
+    await page.locator('#eventCutoff').fill('23:59');
+    if(slot!==1)await expect(page.locator('#eventOpen')).toBeDisabled();
+    await page.locator('#eventForm button[type="submit"]').click();
+    await expect(page.locator('#eventStatus')).toContainText('сохранено');
+  };
+  await create(1,'Новый год — BALI Main','#b9ff51');
+  await create(2,'Новый год — BALI VIP','#ff8800');
+  await create(3,'Новый год — BALI Afterparty','#aa44ff');
+  const stored=await page.evaluate(()=>Object.fromEntries(
+    Object.entries(window.__adminStore).filter(([key])=>key.startsWith('events/'))));
+  expect(Object.keys(stored).sort()).toEqual(['events/2026-12-31','events/2026-12-31__2','events/2026-12-31__3']);
+  expect(stored['events/2026-12-31'].title).toBe('Новый год — BALI Main');
+  expect(stored['events/2026-12-31__2'].dotColor).toBe('#ff8800');
+  expect(stored['events/2026-12-31__3'].dotColor).toBe('#aa44ff');
+  expect(stored['events/2026-12-31__2'].preorderEnabled).toBe(false);
+  expect(stored['events/2026-12-31__3'].preorderEnabled).toBe(false);
+  // Trying the same slot twice must NOT overwrite an existing party.
+  await page.locator('#eventDateAdmin').fill('2026-12-31');
+  await page.locator('#eventSlotAdmin').selectOption('2');
+  await page.locator('#eventTitle').fill('Попытка перезаписи');
+  await page.locator('#eventForm button[type="submit"]').click();
+  await expect(page.locator('#eventStatus')).toContainText('уже создано');
+  expect(await page.evaluate(()=>window.__adminStore['events/2026-12-31__2'].title))
+    .toBe('Новый год — BALI VIP');
+});
