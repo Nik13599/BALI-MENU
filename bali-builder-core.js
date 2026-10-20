@@ -25,7 +25,8 @@ function sanitizeProps(src){
    else if(k==="textAlign"&&["left","center","right","justify"].includes(v))r[k]=v;
    else if(["lineHeight","opacity","rotate","scale"].includes(k)){const limits={lineHeight:[0.7,3],opacity:[0,1],rotate:[-360,360],scale:[0.2,3]};const a=num(v,...limits[k]);if(a!==null)r[k]=a;}
    else if(k==="shadow"&&["none","soft","deep","glow"].includes(v))r[k]=v;
-   else if(k==="animation"&&["none","fade","float","pulse","glow"].includes(v))r[k]=v;
+   else if(k==="animation"&&["none","fade","float","pulse","glow","slide-left","slide-right","zoom","bounce","tilt","shimmer","spin","heartbeat","flicker","reveal"].includes(v))r[k]=v;
+   else if(k==="effect"&&["none","glass","neon","grayscale","sepia","blur","saturate","hover-lift","hover-glow"].includes(v))r[k]=v;
    else if(k==="buttonStyle"&&["none","solid","outline","glass","pill"].includes(v))r[k]=v;
    else if(k==="image"&&safeUrl(v))r[k]=v;
  }
@@ -61,7 +62,8 @@ function css(node,props,save){
  if(["translateX","translateY","rotate","scale"].some(k=>props[k]!==undefined))
    put("transform","translate("+(props.translateX||0)+"px,"+(props.translateY||0)+"px) rotate("+(props.rotate||0)+"deg) scale("+(props.scale||1)+")");
  if(props.shadow)put("box-shadow",{none:"none",soft:"0 8px 24px rgba(0,0,0,.35)",deep:"0 18px 48px rgba(0,0,0,.6)",glow:"0 0 25px rgba(185,255,81,.48)"}[props.shadow]);
- if(props.animation)put("animation",props.animation==="none"?"none":"bali-builder-"+props.animation+" "+(props.animation==="fade"?"0.7s ease both":"3s ease-in-out infinite"));
+ if(props.animation)put("animation",props.animation==="none"?"none":"bali-builder-"+props.animation+" "+(["fade","slide-left","slide-right","zoom","reveal"].includes(props.animation)?"0.85s ease both":"3s ease-in-out infinite"));
+ if(props.effect){save?.(node,"@effect");if(props.effect==="none")node.removeAttribute("data-bali-builder-effect");else node.setAttribute("data-bali-builder-effect",props.effect);}
  if(props.buttonStyle&&props.buttonStyle!=="none"){
    const type=props.buttonStyle;
    put("border",type==="outline"?"1px solid currentColor":type==="glass"?"1px solid rgba(255,255,255,.33)":"1px solid transparent");
@@ -78,6 +80,16 @@ function makeStyle(doc){
  if(doc.getElementById("baliBuilderBaseStyle"))return;
  const s=doc.createElement("style");s.id="baliBuilderBaseStyle";
  s.textContent="@keyframes bali-builder-fade{from{opacity:0;translate:0 12px}to{opacity:1;translate:0 0}}"+
+ "@keyframes bali-builder-slide-left{from{opacity:0;translate:40px 0}to{opacity:1;translate:0 0}}"+
+ "@keyframes bali-builder-slide-right{from{opacity:0;translate:-40px 0}to{opacity:1;translate:0 0}}"+
+ "@keyframes bali-builder-zoom{from{opacity:0;scale:.8}to{opacity:1;scale:1}}"+
+ "@keyframes bali-builder-reveal{from{opacity:0;clip-path:inset(0 100% 0 0)}to{opacity:1;clip-path:inset(0 0 0 0)}}"+
+ "@keyframes bali-builder-bounce{0%,100%{translate:0 0}50%{translate:0 -13px}}"+
+ "@keyframes bali-builder-tilt{0%,100%{rotate:-2deg}50%{rotate:2deg}}"+
+ "@keyframes bali-builder-shimmer{0%,100%{filter:brightness(1)}50%{filter:brightness(1.45)}}"+
+ "@keyframes bali-builder-spin{to{rotate:360deg}}"+
+ "@keyframes bali-builder-heartbeat{0%,100%{scale:1}35%{scale:1.09}60%{scale:1}}"+
+ "@keyframes bali-builder-flicker{0%,100%{opacity:1}11%,18%,32%{opacity:.7}13%,22%{opacity:1}}"+
  "@keyframes bali-builder-float{50%{translate:0 -9px}}@keyframes bali-builder-pulse{50%{opacity:.65}}"+
  "@keyframes bali-builder-glow{50%{box-shadow:0 0 32px rgba(185,255,81,.6)}}"+
  ".bali-builder-added{box-sizing:border-box;max-width:none;z-index:7}"+
@@ -85,6 +97,13 @@ function makeStyle(doc){
  ".bali-builder-added[data-kind=text]{white-space:pre-wrap}"+
  ".bali-builder-added[data-kind=button]{display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;background:#b9ff51;color:#10140f;border:0;border-radius:8px;padding:12px;font-weight:750}"+
  ".bali-builder-added[data-kind=image]{object-fit:cover;display:block}"+
+ "[data-bali-builder-effect=glass]{background:rgba(255,255,255,.12)!important;backdrop-filter:blur(15px)!important;border:1px solid rgba(255,255,255,.25)!important}"+
+ "[data-bali-builder-effect=neon]{text-shadow:0 0 12px currentColor;box-shadow:0 0 20px rgba(185,255,81,.38)}"+
+ "[data-bali-builder-effect=grayscale]{filter:grayscale(1)}[data-bali-builder-effect=sepia]{filter:sepia(.8)}"+
+ "[data-bali-builder-effect=blur]{filter:blur(2px)}[data-bali-builder-effect=saturate]{filter:saturate(1.8)}"+
+ "[data-bali-builder-effect=hover-lift],[data-bali-builder-effect=hover-glow]{transition:translate .25s,box-shadow .25s}"+
+ "[data-bali-builder-effect=hover-lift]:hover{translate:0 -8px}"+
+ "[data-bali-builder-effect=hover-glow]:hover{box-shadow:0 0 28px rgba(185,255,81,.55)}"+
  "@media(prefers-reduced-motion:reduce){.bali-builder-added{animation:none!important}}";
  doc.head.append(s);
 }
@@ -120,7 +139,7 @@ function mount(doc,model,view,options={}){
  const save=(node,p)=>{
   let set=seen.get(node);if(!set){set=new Set();seen.set(node,set);}
   if(set.has(p))return;set.add(p);
-  if(p==="@src"){const prev=node.getAttribute("src");restored.push(()=>prev===null?node.removeAttribute("src"):node.setAttribute("src",prev));}
+  if(p==="@src"||p==="@effect"){const attr=p==="@src"?"src":"data-bali-builder-effect";const prev=node.getAttribute(attr);restored.push(()=>prev===null?node.removeAttribute(attr):node.setAttribute(attr,prev));}
   else {const val=node.style.getPropertyValue(p),priority=node.style.getPropertyPriority(p);
    restored.push(()=>val?node.style.setProperty(p,val,priority):node.style.removeProperty(p));}
  };
