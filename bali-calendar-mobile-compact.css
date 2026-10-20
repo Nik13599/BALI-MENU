@@ -49,6 +49,10 @@
     min-height:0!important;
     max-height:100%!important;
   }
-  /* Keep the two event actions at the existing bottom anchor. No changes
-     to their CSS dimensions or positioning are made here. */
+  /* Align the 100%-height stage cards to the top: the former 2–4px
+     absolute offset pushed bottom action buttons beyond the stage. */
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+    top:0!important;
+  }
+  /* The two buttons keep their original size and lower alignment. */
 }
