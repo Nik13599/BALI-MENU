@@ -224,24 +224,11 @@ const openDetails=card=>{
     card.querySelector(".bali-event-description")?.textContent||"Дополнительная информация появится перед мероприятием.";
   if(!dialog.open)dialog.showModal();
 };
-const share=async card=>{
-  const title=card.querySelector(".bali-event-info h3")?.textContent||"BALI NIGHT CLUB";
-  const text=title+" · "+formatDate(card.dataset.eventDate);
-  const url=location.origin+location.pathname+"#events";
-  try{
-    if(typeof navigator.share==="function")await navigator.share({title,text,url});
-    else if(navigator.clipboard?.writeText){
-      await navigator.clipboard.writeText(text+" — "+url);
-      window.dispatchEvent(new CustomEvent("bali:toast",{detail:{message:"Ссылка на календарь скопирована"}}));
-    }
-  }catch(error){if(error?.name!=="AbortError")console.warn("Sharing unavailable",error)}
-};
 const decorate=()=>{
   for(const card of cards()){
     if(card.dataset.baliCoverflowDecorated==="1")continue;
     card.dataset.baliCoverflowDecorated="1";
     const poster=card.querySelector(".bali-event-poster-wrap");
-    const actions=card.querySelector(".bali-event-actions");
     if(poster){
       poster.setAttribute("role","button");
       poster.tabIndex=0;
@@ -258,14 +245,6 @@ const decorate=()=>{
           openDetails(card);
         }
       });
-    }
-    if(actions&&!actions.querySelector(".event-share")){
-      const b=document.createElement("button");
-      b.type="button";b.className="event-share";b.title="Поделиться мероприятием";
-      b.setAttribute("aria-label","Поделиться мероприятием");
-      b.textContent="↥ Поделиться";
-      b.addEventListener("click",()=>void share(card));
-      actions.append(b);
     }
   }
   syncCards();
