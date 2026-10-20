@@ -167,3 +167,51 @@ body.bali-guest-theme #eventsSection .bali-calendar-event-dots{
     flex-basis:3px!important;width:3px!important;height:3px!important;
   }
 }
+
+/* Completed event dates: a restrained ruby tint and red markers.
+   This overrides lime "in my plans" on past dates, but leaves upcoming
+   events and their individually configured dot colors unchanged. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"][data-past="true"]{
+  background:rgba(204,63,76,.14)!important;
+  background-color:rgba(204,63,76,.14)!important;
+  border-color:rgba(246,112,121,.35)!important;
+  color:#ffadb1!important;
+  box-shadow:inset 0 0 0 1px rgba(204,63,76,.07)!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"][data-past="true"][data-selected="true"]{
+  background:rgba(210,65,77,.22)!important;
+  background-color:rgba(210,65,77,.22)!important;
+  border-color:rgba(255,118,128,.75)!important;
+  color:#ffd8db!important;
+  box-shadow:inset 0 0 0 1px rgba(255,118,128,.15),0 0 9px rgba(211,68,77,.12)!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"][data-past="true"] .bali-calendar-day-number{
+  color:inherit!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"][data-past="true"]:not(.is-outside):hover{
+  background:rgba(210,65,77,.23)!important;
+  border-color:rgba(255,118,128,.8)!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"][data-past="true"] .bali-calendar-event-dots .bali-calendar-event-dot{
+  background:#ff5967!important;
+  box-shadow:0 0 5px rgba(255,89,103,.6)!important;
+}
+
+/* Today has its own emerald accent, distinct from lime plan dates.
+   Keep the indicator on mobile and desktop, selected or not selected. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-today="true"],
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-today="true"][data-selected="true"]{
+  background:rgba(27,176,132,.21)!important;
+  background-color:rgba(27,176,132,.21)!important;
+  border-color:#34d9a6!important;
+  color:#83ffd0!important;
+  box-shadow:inset 0 0 0 1px rgba(52,217,166,.27),0 0 9px rgba(27,176,132,.12)!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-today="true"] .bali-calendar-day-number{
+  color:#83ffd0!important;
+  font-weight:850!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-today="true"]:not(.is-outside):hover{
+  background:rgba(27,176,132,.32)!important;
+  border-color:#66f7c5!important;
+}

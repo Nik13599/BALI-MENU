@@ -65,9 +65,11 @@
    dateLabel.textContent=describe(live.date,{weekday:"long",day:"numeric",month:"long"});
    clock.textContent=live.time;
    clock.dateTime=live.time;
-   if(document.body.dataset.baliPage==="events" && selected===current.date&&live.date!==current.date){
+   if(live.date!==current.date){
+     const followToday=!hasInteracted&&selected===current.date;
      current.date=live.date;
-     if(!hasInteracted){selected=live.date;[year,month]=stamp(selected);}
+     if(followToday){selected=live.date;[year,month]=stamp(selected);}
+     // Refresh past-day markers even when the guest is viewing another month.
      render();
    }
  };
@@ -75,18 +77,22 @@
    const items=eventsByDate().get(s)||[];
    const published=items.length>0;
    const planned=plannedDates.has(s);
-   const today=s===getNow().date;
+   const liveDate=getNow().date;
+   const today=s===liveDate;
+   const past=published&&s<liveDate;
    const btn=document.createElement("button");
    btn.type="button";btn.className="bali-calendar-day";
    btn.dataset.date=s;
    btn.dataset.selected=String(s===selected);
    btn.dataset.today=String(today);
    btn.dataset.event=String(published);
+   btn.dataset.past=String(past);
    btn.dataset.planned=String(planned);
    btn.dataset.eventCount=String(items.length);
    btn.setAttribute("aria-pressed",String(s===selected));
    btn.setAttribute("aria-label",describe(s,{weekday:"long",day:"numeric",month:"long",year:"numeric"})+
      (published?". Мероприятий: "+items.length+".":"")+
+     (past?" Мероприятия прошли.":"")+
      (planned?" В моих планах.":""));
    const number=document.createElement("span");number.className="bali-calendar-day-number";
    number.textContent=String(Number(s.slice(-2)));
