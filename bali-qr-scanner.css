@@ -1,0 +1,42 @@
+/* BALI ID top-right history + payment actions and camera/receipt overlays */
+body.bali-guest-theme #baliIdSection .bali-id-topbar{position:relative;display:flex;align-items:center;justify-content:center;width:100%;max-width:100%;min-width:0;min-height:43px}
+body.bali-guest-theme #baliIdSection .bali-id-topbar .bali-id-page-title{margin:0!important;padding:0 190px!important;text-align:center!important;min-width:0}
+body.bali-guest-theme #baliIdSection .bali-id-topbar-actions{position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:6px;z-index:5}
+body.bali-guest-theme #baliIdSection .bali-id-topbar-actions button{display:flex;gap:5px;align-items:center;justify-content:center;background:rgba(20,31,26,.8);color:#eaffd5;border:1px solid rgba(181,248,91,.36);border-radius:10px;padding:9px 11px;font:750 clamp(10px,.95vw,12px) Manrope,Inter,sans-serif;cursor:pointer;min-height:37px}
+body.bali-guest-theme #baliIdSection .bali-id-topbar-actions svg{width:18px;height:18px;flex:none}
+body.bali-guest-theme #baliIdSection .bali-bank-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+body.bali-guest-theme #baliIdSection .bali-bank-actions > button:first-child{background:#24352b!important;color:#efffe6!important;border-color:#566e56!important}
+body.bali-guest-theme #baliIdSection .bali-bank-actions #baliIdTopupOpen{background:var(--bt-primary,#b9ff51)!important;color:#111c0f!important}
+.bali-transfer-qr-choice{margin-top:4px}
+.bali-bank-step textarea{width:100%;box-sizing:border-box;min-height:58px;padding:9px 12px;background:#243229;border:1px solid #617566;border-radius:10px;color:white;font:600 13px/1.5 Manrope,Inter,sans-serif;resize:vertical}
+.bali-transfer-wish-label{font-size:12px;color:#cbdcca}
+.bali-bank-history-wish{margin:8px 0 0;padding:10px 12px;border-left:2px solid #b9ff51;border-radius:7px;background:#1c2920;color:#e4ffe1;font:600 12px/1.5 Manrope,Inter,sans-serif}
+.bali-bank-receipt-btn{margin-top:7px;padding:6px 10px;background:transparent;color:#b9ff51;border:1px solid #496948;border-radius:8px;cursor:pointer}
+.bali-qr-dialog{position:fixed;inset:0;margin:auto;width:min(480px,calc(100vw - 20px));max-height:calc(100dvh - 20px);border-radius:20px;padding:0;border:1px solid rgba(185,255,81,.4);background:#111a17;color:#f0f8ef;box-shadow:0 18px 90px #000b;overflow:auto}
+.bali-qr-dialog:not([open]){display:none!important}.bali-qr-dialog::backdrop{background:rgba(0,0,0,.82);backdrop-filter:blur(7px)}
+.bali-qr-shell{display:grid;gap:11px;padding:clamp(15px,3vw,24px);min-width:0}
+.bali-qr-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.bali-qr-head h2{font:850 clamp(17px,4vw,23px) Manrope,Inter,sans-serif;margin:0}
+.bali-qr-shell p{font-size:13px;line-height:1.5;margin:0;color:#bcd1bd}
+.bali-qr-shell video{display:block;width:100%;max-height:245px;object-fit:cover;border-radius:11px;border:1px solid #596e57;background:#101713}
+.bali-qr-shell label{display:grid;gap:5px;font:600 12px Manrope,Inter,sans-serif}
+.bali-qr-shell input{box-sizing:border-box;width:100%;background:#202e25;color:white;border:1px solid #657c61;border-radius:9px;min-height:43px;padding:10px}
+.bali-qr-shell button{min-height:41px;border:1px solid #91cb52;border-radius:10px;padding:9px 13px;background:#b9ff51;color:#11200d;font:750 13px Manrope,Inter,sans-serif;cursor:pointer}
+.bali-qr-shell button:disabled{opacity:.55}
+.bali-qr-head button{background:#26352b;color:#ecf7ed;min-height:37px}
+.bali-qr-camera-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.bali-qr-confirm{padding:12px;border:1px solid #49694a;background:#1b2a1f;border-radius:11px;display:grid;gap:10px}
+.bali-qr-confirm strong{color:#d9ffc0}
+.bali-qr-confirm label{font-size:12px}
+.bali-qr-error{color:#ff9999!important;font-weight:750}
+.bali-qr-receipt{border:1px solid #b9ff51;padding:24px 15px;border-radius:15px;display:grid;justify-items:center;gap:9px;text-align:center;background:radial-gradient(circle at top,#253e25,#101815 68%);}
+.bali-qr-receipt .bali-qr-receipt-main{font:850 clamp(26px,6vw,38px) Manrope,Inter,sans-serif;color:#b9ff51}
+.bali-qr-receipt .bali-qr-receipt-number{font:650 11px Manrope,Inter,sans-serif;color:#b7ceb5;overflow-wrap:anywhere}
+@media(max-width:767px){
+ body.bali-guest-theme #baliIdSection .bali-id-topbar{justify-content:flex-start;min-height:39px}
+ body.bali-guest-theme #baliIdSection .bali-id-topbar .bali-id-page-title{font-size:clamp(13px,2.8vw,19px)!important;padding:0 128px 0 2px!important;text-align:left!important;letter-spacing:.03em!important}
+ body.bali-guest-theme #baliIdSection .bali-id-topbar .bali-id-page-descriptor{display:none!important}
+ body.bali-guest-theme #baliIdSection .bali-id-topbar-actions button{padding:8px;min-height:35px}
+ body.bali-guest-theme #baliIdSection .bali-id-topbar-actions button span{display:none}
+ body.bali-guest-theme #baliIdSection .bali-bank-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}

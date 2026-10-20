@@ -12,8 +12,10 @@ for(const id of [
   "baliTransferConfirm","baliHistoryDialog","baliIdHistoryScroll","baliIdHistoryList"
 ])assert(html.includes('id="'+id+'"'),"Missing banking UI: "+id);
 assert(html.indexOf('id="baliIdTransferOpen"')<html.indexOf('id="baliShowQr"') &&
-  html.indexOf('id="baliShowQr"')<html.indexOf('class="bali-bank-wallet"'),
-  "Transfer, history, QR must share one centred action toolbar");
+  html.indexOf('id="baliShowQr"')<html.indexOf('class="bali-bank-wallet"') &&
+  html.includes('id="baliIdTopupOpen"') && html.includes('id="baliIdPayOpen"') &&
+  html.includes('id="baliIdHistoryOpen"') && html.includes('id="baliTransferScanQr"'),
+  "BALI ID must offer QR top-up, QR debit, history and recipient QR lookup");
 assert(html.includes('bali-id-bank.js?v=')&&html.includes('bali-id-bank.css?v='),
   "Banking assets not loaded");
 for(const fn of ["previewBaliRecipient","transferBaliBenefits","listMyBaliHistory"]){

@@ -36,6 +36,7 @@
   <link rel="stylesheet" href="bali-id-visibility.css?v=20261020-1">
   <link rel="stylesheet" href="bali-id-resident.css?v=20261021-2">
   <link rel="stylesheet" href="bali-id-card-unified.css?v=20261021-3">
+  <link rel="stylesheet" href="bali-qr-scanner.css?v=20261021-1">
 </head>
 
 <body class="bali-guest-theme">
@@ -603,7 +604,9 @@
     <!-- Отдельная страница BALI ID -->
     <section id="baliIdSection" class="bali-profile-page bali-id-page" aria-labelledby="baliIdPageHeading" hidden>
       <div class="container">
-        <h1 id="baliIdPageHeading" class="bali-id-page-title">BALI ID <span class="bali-id-page-descriptor">— цифровая карта гостя</span></h1>
+        <div class="bali-id-topbar"><h1 id="baliIdPageHeading" class="bali-id-page-title">BALI ID <span class="bali-id-page-descriptor">— цифровая карта гостя</span></h1>
+ <div class="bali-id-topbar-actions"><button type="button" id="baliIdPayOpen" aria-label="Оплатить бонусами"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 7h18v12H3zM3 11h18M7 15h4"/></svg><span>Оплатить</span></button>
+ <button type="button" id="baliIdHistoryOpen" aria-label="История операций"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5M12 7v5l4 2"/></svg><span>История</span></button></div></div>
         <div class="bali-profile-card bali-id-profile">
           <div class="bali-id-flip-scene" id="baliIdFlipScene">
             <div class="bali-id-flip-track" id="baliIdFlipTrack">
@@ -634,7 +637,7 @@
           </div>
           <div class="bali-bank-actions" aria-label="Действия BALI ID">
             <button type="button" id="baliIdTransferOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 8h16m-5-5 5 5-5 5M20 17H4m5-5-5 5 5 5"/></svg>Перевести</button>
-            <button type="button" id="baliIdHistoryOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5M12 7v5l4 2"/></svg>История операций</button>
+            <button type="button" id="baliIdTopupOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M12 8v8m-4-4h8"/></svg>Пополнить</button>
           <button type="button" class="bali-id-show-qr" id="baliShowQr">
             <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM19 15v3M14 20h7M20 20v-2"/></svg>
             Показать QR-код
@@ -658,6 +661,7 @@
           <h3>Получатель BALI ID</h3>
           <form id="baliTransferLookupForm">
             <label for="baliTransferRecipient">Введите 6 цифр номера карты</label>
+             <button type="button" class="bali-bank-secondary bali-transfer-qr-choice" id="baliTransferScanQr">Или сканировать QR-код карты</button>
             <input type="text" id="baliTransferRecipient" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000002" autocomplete="off" required>
             <button type="submit" class="bali-bank-primary">Продолжить</button>
           </form>
@@ -969,6 +973,7 @@
     <script type="module" src="bali-id-flip.js?v=20261020-fix1"></script>
     <script type="module" src="bali-id-bank.js?v=20261021-wish1"></script>
     <script type="module" src="bali-transfer-inbox.js?v=20261021-1"></script>
+    <script type="module" src="bali-qr-scanner.js?v=20261021-1"></script>
     <script src="bali-share.js?v=20261019-4" defer></script>
     <script src="bali-builder-core.js?v=20261020-1" defer></script>
     <script type="module" src="bali-builder-public.js?v=20261020-1"></script>

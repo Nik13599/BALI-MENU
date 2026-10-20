@@ -96,6 +96,17 @@ function openModal(dialog){
   if(!dialog.open)dialog.showModal();
   return true;
 }
+window.addEventListener("bali:transfer-qr",e=>{
+  const data=e.detail;
+  if(!data||!validateNumber(data.number)||!data.name||!transferDlg?.open)return;
+  ++run;recipient={number:data.number,name:data.name.trim()};
+  $("baliTransferRecipient").value=recipient.number;
+  say("baliTransferRecipientName",recipient.name);
+  say("baliTransferRecipientCode","BALI ID · "+recipient.number);
+  $("baliTransferRecipientPreview").hidden=false;
+  say("baliTransferLookupStatus","Получатель найден по QR-коду. Проверьте имя.");
+});
+$("baliTransferScanQr")?.addEventListener("click",()=>window.BaliQrScanner?.open({mode:"recipient"}));
 $("baliIdTransferOpen")?.addEventListener("click",()=>{
   if(openModal(transferDlg)){resetTransfer();$("baliTransferRecipient")?.focus({preventScroll:true});}
 });
@@ -251,6 +262,16 @@ function operationRow(x){
     x.kind&&x.kind!=="mixed"?(names[x.kind]||x.kind)+(x.count?" × "+x.count:""):"";
   item.append(line,node("p","",[from,note,x.reason].filter(Boolean).join(" · ")));
   if(x.comment)item.append(node("blockquote","bali-bank-history-wish","«"+x.comment+"»"));
+  const until=x.receiptExpiresAt||x.createdAt+30*86400000;
+  if(x.source==="bonus-qr"&&x.createdAt>0&&Date.now()<=until&&["grant","redeem"].includes(x.type)){
+    const receiptBtn=node("button","bali-bank-receipt-btn","Чек операции ↗");
+    receiptBtn.type="button";
+    receiptBtn.addEventListener("click",()=>window.BaliQrScanner?.showReceipt({
+      id:x.id,type:x.type,name:x.name||names[x.kind]||x.kind,count:x.count,
+      createdAt:x.createdAt,balanceAfter:x.balanceAfter,expiresAt:until
+    }));
+    item.append(receiptBtn);
+  }
   return item;
 }
 function historyRender(){
