@@ -24,6 +24,9 @@ if(!isAdminPreview){
   schedule();
  },error=>console.warn("BALI published page builder:",error.code||error));
  window.addEventListener("resize",()=>{if(core.device(window)!==lastDevice)schedule();},{passive:true});
+ for(const eventName of ["bali:home-interface","bali:menu-mode-changed","bali:events-updated"]){
+  window.addEventListener(eventName,()=>schedule());
+ }
  // Reapply when the site's normal page navigation changes displayed content.
  new MutationObserver(mutations=>{
   if(mutations.some(m=>m.attributeName==="data-bali-page"))schedule();
