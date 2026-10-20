@@ -32,7 +32,7 @@ function measure(){
   const width=Math.floor(Math.min(
     phone?390:500,
     area.width*(phone?.76:.60),
-    Math.max(100,area.height-(phone?100:76))
+    Math.max(100,area.height-(phone?80:76))
   ));
   if(slideWidth!==width){
     slideWidth=width;
