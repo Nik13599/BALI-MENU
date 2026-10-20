@@ -35,6 +35,7 @@ function carouselEventCards(track) {
     return [...track.querySelectorAll(".event-card")];
 }
 function carouselEventIndex(track, cards=carouselEventCards(track)) {
+    if(window.BaliCalendarShowcase?.mode==="stage")return window.BaliCalendarShowcase.getState().activeIndex;
     if(!cards.length)return 0;
     // Активной считается АФИША В ЦЕНТРЕ экрана, а не у левого края.
     const viewport=track.getBoundingClientRect();
@@ -49,6 +50,11 @@ function carouselEventIndex(track, cards=carouselEventCards(track)) {
 }
 function centerEventCard(track,card,animated=false) {
     if(!card)return;
+    if(window.BaliCalendarShowcase?.mode==="stage"){
+        const index=carouselEventCards(track).indexOf(card);
+        if(index>=0)window.BaliCalendarShowcase.focusIndex(index,animated);
+        return;
+    }
     const viewport=track.getBoundingClientRect();
     const rect=card.getBoundingClientRect();
     const left=track.scrollLeft+rect.left+rect.width/2-viewport.left-viewport.width/2;
@@ -58,6 +64,7 @@ function centerEventCard(track,card,animated=false) {
     });
 }
 function updateEventCarouselPosition() {
+    if(window.BaliCalendarShowcase?.mode==="stage")return;
     const track=document.getElementById("eventsGrid");
     const counter=document.getElementById("eventsCarouselPosition");
     if(!track||!counter)return;
@@ -79,6 +86,10 @@ function updateEventCarouselPosition() {
         : "Нет мероприятий";
 }
 function scrollEventCarousel(direction) {
+    if(window.BaliCalendarShowcase?.mode==="stage"){
+        window.BaliCalendarShowcase.move(direction);
+        return;
+    }
     const track=document.getElementById("eventsGrid");
     if(!track)return;
     const cards=carouselEventCards(track);
@@ -91,6 +102,7 @@ function scrollEventCarousel(direction) {
     }));
 }
 function initEventCarousel() {
+    if(window.BaliCalendarShowcase?.mode==="stage")return;
     const track=document.getElementById("eventsGrid");
     if(!track)return;
     // Scroll is native/composited; update active styles only once per paint frame.
