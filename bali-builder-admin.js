@@ -347,6 +347,48 @@ function refreshCanvas(){
  if(overlay&&!overlay.isConnected)attachOverlay();
  if(selection)renderInspector();
 }
+// Double-click to edit text in the live canvas without opening a separate page.
+let inlineEditor=null;
+function beginInlineText(clicked){
+ if(!enabled||!authorized||!clicked||inlineEditor)return;
+ const node=clicked.closest?.("h1,h2,h3,h4,p,span,strong,em,small,label,a,button,.bali-builder-added");
+ if(!node||node.matches("img,svg,input,textarea")||node.closest(".bali-builder-selection-overlay"))return;
+ const children=[...node.children].filter(ch=>!["SVG"].includes(ch.tagName));
+ // Inline text changes must not destroy nested UI controls or structured cards.
+ const textNode=[...node.childNodes].find(ch=>ch.nodeType===3&&ch.textContent.trim());
+ if(children.length&&!textNode&&node.dataset.kind!=="text"&&node.dataset.kind!=="button")return;
+ choose(node);
+ if(!selection)return;
+ const d=frameDoc(),selected=liveNode();if(!d||!selected)return;
+ const value=(selection.id?getItem()?.text:undefined)??(textNode?.textContent?.trim()||(!selected.children.length?selected.textContent?.trim():""));
+ if(value===undefined)return;
+ const area=d.createElement("textarea");
+ area.className="bali-builder-inline-text";
+ area.setAttribute("aria-label","Редактирование текста выбранного элемента");
+ area.value=value||"";
+ const r=selected.getBoundingClientRect();
+ area.style.cssText="position:fixed!important;z-index:2147483100!important;"+
+ "top:"+Math.max(5,r.top)+"px!important;left:"+Math.max(5,r.left)+"px!important;"+
+ "width:"+Math.min(Math.max(170,r.width),d.defaultView.innerWidth-12)+"px!important;"+
+ "height:"+Math.max(52,Math.min(220,r.height+25))+"px!important;"+
+ "box-sizing:border-box!important;resize:both!important;"+
+ "padding:9px 11px!important;background:#111d15!important;color:#f5ffee!important;"+
+ "border:2px solid #b9ff51!important;border-radius:7px!important;"+
+ "font:600 15px/1.5 Manrope,Arial,sans-serif!important;outline:none!important;";
+ d.body.append(area);inlineEditor=area;let cancelled=false;
+ area.addEventListener("click",e=>{e.stopImmediatePropagation();},true);
+ area.addEventListener("keydown",e=>{
+  e.stopImmediatePropagation();
+  if(e.key==="Escape"){cancelled=true;area.blur();}
+  else if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();area.blur();}
+ });
+ area.addEventListener("blur",()=>{
+  const value=area.value;
+  area.remove();inlineEditor=null;
+  if(!cancelled&&value!==undefined&&value.length<=1500)changeMain("text",value);
+ },{once:true});
+ area.focus();area.select();
+}
 function attachFrame(){
  const d=frameDoc();if(!d?.body)return;
  // Old inspector and site scripts do not handle interactions while Builder mode is on.
@@ -355,6 +397,11 @@ function attachFrame(){
   event.preventDefault();event.stopImmediatePropagation();
   if(event.target.closest(".bali-builder-selection-overlay"))return;
   choose(event.target);
+ },true);
+ d.addEventListener("dblclick",event=>{
+  if(!enabled)return;
+  event.preventDefault();event.stopImmediatePropagation();
+  beginInlineText(event.target);
  },true);
  d.addEventListener("submit",event=>{if(enabled){event.preventDefault();event.stopImmediatePropagation();}},true);
  if(!overlay)attachOverlay();
@@ -437,6 +484,7 @@ function copyDevice(){
  commit(()=>{model[target]=clone(model[currentDevice]);});msg("Настройки скопированы в "+target+". Для публикации сохраните изменения.");
 }
 function toggle(on){
+ if(!on&&inlineEditor){inlineEditor.remove();inlineEditor=null;}
  enabled=on;
  panel.classList.toggle("bali-builder-active",on);
  view.mode.textContent=on?"Открыть прежние настройки блоков":"Вернуться в конструктор";
@@ -461,7 +509,7 @@ function init(){
  view.copy.addEventListener("click",copyDevice);
  for(const b of view.addButtons)b.addEventListener("click",()=>add(b.dataset.baliBuilderAdd));
  panel.querySelectorAll("[data-studio-device]").forEach(b=>b.addEventListener("click",()=>updateDevice(b.dataset.studioDevice)));
- frame.addEventListener("load",()=>{overlay=null;attachFrame();});
+ frame.addEventListener("load",()=>{overlay=null;inlineEditor=null;attachFrame();});
  if(frame.contentDocument?.readyState==="complete")attachFrame();
  window.addEventListener("bali:admin:section",e=>{if(e.detail?.section==="design")requestAnimationFrame(()=>{refreshCanvas();positionOverlay();});});
  window.BaliBuilderEditor={isActive:()=>enabled,refresh:refreshCanvas};
