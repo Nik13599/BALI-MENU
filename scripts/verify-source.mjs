@@ -395,7 +395,7 @@ assert(html.includes('id="baliMenuDetailsDialog"') &&
   adminClient.includes('detailImageCleared') &&
   adminClient.includes('detailEnabled:detailsEnabled') &&
   app.includes('const hasDetails=Boolean(String(item.detailText||"").trim())') &&
-  app.includes('disabled aria-disabled="true"') &&
+  app.includes('${hasDetails ? `<button type="button" class="bali-menu-readmore"') &&
   app.includes('data-menu-action="details"') &&
   app.includes('function openBaliMenuDetails(product)') &&
   app.includes('bali-menu-details-quantity') &&
@@ -403,13 +403,12 @@ assert(html.includes('id="baliMenuDetailsDialog"') &&
   app.includes('if(src&&src!=="https://placehold.co/400x200?text=BALI")') &&
   app.includes('product.detailText') &&
   moreCss.includes('.bali-menu-details-dialog') &&
-  moreCss.includes('.menu-details-btn.no-details:disabled') &&
   html.includes('id="baliMenuDetailsActions"') &&
   source("image-compressor.js").includes('"menu-detail":{ratio:4/3,maxChars:95000') &&
   rules.includes("'detailEnabled','detailText','detailImageUrl'") &&
   rules.includes("data.get('detailEnabled',false) == false") &&
   rules.includes("data.detailText.size() >= 1"),
-  "Menu information icon is disabled for empty descriptions and its dialog shares cart/quantity controls.");
+  "Menu details action appears only for descriptions and its dialog shares cart/quantity controls.");
 // The user-supplied brush artwork replaces only the mobile navigation masks.
 // Keep existing page IDs, labels, active state and nav routing untouched.
 const referenceBottomNav=source("bali-mobile-reference.css");
@@ -458,16 +457,16 @@ assert(app.includes("let baliActiveMenuMode = 'kitchen'") &&
   "Bar page must never expose checkout dock or food order interactions");
 assert(barPublic.includes('collection(db,"bar_menu")') &&
   barPublic.includes('onSnapshot(') &&
-  barPublic.includes('bali-bar-row') &&
-  barPublic.includes('bali-bar-portions') &&
-  barPublic.includes('bali-bar-volume') &&
-  barPublic.includes('bali-bar-price') &&
-  barPublic.includes('bali-bar-category-name') &&
-  barPublic.includes('formatPrice(price)') &&
+  barPublic.includes('catalogGroup(category,items,catalogCard)') &&
+  source("bali-menu-cards.js").includes('bali-menu-portion') &&
+  source("bali-menu-cards.js").includes('bali-menu-volume') &&
+  source("bali-menu-cards.js").includes('money.format(value)') &&
   !barPublic.includes('BaliOrders') &&
   !barPublic.includes('add-to-cart-btn') &&
-  !barPublic.includes('openCheckout('),
-  "Bar prices must be real Firestore data shown as grouped rows, without preorder code");
+  !barPublic.includes('openCheckout(') &&
+  !source("bali-menu-cards.js").includes('data-menu-action') &&
+  !source("bali-menu-cards.js").includes('addToCart('),
+  "Bar prices must be real Firestore data shown as grouped cards, without preorder code");
 const extraMenus=source("bali-extra-menus.js");
 assert(["kitchen","bar","hookah","tea"].every(name=>html.includes('data-bali-menu-mode="'+name+'"')) &&
   html.includes('id="baliHookahContent"') && html.includes('id="baliTeaContent"') &&
