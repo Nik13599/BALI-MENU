@@ -10,6 +10,12 @@ const dialog=document.getElementById("baliEventDetailDialog");
 const prev=document.getElementById("baliPosterPrevious");
 const next=document.getElementById("baliPosterNext");
 if(!section||!grid||!shell||!dialog||!prev||!next)return;
+// A legacy high-specificity layout declaration can otherwise re-enable
+// native horizontal scrolling. The CSSOM override guarantees one stage.
+grid.style.setProperty("overflow-x","hidden","important");
+grid.style.setProperty("overflow-y","hidden","important");
+grid.style.setProperty("scroll-snap-type","none","important");
+grid.scrollLeft=0;
 const reduce=matchMedia("(prefers-reduced-motion: reduce)");
 const mobile=()=>matchMedia("(max-width:1179px)").matches;
 const cards=()=>[...grid.querySelectorAll(".event-card[data-event-date]")];
