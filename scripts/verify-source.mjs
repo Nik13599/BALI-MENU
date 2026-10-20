@@ -620,6 +620,29 @@ assert(admin.includes('id="adminDesignPanel"') &&
   rules.includes('validMerch(request.resource.data)') &&
   rules.includes('validDesignImage(data.imageTabletUrl, 155000)'),
   "Home Design must retain safe artwork editing and a PC BALI ID loyalty showcase instead of merch, while keeping legacy data rules intact.");
+// Desktop About converts through two independent SPA routes; custom icon uploads remain intact.
+const aboutCallToActionCss=source("bali-about-cta.css");
+const sharedNavIconsCss=source("bali-shared-icons.css");
+assert(html.includes('class="bali-pc-about-kicker"') &&
+  html.includes('Ваш повод. Наша площадка.') &&
+  html.includes('class="bali-pc-about-facts"') &&
+  html.includes('class="bali-pc-about-action" data-bali-nav="about"') &&
+  html.includes('class="bali-pc-about-events-link" data-bali-nav="events"') &&
+  !html.includes('<details class="bali-pc-about">') &&
+  aboutCallToActionCss.includes('.bali-pc-about-content') &&
+  aboutCallToActionCss.includes('.bali-pc-about-links') &&
+  source("bali-home-design.js").includes('card?.classList.toggle("has-photo"'),
+  "PC About card must present venue facts, editable imagery and separate venue/calendar actions.");
+assert(html.includes('bali-shared-icons.css?v=') &&
+  sharedNavIconsCss.includes('assets/nav-icons/home.svg') &&
+  sharedNavIconsCss.includes('assets/nav-icons/events.svg') &&
+  sharedNavIconsCss.includes('assets/nav-icons/menu.svg') &&
+  sharedNavIconsCss.includes('assets/nav-icons/profile.svg') &&
+  sharedNavIconsCss.includes('assets/nav-icons/id.svg') &&
+  sharedNavIconsCss.includes(':not(.has-custom-icon)') &&
+  source("assets/nav-icons/id.svg").includes('<svg') &&
+  source("assets/nav-icons/profile.svg").includes('<svg'),
+  "PC navigation, account icon and mobile ID must share the BALI silhouette icon family.");
 assert(html.includes('>ГЛАВНАЯ</button>') &&
   html.includes('>КАЛЕНДАРЬ</button>') &&
   html.includes('>МЕНЮ</button>') &&
