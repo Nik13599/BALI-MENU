@@ -42,7 +42,7 @@ test('About video replaces the old photo gallery and retains fullscreen controls
  await expect(page.locator('#expandVideo')).toBeVisible();
  await expect(page.locator('#restartVideo')).toBeVisible();
  await page.locator('#playVideo').click();
- await expect(page.locator('#videoBox iframe')).toHaveAttribute('src',/youtube\\.com\\/embed\\/8dwJTWfvsVY/);
+ await expect(page.locator('#videoBox iframe')).toHaveAttribute('src',/youtube[.]com[/]embed[/]8dwJTWfvsVY/);
  await page.evaluate(()=>window.postMessage({type:'bali:about:pause'},location.origin));
  await expect(page.locator('#videoBox #playVideo')).toBeVisible();
 });
