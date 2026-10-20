@@ -141,6 +141,7 @@ function makeStyle(doc){
  ".bali-builder-added[data-kind=panel]{background:#141b20;border:1px solid #5a7160;white-space:pre-wrap}"+
  ".bali-builder-added[data-kind=text]{white-space:pre-wrap}"+
  ".bali-builder-added[data-kind=button]{display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;background:#b9ff51;color:#10140f;border:0;border-radius:8px;padding:12px;font-weight:750}"+
+ ".bali-builder-custom-art{display:inline-block;object-fit:contain;flex-shrink:0;vertical-align:middle;max-width:72px;max-height:72px;pointer-events:none}"+
  ".bali-builder-added[data-kind=image]{object-fit:cover;display:block}"+
  ".bali-builder-added[data-kind=image]:not([src]){background:repeating-linear-gradient(45deg,#18271f,#18271f 10px,#274131 10px,#274131 20px)!important;border:2px dashed #b9ff51!important}"+
  "[data-bali-builder-effect=glass]{background:rgba(255,255,255,.12)!important;backdrop-filter:blur(15px)!important;border:1px solid rgba(255,255,255,.25)!important}"+
@@ -193,6 +194,8 @@ function findPage(el){for(const [page,sel] of Object.entries(ROOTS))if(el.closes
 function editableTextNode(node){
  if(node.matches(".bali-bottom-nav [data-bali-nav]"))return node.querySelector("small")||node;
  if(node.matches("button,a")&&node.querySelector(":scope > strong"))return node.querySelector(":scope > strong");
+ if(node.matches("#menuNavBtn"))return node.querySelector(":scope > span strong")||node;
+ if(node.matches(".bali-pc-id-card"))return node.querySelector(".bali-id-showcase-copy > strong")||node;
  return node;
 }
 function setVisualText(node,text,restored){
