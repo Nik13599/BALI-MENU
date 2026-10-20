@@ -187,7 +187,7 @@
     `;
     doc.head.append(style);
     doc.addEventListener("click",event=>{
-      if(skipClick)return;
+      if(skipClick||window.BaliBuilderEditor?.isActive?.())return;
       const area=selectionFrom(event.target);
       // The canvas is an editing surface, not an order checkout.
       event.preventDefault();
@@ -195,7 +195,7 @@
       if(area)chooseEditor(area);
       else status.textContent="Выберите один из выделяемых блоков схемы. Для перехода между страницами используйте кнопки сверху.";
     },true);
-    doc.addEventListener("submit",event=>{event.preventDefault();event.stopImmediatePropagation();},true);
+    doc.addEventListener("submit",event=>{if(window.BaliBuilderEditor?.isActive?.())return;event.preventDefault();event.stopImmediatePropagation();},true);
     status.textContent="Живая схема загружена: данные сайта обновляются через Firebase.";
     focusSelectedInFrame();
   }
