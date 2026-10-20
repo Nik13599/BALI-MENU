@@ -32,6 +32,8 @@ if(image&&title&&description&&counter&&action&&hero){
     sort:-1,published:true
   };
   let offers=[holidayOffer],index=0,pause=false,activeHotspot=null,activeSecondarySpot=null,activeThirdSpot=null;
+  const slideIntervalMs=15000;
+  let lastInteraction=Date.now(),gesture=null,suppressGestureClick=false;
   const artHotspot=document.createElement("button");
   artHotspot.type="button";
   artHotspot.className="bali-pc-artwork-hotspot";
@@ -160,13 +162,14 @@ if(image&&title&&description&&counter&&action&&hero){
       button.setAttribute("aria-disabled",String(offers.length<2));
     });
   }
-  function advance(step){
+  function advance(step,manual=false){
     if(offers.length<2)return;
+    if(manual)lastInteraction=Date.now();
     index=(index+step+offers.length)%offers.length;
     show();
   }
   arrows.forEach(button=>{
-    button.addEventListener("click",()=>advance(Number(button.dataset.baliHeroStep)||1));
+    button.addEventListener("click",()=>advance(Number(button.dataset.baliHeroStep)||1,true));
   });
   action.addEventListener("click",()=>{
     const page=offers[index]?.destination;
@@ -177,14 +180,46 @@ if(image&&title&&description&&counter&&action&&hero){
     }
     document.querySelector('.bali-pc-navigation [data-bali-nav="'+page+'"]')?.click();
   });
+  // Horizontal swipe works on phones/tablets and mouse drag on the desktop.
+  // Do not interfere with vertical scrolling, short clicks or contact hotspots.
+  hero.addEventListener("pointerdown",event=>{
+    if(event.pointerType==="mouse"&&event.button!==0)return;
+    gesture={id:event.pointerId,x:event.clientX,y:event.clientY,dragged:false};
+  });
+  hero.addEventListener("pointermove",event=>{
+    if(!gesture||gesture.id!==event.pointerId)return;
+    const dx=event.clientX-gesture.x,dy=event.clientY-gesture.y;
+    if(!gesture.dragged&&Math.abs(dx)>14&&Math.abs(dx)>Math.abs(dy)*1.25){
+      gesture.dragged=true;
+      try{hero.setPointerCapture(event.pointerId);}catch{}
+    }
+    if(gesture.dragged&&event.cancelable)event.preventDefault();
+  });
+  hero.addEventListener("pointerup",event=>{
+    if(!gesture||gesture.id!==event.pointerId)return;
+    const dx=event.clientX-gesture.x,dy=event.clientY-gesture.y;
+    if(gesture.dragged&&Math.abs(dx)>44&&Math.abs(dx)>Math.abs(dy)){
+      suppressGestureClick=true;
+      advance(dx<0?1:-1,true);
+      window.setTimeout(()=>{suppressGestureClick=false;},0);
+    }
+    gesture=null;
+  });
+  hero.addEventListener("pointercancel",()=>{gesture=null;});
+  hero.addEventListener("click",event=>{
+    if(suppressGestureClick){
+      event.preventDefault();event.stopImmediatePropagation();suppressGestureClick=false;
+    }
+  },true);
   hero.addEventListener("mouseenter",()=>{pause=true;});
   hero.addEventListener("mouseleave",()=>{pause=false;});
   hero.addEventListener("focusin",()=>{pause=true;});
   hero.addEventListener("focusout",()=>{pause=false;});
   window.setInterval(()=>{
-    if(!pause&&!document.hidden&&window.matchMedia("(min-width:1180px)").matches
+    if(offers.length>1&&!pause&&!document.hidden
+        &&Date.now()-lastInteraction>=slideIntervalMs
         &&!window.matchMedia("(prefers-reduced-motion:reduce)").matches)advance(1);
-  },8000);
+  },slideIntervalMs);
   const source=query(collection(db,"promotions"),where("published","==",true));
   onSnapshot(source,snapshot=>{
     const currentId=offers[index]?.id;
