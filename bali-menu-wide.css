@@ -1,0 +1,211 @@
+/* Wide, shallow restaurant menu cards. Shared visual language for kitchen,
+   bar, hookah and tea. Only the kitchen has order controls. */
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .menu-grid.menu-category-products{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr))!important;
+  gap:clamp(10px,1vw,16px)!important;
+  align-items:stretch!important;
+}
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .bali-catalog-card{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  align-content:center!important;
+  min-height:96px!important;
+  height:auto!important;
+  max-height:none!important;
+  padding:0!important;
+  border-radius:12px!important;
+  overflow:hidden!important;
+}
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .bali-catalog-card:has(> .menu-item-image){
+  grid-template-columns:clamp(86px,8vw,116px) minmax(0,1fr)!important;
+  align-content:stretch!important;
+}
+body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card>.menu-item-image{
+  display:block!important;
+  grid-column:1!important;
+  grid-row:1!important;
+  align-self:stretch!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:100%!important;
+  max-height:none!important;
+  aspect-ratio:auto!important;
+  object-fit:cover!important;
+  object-position:center!important;
+}
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .bali-catalog-card>.menu-item-content{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:clamp(4px,.48vw,7px)!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:auto!important;
+  margin:0!important;
+  padding:clamp(9px,.85vw,14px)!important;
+}
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .bali-catalog-card .menu-item-header{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:start!important;
+  justify-content:space-between!important;
+  gap:4px 10px!important;
+  min-height:0!important;
+  width:100%!important;
+  padding:0!important;
+  margin:0!important;
+}
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .bali-catalog-card .menu-item-name{
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:2;
+  overflow:hidden!important;
+  font:700 clamp(12px,.85vw,15px)/1.25 Manrope,Arial,sans-serif!important;
+  letter-spacing:-.01em!important;
+}
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .bali-catalog-card .menu-item-price{
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:baseline!important;
+  justify-content:flex-end!important;
+  flex-wrap:nowrap!important;
+  gap:4px!important;
+  font:800 clamp(13px,1vw,18px)/1.2 Manrope,Arial,sans-serif!important;
+  margin:0!important;
+}
+body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .menu-item-description{
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:2!important;
+  overflow:hidden!important;
+  margin:0!important;
+  font:500 11px/1.3 Manrope,Arial,sans-serif!important;
+  color:#aebcb3!important;
+}
+body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .menu-item-weight{
+  font:600 10px/1.2 Manrope,Arial,sans-serif!important;
+  color:#a7ada9!important;
+}
+body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .menu-purchase-controls{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:7px!important;
+  margin:3px 0 0!important;
+  min-width:0!important;
+}
+body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .menu-quantity{
+  display:grid!important;
+  grid-template-columns:minmax(24px,1fr) minmax(18px,.55fr) minmax(24px,1fr)!important;
+  min-width:0!important;
+  gap:1px!important;
+}
+body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .menu-quantity-btn{
+  width:100%!important;min-width:0!important;
+  height:32px!important;min-height:32px!important;
+  font-size:18px!important;
+}
+body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .add-to-cart-btn{
+  width:100%!important;max-width:none!important;
+  height:32px!important;min-height:32px!important;
+  margin:0!important;padding:3px 5px!important;
+  font-size:11px!important;white-space:nowrap!important;
+}
+body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .bali-menu-portions{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  width:100%!important;max-width:none!important;
+  gap:5px!important;
+}
+body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .bali-menu-portion{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:6px!important;
+  align-items:center!important;
+}
+body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .bali-tea-footer-space{
+  display:none!important;
+}
+body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .bali-menu-readmore{
+  min-height:20px!important;
+  font-size:10px!important;
+  line-height:1.2!important;
+}
+/* Informational icon occupies the top-right corner; no overlapping prices. */
+body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .menu-details-btn{
+  top:6px!important;right:6px!important;
+  width:28px!important;height:28px!important;
+}
+body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card:has(.menu-details-btn) .menu-item-header{
+  padding-right:28px!important;
+}
+@media(min-width:768px) and (max-width:1179px){
+  body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+    .menu-category-block .menu-grid.menu-category-products{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(min-width:1180px){
+  body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+    .menu-category-block .menu-grid.menu-category-products{
+    grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr))!important;
+  }
+}
+@media(max-width:767px){
+  body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+    .menu-category-block .menu-grid.menu-category-products{
+    display:flex!important;flex-direction:column!important;gap:9px!important;
+  }
+  body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+    .menu-category-block .bali-catalog-card{
+    min-height:78px!important;
+  }
+  body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+    .menu-category-block .bali-catalog-card:has(> .menu-item-image){
+    grid-template-columns:clamp(74px,22vw,96px) minmax(0,1fr)!important;
+  }
+  body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+    .menu-category-block .bali-catalog-card>.menu-item-content{
+    padding:9px 10px!important;gap:4px!important;
+  }
+  body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+    .menu-category-block .bali-catalog-card .menu-item-header{
+    min-height:0!important;
+    gap:5px!important;
+  }
+  body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+    .menu-category-block .bali-catalog-card .menu-item-name{
+    font-size:13px!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .menu-item-price{
+    flex-direction:row!important;align-items:baseline!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .menu-item-description{
+    -webkit-line-clamp:1!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .menu-purchase-controls{
+    gap:5px!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .menu-quantity-btn,
+  body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .add-to-cart-btn{
+    height:31px!important;min-height:31px!important;
+  }
+}
+@media(max-width:380px){
+  body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .menu-item-header{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:2px!important;
+  }
+  body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card .menu-item-price{
+    justify-content:flex-start!important;
+  }
+}
