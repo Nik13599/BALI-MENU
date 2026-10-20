@@ -72,7 +72,7 @@ const db={
   }
 };
 function firestore(){return db}
-firestore.Timestamp={now:()=>new Stamp(Date.now())};
+firestore.Timestamp={now:()=>new Stamp(Date.now()),fromMillis:ms=>new Stamp(ms)};
 const fakeAdmin={apps:[{}],firestore};
 class HttpsError extends Error{
   constructor(code,message){super(message);this.code=code}
