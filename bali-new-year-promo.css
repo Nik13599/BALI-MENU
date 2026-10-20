@@ -61,6 +61,11 @@ body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal .bali-pc-hero-contr
   z-index:9!important;
 }
 @media(max-width:767px){
+  /* The seasonal slide gets slightly more vertical room in the fixed,
+     non-scrolling mobile home grid, while contacts stay in their row. */
+  body.bali-guest-theme #homeSection .bali-home-inner:has(.bali-pc-hero.is-seasonal){
+    grid-template-rows:minmax(0,1fr) minmax(0,1.12fr) minmax(0,1.04fr) auto!important;
+  }
   body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal{
     border-radius:clamp(10px,3vw,16px)!important;
     width:100%!important;
@@ -131,5 +136,11 @@ body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal .bali-pc-hero-contr
   }
   body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal .bali-pc-hero-controls{
     z-index:9!important;
+  }
+}
+
+@media(max-width:767px) and (max-height:690px){
+  body.bali-guest-theme #homeSection .bali-home-inner:has(.bali-pc-hero.is-seasonal){
+    grid-template-rows:minmax(0,.95fr) minmax(0,1.12fr) minmax(0,1.04fr) auto!important;
   }
 }
