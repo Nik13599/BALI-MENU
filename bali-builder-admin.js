@@ -295,7 +295,7 @@ function positionOverlay(){
  if(!overlay)return;
  if(!selection){overlay.style.display="none";return;}
  const node=liveNode(),d=activeDoc();
- if(!node||!d){overlay.style.display="none";return;}
+ if(!node||!d||!node.getClientRects().length){overlay.style.display="none";return;}
  const rect=node.getBoundingClientRect();
  overlay.style.display="block";
  Object.assign(overlay.style,{left:Math.max(0,rect.left)+"px",top:Math.max(0,rect.top)+"px",width:Math.max(8,rect.width)+"px",height:Math.max(8,rect.height)+"px"});
