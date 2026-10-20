@@ -17,7 +17,7 @@ const view={
  status:$("baliBuilderStatus"),page:$("baliBuilderPage"),mode:$("baliBuilderMode"),
  draft:$("baliBuilderSaveDraft"),publish:$("baliBuilderPublish"),restore:$("baliBuilderRestore"),
  undo:$("baliBuilderUndo"),redo:$("baliBuilderRedo"),copy:$("baliBuilderCopy"),
- addButtons:[...panel.querySelectorAll("[data-bali-builder-add]")]
+ addButtons:[...panel.querySelectorAll("[data-bali-builder-add]")],viewportWidth:$("baliBuilderViewportWidth"),viewportHeight:$("baliBuilderViewportHeight")
 };
 const animations=[
  ["","Сохранить текущую анимацию"],["none","Без анимации"],["fade","Плавное появление"],["reveal","Раскрытие маской"],
@@ -367,9 +367,16 @@ function updatePage(page){
  selection=null;renderInspector();
  requestAnimationFrame(()=>{refreshCanvas();positionOverlay();});
 }
+function updateViewportFields(){
+ const size=window.BaliDesignStudio?.getViewport?.();
+ if(size&&view.viewportWidth&&view.viewportHeight){
+  view.viewportWidth.value=size.width;view.viewportHeight.value=size.height;
+ }
+}
 function updateDevice(dev){
  if(!listDevices.includes(dev))return;
  currentDevice=dev;
+ updateViewportFields();
  selection=null;renderInspector();
  refreshCanvas();
  msg("Редактируется "+({desktop:"ПК",tablet:"планшет",phone:"телефон"}[dev])+". Изменения изолированы от других устройств.");
@@ -430,6 +437,13 @@ function toggle(on){
 function init(){
  initialize();
  view.page.addEventListener("change",()=>updatePage(view.page.value));
+ for(const field of [view.viewportWidth,view.viewportHeight]){
+  field?.addEventListener("change",()=>{
+   window.BaliDesignStudio?.viewport?.(view.viewportWidth.value,view.viewportHeight.value);
+   updateViewportFields();requestAnimationFrame(positionOverlay);
+  });
+ }
+ updateViewportFields();
  view.mode.addEventListener("click",()=>toggle(!enabled));
  view.draft.addEventListener("click",()=>save(false));
  view.publish.addEventListener("click",()=>save(true));
