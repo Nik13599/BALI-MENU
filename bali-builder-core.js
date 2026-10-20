@@ -278,7 +278,7 @@ function mount(doc,model,view,options={}){
    catch{continue;}
   }
   if(!root)continue;
-  save(root,"position");root.style.setProperty("position","relative");
+  if(doc.defaultView.getComputedStyle(root).position==="static"){save(root,"position");root.style.setProperty("position","relative");}
   const el=doc.createElement(block.kind==="image"?"img":block.kind==="button"?"a":"div");
   el.className="bali-builder-added";el.dataset.kind=block.kind;el.dataset.baliBuilderId=block.id;
   if(block.kind==="image"){
