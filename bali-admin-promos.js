@@ -27,6 +27,47 @@ if(form&&list&&status){
   const urlInput=el("baliPromoImage");
   const fileInput=el("baliPromoImageFile");
   const variants=makeImageVariants("baliPromo","design-hero",message=>say(message));
+
+  // Each promotional slide can define its own contact dialog.
+  const contactKinds=["phone","telegram","instagram","whatsapp","viber"];
+  const contactId=name=>"baliPromoContact"+name.charAt(0).toUpperCase()+name.slice(1);
+  const contactSettings=el("baliPromoContactSettings");
+  const destinationInput=el("baliPromoDestination");
+  function syncContactSettings(){
+    contactSettings.hidden=destinationInput.value!=="contact-modal";
+  }
+  destinationInput.addEventListener("change",syncContactSettings);
+  function readContacts(){
+    const contactLinks={},contactEnabled={};
+    for(const name of contactKinds){
+      contactLinks[name]=el(contactId(name)).value.trim();
+      contactEnabled[name]=el(contactId(name)+"Enabled").checked;
+    }
+    return {contactLinks,contactEnabled,contactTitle:el("baliPromoContactTitle").value.trim()};
+  }
+  function validContactLink(name,value){
+    if(!value)return true; // Empty field inherits the club's global contact.
+    if(name==="phone")return /^tel:\\+?[0-9]{5,22}$/.test(value);
+    if(name==="viber"){
+      try{
+        const url=new URL(value);
+        return url.protocol==="viber:"&&url.hostname==="chat"&&
+          /^\\+[0-9]{5,22}$/.test(url.searchParams.get("number")||"");
+      }catch{return false;}
+    }
+    try{
+      const url=new URL(value);
+      if(url.protocol!=="https:")return false;
+      const host=url.hostname.toLowerCase().replace(/^www\\./,"");
+      const hosts={
+        telegram:["t.me","telegram.me"],
+        instagram:["instagram.com"],
+        whatsapp:["wa.me","api.whatsapp.com"]
+      };
+      return (hosts[name]||[]).includes(host)&&url.pathname.length>1;
+    }catch{return false;}
+  }
+
   const validImage=value=>value===""||
     (value.startsWith("https://")&&value.length<=2048)||
     (value.startsWith("data:image/webp;base64,")&&value.length<=155000);
@@ -54,6 +95,7 @@ if(form&&list&&status){
     save.textContent="Сохранить предложение";
     showPreview("");
     variants.set();
+    syncContactSettings();
   }
   fileInput.addEventListener("change",async()=>{
     const file=fileInput.files?.[0];
@@ -90,6 +132,12 @@ if(form&&list&&status){
     variants.set({tablet:item.imageTabletUrl,mobile:item.imageMobileUrl});
     el("baliPromoDestination").value=item.destination;
     el("baliPromoButton").value=item.buttonText;
+    el("baliPromoContactTitle").value=item.contactTitle||"Выберите удобный способ связи";
+    for(const name of contactKinds){
+      el(contactId(name)).value=item.contactLinks?.[name]||"";
+      el(contactId(name)+"Enabled").checked=item.contactEnabled?.[name]!==false;
+    }
+    syncContactSettings();
     el("baliPromoSort").value=item.sort;
     el("baliPromoPublished").checked=item.published;
     save.textContent="Сохранить изменения";
@@ -141,11 +189,14 @@ if(form&&list&&status){
     const versions=variants.read();
     const destination=el("baliPromoDestination").value;
     const buttonText=el("baliPromoButton").value.trim();
+    const {contactLinks,contactEnabled,contactTitle}=readContacts();
     const sort=Number(el("baliPromoSort").value);
     const published=el("baliPromoPublished").checked;
     if((title.length!==0&&title.length<2)||title.length>100||description.length>260
-       ||!validImage(imageUrl)||!variants.valid()||!["none","events","menu","contacts"].includes(destination)
-       ||buttonText.length>35||!Number.isInteger(sort)||sort<0||sort>100000||
+       ||!validImage(imageUrl)||!variants.valid()||!["none","events","menu","contacts","contact-modal"].includes(destination)
+       ||buttonText.length>65||contactTitle.length>70
+       ||contactKinds.some(name=>contactLinks[name].length>300||!validContactLink(name,contactLinks[name]))
+       ||(destination==="contact-modal"&&!contactKinds.some(name=>contactEnabled[name]))||!Number.isInteger(sort)||sort<0||sort>100000||
        !(title||description||imageUrl)){
       say("Загрузите изображение или добавьте текст; проверьте адрес изображения, кнопку и сортировку.");return;
     }
@@ -154,7 +205,8 @@ if(form&&list&&status){
     saving=true;saveFeedback="";save.disabled=true;say("Сохраняем предложение в Firebase…");
     try{
       await setDoc(ref,{title,description,imageUrl,imageTabletUrl:versions.tablet,
-        imageMobileUrl:versions.mobile,destination,buttonText,sort,published,updatedAt:serverTimestamp()});
+        imageMobileUrl:versions.mobile,destination,buttonText,
+        contactTitle,contactLinks,contactEnabled,sort,published,updatedAt:serverTimestamp()});
       clear();saveFeedback=published?"Предложение опубликовано и сохранено в Firebase.":"Черновик сохранён в Firebase.";
       say(saveFeedback);
     }catch(error){
