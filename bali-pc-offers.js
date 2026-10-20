@@ -15,7 +15,20 @@ if(image&&title&&description&&counter&&action&&hero){
   const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
   const db=getFirestore(app);
   const collator=new Intl.Collator("ru",{numeric:true,sensitivity:"base"});
-  let offers=[],index=0,pause=false,activeHotspot=null;
+  const holidayId="bali-new-year-2026";
+  // The campaign lives in the shipped site until staff replace it with
+  // a published Firestore offer. No existing offers are overwritten.
+  const holidayOffer={
+    id:holidayId,title:"БРОНИРОВАНИЕ НОВОГОДНИХ КОРПОРАТИВОВ",
+    description:"Проведите незабываемый праздник в центре Минска. Выберите дату заранее.",
+    imageUrl:"",imageTabletUrl:"",imageMobileUrl:"",
+    destination:"contact-modal",buttonText:"ЗАБРОНИРОВАТЬ ДАТУ",
+    contactTitle:"Забронировать новогодний корпоратив",
+    contactLinks:{},contactEnabled:{phone:true,telegram:true,instagram:true,whatsapp:true,viber:true},
+    contactHotspot:{enabled:false,left:25,top:68,width:50,height:18},
+    sort:-1,published:true
+  };
+  let offers=[holidayOffer],index=0,pause=false,activeHotspot=null;
   const artHotspot=document.createElement("button");
   artHotspot.type="button";
   artHotspot.className="bali-pc-artwork-hotspot";
@@ -68,6 +81,8 @@ if(image&&title&&description&&counter&&action&&hero){
   function show(){
     const offer=offers[index];
     if(!offer){
+      hero.classList.remove("is-seasonal");
+      hero.removeAttribute("aria-label");
       setPoster(null);
       title.textContent="BALI PRIVILEGE";
       title.hidden=false;
@@ -78,6 +93,11 @@ if(image&&title&&description&&counter&&action&&hero){
       action.hidden=true;
       artHotspot.hidden=true;activeHotspot=null;
     }else{
+      const seasonal=offer.id===holidayId;
+      hero.classList.toggle("is-seasonal",seasonal);
+      hero.setAttribute("aria-label",seasonal?"Бронирование новогодних корпоративов BALI":"Специальное предложение BALI");
+      const kicker=hero.querySelector(".bali-pc-kicker");
+      if(kicker)kicker.textContent=seasonal?"НОВЫЙ ГОД · BALI":"BALI NIGHT CLUB";
       setPoster(offer);
       const hasArtwork=validImage(offer.imageUrl);
       title.textContent=offer.title;
@@ -134,12 +154,14 @@ if(image&&title&&description&&counter&&action&&hero){
   const source=query(collection(db,"promotions"),where("published","==",true));
   onSnapshot(source,snapshot=>{
     const currentId=offers[index]?.id;
-    offers=snapshot.docs.map(doc=>({id:doc.id,...doc.data()})).filter(validOffer)
+    const published=snapshot.docs.map(doc=>({id:doc.id,...doc.data()})).filter(validOffer);
+    const overridden=published.some(o=>o.id===holidayId||/новогодн/i.test(o.title));
+    offers=[...(overridden?[]:[holidayOffer]),...published]
       .sort((a,b)=>a.sort-b.sort||collator.compare(a.title,b.title));
     index=Math.max(0,offers.findIndex(o=>o.id===currentId));
     show();
   },error=>{
-    offers=[];index=0;show();
+    offers=[holidayOffer];index=0;show();
     if(error.code!=="permission-denied")console.warn("BALI offers unavailable:",error.code);
   });
   show();
