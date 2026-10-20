@@ -20,6 +20,8 @@
   <link rel="stylesheet" href="bali-home-hover.css?v=20261020-1">
   <link rel="stylesheet" href="bali-id-showcase.css?v=20261020-1">
   <link rel="stylesheet" href="bali-menu-wide.css?v=20261020-1">
+  <link rel="stylesheet" href="bali-navigation-unified.css?v=20261020-1">
+  <link rel="stylesheet" href="bali-about-teaser.css?v=20261020-1">
 </head>
 
 <body class="bali-guest-theme">
@@ -152,9 +154,18 @@
         </section>
         <aside class="bali-pc-right-rail" aria-label="Больше о клубе">
           <details class="bali-pc-about">
-            <summary><picture class="bali-pc-about-picture"><source id="baliPcAboutMobileSource" media="(max-width:767px)"><source id="baliPcAboutTabletSource" media="(min-width:768px) and (max-width:1179px)"><img id="baliPcAboutImage" class="bali-pc-about-image" alt="" hidden></picture><span class="bali-pc-about-logo">BALI</span><strong id="baliPcAboutTitle">О клубе</strong><small id="baliPcAboutSubtitle">Атмосфера, музыка, люди</small><span class="bali-pc-round-arrow" aria-hidden="true">›</span></summary>
-            <p id="baliPcAboutDescription">Ночной клуб BALI в Минске. Музыка, события и встречи в одной атмосфере.</p>
-            <button type="button" data-bali-nav="contacts">Контакты клуба →</button>
+            <summary id="baliPcAboutPreview" aria-label="О клубе BALI — посмотреть площадку и возможности аренды">
+              <picture class="bali-pc-about-picture"><source id="baliPcAboutMobileSource" media="(max-width:767px)"><source id="baliPcAboutTabletSource" media="(min-width:768px) and (max-width:1179px)"><img id="baliPcAboutImage" class="bali-pc-about-image" alt="" hidden></picture>
+              <span class="bali-pc-about-logo" aria-hidden="true">BALI</span>
+              <span class="bali-pc-about-kicker">ВЕЧЕРИНКИ · СОБЫТИЯ · АРЕНДА</span>
+              <strong class="bali-pc-about-hook">Не просто вечер. Ваше событие.</strong>
+              <strong id="baliPcAboutTitle">BALI — больше, чем клуб</strong>
+              <small id="baliPcAboutSubtitle">Площадка для мероприятий в центре Минска</small>
+              <span class="bali-pc-about-facts"><span>500+ гостей</span><span>3 бара · кухня</span><span>Сцена · звук · свет</span></span>
+              <span class="bali-pc-about-action">Узнать больше и обсудить дату <span aria-hidden="true">↗</span></span>
+            </summary>
+            <p id="baliPcAboutDescription">Корпоратив, концерт, день рождения или закрытая вечеринка — познакомьтесь с возможностями BALI и обсудите дату с командой клуба.</p>
+            <button type="button" data-bali-nav="about">Подробнее о площадке →</button>
           </details>
           <button type="button" class="bali-pc-id-card bali-id-showcase" id="baliHomeIdCard"
             aria-label="BALI ID — программа привилегий. Перейти к своей карте" title="Открыть свою BALI ID"
@@ -888,6 +899,7 @@
     <script type="module" src="bali-profile-media.js?v=20261020-1"></script>
     <script type="module" src="bali-id.js?v=20261019-6"></script>
     <script src="bali-pc-id-home.js?v=20261020-showcase1" defer></script>
+    <script src="bali-about-teaser.js?v=20261020-1" defer></script>
     <script type="module" src="bali-id-flip.js?v=20261019-4"></script>
     <script type="module" src="bali-id-bank.js?v=20261019-2"></script>
     <script src="bali-share.js?v=20261019-4" defer></script>
