@@ -105,3 +105,44 @@ test("Published seasonal campaign can replace built-in artwork and still be resi
   expect(result.height).toBe("210px");
   expect(result.restored).toBe(true);
 });
+
+test("carousel rotates multiple promotions by swipe/drag and exposes 15-second cadence",async({page})=>{
+ await page.goto("/index.html");
+ const source=fs.readFileSync(path.join(__dirname,"..","bali-pc-offers.js"),"utf8")
+   .replace(/^import\s+.*?;\s*$/gm,"");
+ await page.addScriptTag({content:`(()=>{
+  const initializeApp=()=>({}),getApps=()=>[],getApp=()=>({});
+  const getFirestore=()=>({}),collection=()=>({}),query=()=>({}),where=()=>({});
+  const onSnapshot=(_,notify)=>{notify({docs:[{id:"promo-extra",data:()=>({
+   title:"ВТОРОЙ БАННЕР",description:"",imageUrl:"https://example.com/banner.webp",
+   imageTabletUrl:"",imageMobileUrl:"",
+   destination:"menu",buttonText:"Подробнее",sort:100,published:true
+  })}]});return ()=>{}};
+  `+source+"\n})();"});
+ const hero=page.locator(".bali-pc-hero");
+ await expect(hero).toHaveAttribute("data-bali-carousel-count","2");
+ await expect(hero).toHaveAttribute("data-bali-carousel-interval","15000");
+ await expect(hero).toHaveAttribute("data-bali-offer-id","bali-new-year-2026");
+ await page.evaluate(()=>{
+   const el=document.querySelector(".bali-pc-hero");
+   const fire=(type,x,y,pointerType)=>{
+     el.dispatchEvent(new PointerEvent(type,{bubbles:true,cancelable:true,
+       pointerId:19,pointerType,clientX:x,clientY:y,button:0}));
+   };
+   fire("pointerdown",280,200,"touch");
+   fire("pointermove",205,201,"touch");
+   fire("pointerup",150,201,"touch");
+ });
+ await expect(hero).toHaveAttribute("data-bali-offer-id","promo-extra");
+ await page.evaluate(()=>{
+   const el=document.querySelector(".bali-pc-hero");
+   const fire=(type,x,y)=>{
+     el.dispatchEvent(new PointerEvent(type,{bubbles:true,cancelable:true,
+       pointerId:20,pointerType:"mouse",clientX:x,clientY:y,button:0}));
+   };
+   fire("pointerdown",110,200);
+   fire("pointermove",190,199);
+   fire("pointerup",265,199);
+ });
+ await expect(hero).toHaveAttribute("data-bali-offer-id","bali-new-year-2026");
+});
