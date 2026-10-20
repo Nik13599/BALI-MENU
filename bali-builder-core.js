@@ -184,6 +184,7 @@ function selectorFor(el){
  const seg=[];let curr=el;
  for(let d=0;curr?.tagName&&d<12;d++){
   if(curr.id){seg.unshift("#"+CSS.escape(curr.id));break;}
+  if(!curr.parentElement){seg.unshift(curr.tagName.toLowerCase());break;}
   const siblings=curr.parentElement?[...curr.parentElement.children].filter(n=>n.tagName===curr.tagName):[];
   seg.unshift(curr.tagName.toLowerCase()+":nth-of-type("+(siblings.indexOf(curr)+1)+")");
   curr=curr.parentElement;
