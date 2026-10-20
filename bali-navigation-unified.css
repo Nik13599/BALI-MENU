@@ -1,0 +1,87 @@
+/* Shared BALI navigation art: PC uses the mobile hand-drawn silhouettes. */
+@media (min-width:1180px){
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation .bali-pc-nav-icon:not(.has-custom-icon){
+    display:grid!important;
+    place-items:center!important;
+    width:clamp(25px,1.85vw,31px)!important;
+    height:clamp(25px,1.85vw,31px)!important;
+    flex:0 0 clamp(25px,1.85vw,31px)!important;
+    color:inherit!important;
+    background:transparent!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation .bali-pc-nav-icon:not(.has-custom-icon)>svg{
+    display:none!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation .bali-pc-nav-icon:not(.has-custom-icon)::before{
+    content:"";
+    display:block;
+    width:100%;height:100%;
+    background:currentColor;
+    mask-position:center;mask-size:contain;mask-repeat:no-repeat;
+    -webkit-mask-position:center;-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar [data-bali-nav="home"] .bali-pc-nav-icon:not(.has-custom-icon)::before{
+    mask-image:url("assets/nav-icons/home.svg");
+    -webkit-mask-image:url("assets/nav-icons/home.svg");
+  }
+  body.bali-guest-theme>.bali-pc-sidebar [data-bali-nav="events"] .bali-pc-nav-icon:not(.has-custom-icon)::before{
+    mask-image:url("assets/nav-icons/events.svg");
+    -webkit-mask-image:url("assets/nav-icons/events.svg");
+  }
+  body.bali-guest-theme>.bali-pc-sidebar [data-bali-nav="menu"] .bali-pc-nav-icon:not(.has-custom-icon)::before{
+    mask-image:url("assets/nav-icons/menu.svg");
+    -webkit-mask-image:url("assets/nav-icons/menu.svg");
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-cart-nav .bali-pc-nav-icon:not(.has-custom-icon)::before{
+    mask-image:url("assets/nav-icons/cart.svg");
+    -webkit-mask-image:url("assets/nav-icons/cart.svg");
+  }
+  /* The personal account icon is the same sketched user pictogram. */
+  body.bali-guest-theme .header #accountBtn[data-pc-signed-in="true"]::before{
+    width:27px!important;height:27px!important;flex:0 0 27px!important;
+    background:currentColor!important;
+    mask:url("assets/nav-icons/profile.svg") center/contain no-repeat!important;
+    -webkit-mask:url("assets/nav-icons/profile.svg") center/contain no-repeat!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button:not(.active) .bali-pc-nav-icon{
+    color:#fff!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button.active .bali-pc-nav-icon{
+    color:var(--bt-primary,#b9ff51)!important;
+  }
+}
+@media(max-width:767px){
+  /* Keep both header shortcuts consistent with the mobile dock icons. */
+  body.bali-guest-theme .header #baliMobileProfileBtn,
+  body.bali-guest-theme .header #baliMobileIdBtn{
+    color:var(--bali-mobile-neon,var(--bt-primary,#b9ff51))!important;
+  }
+  body.bali-guest-theme .header #baliMobileProfileBtn::before{
+    content:"";
+    display:block;
+    width:30px;height:30px;
+    background:currentColor;
+    mask:url("assets/nav-icons/profile.svg") center/contain no-repeat;
+    -webkit-mask:url("assets/nav-icons/profile.svg") center/contain no-repeat;
+  }
+  body.bali-guest-theme .header #baliMobileProfileBtn>svg{
+    display:none!important;
+  }
+  body.bali-guest-theme .header #baliMobileIdBtn::before{
+    content:"";
+    display:block;
+    flex:0 0 31px;
+    width:31px;height:31px;
+    background:currentColor;
+    mask:url("assets/nav-icons/id-card.svg") center/contain no-repeat;
+    -webkit-mask:url("assets/nav-icons/id-card.svg") center/contain no-repeat;
+  }
+  body.bali-guest-theme .header #baliMobileIdBtn>svg{
+    display:none!important;
+  }
+  body.bali-guest-theme .header #baliMobileIdBtn>span{
+    color:inherit!important;
+    font:800 9px/1 Manrope,Inter,sans-serif!important;
+    letter-spacing:.07em!important;
+  }
+}
