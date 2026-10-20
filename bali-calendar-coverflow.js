@@ -30,9 +30,9 @@ function measure(){
   // Use the whole available LEFT desktop column and all phone width.
   // A large central SQUARE remains fully visible above two action buttons.
   const width=Math.floor(Math.min(
-    phone?340:500,
-    area.width*(phone?.66:.60),
-    Math.max(100,area.height-(phone?65:76))
+    phone?390:500,
+    area.width*(phone?.76:.60),
+    Math.max(100,area.height-(phone?100:76))
   ));
   if(slideWidth!==width){
     slideWidth=width;
@@ -52,8 +52,8 @@ function render(){
   // Leave a real visible gap between the side planes and the centered
   // square. Perspective makes their bounding boxes wider than the naive
   // cosine projection; compensate without shrinking the hero image.
-  const safety=mobile()?Math.max(25,slideWidth*.10):Math.max(50,slideWidth*.11);
-  const slot=Math.max(stageWidth*(mobile()?.41:.395),
+  const safety=mobile()?Math.max(7,slideWidth*.035):Math.max(50,slideWidth*.11);
+  const slot=Math.max(stageWidth*(mobile()?.35:.395),
     slideWidth*.5+projectedHalf+gap)+safety;
   // Hard cap on visible poster count: one central + at most one each side.
   // All other events remain mounted in the queue but are invisible.
@@ -81,6 +81,9 @@ function render(){
     card.setAttribute("aria-hidden",String(!visible));
     card.classList.toggle("is-active",selected);
     card.classList.toggle("is-neighbor",visible&&!selected);
+    // Only neighboring posters fade into the left/right page boundaries.
+    // Central photo and its actions never receive an edge mask.
+    card.dataset.stageSide=visible&&!selected?(dist<0?"left":"right"):"center";
     card.setAttribute("aria-current",selected?"true":"false");
     const poster=card.querySelector(".bali-event-poster-wrap");
     if(poster)poster.setAttribute("aria-label",
