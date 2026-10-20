@@ -269,6 +269,14 @@ function positionOverlay(){
 function attachOverlay(){
  clearOverlay();
  const d=doc();if(!d)return;
+ if(!d.getElementById("baliBuilderEditingOverlayStyle")){
+  const st=d.createElement("style");st.id="baliBuilderEditingOverlayStyle";
+  st.textContent=".bali-builder-selection-overlay{position:fixed;z-index:2147483000;pointer-events:none;outline:2px solid #b9ff51;outline-offset:1px}"+
+  ".bali-builder-bounding-label{position:absolute;bottom:100%;left:0;transform:translateY(-4px);height:22px;min-width:100px;padding:3px 8px;display:flex;align-items:center;justify-content:center;background:#b9ff51;color:#152010;border-radius:5px;font:700 12px Arial,sans-serif;pointer-events:auto;cursor:grab;touch-action:none;user-select:none;box-sizing:border-box}"+
+  ".bali-builder-bounding-label:active{cursor:grabbing}"+
+  ".bali-builder-handle{position:absolute;right:-7px;bottom:-7px;width:17px;height:17px;background:#b9ff51;border:2px solid #101510;border-radius:4px;box-sizing:border-box;pointer-events:auto;cursor:nwse-resize;touch-action:none}";
+  d.head.append(st);
+ }
  overlay=d.createElement("div");overlay.className="bali-builder-selection-overlay";
  overlay.innerHTML='<div class="bali-builder-bounding-label">Переместить</div><div class="bali-builder-handle" title="Изменить размер" aria-label="Изменить размер"></div>';
  d.body.append(overlay);
