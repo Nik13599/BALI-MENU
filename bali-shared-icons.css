@@ -1,0 +1,101 @@
+/* Shared BALI icon silhouettes across desktop sidebar, desktop account
+   and mobile header. Uses the same original SVG masks as the phone dock. */
+@media(min-width:1180px){
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation
+  .bali-pc-nav-icon:not(.has-custom-icon)>svg{
+    display:none!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation
+  .bali-pc-nav-icon:not(.has-custom-icon)::before{
+    content:"";
+    display:block;
+    width:clamp(22px,1.75vw,30px);
+    height:clamp(22px,1.75vw,30px);
+    flex:0 0 auto;
+    background-color:currentColor!important;
+    mask-size:contain!important;
+    mask-position:center!important;
+    mask-repeat:no-repeat!important;
+    -webkit-mask-size:contain!important;
+    -webkit-mask-position:center!important;
+    -webkit-mask-repeat:no-repeat!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation
+  [data-bali-nav="home"] .bali-pc-nav-icon:not(.has-custom-icon)::before{
+    mask-image:url("assets/nav-icons/home.svg")!important;
+    -webkit-mask-image:url("assets/nav-icons/home.svg")!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation
+  [data-bali-nav="events"] .bali-pc-nav-icon:not(.has-custom-icon)::before{
+    mask-image:url("assets/nav-icons/events.svg")!important;
+    -webkit-mask-image:url("assets/nav-icons/events.svg")!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation
+  [data-bali-nav="menu"] .bali-pc-nav-icon:not(.has-custom-icon)::before{
+    mask-image:url("assets/nav-icons/menu.svg")!important;
+    -webkit-mask-image:url("assets/nav-icons/menu.svg")!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation
+  #baliPcCartBtn .bali-pc-nav-icon:not(.has-custom-icon)::before{
+    mask-image:url("assets/nav-icons/cart.svg")!important;
+    -webkit-mask-image:url("assets/nav-icons/cart.svg")!important;
+  }
+  body.bali-guest-theme .header #accountBtn[data-pc-signed-in="true"]::before{
+    content:""!important;
+    display:block!important;
+    flex:0 0 27px!important;
+    width:27px!important;height:27px!important;
+    background-color:var(--bt-primary,#b9ff51)!important;
+    -webkit-mask:url("assets/nav-icons/profile.svg") center/contain no-repeat!important;
+    mask:url("assets/nav-icons/profile.svg") center/contain no-repeat!important;
+  }
+  body.bali-guest-theme .header #accountBtn:not([data-pc-signed-in="true"])::before{
+    display:none!important;
+  }
+}
+@media(max-width:767px){
+  body.bali-guest-theme .header #baliMobileIdBtn.bali-header-id-trigger svg,
+  body.bali-guest-theme .header #baliMobileProfileBtn.bali-mobile-profile-fab svg{
+    display:none!important;
+  }
+  body.bali-guest-theme .header #baliMobileIdBtn.bali-header-id-trigger::before,
+  body.bali-guest-theme .header #baliMobileProfileBtn.bali-mobile-profile-fab::before{
+    content:"";
+    display:block;
+    flex:0 0 29px;
+    width:29px;height:29px;
+    background-color:var(--bali-mobile-neon,var(--bt-primary,#b9ff51))!important;
+    -webkit-mask-position:center!important;
+    -webkit-mask-size:contain!important;
+    -webkit-mask-repeat:no-repeat!important;
+    mask-position:center!important;
+    mask-size:contain!important;
+    mask-repeat:no-repeat!important;
+  }
+  body.bali-guest-theme .header #baliMobileIdBtn.bali-header-id-trigger::before{
+    -webkit-mask-image:url("assets/nav-icons/id.svg")!important;
+    mask-image:url("assets/nav-icons/id.svg")!important;
+  }
+  body.bali-guest-theme .header #baliMobileProfileBtn.bali-mobile-profile-fab::before{
+    -webkit-mask-image:url("assets/nav-icons/profile.svg")!important;
+    mask-image:url("assets/nav-icons/profile.svg")!important;
+  }
+  body.bali-guest-theme .header #baliMobileIdBtn.bali-header-id-trigger>span{
+    display:block;
+    line-height:1!important;
+    font-size:9px!important;
+    color:inherit;
+  }
+}
+@media(min-width:768px) and (max-width:1179px){
+  body.bali-guest-theme .bali-bottom-nav [data-bali-nav="profile"] .bali-nav-glyph{
+    color:inherit!important;
+    background:currentColor!important;
+    font-size:0!important;
+    -webkit-mask:url("assets/nav-icons/profile.svg") center/contain no-repeat!important;
+    mask:url("assets/nav-icons/profile.svg") center/contain no-repeat!important;
+  }
+  body.bali-guest-theme .bali-bottom-nav [data-bali-nav="profile"] .bali-nav-glyph>*{
+    display:none!important;
+  }
+}
