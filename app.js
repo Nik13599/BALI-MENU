@@ -1005,7 +1005,8 @@ function attachEventListeners() {
         if(name)name.textContent=detail?.name||"Гость BALI";
         if(phone)phone.textContent=detail?.phone||"Войдите в личный кабинет";
         if(email)email.textContent=detail?.email||"";
-        if(avatar)avatar.textContent=(detail?.name||"B").trim().slice(0,1).toLocaleUpperCase("ru-RU");
+        const avatarInitial=avatar?.querySelector("#baliAvatarInitial");
+        if(avatarInitial)avatarInitial.textContent=(detail?.name||"B").trim().slice(0,1).toLocaleUpperCase("ru-RU");
         if(logout)logout.hidden=!detail?.signedIn;
     });
     document.getElementById("menuNavBtn")?.addEventListener("click",event=>{
