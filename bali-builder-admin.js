@@ -36,15 +36,24 @@ const metadata=[
  ["width","Ширина","text","Размер (px или %)","320px"],
  ["height","Высота","text","Размер (px или %)","100px"],
  ["minHeight","Мин. высота","text","Размер (px или %)",""],
+ ["minWidth","Мин. ширина","text","px или %",""],
+ ["maxWidth","Макс. ширина","text","px или %",""],
+ ["maxHeight","Макс. высота","text","px или %",""],
  ["translateX","Сдвиг по X","number","px",0],
  ["translateY","Сдвиг по Y","number","px",0],
  ["padding","Внутренний отступ","number","px",0],
+ ["marginTop","Отступ сверху","number","px",0],
+ ["marginBottom","Отступ снизу","number","px",0],
+ ["marginLeft","Отступ слева","number","px",0],
+ ["marginRight","Отступ справа","number","px",0],
+ ["gap","Расстояние между элементами","number","px",0],
  ["borderRadius","Скругление","number","px",0],
  ["fontFamily","Шрифт","select","",core.fonts.map(x=>[x,x])],
  ["fontSize","Размер шрифта","number","px",16],
  ["fontWeight","Насыщенность","select","",[["300","Light 300"],["400","Regular 400"],["500","Medium 500"],["600","SemiBold 600"],["700","Bold 700"],["800","ExtraBold 800"],["900","Black 900"]]],
  ["fontStyle","Начертание","select","",[["normal","Обычный"],["italic","Курсив"]]],
  ["textAlign","Выравнивание","select","",[["left","Слева"],["center","По центру"],["right","Справа"],["justify","По ширине"]]],
+ ["textTransform","Регистр текста","select","",[["none","Без изменения"],["uppercase","ЗАГЛАВНЫЕ"],["lowercase","строчные"],["capitalize","С Заглавных"]]],
  ["lineHeight","Межстрочный","number","коэффициент",1.3],
  ["letterSpacing","Межбуквенный","number","px",0],
  ["color","Цвет текста","color","", "#ffffff"],
@@ -54,6 +63,12 @@ const metadata=[
  ["opacity","Прозрачность","number","0…1",1],
  ["shadow","Тень","select","",[["none","Без тени"],["soft","Мягкая"],["deep","Глубокая"],["glow","С подсветкой"]]],
  ["buttonStyle","Форма кнопки","select","",[["none","Исходный стиль"],["solid","Заливка"],["outline","Контур"],["glass","Стеклянная"],["pill","Капсула"]]],
+ ["display","Отображение","select","",[["block","Блок"],["inline-block","В строке"],["flex","Гибкий контейнер"],["grid","Сетка"],["none","Скрыть на этом устройстве"]]],
+ ["flexDirection","Направление элементов","select","",[["row","В строку"],["column","В столбец"],["row-reverse","В обратную строку"],["column-reverse","В обратный столбец"]]],
+ ["justifyContent","Выравнивание элементов","select","",[["flex-start","В начало"],["center","По центру"],["flex-end","В конец"],["space-between","По краям"],["space-around","С равными полями"],["space-evenly","Равномерно"]]],
+ ["alignItems","Выравнивание по высоте","select","",[["stretch","Растянуть"],["flex-start","Сверху"],["center","По центру"],["flex-end","Снизу"],["baseline","По базовой линии"]]],
+ ["objectFit","Масштаб фото","select","",[["cover","Заполнить с обрезкой"],["contain","Вместить полностью"],["fill","Растянуть"],["none","Без масштабирования"],["scale-down","Уменьшать по размеру"]]],
+ ["backgroundPosition","Позиция фона","select","",[["center","По центру"],["top","Сверху"],["bottom","Снизу"],["left","Слева"],["right","Справа"]]],
  ["animation","Анимация","select","",animations],
  ["animationDuration","Длительность","number","секунды · 0.2–20",3],
  ["animationDelay","Задержка","number","секунды · 0–15",0],
@@ -64,8 +79,9 @@ const metadata=[
  ["scale","Масштаб","number","×",1]
 ];
 const titleGroups=[
- ["Габариты и позиция",["width","height","minHeight","translateX","translateY","padding","borderRadius"]],
- ["Шрифты и текст",["fontFamily","fontSize","fontWeight","fontStyle","textAlign","lineHeight","letterSpacing"]],
+ ["Габариты и позиция",["width","height","minWidth","maxWidth","minHeight","maxHeight","translateX","translateY","padding","marginTop","marginBottom","marginLeft","marginRight","borderRadius"]],
+ ["Макет и медиа",["display","flexDirection","justifyContent","alignItems","gap","objectFit","backgroundPosition"]],
+ ["Шрифты и текст",["fontFamily","fontSize","fontWeight","fontStyle","textAlign","textTransform","lineHeight","letterSpacing"]],
  ["Цвета и кнопки",["color","backgroundColor","borderColor","borderWidth","opacity","shadow","buttonStyle"]],
  ["Анимация и эффекты",["animation","animationDuration","animationDelay","animationIteration","animationEasing","effect","rotate","scale"]]
 ];
@@ -204,8 +220,8 @@ function changeProp(k,v){
   const item=ensureItem();if(!item)return;
   item.props||={};
   if(!v&&v!=="0"){delete item.props[k];return;}
-  if(["width","height","minHeight"].includes(k))item.props[k]=v;
-  else if(["fontSize","padding","borderRadius","borderWidth","letterSpacing","translateX","translateY","lineHeight","opacity","rotate","scale","animationDuration","animationDelay"].includes(k))item.props[k]=Number(v);
+  if(["width","height","minWidth","maxWidth","minHeight","maxHeight"].includes(k))item.props[k]=v;
+  else if(["fontSize","padding","borderRadius","borderWidth","letterSpacing","translateX","translateY","marginTop","marginBottom","marginLeft","marginRight","gap","lineHeight","opacity","rotate","scale","animationDuration","animationDelay"].includes(k))item.props[k]=Number(v);
   else item.props[k]=v;
  });
 }
@@ -228,12 +244,16 @@ function valueFromComputed(k,node){
  if(k==="width")return Math.round(node.getBoundingClientRect().width)+"px";
  if(k==="height")return Math.round(node.getBoundingClientRect().height)+"px";
  const ref={fontFamily:"fontFamily",fontSize:"fontSize",fontWeight:"fontWeight",fontStyle:"fontStyle",
- textAlign:"textAlign",lineHeight:"lineHeight",letterSpacing:"letterSpacing",color:"color",
+ textAlign:"textAlign",textTransform:"textTransform",lineHeight:"lineHeight",letterSpacing:"letterSpacing",color:"color",
  backgroundColor:"backgroundColor",borderColor:"borderColor",borderWidth:"borderWidth",
- opacity:"opacity",borderRadius:"borderTopLeftRadius",padding:"paddingTop"};
+ opacity:"opacity",borderRadius:"borderTopLeftRadius",padding:"paddingTop",
+ display:"display",flexDirection:"flexDirection",justifyContent:"justifyContent",
+ alignItems:"alignItems",gap:"gap",objectFit:"objectFit",backgroundPosition:"backgroundPosition",
+ maxWidth:"maxWidth",minWidth:"minWidth",maxHeight:"maxHeight",
+ marginTop:"marginTop",marginBottom:"marginBottom",marginLeft:"marginLeft",marginRight:"marginRight"};
  if(!ref[k])return "";
  const raw=st[ref[k]]||"";
- if(["fontSize","letterSpacing","borderWidth","borderRadius","padding"].includes(k))return parseFloat(raw)||0;
+ if(["fontSize","letterSpacing","borderWidth","borderRadius","padding","marginTop","marginBottom","marginLeft","marginRight","gap"].includes(k))return parseFloat(raw)||0;
  if(k==="lineHeight")return (parseFloat(raw)/(parseFloat(st.fontSize)||16)).toFixed(2);
  if(k==="backgroundColor"||k==="borderColor"||k==="color"){
   const rgb=raw.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
