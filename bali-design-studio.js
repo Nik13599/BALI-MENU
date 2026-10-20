@@ -229,5 +229,13 @@
   });
   chooseEditor("privilege");
   chooseDevice("desktop");
-  window.BaliDesignStudio={select:chooseEditor,device:chooseDevice,page:choosePage};
+  function resizeActiveViewport(width,height){
+    const limits={desktop:[1180,3840,600,2160],tablet:[768,1179,500,2100],phone:[320,767,480,1700]}[device];
+    const w=Number(width),h=Number(height);
+    if(Number.isFinite(w))devices[device].width=Math.round(Math.max(limits[0],Math.min(limits[1],w)));
+    if(Number.isFinite(h))devices[device].height=Math.round(Math.max(limits[2],Math.min(limits[3],h)));
+    fit();
+    return {...devices[device]};
+  }
+  window.BaliDesignStudio={select:chooseEditor,device:chooseDevice,page:choosePage,viewport:resizeActiveViewport,getViewport:()=>({...devices[device]})};
 })();
