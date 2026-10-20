@@ -75,7 +75,7 @@ test('posters stay image-only with caption outside and details open on click',as
   const poster=page.locator('#eventsGrid .event-card.is-active .bali-event-poster-wrap');
   await expect(poster).toHaveAttribute('role','button');
   await expect(page.locator('#eventsGrid .bali-event-date-badge')).toHaveCount(0);
-  const content=await page.locator('#eventsGrid .event-card').first().evaluate(n=>{
+  const content=await page.locator('#eventsGrid .event-card.is-active').evaluate(n=>{
     const wrapper=n.querySelector('.bali-event-poster-wrap').getBoundingClientRect();
     const body=n.querySelector('.event-card-body').getBoundingClientRect();
     const image=n.querySelector('.event-poster');
