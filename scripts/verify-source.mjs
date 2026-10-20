@@ -605,15 +605,21 @@ assert(admin.includes('id="adminDesignPanel"') &&
   designPublic.includes('doc(db,"settings","homeDesign")') &&
   promosAdmin.includes('makeImageVariants(') &&
   promosPublic.includes('imageMobileUrl') &&
-  source("bali-pc-id-home.js").includes('baliCardNumber') &&
-  source("bali-pc-id-home.js").includes('baliIdFlipScene') &&
+  html.includes('class="bali-pc-id-card bali-id-showcase"') &&
+  html.includes('6 уровней привилегий') &&
+  html.includes('bali-id-showcase.css?v=') &&
+  source("bali-pc-id-home.js").includes('window.location.hash="id"') &&
+  !source("bali-pc-id-home.js").includes('baliCardNumber') &&
+  html.includes('bali-profile-viewport.css?v=') &&
+  html.includes('bali-menu-wide.css?v=') &&
+  html.includes('bali-home-hover.css?v=') &&
   source("bali-mobile-glass.css").includes('backdrop-filter:blur(25px)') &&
   source("bali-menu-details.css").includes('#baliKitchenContent .menu-item .menu-details-btn') &&
   rules.includes("match /merch/{merchId}") &&
   rules.includes('validHomeDesign(request.resource.data)') &&
   rules.includes('validMerch(request.resource.data)') &&
   rules.includes('validDesignImage(data.imageTabletUrl, 155000)'),
-  "Home Design must retain safe artwork editing and personal BALI ID instead of merch, while keeping legacy data rules intact.");
+  "Home Design must retain safe artwork editing and a PC BALI ID loyalty showcase instead of merch, while keeping legacy data rules intact.");
 assert(html.includes('>ГЛАВНАЯ</button>') &&
   html.includes('>КАЛЕНДАРЬ</button>') &&
   html.includes('>МЕНЮ</button>') &&
