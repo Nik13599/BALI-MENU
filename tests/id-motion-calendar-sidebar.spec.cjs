@@ -175,7 +175,7 @@ test('original homepage and desktop sidebar are untouched by isolated ID/calenda
 
 test('BALI ID floats without a grey panel, shows title only, and the click uses real depth and moving shadow',async({page})=>{
   await showId(page);
-  await expect(page.locator('#baliIdPageHeading')).toHaveText('BALI ID');
+  await expect(page.locator('#baliIdPageHeading')).toHaveText('BALI ID — цифровая карта гостя');
   await expect(page.locator('#baliIdSection .bali-id-heading')).toHaveCount(0);
   const backing=await page.locator('#baliIdSection .bali-profile-card').evaluate(n=>{
     const s=getComputedStyle(n);return {color:s.backgroundColor,image:s.backgroundImage,border:s.borderWidth,shadow:s.boxShadow};
