@@ -3,7 +3,7 @@
 body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
   .menu-category-block .menu-grid.menu-category-products{
   display:grid!important;
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr))!important;
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,310px),1fr))!important;
   gap:clamp(10px,1vw,16px)!important;
   align-items:stretch!important;
 }
@@ -157,7 +157,7 @@ body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card:has(.men
 @media(min-width:1180px){
   body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
     .menu-category-block .menu-grid.menu-category-products{
-    grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr))!important;
+    grid-template-columns:repeat(auto-fill,minmax(min(100%,310px),1fr))!important;
   }
 }
 @media(max-width:767px){
