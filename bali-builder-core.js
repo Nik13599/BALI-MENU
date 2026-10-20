@@ -151,6 +151,7 @@ function selectorFor(el){
 function findPage(el){for(const [page,sel] of Object.entries(ROOTS))if(el.closest(sel))return page;return "home";}
 function mount(doc,model,view,options={}){
  if(!doc?.body)return;
+ const scope=options.scope==="about"?"about":"main";
  const data=sanitizeDevice(cleanModel(model)[view||device(doc.defaultView)]);
  doc.__baliBuilderRestore?.();makeStyle(doc);
  const restored=[],seen=new WeakMap(),added=[];
@@ -161,7 +162,10 @@ function mount(doc,model,view,options={}){
   else {const val=node.style.getPropertyValue(p),priority=node.style.getPropertyPriority(p);
    restored.push(()=>val?node.style.setProperty(p,val,priority):node.style.removeProperty(p));}
  };
- for(const [selector,rule] of Object.entries(data.rules)){
+ for(const [rawSelector,rule] of Object.entries(data.rules)){
+  if(scope==="about"&&!rawSelector.startsWith("about::"))continue;
+  if(scope==="main"&&rawSelector.startsWith("about::"))continue;
+  const selector=scope==="about"?rawSelector.slice(7):rawSelector;
   let nodes=[];try{nodes=[...doc.querySelectorAll(selector)].slice(0,40);}catch{continue;}
   for(const node of nodes){
    if(node.closest(".bali-builder-added"))continue;
@@ -184,7 +188,9 @@ function mount(doc,model,view,options={}){
   }
  }
  for(const block of data.blocks){
-  const root=doc.querySelector(ROOTS[block.page]);if(!root)continue;
+  if(scope==="about"&&block.page!=="about")continue;
+  if(scope==="main"&&block.page==="about")continue;
+  const root=scope==="about"?doc.body:doc.querySelector(ROOTS[block.page]);if(!root)continue;
   save(root,"position");root.style.setProperty("position","relative");
   const el=doc.createElement(block.kind==="image"?"img":block.kind==="button"?"a":"div");
   el.className="bali-builder-added";el.dataset.kind=block.kind;el.dataset.baliBuilderId=block.id;
