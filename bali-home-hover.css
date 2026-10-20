@@ -1,0 +1,24 @@
+/* Quick, subtle enlargement of desktop BALI home event posters.
+   Restrict to fine pointers: mobile swipes and touch scrolling remain unchanged. */
+@media (min-width:1180px) and (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  body.bali-guest-theme #homeSection #homeEventCarousel > .bali-home-event-card{
+    position:relative!important;
+    z-index:0;
+    transform:scale(1)!important;
+    transform-origin:center center;
+    transition:transform 180ms cubic-bezier(.2,.7,.2,1),box-shadow 180ms ease-out!important;
+    will-change:transform;
+  }
+  body.bali-guest-theme #homeSection #homeEventCarousel > .bali-home-event-card:hover,
+  body.bali-guest-theme #homeSection #homeEventCarousel > .bali-home-event-card:focus-within{
+    z-index:5;
+    transform:scale(1.035)!important;
+    box-shadow:0 12px 26px rgba(0,0,0,.38);
+  }
+}
+@media (min-width:1180px) and (prefers-reduced-motion:reduce){
+  body.bali-guest-theme #homeSection #homeEventCarousel > .bali-home-event-card{
+    transition:none!important;
+    transform:none!important;
+  }
+}
