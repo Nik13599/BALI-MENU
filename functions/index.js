@@ -241,3 +241,5 @@ exports.issueBaliQuantity=api("issueBaliQuantity",async req=>{
   });
   return {ok:true,grantId:id};
 });
+
+Object.assign(exports,require("./bonus-qr")({api,admin,db,TS,verified,privileged,fail,nameAndId,wallet}));
