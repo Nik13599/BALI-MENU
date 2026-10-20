@@ -100,6 +100,8 @@ test('desktop arrows and inverted wheel move fixed-center 3D posters in referenc
   await page.locator('#baliPosterNext').click();
   await expect.poll(()=>page.evaluate(()=>window.BaliCalendarShowcase.getState().activeIndex),
     {timeout:6000}).toBe(1);
+  await expect.poll(()=>page.evaluate(()=>window.BaliCalendarShowcase.getState().animating),
+    {timeout:3000}).toBe(false);
   const angles=await page.locator('#eventsGrid .event-card').evaluateAll(nodes=>nodes.map(n=>({
     angle:n.style.getPropertyValue('--bali-stage-angle'),
     x:parseFloat(n.style.getPropertyValue('--bali-stage-x'))
