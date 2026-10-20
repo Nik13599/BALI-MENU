@@ -10,6 +10,34 @@ const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app);
 const draftRef=doc(db,"settings","siteBuilderDraft"),publishedRef=doc(db,"settings","siteBuilderPublished");
 const listDevices=["desktop","tablet","phone"];
+// Homepage blocks retain the responsive sizing defined by the existing BALI layout.
+const homeBlocks=[
+ ["Рекламный слайдер / Новый год",".bali-pc-hero"],
+ ["Первый экран · телефон",".bali-mobile-home-hero"],
+ ["Календарь · весь блок",".bali-home-events-panel"],
+ ["Календарь · заголовок",".bali-pc-events-title"],
+ ["Карточки мероприятий","#homeEventCarousel"],
+ ["О клубе",".bali-pc-about"],
+ ["BALI ID / Privilege","#baliHomeIdCard"],
+ ["Меню · большая кнопка","#menuNavBtn"],
+ ["Контактный блок",".bali-home-contacts-card, .bali-pc-sidebar-contacts"],
+ ["Логотип","#homeBrandBtn"],
+ ["Кнопка Подробнее о клубе","#baliMobileAboutBtn"],
+ ["Кнопка Площадка и аренда",".bali-pc-about-action"],
+ ["Кнопка Афиша вечеринок",".bali-pc-about-events-link"],
+ ["Профиль · телефон","#baliMobileProfileBtn"],
+ ["BALI ID · телефон","#baliMobileIdBtn"],
+ ["ПК · Главная",'.bali-pc-navigation [data-bali-nav="home"]'],
+ ["ПК · Календарь",'.bali-pc-navigation [data-bali-nav="events"]'],
+ ["ПК · Меню",'.bali-pc-navigation [data-bali-nav="menu"]'],
+ ["ПК · Корзина","#baliPcCartBtn"],
+ ["Телефон · Главная",'.bali-bottom-nav [data-bali-nav="home"]'],
+ ["Телефон · Календарь",'.bali-bottom-nav [data-bali-nav="events"]'],
+ ["Телефон · Меню",'.bali-bottom-nav [data-bali-nav="menu"]'],
+ ["Телефон · Инфо",'.bali-bottom-nav [data-bali-nav="contacts"]'],
+ ["Телефон · Профиль",'.bali-bottom-nav [data-bali-nav="profile"]']
+];
+const homeCardSelector=".bali-pc-hero,.bali-mobile-home-hero,.bali-home-events-panel,.bali-pc-about,.bali-pc-id-card,.bali-home-menu-banner,.bali-home-contacts-card,.bali-pc-sidebar-contacts,#homeSection,.header";
 let model=core.emptyModel(),published=core.emptyModel(),currentDevice="desktop",currentPage="home";
 let authorized=false,loading=false,saving=false,dirty=false,enabled=true,authEpoch=0,unsub=null,selection=null,overlay=null,drag=null,history=[],future=[];
 let writingImage=false,styleClipboard=null;
@@ -139,6 +167,20 @@ function initialize(){
  const heading=document.createElement("div");heading.className="bali-builder-inspector-heading";
  heading.innerHTML='<strong id="baliBuilderSelected">Выберите элемент на сайте</strong><small id="baliBuilderSelector">Настройки применяются только к выбранному устройству</small>';
  inspector.append(heading);
+ const homePicker=document.createElement("section");
+ homePicker.className="bali-builder-home-picker";
+ homePicker.innerHTML="<strong>ГЛАВНАЯ · ВСЕ БЛОКИ</strong><small>Размеры карточек остаются прежними. Выберите блок, надпись или кнопку; Alt + клик для вложенного элемента.</small>";
+ const chooser=document.createElement("select");chooser.id="baliBuilderHomeBlock";
+ chooser.setAttribute("aria-label","Выбор блока главной");
+ chooser.append(new Option("Выберите блок или кнопку…",""));
+ for(const [label,selector] of homeBlocks)chooser.append(new Option(label,selector));
+ chooser.addEventListener("change",()=>{
+  if(!chooser.value)return;
+  const el=frameDoc()?.querySelector(chooser.value);
+  if(!el){msg("Этот элемент недоступен в текущем предпросмотре.");return;}
+  choose(el,{deep:true});el.scrollIntoView({block:"nearest",inline:"nearest"});
+ });
+ homePicker.append(chooser);inspector.append(homePicker);
  const trail=document.createElement("nav");
  trail.id="baliBuilderLayerTrail";
  trail.className="bali-builder-layer-trail";
