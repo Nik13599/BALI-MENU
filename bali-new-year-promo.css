@@ -1,6 +1,5 @@
-/* Unmodified client-approved seasonal campaign artwork.
-   Its 2135 × 736 PNG is always rendered whole, with no text, filters, or crop.
-   Buttons over the existing two blank rectangular tiles have zero visual fill. */
+/* Approved BALI artwork is unmodified. Desktop shows its full aspect ratio;
+   phone fills its available card using a left-aligned crop and visible CTA. */
 body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal{
   isolation:isolate!important;
   border:0!important;
@@ -62,10 +61,86 @@ body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal .bali-pc-hero-contr
   z-index:9!important;
 }
 @media(max-width:767px){
+  /* The seasonal slide gets slightly more vertical room in the fixed,
+     non-scrolling mobile home grid, while contacts stay in their row. */
+  body.bali-guest-theme #homeSection .bali-home-inner:has(.bali-pc-hero.is-seasonal){
+    grid-template-rows:minmax(0,1fr) minmax(0,1.12fr) minmax(0,1.04fr) auto!important;
+  }
   body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal{
     border-radius:clamp(10px,3vw,16px)!important;
+    width:100%!important;
+    height:100%!important;
+  }
+  /* Fill the full mobile card without stretching the original campaign. The
+     left side contains the headline and the original booking call-to-action. */
+  body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal .bali-pc-hero-visual picture,
+  body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal .bali-pc-hero-visual img{
+    width:100%!important;
+    height:100%!important;
   }
   body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal .bali-pc-hero-visual img{
-    object-fit:contain!important;
+    object-fit:cover!important;
+    object-position:left center!important;
+  }
+  /* Unlike the desktop hot-areas, a phone shows a real, large, labeled button.
+     Position over the painted CTA while keeping the source image untouched. */
+  body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal .bali-pc-hero-content{
+    display:block!important;
+    position:absolute!important;
+    inset:0!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    height:100%!important;
+    padding:0!important;
+    margin:0!important;
+    z-index:7!important;
+    pointer-events:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal #baliPcOfferAction:not([hidden]){
+    position:absolute!important;
+    bottom:clamp(9px,2.5vw,14px)!important;
+    left:clamp(10px,3vw,18px)!important;
+    display:inline-flex!important;
+    justify-content:center!important;
+    align-items:center!important;
+    box-sizing:border-box!important;
+    width:auto!important;
+    min-width:0!important;
+    min-height:38px!important;
+    max-width:calc(100% - 24px)!important;
+    height:auto!important;
+    margin:0!important;
+    padding:9px clamp(12px,4vw,19px)!important;
+    border:1px solid #c0ee72!important;
+    border-radius:10px!important;
+    background:rgba(6,17,11,.96)!important;
+    color:#e1ff9f!important;
+    box-shadow:0 6px 19px rgba(0,0,0,.56)!important;
+    font:750 clamp(11px,3.2vw,14px)/1.2 Manrope,Inter,Arial,sans-serif!important;
+    text-align:center!important;
+    letter-spacing:0!important;
+    white-space:normal!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+    cursor:pointer!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal #baliPcOfferAction>span{
+    display:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal #baliPcOfferAction:focus-visible{
+    outline:3px solid #e1ff9f!important;
+    outline-offset:3px!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal .bali-pc-artwork-hotspot{
+    display:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal .bali-pc-hero-controls{
+    z-index:9!important;
+  }
+}
+
+@media(max-width:767px) and (max-height:690px){
+  body.bali-guest-theme #homeSection .bali-home-inner:has(.bali-pc-hero.is-seasonal){
+    grid-template-rows:minmax(0,.95fr) minmax(0,1.12fr) minmax(0,1.04fr) auto!important;
   }
 }
