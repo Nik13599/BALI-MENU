@@ -80,12 +80,14 @@ class HttpsError extends Error{
 const exports={};
 vm.runInNewContext(readFileSync("functions/index.js","utf8"),{
   exports,require:name=>name==="firebase-admin"?fakeAdmin:
-    name==="firebase-functions/v2/https"?{onCall:(_options,handler)=>handler,HttpsError}:require(name),
+    name==="firebase-functions/v2/https"?{onCall:(_options,handler)=>handler,HttpsError}:
+     name==="qrcode"?{toDataURL:async()=> "data:image/png;base64,dGVzdA=="}:
+     name==="./bonus-qr"?()=>({}):require(name),
   console,Date,Math,Number,String,Promise,Boolean,Array,Error,Set,Map,JSON,RegExp
 },{filename:"functions/index.js"});
 const auth=uid=>({auth:{uid,token:{email_verified:true}}});
 const received=async(number,authUid=sender)=>exports.previewBaliRecipient({...auth(authUid),data:{number}});
-const make=(items,key,authUid=sender,to="000002")=>exports.transferBaliBenefits({...auth(authUid),data:{number:to,items,requestId:key}});
+const make=(items,key,authUid=sender,to="000002",comment="")=>exports.transferBaliBenefits({...auth(authUid),data:{number:to,items,requestId:key,comment}});
 const balance=(id,kind)=>memory.get("guestWallets/"+id).grants.filter(g=>g.kind===kind).reduce((s,g)=>s+g.remaining,0);
 const key="a".repeat(32);
 const resolved=await received("000002");
@@ -96,11 +98,11 @@ await assert.rejects(received("999999"),e=>e.code==="not-found");
 await assert.rejects(received("00002"),e=>e.code==="invalid-argument");
 await assert.rejects(received("000002",null),e=>e.code==="unauthenticated");
 assert.equal(balance(sender,"shot"),3);
-let result=await make([{grantId:"shot-001",quantity:2},{grantId:"cocktail-01",quantity:1}],key);
+let result=await make([{grantId:"shot-001",quantity:2},{grantId:"cocktail-01",quantity:1}],key,sender,"000002","Приятного отдыха!");
 assert.equal(result.ok,true);assert.equal(result.alreadyProcessed,false);
 assert.equal(balance(sender,"shot"),1);assert.equal(balance(receiver,"shot"),2);
 assert.equal(balance(sender,"cocktail"),1);assert.equal(balance(receiver,"cocktail"),1);
-result=await make([{grantId:"shot-001",quantity:2},{grantId:"cocktail-01",quantity:1}],key);
+result=await make([{grantId:"shot-001",quantity:2},{grantId:"cocktail-01",quantity:1}],key,sender,"000002","Приятного отдыха!");
 assert.equal(result.alreadyProcessed,true);
 assert.equal(balance(sender,"shot"),1,"retries must never double-debit");
 assert.equal(balance(receiver,"shot"),2,"retries must never double-credit");
@@ -118,6 +120,13 @@ assert.equal(historyA.items[0].type,"transfer-out");
 assert.equal(historyB.items[0].type,"transfer-in");
 assert.equal(historyA.items[0].toName,"Андрей");
 assert.equal(historyB.items[0].fromName,"Светлана");
+assert.equal(historyB.items[0].comment,"Приятного отдыха!");
+const inbox=[...memory].filter(([key])=>key.startsWith("baliTransferInbox/"+receiver+"/items/"));
+assert.equal(inbox.length,1,"recipient must receive exactly one inbox message");
+assert.equal(inbox[0][1].senderName,"Светлана");
+assert.equal(inbox[0][1].senderNumber,"000001");
+assert.equal(inbox[0][1].comment,"Приятного отдыха!");
+await assert.rejects(make([{grantId:"shot-001",quantity:2},{grantId:"cocktail-01",quantity:1}],key,sender,"000002","Другое пожелание"),e=>e.code==="already-exists");
 const grant=await exports.issueBaliQuantity({...auth(staff),data:{
   uid:receiver,kind:"shot",quantity:3,transferable:true,reason:"Приветственный подарок клуба"
 }});

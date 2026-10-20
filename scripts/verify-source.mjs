@@ -1535,6 +1535,15 @@ assert(!tierCss.includes('height:min(100%,210px)') &&
   "BALI ID full logo must have a definite mobile height and appear above card decor");
 const idLogo=source("assets/bali-id-full-logo.svg");
 const futureTransfer=source("bali-bonus-transfer-scaffold.js");
+const qrBackend=source("functions/bonus-qr.js");
+const qrScanner=source("bali-qr-scanner.js");
+const qrAdmin=source("bali-qr-admin.js");
+assert(qrBackend.includes("exports.")===false &&
+  qrBackend.includes("applyBaliBonusQR") && qrBackend.includes("createBaliQrBatch") &&
+  qrScanner.includes("previewBaliBonusQR") && qrScanner.includes("applyBaliBonusQR") &&
+  qrAdmin.includes("createBaliQrBatch") && html.includes("baliIdTopupOpen") &&
+  html.includes("baliIdPayOpen") && admin.includes("baliQrAdminPanel"),
+  "QR creation and redemption must be server-authorized with guest review");
 const directorTransfer=source("director-id.html");
 assert(idLogo.includes('<svg') &&
   idLogo.includes('fill-rule="evenodd"') &&
