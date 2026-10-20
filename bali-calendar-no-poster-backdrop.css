@@ -13,6 +13,8 @@
 :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active>.bali-event-poster-wrap{
   border:0!important;
   border-radius:0!important;
+  /* No lingering shadow interpolation when a side card becomes the center. */
+  transition:none!important;
 }
 :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active::before,
 :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active::after,
