@@ -70,8 +70,11 @@ function css(node,props,save){
  }
  if(props.borderWidth>0)put("border-style","solid");
  for(const k of ["lineHeight","opacity"])if(props[k]!==undefined)put(k==="lineHeight"?"line-height":"opacity",String(props[k]));
- if(["translateX","translateY","rotate","scale"].some(k=>props[k]!==undefined))
-   put("transform","translate("+(props.translateX||0)+"px,"+(props.translateY||0)+"px) rotate("+(props.rotate||0)+"deg) scale("+(props.scale||1)+")");
+ // Independent CSS transforms preserve the site's original transform animations.
+ if(props.translateX!==undefined||props.translateY!==undefined)
+   put("translate",(props.translateX||0)+"px "+(props.translateY||0)+"px");
+ if(props.rotate!==undefined)put("rotate",props.rotate+"deg");
+ if(props.scale!==undefined)put("scale",String(props.scale));
  if(props.shadow)put("box-shadow",{none:"none",soft:"0 8px 24px rgba(0,0,0,.35)",deep:"0 18px 48px rgba(0,0,0,.6)",glow:"0 0 25px rgba(185,255,81,.48)"}[props.shadow]);
  if(props.animation){
     const entrance=["fade","slide-left","slide-right","zoom","reveal"].includes(props.animation);
