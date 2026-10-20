@@ -1,0 +1,169 @@
+/* BALI calendar polishing: fade poster edges INTO the left navigation rail
+   and right calendar, never fade the centre or the calendar itself. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .events-topbar{
+  display:none!important;
+  height:0!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid{
+  isolation:isolate!important;
+}
+/* Realistic vanishing at both horizontal extremes of the gallery.
+   Overlay is ABOVE side posters and BELOW the central square (z=500). */
+body.bali-guest-theme #eventsSection #eventsGrid::before,
+body.bali-guest-theme #eventsSection #eventsGrid::after{
+  position:absolute!important;
+  content:""!important;
+  display:block!important;
+  pointer-events:none!important;
+  z-index:480!important;
+  top:0!important;
+  bottom:0!important;
+  height:100%!important;
+  width:clamp(55px,25%,280px)!important;
+  border:0!important;
+  background:linear-gradient(90deg,#0b100d 0%,rgba(11,16,13,.79) 17%,rgba(11,16,13,.19) 65%,transparent 100%)!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid::before{left:0!important}
+body.bali-guest-theme #eventsSection #eventsGrid::after{
+  right:0!important;
+  transform:scaleX(-1)!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-neighbor[data-stage-side="left"]{
+  -webkit-mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.4) 34%,black 80%)!important;
+  mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.4) 34%,black 80%)!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-neighbor[data-stage-side="right"]{
+  -webkit-mask-image:linear-gradient(to left,transparent 0%,rgba(0,0,0,.4) 34%,black 80%)!important;
+  mask-image:linear-gradient(to left,transparent 0%,rgba(0,0,0,.4) 34%,black 80%)!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active{
+  -webkit-mask-image:none!important;mask-image:none!important;
+}
+/* Vertical room for the controls is part of the clear canvas, not an event
+   panel. These buttons float near the bottom navigation on mobile. */
+@media(max-width:1179px){
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+    height:100%!important;
+    max-height:100%!important;
+    min-height:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active>.event-card-body{
+    box-sizing:border-box!important;
+    display:flex!important;
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    width:100%!important;
+    flex-direction:column!important;
+    justify-content:flex-end!important;
+    padding:0!important;
+    margin:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-actions{
+    box-sizing:border-box!important;
+    display:flex!important;
+    flex:0 0 auto!important;
+    width:100%!important;
+    gap:clamp(9px,2.5vw,16px)!important;
+    padding:0 0 clamp(11px,2.2dvh,24px)!important;
+    margin-top:auto!important;
+    margin-bottom:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-actions>button{
+    box-sizing:border-box!important;
+    flex:1 1 0!important;
+    width:0!important;
+    min-width:0!important;
+    height:clamp(44px,6.5dvh,56px)!important;
+    min-height:44px!important;
+    padding:9px 8px!important;
+    font-size:clamp(12px,3.2vw,15px)!important;
+    line-height:1.15!important;
+    font-weight:750!important;
+    border-radius:7px!important;
+    white-space:nowrap!important;
+  }
+  /* Full-bleed gallery: the page, its art and its fade all share viewport
+     edges. Only neighboring images fade; the main square stays sharp. */
+  body.bali-guest-theme #eventsSection .bali-event-calendar-layout>#eventsCarouselShell{
+    width:100%!important;
+    max-width:100%!important;
+    flex:1 1 0!important;
+    align-self:stretch!important;
+    min-height:0!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsGrid::before,
+  body.bali-guest-theme #eventsSection #eventsGrid::after{
+    width:clamp(35px,18%,100px)!important;
+    background:linear-gradient(90deg,#0b100d 0%,rgba(11,16,13,.72) 21%,transparent 100%)!important;
+  }
+}
+/* On very short screens the buttons must remain inside the stage. */
+@media(max-width:767px) and (max-height:680px){
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-actions{
+    padding-bottom:clamp(6px,1.1dvh,10px)!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-actions>button{
+    min-height:39px!important;height:clamp(39px,5.8dvh,47px)!important;
+  }
+}
+/* Planned event dates are solid lime, with black number and dots.
+   Manual per-event dot colors are shown on other days. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-planned="true"],
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-planned="true"][data-selected="true"]{
+  background:#b9ff51!important;
+  background-color:#b9ff51!important;
+  border-color:#b9ff51!important;
+  color:#101a0a!important;
+  box-shadow:inset 0 0 0 1px rgba(10,26,7,.15)!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-planned="true"] .bali-calendar-day-number{
+  color:#101a0a!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-event-dots{
+  position:absolute!important;
+  inset:auto 1px 2px!important;
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  gap:clamp(2px,.23vw,4px)!important;
+  justify-content:center!important;
+  align-items:center!important;
+  pointer-events:none!important;
+  width:auto!important;
+  height:5px!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-event-dots .bali-calendar-event-dot{
+  position:relative!important;
+  display:block!important;
+  bottom:auto!important;
+  flex:0 0 clamp(3px,.32vw,5px)!important;
+  width:clamp(3px,.32vw,5px)!important;
+  height:clamp(3px,.32vw,5px)!important;
+  min-height:3px!important;
+  border-radius:50%!important;
+  background:var(--bali-event-dot-color,#b9ff51)!important;
+  margin:0!important;
+  box-shadow:none!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-planned="true"] .bali-calendar-event-dot{
+  background:#101a0a!important;
+}
+@media(max-width:767px){
+  body.bali-guest-theme #eventsSection .bali-calendar-event-dots{
+    bottom:1px!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-event-dots .bali-calendar-event-dot{
+    flex-basis:3px!important;width:3px!important;height:3px!important;
+  }
+}
