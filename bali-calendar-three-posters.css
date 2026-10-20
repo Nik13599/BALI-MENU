@@ -226,3 +226,30 @@ body.bali-guest-theme #eventsSection #eventsGrid>.event-card:not(.is-active){
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
 }
+
+/* The original compiled site gives .is-active / .is-neighbor desktop cards
+   a higher-specificity scale() transform. It completely neutralises our
+   calculated 3D scene, making full-size images pile on each other.
+   Reassert exactly one real 3D transform for ALL three roles. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-neighbor{
+  transform:translate3d(calc(-50% + var(--bali-stage-x,0px)),0,var(--bali-stage-depth,0px))
+    rotateY(var(--bali-stage-angle,0deg)) scale(var(--bali-stage-scale,1))!important;
+  opacity:var(--bali-stage-opacity,1)!important;
+  filter:brightness(var(--bali-stage-brightness,1))!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  transition:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card,
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active,
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-neighbor{
+    transform:translate3d(calc(-50% + var(--bali-stage-x,0px)),0,0)
+      scale(var(--bali-stage-scale,1))!important;
+  }
+}
