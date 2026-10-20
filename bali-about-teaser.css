@@ -1,0 +1,115 @@
+/* The PC About rail is a short, clickable venue teaser, not a cramped
+   disclosure. Its existing CMS artwork/title/subtitle remain editable. */
+@media(min-width:1180px){
+  body.bali-guest-theme #homeSection .bali-pc-about{
+    min-height:0!important;
+    overflow:hidden!important;
+    border-color:rgba(231,246,224,.17)!important;
+    border-radius:clamp(13px,1.2vw,19px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary{
+    box-sizing:border-box!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    justify-content:flex-end!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    padding:clamp(70px,8dvh,120px) clamp(13px,1.4vw,28px) clamp(13px,1.6dvh,25px)!important;
+    gap:clamp(4px,.85dvh,10px)!important;
+    outline-offset:-3px!important;
+    overflow:hidden!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary::after{
+    background:linear-gradient(180deg,rgba(4,8,8,.26) 0%,rgba(4,8,8,.35) 26%,rgba(4,8,8,.89) 72%,rgba(3,7,8,.97) 100%)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary:focus-visible{
+    outline:2px solid var(--bt-primary,#b9ff51)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-kicker,
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-hook,
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-facts,
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-action{
+    position:relative!important;z-index:3!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-kicker{
+    color:#c6f49a!important;
+    font:800 clamp(8px,.72vw,12px)/1.2 Manrope,Arial,sans-serif!important;
+    letter-spacing:.1em!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-hook{
+    color:#fff!important;
+    font:800 clamp(18px,1.75vw,32px)/1.08 Manrope,Arial,sans-serif!important;
+    letter-spacing:-.04em!important;
+    text-wrap:balance;
+    max-width:100%;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary #baliPcAboutTitle{
+    color:#dae6d8!important;
+    font:650 clamp(11px,1vw,17px)/1.25 Manrope,Arial,sans-serif!important;
+    max-width:100%;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary #baliPcAboutSubtitle{
+    color:#c6d0c7!important;
+    font:520 clamp(10px,.9vw,15px)/1.35 Manrope,Arial,sans-serif!important;
+    margin:0!important;
+    max-width:100%;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-facts{
+    display:flex;flex-wrap:wrap;align-items:center;
+    gap:clamp(4px,.55vw,9px);
+    margin-top:clamp(2px,.4dvh,7px);
+    max-width:100%;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-facts>span{
+    white-space:nowrap;
+    color:#e0f0da;
+    background:rgba(10,21,17,.66);
+    border:1px solid rgba(185,255,81,.25);
+    border-radius:999px;
+    padding:clamp(4px,.5dvh,7px) clamp(7px,.6vw,11px);
+    font:650 clamp(9px,.68vw,12px)/1.25 Manrope,Arial,sans-serif;
+    backdrop-filter:blur(5px);
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-action{
+    display:inline-flex;align-items:center;justify-content:space-between;
+    gap:12px;
+    margin-top:clamp(3px,.65dvh,10px);
+    padding:0 0 2px;
+    max-width:100%;
+    color:#c9fc92;
+    font:800 clamp(10px,.83vw,15px)/1.2 Manrope,Arial,sans-serif;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-action span{
+    font-size:clamp(16px,1.4vw,23px);
+    transition:transform 170ms ease;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary:hover .bali-pc-about-action span{
+    transform:translate(3px,-2px);
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-round-arrow{
+    display:none!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about[open]>summary{
+    min-height:0!important;height:100%!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>.bali-pc-about-logo{display:none}
+}
+@media(min-width:1180px) and (max-height:720px){
+  body.bali-guest-theme #homeSection .bali-pc-about>summary{
+    padding-top:clamp(48px,6dvh,70px)!important;
+    padding-bottom:clamp(7px,1.2dvh,14px)!important;
+    gap:clamp(3px,.45dvh,6px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-facts>span{
+    padding:3px 6px!important;font-size:9px!important;
+  }
+}
+@media(min-width:1180px) and (max-height:560px){
+  body.bali-guest-theme #homeSection .bali-pc-about>summary #baliPcAboutTitle{display:none!important}
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-facts>span:last-child{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-action span{transition:none!important}
+}
