@@ -94,8 +94,20 @@ function css(node,props,save){
    put("border-radius",type==="pill"?"999px":"9px");put("backdrop-filter",type==="glass"?"blur(14px)":"none");
  }
  if(props.image){
-   if(node.tagName==="IMG"){save?.(node,"@src");node.src=props.image;}
-   else{put("background-image",'url("'+props.image.replace(/"/g,"%22")+'")');put("background-size","cover");put("background-position","center");}
+   if(node.tagName==="IMG"){
+    save?.(node,"@src");node.src=props.image;
+    // The <picture> source normally wins over the fallback img.src.
+    // Apply the selected device's artwork to each source and restore it on reset.
+    if(node.parentElement?.tagName==="PICTURE"){
+     for(const source of node.parentElement.querySelectorAll(":scope > source")){
+      save?.(source,"@srcset");source.setAttribute("srcset",props.image);
+     }
+    }
+   }else{
+    put("background-image",'url("'+props.image.replace(/"/g,"%22")+'")');
+    put("background-size","cover");
+    put("background-position",props.backgroundPosition||"center");
+   }
  }
 }
 function makeStyle(doc){
@@ -176,7 +188,11 @@ function mount(doc,model,view,options={}){
  const save=(node,p)=>{
   let set=seen.get(node);if(!set){set=new Set();seen.set(node,set);}
   if(set.has(p))return;set.add(p);
-  if(p==="@src"||p==="@effect"||p==="@motion"){const attr=p==="@src"?"src":p==="@effect"?"data-bali-builder-effect":"data-bali-builder-motion";const prev=node.getAttribute(attr);restored.push(()=>prev===null?node.removeAttribute(attr):node.setAttribute(attr,prev));}
+  if(p==="@src"||p==="@srcset"||p==="@effect"||p==="@motion"){
+   const attr=p==="@src"?"src":p==="@srcset"?"srcset":p==="@effect"?"data-bali-builder-effect":"data-bali-builder-motion";
+   const prev=node.getAttribute(attr);
+   restored.push(()=>prev===null?node.removeAttribute(attr):node.setAttribute(attr,prev));
+  }
   else {const val=node.style.getPropertyValue(p),priority=node.style.getPropertyPriority(p);
    restored.push(()=>val?node.style.setProperty(p,val,priority):node.style.removeProperty(p));}
  };
