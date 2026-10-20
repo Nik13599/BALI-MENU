@@ -72,3 +72,47 @@ test("builder respects device layouts and reduced-motion stylesheet",async({page
   expect(result.reducedMotion).toBe(true);
   expect(result.originalRestored).toBe(true);
 });
+
+
+test("About page stays isolated while inline layouts and animations work inside its iframe",async({page})=>{
+  await page.goto("/index.html?bali-admin-design-preview=1",{waitUntil:"domcontentloaded"});
+  await page.waitForFunction(()=>Boolean(window.BaliBuilderCore));
+  await page.locator("#baliAboutFrame").evaluate(el=>{el.loading="eager";});
+  await page.waitForFunction(()=>{
+    const inner=document.getElementById("baliAboutFrame")?.contentDocument;
+    return Boolean(inner?.querySelector("h1"));
+  });
+  const actual=await page.evaluate(()=>{
+    const inner=document.getElementById("baliAboutFrame").contentDocument;
+    const heading=inner.querySelector("h1");
+    const original=heading.textContent;
+    const core=window.BaliBuilderCore,m=core.emptyModel();
+    m.desktop.rules["about::h1"]={props:{fontSize:31,animation:"float",effect:"hover-lift"},text:"Новый заголовок "};
+    m.desktop.blocks.push({
+      id:"bali-about-demo",page:"about",kind:"button",text:"В календарь",
+      link:"route:events",x:15,y:100,props:{width:"220px",height:"48px",buttonStyle:"glass"}
+    });
+    core.mount(document,m,"desktop",{editor:true});
+    core.mount(inner,m,"desktop",{editor:true,scope:"about"});
+    const before={
+      isolated:document.querySelector('[data-bali-builder-id="bali-about-demo"]')===null,
+      visible:inner.querySelectorAll('[data-bali-builder-id="bali-about-demo"]').length===1,
+      fontSize:heading.style.fontSize,
+      effect:heading.getAttribute("data-bali-builder-effect"),
+      text:heading.textContent,
+      original
+    };
+    core.mount(inner,m,"desktop",{editor:true,scope:"about"});
+    const single=inner.querySelectorAll('[data-bali-builder-id="bali-about-demo"]').length===1;
+    inner.__baliBuilderRestore();
+    document.__baliBuilderRestore();
+    return {...before,single,restored:heading.textContent===original};
+  });
+  expect(actual.isolated).toBe(true);
+  expect(actual.visible).toBe(true);
+  expect(actual.fontSize).toBe("31px");
+  expect(actual.effect).toBe("hover-lift");
+  expect(actual.text).toContain("Новый заголовок");
+  expect(actual.single).toBe(true);
+  expect(actual.restored).toBe(true);
+});
