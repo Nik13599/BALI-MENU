@@ -76,6 +76,8 @@ test('storage failure does not break the cart or a successful checkout', async (
   });
   await cartTrigger(page).click();
   await page.locator('#checkoutBtn').click();
+  // Preorders require the date first; only then can a named event be chosen.
+  await page.locator('#eventDateSelect').selectOption('2099-10-24');
   await page.locator('#eventSelect').selectOption('2099-10-24');
   await page.locator('#tableNumber').fill('12');
   await page.locator('.submit-order-btn').click();
@@ -100,6 +102,10 @@ test('cancelled editing creates a new order and failed submit stays usable', asy
     await openCheckout();
   });
   page.on('dialog', d => d.accept());
+  // Opening a new checkout must not reuse the prior edit state; select date
+  // and the specific event, then test the recoverable server error.
+  await page.locator('#eventDateSelect').selectOption('2099-10-24');
+  await page.locator('#eventSelect').selectOption('2099-10-24');
   await page.locator('.submit-order-btn').click();
   await expect(page.locator('.submit-order-btn')).toBeEnabled();
   await expect(page.locator('.submit-order-btn')).toHaveText('Отправить предзаказ');
