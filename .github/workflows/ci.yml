@@ -49,6 +49,7 @@ jobs:
           node --input-type=module --check < bali-home-design.js
           node --input-type=module --check < bali-mobile-about-hero.js
           node --input-type=module --check < bali-mobile-about-admin.js
+          node --input-type=module --check < bali-catalog-details.js
           node --input-type=module --check < bali-menu-cards.js
           node --input-type=module --check < bali-bar-menu.js
           node --input-type=module --check < bali-site-content-admin.js

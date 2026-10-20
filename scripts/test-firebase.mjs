@@ -71,6 +71,24 @@ try{
    await assertFails(updateDoc(doc(db,'orders',orderId,'items','1'),{unitPrice:1}));
    await assertFails(setDoc(doc(db,'orderCounters',eventDate),{date:eventDate,count:500,lastOrderId:orderId,updatedAt:serverTimestamp()}));
   });
+  await t.test('catalog details are optional, bounded and editable only by verified admins',async()=>{
+   for(const name of ['bar_menu','hookah_menu','tea_menu']){
+    const ref=doc(staff,name,'details-test');
+    const base={name:'Тестовая позиция',category:'Категория',volume1:'Порция',price1:25,volume2:'',price2:0,sort:1,updatedAt:serverTimestamp()};
+    await assertSucceeds(setDoc(ref,base));
+    await assertSucceeds(setDoc(ref,{...base,description:'Подробное описание',ingredients:'Подробный состав'}));
+    const publicCopy=await assertSucceeds(getDoc(doc(env.unauthenticatedContext().firestore(),name,'details-test')));
+    assert.equal(publicCopy.data().description,'Подробное описание');
+    for(const client of [db,stranger,unverified,env.unauthenticatedContext().firestore()]){
+     await assertFails(setDoc(doc(client,name,'details-test'),{...base,description:'Подмена описания'}));
+    }
+    await assertFails(setDoc(ref,{...base,description:'x'.repeat(2401)}));
+    await assertFails(setDoc(ref,{...base,ingredients:42}));
+    await assertFails(setDoc(ref,{...base,description:'Текст',unknownField:true}));
+    await assertSucceeds(setDoc(ref,base));
+    assert.equal((await getDoc(ref)).data().description,undefined);
+   }
+  });
   await t.test('pending edits, admin confirmation and post-confirmation denial',async()=>{
    await window.BaliOrders.save({...payload,table_number:'14',items:[{id:1,quantity:3}]},orderId);
    assert.equal((await window.BaliOrders.getOrderWithItems(orderId)).tableNumber,'14');

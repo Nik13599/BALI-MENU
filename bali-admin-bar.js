@@ -25,8 +25,17 @@ function validItem(item){
     && typeof item.price1==="number" && Number.isFinite(item.price1)
     && typeof item.price2==="number" && Number.isFinite(item.price2);
 }
+const detailFields=[["description","baliAdminBarDescription"],["ingredients","baliAdminBarIngredients"]];
+function updateDetailsHint(){
+  const filled=detailFields.some(([,id])=>$(id).value.trim());
+  $("baliAdminBarDetailsHint").textContent=filled
+    ?"После сохранения появится кнопка «Подробнее о напитке»."
+    :"Без описания и состава кнопка «Подробнее о напитке» не показывается.";
+}
+for(const [,id]of detailFields)$(id)?.addEventListener("input",updateDetailsHint);
 function resetEditor(){
   form.reset();
+  updateDetailsHint();
   $("baliAdminBarId").value="";
   $("baliAdminBarSort").value="100";
   $("baliAdminBarSave").textContent="Сохранить позицию";
@@ -34,6 +43,8 @@ function resetEditor(){
 function edit(item){
   $("baliAdminBarId").value=item.id;
   $("baliAdminBarName").value=item.name;
+  for(const [key,id]of detailFields)$(id).value=typeof item[key]==="string"?item[key]:"";
+  updateDetailsHint();
   $("baliAdminBarCategory").value=item.category;
   $("baliAdminBarVolume1").value=item.volume1;
   $("baliAdminBarPrice1").value=String(item.price1);
@@ -75,6 +86,7 @@ function draw(){
       const portions=item.volume1+" — "+item.price1.toFixed(2)+" BYN"
         +(item.volume2?" · "+item.volume2+" — "+item.price2.toFixed(2)+" BYN":"");
       info.append(create("strong","",item.name),create("small","",portions));
+      info.append(create("small","",detailFields.some(([key])=>typeof item[key]==="string"&&item[key].trim())?"Подробности заполнены":"Без подробного описания"));
       const actions=create("div","bali-admin-bar-row-actions");
       const editBtn=create("button","","Изменить");
       editBtn.type="button";editBtn.addEventListener("click",()=>edit(item));
@@ -124,6 +136,8 @@ form?.addEventListener("submit",async event=>{
     tell("Проверьте название, категорию, цену и объём. Для второй порции нужны и объём, и цена.");
     return;
   }
+  const details=Object.fromEntries(detailFields.map(([key,id])=>[key,$(id).value.trim()]).filter(([,value])=>value));
+  if(Object.values(details).some(value=>value.length>2400)){tell("Описание и состав — не более 2400 символов каждый.");return;}
   const previousId=$("baliAdminBarId").value;
   const ref=previousId?doc(db,"bar_menu",previousId):doc(collection(db,"bar_menu"));
   const save=$("baliAdminBarSave");
@@ -131,7 +145,7 @@ form?.addEventListener("submit",async event=>{
   tell("Сохраняем позицию барной карты...");
   try{
     await setDoc(ref,{
-      name,category,volume1,price1,volume2,price2,sort,updatedAt:serverTimestamp()
+      name,category,volume1,price1,volume2,price2,sort,...details,updatedAt:serverTimestamp()
     });
     resetEditor();
     tell("Сохранено: «"+name+"». Цены обновятся у гостей автоматически.");

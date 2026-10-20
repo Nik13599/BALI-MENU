@@ -1,6 +1,6 @@
-/* Tea dialog; catalog presentation lives in bali-menu-cards.css. */
-#baliTeaDetailsDialog .bali-menu-details-body{padding-bottom:32px!important}
-#baliTeaDetailsDialog .bali-menu-details-label{margin-top:13px}
+/* Shared informational dialogs; catalog cards live in bali-menu-cards.css. */
+.bali-catalog-details-dialog .bali-menu-details-body{padding-bottom:32px!important}
+.bali-catalog-details-dialog .bali-menu-details-label{margin-top:13px}
 #baliTeaDetailsDialog .bali-tea-details-source{
   margin:19px 0 0;
   padding-top:13px;
@@ -8,7 +8,7 @@
   color:#929b9e;
   font:500 11px/1.55 Manrope,Inter,sans-serif
 }
-#baliTeaDetailsDialog .bali-menu-details-head .bali-tea-details-close{
+.bali-catalog-details-dialog .bali-menu-details-head .bali-catalog-details-close{
   display:grid!important;place-items:center!important;
   width:40px!important;height:40px!important;
   flex:0 0 40px;
@@ -16,4 +16,4 @@
   background:#25292d!important;border:1px solid rgba(232,239,234,.25)!important;
   border-radius:50%!important;color:#fff!important;font-size:20px!important;cursor:pointer;
 }
-#baliTeaDetailsDialog .bali-menu-details-head .bali-tea-details-close:hover{background:#363c3d!important}
+.bali-catalog-details-dialog .bali-menu-details-head .bali-catalog-details-close:hover{background:#363c3d!important}

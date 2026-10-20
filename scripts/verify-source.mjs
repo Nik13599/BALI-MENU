@@ -376,7 +376,7 @@ assert(html.includes('id="baliAgeGate"') &&
   source('bali-bar-menu.css').includes('#menuPage #baliHookahContent .bali-bar-intro') &&
   rules.includes('match /users/{uid}/ageConfirmations/{consentId}'),
   "Bar and hookah require 18+ account-based confirmation; tea and hookah read-only notices display.");
-// v110: every dish has an info icon, disabled without full description.
+// Details actions appear only when a product has non-empty detailed copy.
 // Full text, optional photo, weight and cart controls use existing Firestore fields.
 const adminClient=source("admin-firestore.js");
 const moreCss=source("bali-menu-details.css");
@@ -457,7 +457,7 @@ assert(app.includes("let baliActiveMenuMode = 'kitchen'") &&
   "Bar page must never expose checkout dock or food order interactions");
 assert(barPublic.includes('collection(db,"bar_menu")') &&
   barPublic.includes('onSnapshot(') &&
-  barPublic.includes('catalogGroup(category,items,catalogCard)') &&
+  barPublic.includes('catalogGroup(category,items,item=>catalogCard(item,{') &&
   source("bali-menu-cards.js").includes('bali-menu-portion') &&
   source("bali-menu-cards.js").includes('bali-menu-volume') &&
   source("bali-menu-cards.js").includes('money.format(value)') &&
@@ -646,7 +646,7 @@ assert(rules.includes('match /bar_menu/{drinkId}') &&
   rules.includes('allow get, list: if true;') &&
   rules.includes('allow create, update: if isAdmin() && validBarMenuItem(request.resource.data)') &&
   rules.includes('allow delete: if isAdmin();') &&
-  rules.includes('data.keys().hasOnly([\'name\',\'category\',\'volume1\',\'price1\',\'volume2\',\'price2\',\'sort\',\'updatedAt\'])') &&
+  rules.includes('data.keys().hasOnly([\'name\',\'category\',\'volume1\',\'price1\',\'volume2\',\'price2\',\'sort\',\'updatedAt\',\'description\',\'ingredients\'])') &&
   rules.includes('data.updatedAt == request.time'),
   "Bar Firestore collection must be publicly read-only and securely admin-editable");
 

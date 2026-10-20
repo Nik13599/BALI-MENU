@@ -50,7 +50,7 @@ body.bali-guest-theme #menuPage .bali-catalog-card .bali-menu-readmore{
   color:#b5c5b3!important;font:550 11px/1.4 Manrope,Arial,sans-serif!important;cursor:pointer;
 }
 body.bali-guest-theme #menuPage .bali-catalog-card .bali-menu-readmore span{font-size:15px;color:#cfe7b9}
-body.bali-guest-theme #menuPage .bali-catalog-card .bali-tea-readmore::after{content:"";position:absolute;inset:0;border-radius:13px}
+body.bali-guest-theme #menuPage .bali-catalog-card .bali-catalog-readmore::after{content:"";position:absolute;inset:0;border-radius:13px}
 body.bali-guest-theme #menuPage .bali-catalog-card:focus-within{outline:2px solid var(--bt-primary,#b9ff51)!important;outline-offset:2px!important}
 body.bali-guest-theme #menuPage .bali-catalog-card .bali-menu-readmore:focus-visible{outline:2px solid #b9ff51!important;outline-offset:3px!important}
 @media(hover:hover){

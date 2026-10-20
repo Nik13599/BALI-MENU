@@ -1,14 +1,16 @@
 const {test,expect}=require('@playwright/test');
 const AxeBuilder=require('@axe-core/playwright').default;
-const bar=Array.from({length:8},(_,i)=>({name:i?'Напиток '+(i+1):'Напиток с длинным названием',category:i<6?'НАПИТКИ':'БЕЗАЛКОГОЛЬНОЕ',volume1:'50 мл',price1:12.5,volume2:'100 мл',price2:25,sort:i}));
-const hookah=[{name:'Кальянная композиция',category:'КЛАССИКА',volume1:'Стандарт',price1:60,volume2:'Премиум',price2:80,sort:1},{name:'Авторская композиция',category:'АВТОРСКИЕ',volume1:'Порция',price1:75,volume2:'',price2:0,sort:2}];
+const bar=Array.from({length:8},(_,i)=>({name:i?'Напиток '+(i+1):'Напиток с длинным названием',category:i<6?'НАПИТКИ':'БЕЗАЛКОГОЛЬНОЕ',volume1:'50 мл',price1:12.5,volume2:'100 мл',price2:25,sort:i,description:i?'  ':'Подробное описание напитка',ingredients:i?'':'Ягоды и травы'}));
+const hookah=[{name:'Кальянная композиция',category:'КЛАССИКА',volume1:'Стандарт',price1:60,volume2:'Премиум',price2:80,sort:1,description:'Подробное описание кальяна',ingredients:'Смесь по карте'},{name:'Авторская композиция',category:'АВТОРСКИЕ',volume1:'Порция',price1:75,volume2:'',price2:0,sort:2}];
 test.beforeEach(async({page})=>{
  await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
  await page.route('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js',r=>r.fulfill({contentType:'text/javascript',body:'export const getApps=()=>[];export const getApp=()=>({});export const initializeApp=()=>({});'}));
  await page.route('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js',r=>r.fulfill({contentType:'text/javascript',body:`
  export const getFirestore=()=>({});export const collection=(db,name)=>name;
  const data=${JSON.stringify({bar_menu:bar,hookah_menu:hookah})};
- export const onSnapshot=(q,cb)=>{cb({docs:(data[q]||[]).map((item,i)=>({id:String(i),data:()=>item}))});return ()=>{};};`}));
+ const listeners={};const snapshot=q=>({docs:(data[q]||[]).map((item,i)=>({id:String(i),data:()=>item}))});
+ window.__setCatalogItem=(name,index,changes)=>{Object.assign(data[name][index],changes);listeners[name]?.(snapshot(name));};
+ export const onSnapshot=(q,cb)=>{listeners[q]=cb;cb(snapshot(q));return ()=>{};};`}));
  await page.goto('/index.html#menu');
  await page.evaluate(()=>{
   window.BaliAgeGate={confirm:async()=>true};
@@ -47,7 +49,8 @@ test('all catalogs share typography and grid; informational maps retain each por
     await expect(portions.first().locator('.bali-menu-amount')).toHaveText(mode==='bar'?'12,5':'60');
     await expect(portions.nth(1)).toContainText(mode==='bar'?'100 мл':'Премиум');
     await expect(portions.nth(1).locator('.bali-menu-amount')).toHaveText(mode==='bar'?'25':'80');
-    await expect(host.locator('button')).toHaveCount(0);
+    await expect(cards.first().locator('.bali-menu-readmore')).toHaveCount(1);
+    await expect(cards.nth(1).locator('button')).toHaveCount(0);
     await page.locator(mode==='bar'?'[data-bar-category="БЕЗАЛКОГОЛЬНОЕ"]':'[data-extra-menu-category="АВТОРСКИЕ"]').click();
     await expect(cards).toHaveCount(mode==='bar'?2:1);
    }
@@ -94,4 +97,25 @@ test('kitchen photos fit cards and failed photos collapse without covering purch
  await first.locator('[data-menu-action="add"]').click();
  await expect(page.locator('#baliDockCount')).toHaveText('2');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('bar and hookah details are conditional, read-only and disappear after the description is cleared',async({page})=>{
+ for(const [mode,list,collection,dialogId,copy]of [
+  ['bar','baliBarList','bar_menu','baliBarDetailsDialog','Подробное описание напитка'],
+  ['hookah','baliHookahList','hookah_menu','baliHookahDetailsDialog','Подробное описание кальяна']]){
+  await page.locator(`[data-bali-menu-mode="${mode}"]`).click();
+  const cards=page.locator('#'+list+' .bali-catalog-card'),button=cards.first().locator('.bali-menu-readmore');
+  await expect(cards.nth(1).locator('button')).toHaveCount(0);
+  await cards.first().click({position:{x:20,y:20}});
+  const dialog=page.locator('#'+dialogId);
+  await expect(dialog).toBeVisible();await expect(dialog).toContainText(copy);
+  await expect(dialog).toContainText(mode==='bar'?'50 мл · 12,5 BYN':'Стандарт · 60 BYN');
+  await expect(dialog.locator('[data-menu-action],.bali-menu-details-actions,.bali-menu-details-add')).toHaveCount(0);
+  await page.keyboard.press('Escape');await expect(dialog).toBeHidden();await expect(button).toBeFocused();
+  await page.evaluate(collection=>window.__setCatalogItem(collection,0,{description:'  ',ingredients:''}),collection);
+  await expect(cards.first().locator('button')).toHaveCount(0);
+  await page.evaluate(collection=>window.__setCatalogItem(collection,0,{ingredients:'<img src=x onerror=alert(1)>'}),collection);
+  await button.click();await expect(dialog).toContainText('<img src=x onerror=alert(1)>');await expect(dialog.locator('img')).toHaveCount(0);
+  await dialog.getByRole('button',{name:/Закрыть/}).click();await expect(dialog).toBeHidden();
+ }
 });

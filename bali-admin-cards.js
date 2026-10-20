@@ -66,7 +66,7 @@ const format=x=>Number(x).toLocaleString("ru-RU",{minimumFractionDigits:2,maximu
 let editable=false,session=0;
 function buildEditor(config){
   const isTea=config.key==="tea";
-  const teaFields=["description","ingredients","taste","brewing"];
+  const infoFields=isTea?["description","ingredients","taste","brewing"]:["description","ingredients"];
   const host=byId(config.host);
   if(!host)return;
   host.replaceChildren();
@@ -92,18 +92,23 @@ function buildEditor(config){
   field("price2","Цена №2, BYN","number",false,"0.00");
   field("sort","Порядок сортировки","number",true,"100");
   fields.sort.value="100";
-  if(isTea){
-    for(const [key,title,placeholder] of [
-      ["description","Подробное описание","Особенности сорта, происхождение, характер настоя"],
-      ["ingredients","Состав","Чайный лист, ягоды, травы и другие ингредиенты"],
-      ["taste","Вкус и аромат","Вкусовые ноты и аромат"],
-      ["brewing","Как заваривать","Температура воды, граммовка, время заваривания"]]){
-      const label=make("label","bali-tea-info-field",title);
-      const fieldInput=make("textarea");fieldInput.name=key;
-      fieldInput.rows=3;fieldInput.maxLength=2400;fieldInput.placeholder=placeholder;
-      label.append(fieldInput);form.append(label);fields[key]=fieldInput;
-    }
+  const detailsHint=make("p","hint bali-catalog-info-field");detailsHint.setAttribute("role","status");
+  const updateDetailsHint=()=>{
+    detailsHint.textContent=infoFields.some(key=>fields[key].value.trim())
+      ?"После сохранения на карточке появится кнопка «Подробнее»."
+      :"Без подробного описания кнопка «Подробнее» не показывается.";
+  };
+  for(const [key,title,placeholder] of [
+    ["description","Подробное описание (необязательно)",isTea?"Особенности сорта, происхождение, характер настоя":"Особенности кальяна, крепость, рекомендации и подача"],
+    ["ingredients","Состав (необязательно)",isTea?"Чайный лист, ягоды, травы и другие ингредиенты":"Состав и особенности смеси"],
+    ...(isTea?[["taste","Вкус и аромат","Вкусовые ноты и аромат"],["brewing","Как заваривать","Температура воды, граммовка, время заваривания"]]:[])]){
+    const label=make("label","bali-catalog-info-field",title);
+    const fieldInput=make("textarea");fieldInput.name=key;
+    fieldInput.rows=3;fieldInput.maxLength=2400;fieldInput.placeholder=placeholder;
+    fieldInput.addEventListener("input",updateDetailsHint);
+    label.append(fieldInput);form.append(label);fields[key]=fieldInput;
   }
+  form.append(detailsHint);updateDetailsHint();
   const actions=make("div","bali-admin-bar-buttons");
   const save=make("button","primary","Добавить позицию");save.type="submit";
   const clear=make("button","","Очистить форму");clear.type="button";
@@ -124,7 +129,7 @@ function buildEditor(config){
   let loaded=false;
   const tell=value=>{status.textContent=value;};
   const reset=()=>{
-    form.reset();hidden.value="";fields.sort.value="100";save.textContent="Добавить позицию";
+    form.reset();updateDetailsHint();hidden.value="";fields.sort.value="100";save.textContent="Добавить позицию";
   };
   clear.addEventListener("click",()=>{reset();tell("Можно добавить новую позицию.");});
   const valid=r=>r&&typeof r.name==="string"&&typeof r.category==="string"&&
@@ -152,7 +157,7 @@ function buildEditor(config){
         const parts=item.volume1+" — "+format(item.price1)
           +(item.volume2?" · "+item.volume2+" — "+format(item.price2):"");
         description.append(make("strong","",item.name+(item.hidden?" · СКРЫТО":"")),make("small","",parts));
-        if(isTea&&item.description)description.append(make("small","",item.description.slice(0,160)));
+        if(item.description)description.append(make("small","",item.description.slice(0,160)));
         const controls=make("div","bali-admin-bar-row-actions");
         const edit=make("button","","Изменить");edit.type="button";
         edit.addEventListener("click",()=>{
@@ -161,7 +166,8 @@ function buildEditor(config){
             fields[id].value=String(item[id]??"");
           fields.price1.value=String(item.price1);
           fields.price2.value=item.volume2?String(item.price2):"";
-          if(isTea)for(const key of teaFields)fields[key].value=String(item[key]||"");
+          for(const key of infoFields)fields[key].value=String(item[key]||"");
+          updateDetailsHint();
           save.textContent="Сохранить изменения";
           form.scrollIntoView({behavior:"smooth",block:"start"});
           tell("Редактирование: "+item.name);
@@ -211,13 +217,14 @@ function buildEditor(config){
       tell("Проверьте поля. Второй объём заполняется только вместе со второй ценой.");
       return;
     }
+    if(infoFields.some(key=>val(key).length>2400)){tell("Каждое поле описания — не более 2400 символов.");return;}
     const id=hidden.value;
     const ref=id?doc(db,config.collection,id):doc(collection(db,config.collection));
     save.disabled=true;tell("Сохраняем...");
     try{
       const record={name,category,volume1,price1,volume2,price2,sort,updatedAt:serverTimestamp()};
+      for(const key of infoFields)if(isTea||val(key))record[key]=val(key);
       if(isTea){
-        for(const key of teaFields)record[key]=val(key);
         record.sourcePage=Number.isInteger(entries.get(id)?.sourcePage)?entries.get(id).sourcePage:0;
         record.hidden=false;
       }

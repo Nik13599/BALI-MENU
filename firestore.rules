@@ -379,7 +379,9 @@ service cloud.firestore {
     // в предзаказах: отдельная коллекция, запись только с ролью администратора.
     function validBarMenuItem(data) {
       return data.keys().hasAll(['name','category','volume1','price1','volume2','price2','sort','updatedAt'])
-        && data.keys().hasOnly(['name','category','volume1','price1','volume2','price2','sort','updatedAt'])
+        && data.keys().hasOnly(['name','category','volume1','price1','volume2','price2','sort','updatedAt','description','ingredients'])
+        && data.get('description','') is string && data.get('description','').size() <= 2400
+        && data.get('ingredients','') is string && data.get('ingredients','').size() <= 2400
         && data.name is string && data.name.size() >= 2 && data.name.size() <= 120
         && data.category is string && data.category.size() >= 2 && data.category.size() <= 60
         && data.volume1 is string && data.volume1.size() >= 1 && data.volume1.size() <= 30
@@ -407,7 +409,7 @@ service cloud.firestore {
     }
 
     // Tea products also carry information-only fields for the kitchen-style
-    // details icon. Notes are optional, limited and editable by admins only.
+    // details action. Notes are optional, limited and editable by admins only.
     function validTeaMenuItem(data) {
       return data.keys().hasAll(['name','category','volume1','price1','volume2','price2','sort','updatedAt'])
         && data.keys().hasOnly([
