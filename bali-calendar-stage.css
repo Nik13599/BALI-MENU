@@ -1,0 +1,166 @@
+/* BALI 2026 / anchored 3D poster sculpture — not a scroll strip.
+   All cards stay in the DOM; left/right galleries accumulate in perspective.
+   Scoped exclusively to the guest calendar. */
+body.bali-guest-theme #eventsSection #eventsCarouselShell{
+  perspective:1200px!important;
+  -webkit-perspective:1200px!important;
+  transform-style:preserve-3d!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid{
+  position:relative!important;
+  display:block!important;
+  isolation:isolate!important;
+  box-sizing:border-box!important;
+  width:100%!important;height:100%!important;
+  flex:1 1 0!important;
+  min-width:0!important;min-height:0!important;
+  padding:0!important;margin:0!important;
+  overflow:hidden!important;
+  overflow-x:hidden!important;overflow-y:hidden!important;
+  scroll-snap-type:none!important;
+  scroll-padding:0!important;
+  scrollbar-width:none!important;
+  perspective:1100px!important;
+  -webkit-perspective:1100px!important;
+  transform-style:preserve-3d!important;
+  touch-action:pan-y!important;
+  cursor:grab!important;
+  mask-image:none!important;-webkit-mask-image:none!important;
+  background:transparent!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid.is-swipe-active{cursor:grabbing!important}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+  position:absolute!important;
+  top:clamp(1px,.8dvh,9px)!important;
+  left:50%!important;
+  margin:0!important;
+  padding:0!important;
+  width:var(--bali-event-slide-width,220px)!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:auto!important;max-height:100%!important;
+  flex:0 0 auto!important;
+  transform-origin:50% 37%!important;
+  transform-style:preserve-3d!important;
+  backface-visibility:visible!important;
+  -webkit-backface-visibility:visible!important;
+  transform:translate3d(calc(-50% + var(--bali-stage-x,0px)),0,var(--bali-stage-depth,0px))
+    rotateY(var(--bali-stage-angle,0deg)) scale(var(--bali-stage-scale,1))!important;
+  opacity:var(--bali-stage-opacity,1)!important;
+  filter:brightness(var(--bali-stage-brightness,1))!important;
+  transition:none!important;
+  will-change:transform;
+  scroll-snap-align:unset!important;
+  pointer-events:auto!important;
+}
+/* Incoming center enters full-sized; the whole stage's state is synchronized
+   by requestAnimationFrame, rather than CSS scroll snapping or a moving rail. */
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-poster-wrap{
+  aspect-ratio:1/1!important;
+  width:100%!important;height:auto!important;
+  position:relative!important;
+  transform-style:preserve-3d!important;
+  margin:0!important;
+  border-radius:5px!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-poster{
+  inset:0!important;
+  position:absolute!important;
+  height:100%!important;width:100%!important;
+  aspect-ratio:1/1!important;
+  object-fit:cover!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card:not(.is-active) .event-card-body{
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active .event-card-body{
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-card-body{
+  transition:opacity .32s ease!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card:not(.is-active) .bali-event-poster-wrap{
+  border-color:rgba(207,239,196,.17)!important;
+  box-shadow:0 10px 23px rgba(0,0,0,.43)!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active .bali-event-poster-wrap{
+  border-color:rgba(200,255,96,.94)!important;
+  box-shadow:0 0 0 1px rgba(185,255,81,.13),0 0 30px rgba(161,249,45,.27),
+    0 15px 34px rgba(0,0,0,.57)!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card:not(.is-active) .event-poster{
+  pointer-events:auto!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid:focus-visible{
+  outline:1px solid rgba(185,255,81,.6)!important;outline-offset:-2px!important;
+}
+@media(min-width:1180px){
+  body.bali-guest-theme #eventsSection #eventsCarouselShell{
+    max-width:calc(100% - clamp(220px,26%,330px) - 18px)!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-poster-nav{
+    top:clamp(88px,25%,170px)!important;
+  }
+}
+@media(max-width:1179px){
+  /* Reference layout keeps square center poster large and adjacent images
+     close by; only the finger moves the carousel on touch screens. */
+  body.bali-guest-theme #eventsSection #eventsGrid{
+    touch-action:pan-y!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-poster-nav{display:none!important}
+}
+@media(max-width:767px){
+  /* Mobile reference: month is the page's sole heading. Remove the duplicate
+     "BALI календарь" row and lift the calendar to the available top edge. */
+  body.bali-guest-theme #eventsSection{
+    padding-top:clamp(2px,.6dvh,7px)!important;
+  }
+  body.bali-guest-theme #eventsSection .events-topbar{
+    display:none!important;
+    margin:0!important;padding:0!important;
+    height:0!important;min-height:0!important;
+  }
+  body.bali-guest-theme #eventsSection>.container{
+    padding-top:0!important;
+    gap:0!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-calendar-layout{
+    gap:clamp(2px,.5dvh,5px)!important;
+    padding-top:0!important;
+  }
+  body.bali-guest-theme #eventsSection #baliCalendarPanel{
+    margin-top:0!important;
+    padding-top:0!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsCarouselShell{
+    margin-top:0!important;
+    min-height:0!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+    top:clamp(0px,.4dvh,4px)!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-poster-wrap{
+    border-radius:5px!important;
+    aspect-ratio:1/1!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-info h3{
+    font-size:clamp(12px,3.5vw,16px)!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-actions{
+    padding-top:clamp(5px,.8dvh,9px)!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+    transform:translate3d(calc(-50% + var(--bali-stage-x,0px)),0,0)
+      scale(var(--bali-stage-scale,1))!important;
+  }
+  body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-card-body{
+    transition:none!important;
+  }
+}
