@@ -55,6 +55,10 @@ const metadata=[
  ["shadow","Тень","select","",[["none","Без тени"],["soft","Мягкая"],["deep","Глубокая"],["glow","С подсветкой"]]],
  ["buttonStyle","Форма кнопки","select","",[["none","Исходный стиль"],["solid","Заливка"],["outline","Контур"],["glass","Стеклянная"],["pill","Капсула"]]],
  ["animation","Анимация","select","",animations],
+ ["animationDuration","Длительность","number","секунды · 0.2–20",3],
+ ["animationDelay","Задержка","number","секунды · 0–15",0],
+ ["animationIteration","Повтор","select","",[["1","1 раз"],["2","2 раза"],["3","3 раза"],["infinite","Бесконечно"]]],
+ ["animationEasing","Плавность","select","",[["ease","Обычная"],["ease-in","Ускорение"],["ease-out","Замедление"],["ease-in-out","Плавное ускорение и замедление"],["linear","Равномерно"]]],
  ["effect","Эффект","select","",effects],
  ["rotate","Поворот","number","градусы",0],
  ["scale","Масштаб","number","×",1]
@@ -63,7 +67,7 @@ const titleGroups=[
  ["Габариты и позиция",["width","height","minHeight","translateX","translateY","padding","borderRadius"]],
  ["Шрифты и текст",["fontFamily","fontSize","fontWeight","fontStyle","textAlign","lineHeight","letterSpacing"]],
  ["Цвета и кнопки",["color","backgroundColor","borderColor","borderWidth","opacity","shadow","buttonStyle"]],
- ["Анимация и эффекты",["animation","effect","rotate","scale"]]
+ ["Анимация и эффекты",["animation","animationDuration","animationDelay","animationIteration","animationEasing","effect","rotate","scale"]]
 ];
 const inputs=new Map();
 function msg(v){if(view.status)view.status.textContent=v;}
@@ -100,7 +104,7 @@ function newField(id,title,kind,help,choices){
   input.append(optionList([["","Не изменять"],...options]));
  }else{
   input.type=kind==="color"?"color":kind==="number"?"number":"text";
-  if(kind==="number")input.step=id==="lineHeight"||id==="opacity"||id==="scale"?"0.1":"1";
+  if(kind==="number")input.step=["lineHeight","opacity","scale","animationDuration","animationDelay"].includes(id)?"0.1":"1";
   if(kind==="number"){input.min=id==="fontSize"?"8":id==="scale"?"0.2":undefined;input.max=id==="opacity"?"1":undefined;}
   input.placeholder=help||"";
  }
@@ -192,7 +196,7 @@ function changeProp(k,v){
   item.props||={};
   if(!v&&v!=="0"){delete item.props[k];return;}
   if(["width","height","minHeight"].includes(k))item.props[k]=v;
-  else if(["fontSize","padding","borderRadius","borderWidth","letterSpacing","translateX","translateY","lineHeight","opacity","rotate","scale"].includes(k))item.props[k]=Number(v);
+  else if(["fontSize","padding","borderRadius","borderWidth","letterSpacing","translateX","translateY","lineHeight","opacity","rotate","scale","animationDuration","animationDelay"].includes(k))item.props[k]=Number(v);
   else item.props[k]=v;
  });
 }
