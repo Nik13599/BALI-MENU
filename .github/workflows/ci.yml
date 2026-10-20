@@ -57,6 +57,9 @@ jobs:
           node --input-type=module --check < bali-home-placeholder.js
           node --input-type=module --check < bali-home-placeholder-admin.js
           node --check bali-design-studio.js
+          node --check bali-builder-core.js
+          node --input-type=module --check < bali-builder-admin.js
+          node --input-type=module --check < bali-builder-public.js
           node --check admin.js
           node --check track.js
           node --check firebase-config.js
