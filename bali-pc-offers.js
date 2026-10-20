@@ -24,6 +24,7 @@ if(image&&title&&description&&counter&&action&&hero){
     const primary=validImage(offer?.imageUrl)?offer.imageUrl:"";
     const tablet=validImage(offer?.imageTabletUrl)?offer.imageTabletUrl:primary;
     const mobile=validImage(offer?.imageMobileUrl)?offer.imageMobileUrl:primary;
+    image.hidden=!primary;
     if(primary){
       image.src=primary;image.alt=offer?.title?"Иллюстрация к предложению «"+offer.title+"»":"Баннер BALI PRIVILEGE";
     }else{image.removeAttribute("src");image.alt="";}

@@ -4,7 +4,7 @@ import {getApp,getApps,initializeApp} from "https://www.gstatic.com/firebasejs/1
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,onSnapshot,setDoc,serverTimestamp}
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import {compressImage} from "./image-compressor.js?v=20261018-91";
+import {prepareImage as compressImage} from "./image-compressor.js?v=20261020-2";
 
 const $=id=>document.getElementById(id);
 const form=$("baliEventPlaceholderForm");

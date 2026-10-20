@@ -3,7 +3,7 @@
 import {getApp,getApps,initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,onSnapshot,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import {compressImage} from "./image-compressor.js?v=20261017-82";
+import {prepareImage as compressImage} from "./image-compressor.js?v=20261020-2";
 
 const el=id=>document.getElementById(id);
 const host=el("adminDesignPanel");

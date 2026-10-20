@@ -126,6 +126,7 @@ function hide() {
 
 function friendlyError(error) {
   const code = String(error?.code || "unknown-error");
+  window.BaliMonitor?.report("auth",code);
   const errors = {
     "auth/invalid-api-key": "Некорректный Firebase API-ключ. Проверьте настройки приложения.",
     "auth/app-not-authorized": "Этот сайт не разрешён для Firebase API-ключа.",
@@ -255,6 +256,7 @@ window.BaliAuth = {
   getProfile: () => user && profile ? { ...profile } : null,
   getIdToken: async () => auth?.currentUser ? auth.currentUser.getIdToken() : null,
   open: show,
+  close: hide,
   requireProfile: async () => {
     await ready;
     if (!isConfigured || !user || !user.emailVerified || !profile) {

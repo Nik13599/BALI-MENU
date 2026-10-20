@@ -5,7 +5,7 @@ import {getApp,getApps,initializeApp} from "https://www.gstatic.com/firebasejs/1
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,collection,doc,getDoc,onSnapshot,setDoc,updateDoc,deleteDoc,writeBatch,serverTimestamp}
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import {compressImage} from "./image-compressor.js?v=20261019-115";
+import {prepareImage as compressImage} from "./image-compressor.js?v=20261020-2";
 const form=document.getElementById("baliMobileAboutUploadForm");
 const root=document.getElementById("baliMobileAboutAdminList");
 if(form&&root){

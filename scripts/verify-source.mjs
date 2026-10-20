@@ -1,7 +1,13 @@
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 
-const source = (name) => readFileSync(name, "utf8");
+const styleEntries = JSON.parse(readFileSync("styles/entries.json", "utf8"));
+const source = (name) => {
+  const contents=readFileSync(name, "utf8");
+  // Evaluate the same ordered source cascade now compiled into one network asset.
+  return styleEntries[name] ? contents.replace(/<link rel="stylesheet" data-bali-bundle="[^"]+"[^>]+>/,
+    styleEntries[name].map(href=>'<link rel="stylesheet" href="'+href+'">').join('\n')) : contents;
+};
 const html = source("index.html");
 
 const auth = source("auth.js");
@@ -188,7 +194,7 @@ assert(html.includes('id="baliMobileAboutBackgroundA"') &&
   admin.includes('data-design-editor="mobileAbout"') &&
   admin.includes('id="baliMobileAboutFiles"') &&
   admin.includes('multiple>') &&
-  admin.includes('bali-mobile-about-admin.js?v=20261019-1') &&
+  admin.includes('bali-mobile-about-admin.js?v=20261020-2') &&
   admin.includes('bali-mobile-about-admin.css?v=20261019-1') &&
   mobileAboutAdmin.includes('const MAX=8') &&
   mobileAboutAdmin.includes('writeBatch(db)') &&
@@ -813,7 +819,7 @@ assert(html.includes('class="bali-guest-theme"') &&
   admin.includes('class="bali-admin-theme"') &&
   html.includes('content="#080b11"') &&
   admin.includes('content="#080b11"') &&
-  html.includes('family=Manrope') && admin.includes('family=Manrope'),
+  html.includes('bali-brand-system.css?v=') && admin.includes('bali-brand-system.css?v=') && source('bali-brand-system.css').includes('assets/fonts/manrope-variable.woff2'),
   "Premium layout classes, display theme and consistent contemporary typography required");
 assert(obsidianCss.includes("/* BALI / OBSIDIAN v57") &&
   obsidianCss.includes("--bali-obsidian:#080b11") &&
@@ -1035,7 +1041,7 @@ assert((rules.match(/match \/events\/\{eventId\}/g)||[]).length===1 &&
   (rules.match(/match \/\{document=\*\*\}/g)||[]).length===1,
   "Firestore Rules must contain one event match and one catchall");
 const landingCss = source("bali-pages.css");
-assert(html.includes('<title>Bali</title>') &&
+assert(html.includes('<title>BALI NIGHTCLUB · Минск</title>') &&
   html.includes('bali-pages.css?v='), "Bali landing brand and CSS missing");
 assert(html.includes('id="homeSection"') &&
   html.includes('id="menuPage"') &&

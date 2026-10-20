@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 const s=path=>readFileSync(path,"utf8");
-const html=s("index.html"),bank=s("bali-id-bank.js"),backend=s("functions/index.js");
+const styleEntries=JSON.parse(readFileSync("styles/entries.json","utf8"));
+const expandHtml=value=>value.replace(/<link rel="stylesheet" data-bali-bundle="index"[^>]+>/,styleEntries["index.html"].map(href=>'<link rel="stylesheet" href="'+href+'">').join("\n"));
+const html=expandHtml(s("index.html")),bank=s("bali-id-bank.js"),backend=s("functions/index.js");
 const css=s("bali-id-bank.css"),rules=s("firestore.rules");
 for(const id of [
   "baliIdFlipScene","baliIdTransferOpen","baliIdHistoryOpen","baliShowQr",
