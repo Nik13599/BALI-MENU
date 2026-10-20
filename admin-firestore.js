@@ -461,12 +461,11 @@ function clearEvent() {
 // order schema migration, expose them only on legacy slot №1 rather than
 // promising unavailable orders for slots №2/№3.
 function updateEventPreorderControl(){
-  const extra=$("eventSlotAdmin").value!=="1";
-  const input=$("eventOpen");
-  if(extra)input.checked=false;
-  input.disabled=extra;
+  // All three event slots may accept their OWN orders, chosen explicitly
+  // by eventId in the guest form and validated by Firestore Rules.
+  $("eventOpen").disabled=false;
   const help=$("eventSlotPreorderHint");
-  if(help)help.hidden=!extra;
+  if(help)help.hidden=true;
 }
 $("eventSlotAdmin").addEventListener("change",updateEventPreorderControl);
 $("clearEvent").addEventListener("click", clearEvent);
@@ -594,7 +593,7 @@ $("eventForm").addEventListener("submit",async (event)=>{
   renderStatus("eventStatus","Сохраняем мероприятие...");
   try{
     const payload={
-      date, title, cutoff, dotColor, preorderEnabled:slot===1&&$("eventOpen").checked,
+      date, title, cutoff, dotColor, preorderEnabled:$("eventOpen").checked,
       closesAt: Timestamp.fromDate(closesAt),
       updatedAt:serverTimestamp()
     };
