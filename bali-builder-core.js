@@ -215,7 +215,7 @@ function setVisualIcon(node,props,restored){
  const source=props.icon,kind=props.iconName;
  if(!source&&!kind)return;
  const holder=node.matches(".bali-pc-nav-icon,.bali-nav-glyph")?node:
-  node.querySelector(":scope > .bali-pc-nav-icon, :scope > .bali-nav-glyph, :scope > .bali-menu-banner-icon");
+  node.querySelector(":scope > .bali-pc-nav-icon, :scope > .bali-nav-glyph, :scope > .bali-menu-banner-icon, :scope > .bali-yandex-pin");
  const slot=holder||node;
  const icon=source?docIconImage(node.ownerDocument,source):window.BaliIconAtelier?.createIcon?.(kind);
  if(!icon)return;
@@ -228,8 +228,14 @@ function setVisualIcon(node,props,restored){
   slot.replaceChildren(icon);
   restored.push(()=>slot.replaceChildren(...original));
  }else{
+  const original=slot.querySelector(":scope > svg, :scope > img");
+  const previous=original?.getAttribute("style");
+  if(original)original.style.setProperty("display","none","important");
   slot.insertBefore(icon,slot.firstChild);
-  restored.push(()=>icon.remove());
+  restored.push(()=>{
+   icon.remove();
+   if(original){if(previous===null)original.removeAttribute("style");else original.setAttribute("style",previous);}
+  });
  }
 }
 function docIconImage(doc,src){
