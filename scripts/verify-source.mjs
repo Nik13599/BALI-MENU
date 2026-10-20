@@ -1390,7 +1390,12 @@ assert(html.includes('bali-calendar-reference.css?v=') &&
   html.includes('id="baliPosterPrevious"') &&
   html.includes('id="baliPosterNext"') &&
   source("bali-calendar-reference.css").includes('#eventsSection #eventsGrid') &&
-  source("bali-calendar-coverflow.js").includes('event.deltaY>0?-1:1') &&
+  html.includes('bali-calendar-stage.css?v=') &&
+  source("bali-calendar-stage.css").includes('rotateY(var(--bali-stage-angle,0deg))') &&
+  source("bali-calendar-stage.css").includes('.events-topbar') &&
+  source("bali-calendar-coverflow.js").includes('move(event.deltaY>0?1:-1)') &&
+  source("bali-calendar-coverflow.js").includes('position=initial+delta*ease(progress)') &&
+  source("bali-calendar-coverflow.js").includes('mode:"stage"') &&
   source("bali-calendar-coverflow.js").includes('openDetails(card)'),
   "BALI calendar must have the clean reference layout, 3D swipe motion, arrows, wheel and event details");
 
