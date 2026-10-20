@@ -209,7 +209,8 @@ test('mobile has no top BALI calendar heading, square close posters and no carou
   expect(layout.positions[0]).toBeLessThan(0);
   expect(layout.positions[1]).toBeCloseTo(0,0);
   expect(layout.positions[2]).toBeGreaterThan(0);
-  expect(layout.positions[2]).toBeLessThan(260);
+  // The deliberately larger central poster needs a slightly wider 3D slot.
+  expect(layout.positions[2]).toBeLessThan(340);
   expect(layout.calendarBottom).toBeLessThan(layout.posterTop+15);
   expect(layout.scroll).toBe(0);
 });
