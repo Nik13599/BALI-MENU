@@ -211,7 +211,7 @@ if(form&&list&&status){
     const published=el("baliPromoPublished").checked;
     if((title.length!==0&&title.length<2)||title.length>100||description.length>260
        ||!validImage(imageUrl)||!variants.valid()||!["none","events","menu","contacts","contact-modal"].includes(destination)
-       ||buttonText.length>65||contactTitle.length>70
+       ||buttonText.length>(destination==="contact-modal"?65:35)||contactTitle.length>70
        ||contactKinds.some(name=>contactLinks[name].length>300||!validContactLink(name,contactLinks[name]))
        ||(destination==="contact-modal"&&!contactKinds.some(name=>contactEnabled[name]))
        ||["left","top","width","height"].some(side=>!Number.isInteger(contactHotspot[side]))
@@ -226,9 +226,14 @@ if(form&&list&&status){
     const ref=id?doc(db,"promotions",id):doc(collection(db,"promotions"));
     saving=true;saveFeedback="";save.disabled=true;say("Сохраняем предложение в Firebase…");
     try{
-      await setDoc(ref,{title,description,imageUrl,imageTabletUrl:versions.tablet,
-        imageMobileUrl:versions.mobile,destination,buttonText,
-        contactTitle,contactLinks,contactEnabled,contactHotspot,sort,published,updatedAt:serverTimestamp()});
+      // Old, ordinary slides keep their original Firestore shape so editing them
+      // remains possible before production rules for contact-modal are deployed.
+      const payload={title,description,imageUrl,imageTabletUrl:versions.tablet,
+        imageMobileUrl:versions.mobile,destination,buttonText,sort,published,updatedAt:serverTimestamp()};
+      if(destination==="contact-modal"){
+        Object.assign(payload,{contactTitle,contactLinks,contactEnabled,contactHotspot});
+      }
+      await setDoc(ref,payload);
       clear();saveFeedback=published?"Предложение опубликовано и сохранено в Firebase.":"Черновик сохранён в Firebase.";
       say(saveFeedback);
     }catch(error){
