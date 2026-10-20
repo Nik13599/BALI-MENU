@@ -9,10 +9,10 @@ test('guest status notices are deduplicated and cleared on logout',async({page})
   send('pending');send('confirmed');send('confirmed');
  });
  await page.locator('#baliOrderNoticeLive').click();
- await expect(page.locator('#baliOrderNoticeList button')).toHaveCount(1);
- await expect(page.locator('#baliOrderNoticeList')).toContainText('подтверждён');
+ await expect(page.locator('#baliProfileNoticeList button')).toHaveCount(1);
+ await expect(page.locator('#baliProfileNoticeList')).toContainText('подтверждён');
  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('bali:auth-state',{detail:{signedIn:false}})));
- await expect(page.locator('#baliOrderNoticeList button')).toHaveCount(0);
+ await expect(page.locator('#baliProfileNoticeList button')).toHaveCount(0);
 });
 test('empty initial admin queue still notifies about the first incoming order',async({page})=>{
  await page.goto('/admin.html');
@@ -35,17 +35,16 @@ test('diagnostics discard messages and content checks do not invent facts',async
  await expect(page.locator('#eventStartTime')).toHaveValue('19:00');
  await expect(page.locator('#eventEndTime')).toHaveValue('22:30');
 });
-test('gallery uses responsive modern images and retains fullscreen navigation',async({page})=>{
+test('About video replaces the old photo gallery and retains fullscreen controls',async({page})=>{
  await page.goto('/about.html?embed=1');
- await expect(page.locator('.shot')).toHaveCount(11);
- await expect(page.locator('.shot picture source').first()).toHaveAttribute('type','image/avif');
- await page.locator('.shot').first().click();
- await expect(page.locator('#viewer')).toBeVisible();
- await expect(page.locator('#viewImg')).toHaveAttribute('src',/-1600.webp$/);
- await page.keyboard.press('ArrowRight');
- await expect(page.locator('#viewCounter')).toHaveText('02 / 11');
- await page.keyboard.press('Escape');
- await expect(page.locator('#viewer')).toBeHidden();
+ await expect(page.locator('#photoTrack, .shot, #viewer')).toHaveCount(0);
+ await expect(page.locator('#videoBox #playVideo')).toBeVisible();
+ await expect(page.locator('#expandVideo')).toBeVisible();
+ await expect(page.locator('#restartVideo')).toBeVisible();
+ await page.locator('#playVideo').click();
+ await expect(page.locator('#videoBox iframe')).toHaveAttribute('src',/youtube[.]com[/]embed[/]8dwJTWfvsVY/);
+ await page.evaluate(()=>window.postMessage({type:'bali:about:pause'},location.origin));
+ await expect(page.locator('#videoBox #playVideo')).toBeVisible();
 });
 test('tea typography is readable without changing names, prices or approved grid',async({page})=>{
  // Run the real tea renderer against its retained local seed, with Firebase transport stubbed.

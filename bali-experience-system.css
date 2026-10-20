@@ -1,0 +1,251 @@
+/* BALI EXPERIENCE SYSTEM — a restrained final design layer.
+   Purpose: one brand / distinct device compositions / predictable states.
+   Functional behavior (cart, profile, Firestore, 18+ gate) is unchanged. */
+:root {
+  --bali-x-accent:var(--bt-primary,#b9ff51);
+  --bali-x-ink:#f5f7f1;
+  --bali-x-muted:#b7c2b9;
+  --bali-x-line:rgba(234,246,230,.15);
+  --bali-x-panel:#101617;
+  --bali-x-radius:14px;
+  --bali-x-ease:cubic-bezier(.2,.75,.25,1);
+}
+
+/* Shared interaction language: crisp focus, no jumpy presses or glow. */
+body.bali-guest-theme :is(button,a,input,select,textarea):focus-visible,
+body .admin-shell :is(button,a,input,select,textarea):focus-visible {
+  outline:2px solid var(--bali-x-accent)!important;
+  outline-offset:3px!important;
+}
+body.bali-guest-theme :is(button,a),
+body .admin-shell :is(button,a){
+  -webkit-tap-highlight-color:transparent;
+}
+body.bali-guest-theme :is(#homeSection,#eventsSection,#menuPage,#baliIdSection,#profileSection,#contactsSection) :is(h1,h2,h3),
+body .admin-shell :is(h1,h2,h3) {
+  text-wrap:balance;
+}
+body.bali-guest-theme :is(#homeSection,#eventsSection,#menuPage,#baliIdSection,#profileSection,#contactsSection) :is(p,small),
+body .admin-shell :is(p,small) {
+  overflow-wrap:break-word;
+}
+
+/* First screen: consistent identity without hiding live event posters or
+   the administrator-controlled hero message. */
+body.bali-guest-theme #homeSection .bali-mobile-home-hero h1 {
+  letter-spacing:-.055em!important;
+  text-wrap:balance;
+}
+body.bali-guest-theme #homeSection .bali-pc-about-hook{
+  letter-spacing:-.055em!important;
+  text-wrap:balance;
+}
+body.bali-guest-theme #homeSection .bali-home-menu-banner,
+body.bali-guest-theme #homeSection .bali-pc-id-card,
+body.bali-guest-theme #homeSection .bali-home-event-card{
+  border-color:var(--bali-x-line)!important;
+}
+body.bali-guest-theme #homeSection .bali-home-event-card {
+  transition:border-color .24s var(--bali-x-ease),transform .24s var(--bali-x-ease);
+}
+body.bali-guest-theme #homeSection .bali-home-event-card:focus-within{
+  border-color:var(--bali-x-accent)!important;
+  outline:2px solid var(--bali-x-accent)!important;
+  outline-offset:2px;
+}
+
+/* On mobile, the title/action are one deliberate composition, not
+   miniaturized desktop controls. Keep the existing full-height hero. */
+@media(max-width:767px){
+  body.bali-guest-theme #homeSection #baliMobileAboutBtn.bali-mobile-about-action {
+    box-sizing:border-box!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:auto!important;
+    max-width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    min-height:40px!important;
+    padding:9px clamp(12px,3.6vw,17px)!important;
+    font:800 clamp(10px,2.6vw,12px)/1.25 Manrope,Arial,sans-serif!important;
+    letter-spacing:.025em!important;
+    text-align:center!important;
+    border-radius:9px!important;
+    white-space:normal!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-hero-tagline {
+    line-height:1.35!important;
+    max-width:29ch;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-about-background-dots button {
+    min-width:13px;
+    min-height:13px;
+  }
+}
+
+/* Desktop About tile retains its two guest paths: explore the venue or
+   discover a party. Do not replace its CMS copy or block navigation. */
+@media(min-width:1180px){
+  body.bali-guest-theme #homeSection .bali-pc-about-links>button {
+    transition:border-color .2s var(--bali-x-ease),
+               background-color .2s var(--bali-x-ease),
+               transform .2s var(--bali-x-ease)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about-links>button:focus-visible {
+    outline:2px solid var(--bali-x-accent)!important;
+    outline-offset:2px;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about-facts span {
+    font-variant-numeric:tabular-nums;
+  }
+}
+
+/* Calendar: date and event poster read as a single experience.
+   Avoid new vertical scrolling on compact phones. */
+body.bali-guest-theme #eventsSection .bali-experience-calendar-caption {
+  color:var(--bali-x-muted);
+  font:550 clamp(11px,.95vw,13px)/1.4 Manrope,Arial,sans-serif;
+  margin:0 0 9px;
+  letter-spacing:.005em;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"] {
+  position:relative;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-day[aria-pressed="true"] {
+  outline:1px solid var(--bali-x-accent);
+  outline-offset:-2px;
+}
+body.bali-guest-theme #eventsSection .bali-event-calendar-layout :is(button,a):focus-visible {
+  outline:2px solid var(--bali-x-accent)!important;
+  outline-offset:2px!important;
+}
+@media (max-width:767px) and (max-height:740px) {
+  body.bali-guest-theme #eventsSection .bali-experience-calendar-caption {display:none!important}
+}
+
+/* Food-first scanning: one hierarchy from card name to price to action.
+   Card widths and six-column tea layout stay owned by the menu CSS. */
+body.bali-guest-theme #menuPage .bali-experience-purpose {
+  position:relative;
+  box-sizing:border-box;
+  display:flex;
+  align-items:center;
+  width:min(100% - 24px,1200px);
+  margin:clamp(4px,.6dvh,9px) auto 0!important;
+  padding:5px 11px 5px 13px!important;
+  color:#cdd9cb!important;
+  background:linear-gradient(90deg,rgba(185,255,81,.065),transparent 75%)!important;
+  border-left:2px solid var(--bali-x-accent)!important;
+  border-radius:0 7px 7px 0;
+  font:570 clamp(11px,1vw,13px)/1.35 Manrope,Arial,sans-serif!important;
+}
+body.bali-guest-theme #menuPage .bali-menu-heading {
+  letter-spacing:-.045em!important;
+}
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .bali-catalog-card {
+  border-color:var(--bali-x-line)!important;
+  background:linear-gradient(136deg,#16201d,#111819)!important;
+  transition:border-color .22s var(--bali-x-ease),transform .22s var(--bali-x-ease)!important;
+}
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .bali-catalog-card .menu-item-name {
+  color:var(--bali-x-ink)!important;
+  letter-spacing:-.027em!important;
+  text-wrap:pretty;
+}
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .bali-catalog-card .menu-item-price {
+  color:#f2f7ec!important;
+  font-variant-numeric:tabular-nums;
+}
+body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+  .menu-category-block .bali-catalog-card .menu-item-description {
+  color:var(--bali-x-muted)!important;
+}
+body.bali-guest-theme #menuPage :is(.menu-details-btn,.add-to-cart-btn,.menu-quantity-btn):focus-visible {
+  outline:2px solid var(--bali-x-accent)!important;
+  outline-offset:2px!important;
+}
+@media(min-width:1180px) and (hover:hover) and (pointer:fine){
+  body.bali-guest-theme #menuPage :is(#menuGrid,#baliBarList,#baliHookahList,#baliTeaList)
+    .menu-category-block .bali-catalog-card:hover {
+    border-color:rgba(211,236,196,.45)!important;
+    transform:translateY(-2px)!important;
+  }
+}
+@media(max-width:767px){
+  body.bali-guest-theme #menuPage .bali-experience-purpose{
+    width:calc(100% - 20px);
+    margin-top:2px!important;
+    font-size:11px!important;
+    padding:5px 9px!important;
+  }
+}
+
+/* BALI ID: detail polish only; do not change the static page's measured
+   height, 3D flip mechanics, QR visibility or transfer/history dialogs. */
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene {
+  perspective:1200px;
+}
+body.bali-guest-theme #baliIdSection :is(#baliIdTransferOpen,#baliIdHistoryOpen,#baliShowQr):focus-visible{
+  outline:2px solid var(--bali-x-accent)!important;
+  outline-offset:3px;
+}
+body.bali-guest-theme #profileSection .bali-profile-action,
+body.bali-guest-theme #contactsSection .bali-info-contact-panel {
+  border-color:var(--bali-x-line)!important;
+}
+body.bali-guest-theme #profileSection .bali-profile-action {
+  transition:border-color .18s var(--bali-x-ease),background-color .18s var(--bali-x-ease);
+}
+body.bali-guest-theme #profileSection .bali-profile-action:focus-visible{
+  outline:2px solid var(--bali-x-accent)!important;
+}
+
+/* Operator experience: separate destructive/secondary and affirmative
+   states using legible focus. Existing permission checks stay untouched. */
+body .admin-shell .admin-tab {
+  transition:background-color .18s var(--bali-x-ease),border-color .18s var(--bali-x-ease)!important;
+}
+body .admin-shell .admin-tab[aria-selected="true"] {
+  border-inline-start:3px solid var(--bali-x-accent);
+}
+body .admin-shell .admin-panel :is(input,select,textarea):focus-visible {
+  outline:2px solid var(--bali-x-accent)!important;
+  outline-offset:1px!important;
+}
+body .admin-shell .bali-experience-admin-guide {
+  border:1px solid var(--bali-x-line);
+  border-radius:12px;
+  padding:12px 16px;
+  color:var(--bali-x-muted);
+  background:linear-gradient(135deg,rgba(185,255,81,.045),rgba(11,17,16,.22));
+  font:500 13px/1.55 Manrope,Arial,sans-serif;
+  margin:9px 0 16px;
+}
+body .admin-shell .bali-experience-admin-guide summary {
+  cursor:pointer;
+  color:var(--bali-x-ink);
+  font-weight:760;
+}
+body .admin-shell .bali-experience-admin-guide p {
+  margin:9px 0 0;
+}
+body .admin-shell .bali-experience-admin-guide :is(ul,ol) {
+  margin:8px 0 3px;
+  padding-left:21px;
+}
+body .admin-shell .bali-experience-admin-guide li + li {margin-top:5px}
+
+/* Accessibility and power use: decorative motion is opt-in when motion
+   is reduced, but never disable functional keyboard/touch interaction. */
+@media(prefers-reduced-motion:reduce){
+  body.bali-guest-theme :is(.bali-home-event-card,.bali-catalog-card,.bali-pc-about-links>button,.bali-profile-action),
+  body .admin-shell .admin-tab {
+    transition:none!important;
+    animation:none!important;
+    transform:none!important;
+  }
+}

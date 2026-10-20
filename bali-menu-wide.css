@@ -209,3 +209,16 @@ body.bali-guest-theme #menuPage .menu-category-block .bali-catalog-card:has(.men
     justify-content:flex-start!important;
   }
 }
+
+/* Tea is the approved compact six-across information catalogue on desktop.
+   Other catalogues keep wide/shallow three-across cards for scanability. */
+@media (min-width:1180px) {
+  body.bali-guest-theme #menuPage #baliTeaList
+    .menu-category-block .menu-grid.menu-category-products {
+    grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  }
+  body.bali-guest-theme #menuPage #baliTeaList
+    .menu-category-block .bali-catalog-card .menu-item-name {
+    overflow-wrap:anywhere!important;
+  }
+}

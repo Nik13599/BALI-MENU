@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="bali-shared-icons.css?v=20261020-1">
   <link rel="stylesheet" href="bali-navigation-unified.css?v=20261020-1">
   <link rel="stylesheet" href="bali-about-teaser.css?v=20261020-1">
+  <link rel="stylesheet" href="bali-experience-system.css?v=20261020-1">
 </head>
 
 <body class="bali-guest-theme">
@@ -125,7 +126,7 @@
           <div class="bali-mobile-home-hero-copy">
             <h1><span>BALI — </span><em>БОЛЬШЕ, ЧЕМ КЛУБ</em></h1>
             <p class="bali-mobile-hero-tagline">Площадка для мероприятий в центре Минска.</p>
-            <button type="button" id="baliMobileAboutBtn" class="bali-mobile-about-action">О КЛУБЕ <span aria-hidden="true">→</span></button>
+            <button type="button" id="baliMobileAboutBtn" class="bali-mobile-about-action">ПОДРОБНЕЕ О КЛУБЕ</button>
           </div>
           <div class="bali-mobile-about-background-dots" id="baliMobileAboutBackgroundDots" role="group" aria-label="Фоны блока «О клубе»" hidden></div>
         </section>
@@ -260,7 +261,7 @@
     <!-- Embedded About: other pages and navigation remain unchanged. -->
     <section id="baliAboutSection" aria-label="О клубе BALI" hidden>
       <iframe id="baliAboutFrame" src="./about.html?embed=1"
-        title="О клубе BALI — фотографии, мероприятия и видео"
+        title="О клубе BALI — видео, возможности площадки и контакты"
         loading="lazy" allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
         allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
     </section>
@@ -306,6 +307,7 @@
       <button type="button" class="bali-menu-mode-btn" data-bali-menu-mode="tea" aria-pressed="false" aria-label="Чайная карта" title="Чайная карта"><span class="bali-menu-mode-icon"><img src="assets/menu-icons/bali-tea.svg" alt="" aria-hidden="true" draggable="false" loading="eager" decoding="async"></span><span class="bali-menu-mode-label">Чайная карта</span></button>
       </div>
     </div>
+    <p id="baliMenuPurpose" class="bali-experience-purpose" role="status" aria-live="polite">Кухня BALI: выберите блюда и добавьте их в предзаказ к своему мероприятию.</p>
     <p id="baliMenuUnavailableNotice" class="bali-menu-unavailable" hidden>Все разделы меню временно скрыты администратором. Попробуйте зайти позже.</p>
     <!-- Универсальная верхняя панель: одни и те же категории и поиск для всех карт. -->
     <div id="baliSharedMenuControls" class="bali-shared-menu-controls">
@@ -383,6 +385,7 @@
             <h2 class="events-eyebrow" id="eventsHeadingGuest">BALI КАЛЕНДАРЬ</h2>
           </div>
         </div>
+        <p class="bali-experience-calendar-caption" id="baliCalendarPurpose">Выберите дату, чтобы посмотреть афиши и запланировать вечер в BALI.</p>
         <p id="eventsInterestStatus" class="events-interest-status" role="status" aria-live="polite"></p>
         <div class="bali-event-calendar-layout">
           <aside class="bali-calendar-panel" id="baliCalendarPanel" aria-label="Календарь мероприятий">
@@ -906,6 +909,7 @@
     <script type="module" src="bali-id.js?v=20261019-6"></script>
     <script src="bali-pc-id-home.js?v=20261020-showcase1" defer></script>
     <script src="bali-about-teaser.js?v=20261020-1" defer></script>
+    <script src="bali-experience.js?v=20261020-1" defer></script>
     <script type="module" src="bali-id-flip.js?v=20261019-4"></script>
     <script type="module" src="bali-id-bank.js?v=20261019-2"></script>
     <script src="bali-share.js?v=20261019-4" defer></script>

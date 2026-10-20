@@ -34,7 +34,8 @@ test('approved hidden search, category filtering and safe rendering', async ({pa
     expect(box.height).toBe(46);
   } else {
     expect(await page.locator('#menuGrid .menu-category-products').first().evaluate(
-      node => getComputedStyle(node).gridTemplateColumns.split(' ').length)).toBe(6);
+      node => getComputedStyle(node).gridTemplateColumns.split(' ').length))
+      .toBe(page.viewportSize().width >= 1180 ? 3 : 2);
   }
   await page.locator('#categoryFilter button').filter({hasText: /^Горячее$/}).click();
   await expect(page.locator('#menuGrid .menu-item')).toHaveCount(7);
