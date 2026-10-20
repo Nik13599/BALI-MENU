@@ -129,6 +129,7 @@
     addPrefix("#addMenuBtn,#addCategoryBtn,#addEventBtn,#newCategoryFromProduct,#editOrderAddBtn","plus");
     // Dynamically re-rendered empty cart and order line removal controls are included.
   }
+  window.BaliIconAtelier=Object.freeze({createIcon,names:Object.keys(icons)});
   if(document.readyState==="loading"){
     document.addEventListener("DOMContentLoaded",decorate,{once:true});
   } else decorate();
