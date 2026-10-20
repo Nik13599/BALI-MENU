@@ -25,6 +25,11 @@ function sanitizeProps(src){
    else if(k==="textAlign"&&["left","center","right","justify"].includes(v))r[k]=v;
    else if(k==="objectFit"&&["contain","cover","fill","none","scale-down"].includes(v))r[k]=v;
    else if(k==="backgroundPosition"&&["center","top","bottom","left","right"].includes(v))r[k]=v;
+   else if(k==="objectPosition"&&["center","top","bottom","left","right"].includes(v))r[k]=v;
+   else if(k==="backgroundSize"&&["cover","contain","auto","100% 100%"].includes(v))r[k]=v;
+   else if(k==="aspectRatio"&&["auto","1 / 1","16 / 9","4 / 3","3 / 4","9 / 16"].includes(v))r[k]=v;
+   else if(k==="overflow"&&["visible","hidden","clip","auto"].includes(v))r[k]=v;
+   else if(k==="zIndex"){const a=num(v,-10,100);if(a!==null)r[k]=Math.round(a);}
    else if(k==="textTransform"&&["none","uppercase","lowercase","capitalize"].includes(v))r[k]=v;
    else if(k==="display"&&["block","inline-block","flex","grid","none"].includes(v))r[k]=v;
    else if(k==="flexDirection"&&["row","column","row-reverse","column-reverse"].includes(v))r[k]=v;
@@ -61,7 +66,7 @@ function sanitizeDevice(raw){
 function cleanModel(v){return {desktop:sanitizeDevice(v?.desktop),tablet:sanitizeDevice(v?.tablet),phone:sanitizeDevice(v?.phone)};}
 function css(node,props,save){
  props=sanitizeProps(props);
- const propsCss={fontFamily:"font-family",fontWeight:"font-weight",fontStyle:"font-style",textAlign:"text-align",textTransform:"text-transform",color:"color",backgroundColor:"background-color",borderColor:"border-color",width:"width",height:"height",minHeight:"min-height",minWidth:"min-width",maxWidth:"max-width",maxHeight:"max-height",objectFit:"object-fit",backgroundPosition:"background-position",display:"display",flexDirection:"flex-direction",justifyContent:"justify-content",alignItems:"align-items"};
+ const propsCss={fontFamily:"font-family",fontWeight:"font-weight",fontStyle:"font-style",textAlign:"text-align",textTransform:"text-transform",color:"color",backgroundColor:"background-color",borderColor:"border-color",width:"width",height:"height",minHeight:"min-height",minWidth:"min-width",maxWidth:"max-width",maxHeight:"max-height",objectFit:"object-fit",backgroundPosition:"background-position",objectPosition:"object-position",backgroundSize:"background-size",aspectRatio:"aspect-ratio",overflow:"overflow",display:"display",zIndex:"z-index",flexDirection:"flex-direction",justifyContent:"justify-content",alignItems:"align-items"};
  const put=(k,v)=>{save?.(node,k);node.style.setProperty(k,v,"important");};
  for(const [k,c] of Object.entries(propsCss))if(props[k]!==undefined)put(c,props[k]);
  for(const k of ["fontSize","padding","borderRadius","borderWidth","letterSpacing","marginTop","marginBottom","marginLeft","marginRight","gap"]){
@@ -105,7 +110,7 @@ function css(node,props,save){
     }
    }else{
     put("background-image",'url("'+props.image.replace(/"/g,"%22")+'")');
-    put("background-size","cover");
+    put("background-size",props.backgroundSize||"cover");
     put("background-position",props.backgroundPosition||"center");
    }
  }
