@@ -805,18 +805,42 @@ function minskDateToday() {
     const p = Object.fromEntries(parts.map(x => [x.type,x.value]));
     return p.year + '-' + p.month + '-' + p.day;
 }
-function populateEvents() {
-    const select = document.getElementById('eventSelect');
-    if (!select) return;
-    const chosen = select.value;
-    select.replaceChildren(new Option('Выбери мероприятие', ''));
-    for (const event of availableEvents.filter(e => (e.id||e.date)===e.date && e.preorderEnabled && e.date >= minskDateToday() && e.closesAt?.toDate?.() > new Date())) {
-        const opt = new Option(event.date + ' — ' + event.title, event.date);
-        select.add(opt);
+function availablePreorderEvents(){
+    return availableEvents.filter(e=>e.preorderEnabled &&
+        e.date>=minskDateToday() && e.closesAt?.toDate?.()>new Date());
+}
+function populateEventNames(preferredId=""){
+    const date=document.getElementById("eventDateSelect")?.value||"";
+    const select=document.getElementById("eventSelect");
+    if(!select)return;
+    const previously=preferredId||select.value;
+    select.replaceChildren(new Option(date?"Выбери мероприятие":"Сначала выбери дату",""));
+    const matching=availablePreorderEvents()
+        .filter(e=>e.date===date)
+        .sort((a,b)=>(a.startTime||"").localeCompare(b.startTime||"")||
+            (a.id||a.date).localeCompare(b.id||b.date));
+    for(const event of matching){
+        const time=event.startTime?" · "+event.startTime:"";
+        select.add(new Option(event.title+time,event.id||event.date));
     }
-    if (availableEvents.some(e => e.date === chosen && e.preorderEnabled && e.closesAt?.toDate?.() > new Date())) select.value=chosen;
-    document.getElementById('eventDate').value = select.value;
-    if (select.length === 1) select.options[0].textContent = 'Доступных мероприятий пока нет';
+    select.disabled=!matching.length;
+    if(matching.some(e=>(e.id||e.date)===previously))select.value=previously;
+    document.getElementById("eventDate").value=date;
+    if(date&&!matching.length)select.options[0].textContent="На эту дату нет открытых предзаказов";
+}
+function populateEvents(){
+    const dateSelect=document.getElementById("eventDateSelect");
+    if(!dateSelect)return;
+    const chosenDate=dateSelect.value,chosenEvent=document.getElementById("eventSelect")?.value||"";
+    const dates=[...new Set(availablePreorderEvents().map(e=>e.date))].sort();
+    dateSelect.replaceChildren(new Option("Выбери дату",""));
+    const format=s=>new Intl.DateTimeFormat("ru-RU",{
+        timeZone:"UTC",day:"numeric",month:"long",year:"numeric"
+    }).format(new Date(s+"T12:00:00Z"));
+    for(const date of dates)dateSelect.add(new Option(format(date),date));
+    if(dates.includes(chosenDate))dateSelect.value=chosenDate;
+    if(!dates.length)dateSelect.options[0].textContent="Нет доступных дат";
+    populateEventNames(chosenEvent);
 }
 function escapeHTML(value) {
     return String(value ?? '').replace(/[&<>"']/g, c =>
@@ -1045,9 +1069,11 @@ function attachEventListeners() {
         void openMyOrders();
     });
 
+    const dateSelect = document.getElementById('eventDateSelect');
+    if(dateSelect)dateSelect.addEventListener('change',()=>populateEventNames());
     const eventSelect = document.getElementById('eventSelect');
-    if (eventSelect) eventSelect.addEventListener('change', () => {
-        document.getElementById('eventDate').value = eventSelect.value;
+    if(eventSelect)eventSelect.addEventListener('change',()=>{
+        document.getElementById('eventDate').value=dateSelect?.value||"";
     });
 
     // Управление количеством над кнопкой «В корзину» (на всех карточках меню).
@@ -1627,10 +1653,12 @@ async function handleCheckout(e) {
     if (!window.BaliAuth || !(await window.BaliAuth.requireProfile())) return;
     const customer = window.BaliAuth.getProfile();
     if (!customer) return;
-    const eventDate = document.getElementById('eventSelect').value;
+    const eventDate = document.getElementById('eventDateSelect').value;
+    const eventId = document.getElementById('eventSelect').value;
     const tableNumber = document.getElementById('tableNumber').value.trim();
     const bookingId = document.getElementById('bookingId').value.trim();
-    if (!availableEvents.some(e => e.date === eventDate && e.preorderEnabled && e.closesAt?.toDate?.() > new Date())) {
+    if (!availablePreorderEvents().some(e =>
+        e.date===eventDate && (e.id||e.date)===eventId)) {
         alert('Выберите доступное мероприятие из списка.');
         return;
     }
@@ -1645,6 +1673,7 @@ async function handleCheckout(e) {
         customer_phone: customer.phone,
         customer_email: customer.email,
         event_date: eventDate,
+        event_id: eventId,
         table_number: tableNumber,
         booking_id: bookingId,
         notes: document.getElementById('orderNotes').value,
