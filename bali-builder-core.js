@@ -14,15 +14,22 @@ const col=v=>typeof v==="string"&&/^(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{8}|transparent
 function sanitizeProps(src){
  const r={};if(!src||typeof src!=="object")return r;
  for(const [k,v] of Object.entries(src)){
-   if(["width","height","minHeight"].includes(k)){const a=dim(v,0,4000);if(a)r[k]=a;}
-   else if(["fontSize","padding","borderRadius","borderWidth","letterSpacing","translateX","translateY"].includes(k)){
-     const a=num(v,["translateX","translateY"].includes(k)?-2000: k==="letterSpacing"?-10:0,k==="fontSize"?200:k==="borderWidth"?20:k==="letterSpacing"?35:3000);
+   if(["width","height","minHeight","minWidth","maxWidth","maxHeight"].includes(k)){const a=dim(v,0,4000);if(a)r[k]=a;}
+   else if(["fontSize","padding","borderRadius","borderWidth","letterSpacing","translateX","translateY","marginTop","marginBottom","marginLeft","marginRight","gap"].includes(k)){
+     const a=num(v,["translateX","translateY","marginTop","marginBottom","marginLeft","marginRight"].includes(k)?-2000: k==="letterSpacing"?-10:0,k==="fontSize"?200:k==="borderWidth"?20:k==="letterSpacing"?35:3000);
      if(a!==null)r[k]=a;
    }else if(["color","backgroundColor","borderColor"].includes(k)){const a=col(v);if(a)r[k]=a;}
    else if(k==="fontFamily"&&fonts.includes(v))r[k]=v;
    else if(k==="fontWeight"&&["300","400","500","600","700","800","900"].includes(String(v)))r[k]=String(v);
    else if(k==="fontStyle"&&["normal","italic"].includes(v))r[k]=v;
    else if(k==="textAlign"&&["left","center","right","justify"].includes(v))r[k]=v;
+   else if(k==="objectFit"&&["contain","cover","fill","none","scale-down"].includes(v))r[k]=v;
+   else if(k==="backgroundPosition"&&["center","top","bottom","left","right"].includes(v))r[k]=v;
+   else if(k==="textTransform"&&["none","uppercase","lowercase","capitalize"].includes(v))r[k]=v;
+   else if(k==="display"&&["block","inline-block","flex","grid","none"].includes(v))r[k]=v;
+   else if(k==="flexDirection"&&["row","column","row-reverse","column-reverse"].includes(v))r[k]=v;
+   else if(k==="justifyContent"&&["flex-start","center","flex-end","space-between","space-around","space-evenly"].includes(v))r[k]=v;
+   else if(k==="alignItems"&&["stretch","flex-start","center","flex-end","baseline"].includes(v))r[k]=v;
    else if(["lineHeight","opacity","rotate","scale"].includes(k)){const limits={lineHeight:[0.7,3],opacity:[0,1],rotate:[-360,360],scale:[0.2,3]};const a=num(v,...limits[k]);if(a!==null)r[k]=a;}
    else if(k==="shadow"&&["none","soft","deep","glow"].includes(v))r[k]=v;
    else if(k==="animation"&&["none","fade","float","pulse","glow","slide-left","slide-right","zoom","bounce","tilt","shimmer","spin","heartbeat","flicker","reveal"].includes(v))r[k]=v;
@@ -54,11 +61,11 @@ function sanitizeDevice(raw){
 function cleanModel(v){return {desktop:sanitizeDevice(v?.desktop),tablet:sanitizeDevice(v?.tablet),phone:sanitizeDevice(v?.phone)};}
 function css(node,props,save){
  props=sanitizeProps(props);
- const propsCss={fontFamily:"font-family",fontWeight:"font-weight",fontStyle:"font-style",textAlign:"text-align",color:"color",backgroundColor:"background-color",borderColor:"border-color",width:"width",height:"height",minHeight:"min-height"};
+ const propsCss={fontFamily:"font-family",fontWeight:"font-weight",fontStyle:"font-style",textAlign:"text-align",textTransform:"text-transform",color:"color",backgroundColor:"background-color",borderColor:"border-color",width:"width",height:"height",minHeight:"min-height",minWidth:"min-width",maxWidth:"max-width",maxHeight:"max-height",objectFit:"object-fit",backgroundPosition:"background-position",display:"display",flexDirection:"flex-direction",justifyContent:"justify-content",alignItems:"align-items"};
  const put=(k,v)=>{save?.(node,k);node.style.setProperty(k,v,"important");};
  for(const [k,c] of Object.entries(propsCss))if(props[k]!==undefined)put(c,props[k]);
- for(const k of ["fontSize","padding","borderRadius","borderWidth","letterSpacing"]){
-   const c={fontSize:"font-size",padding:"padding",borderRadius:"border-radius",borderWidth:"border-width",letterSpacing:"letter-spacing"}[k];
+ for(const k of ["fontSize","padding","borderRadius","borderWidth","letterSpacing","marginTop","marginBottom","marginLeft","marginRight","gap"]){
+   const c={fontSize:"font-size",padding:"padding",borderRadius:"border-radius",borderWidth:"border-width",letterSpacing:"letter-spacing",marginTop:"margin-top",marginBottom:"margin-bottom",marginLeft:"margin-left",marginRight:"margin-right",gap:"gap"}[k];
    if(props[k]!==undefined)put(c,props[k]+"px");
  }
  if(props.borderWidth>0)put("border-style","solid");
