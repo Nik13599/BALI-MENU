@@ -172,7 +172,7 @@ function syncInterestVisuals(){
     for(const card of document.querySelectorAll("#homeEventCarousel .bali-home-event-card[data-event-date]")){
         const heart=card.querySelector(".bali-home-heart");
         if(!heart)continue;
-        const date=card.dataset.eventDate;
+        const date=card.dataset.eventId||card.dataset.eventDate;
         const liked=guestInterestDates.has(date);
         const waiting=pendingInterestDates.has(date);
         const title=card.querySelector("h3")?.textContent||"мероприятие";
@@ -187,7 +187,7 @@ function syncInterestVisuals(){
     for(const card of document.querySelectorAll("#eventsGrid .event-card[data-event-date]")){
         const button=card.querySelector(".event-want-to-go");
         if(!button)continue;
-        const date=card.dataset.eventDate;
+        const date=card.dataset.eventId||card.dataset.eventDate;
         const selected=guestInterestDates.has(date);
         const waiting=pendingInterestDates.has(date);
         button.classList.toggle("selected",selected);
@@ -198,7 +198,7 @@ function syncInterestVisuals(){
         button.disabled=waiting;
     }
     window.dispatchEvent(new CustomEvent("bali:calendar:plans-changed",{
-        detail:{dates:[...guestInterestDates]}
+        detail:{dates:[...new Set([...guestInterestDates].map(id=>id.slice(0,10)))]}
     }));
 }
 function setInterestSelection(date,selected){
@@ -241,7 +241,7 @@ async function toggleGuestInterest(date,message){
     }
 }
 window.addEventListener('bali:interests',({detail})=>{
-    const incoming=new Set(detail?.dates||[]);
+    const incoming=new Set(detail?.ids||detail?.dates||[]);
     // Preserve the user's immediate action while an older remote snapshot arrives.
     for(const date of pendingInterestDates){
         if(guestInterestDates.has(date))incoming.add(date);
@@ -327,7 +327,7 @@ window.addEventListener('bali:events', ({ detail }) => {
     availableEvents=incoming;
     receivedEventSnapshot=true;
     if(unchangedPosters){
-        const counts=new Map(incoming.map(event=>[event.date,
+        const counts=new Map(incoming.map(event=>[event.id||event.date,
             Number.isSafeInteger(event.interestCount)&&event.interestCount>=0?event.interestCount:0]));
         for(const [selector,countClass] of [
             ["#homeEventCarousel .bali-home-event-card[data-event-date]",".bali-home-event-count"],
@@ -335,7 +335,7 @@ window.addEventListener('bali:events', ({ detail }) => {
         ]){
             for(const card of document.querySelectorAll(selector)){
                 const label=card.querySelector(countClass);
-                if(label)label.textContent="Хочет пойти: "+(counts.get(card.dataset.eventDate)||0);
+                if(label)label.textContent="Хочет пойти: "+(counts.get(card.dataset.eventId||card.dataset.eventDate)||0);
             }
         }
         return;
@@ -510,6 +510,7 @@ function renderHomeEvents() {
         const card=document.createElement("article");
         card.className="bali-home-event-card";
         card.dataset.eventDate=event.date;
+        card.dataset.eventId=event.id||event.date;
         const posterWrap=document.createElement("div");
         posterWrap.className="bali-home-poster-wrap";
         const img=document.createElement("img");
@@ -587,17 +588,17 @@ function renderHomeEvents() {
         heart.addEventListener("click",click=>{
             click.preventDefault();
             click.stopPropagation();
-            void toggleGuestInterest(event.date,document.getElementById("homeInterestFeedback"));
+            void toggleGuestInterest(event.id||event.date,document.getElementById("homeInterestFeedback"));
         });
         card.append(posterWrap,information,openCard,heart);
         track.append(card);
         // Initial paint matches current Firestore/optimistic state.
-        if(guestInterestDates.has(event.date))heart.classList.add("is-liked");
-        heart.setAttribute("aria-pressed",String(guestInterestDates.has(event.date)));
-        heart.setAttribute("aria-label",guestInterestDates.has(event.date)
+        if(guestInterestDates.has(event.id||event.date))heart.classList.add("is-liked");
+        heart.setAttribute("aria-pressed",String(guestInterestDates.has(event.id||event.date)));
+        heart.setAttribute("aria-label",guestInterestDates.has(event.id||event.date)
             ?"Убрать «"+event.title+"» из моих планов":"Хочу пойти на «"+event.title+"»");
-        heart.title=guestInterestDates.has(event.date)?"Убрать из моих планов":"Хочу пойти";
-        heart.disabled=pendingInterestDates.has(event.date);
+        heart.title=guestInterestDates.has(event.id||event.date)?"Убрать из моих планов":"Хочу пойти";
+        heart.disabled=pendingInterestDates.has(event.id||event.date);
     }
     // Fill only vacant PC HOME slots. These are decorative announcements:
     // no fake date, RSVP heart, event link, or calendar record is created.
@@ -671,15 +672,17 @@ function renderUpcomingEvents() {
     if(!grid)return;
     const previousCards=carouselEventCards(grid);
     const previousIndex=carouselEventIndex(grid,previousCards);
-    const previousDate=previousCards[previousIndex]?.dataset.eventDate;
+    const previousDate=previousCards[previousIndex]?.dataset.eventId||previousCards[previousIndex]?.dataset.eventDate;
     const changedView=lastRenderedEventsView!==showOnlyPlannedEvents;
     lastRenderedEventsView=showOnlyPlannedEvents;
     grid.replaceChildren();
     const today=minskDateToday();
     const allUpcoming=availableEvents
       .filter(e=>e?.date>=today&&/^\d{4}-\d{2}-\d{2}$/.test(e?.date||""))
-      .sort((a,b)=>a.date.localeCompare(b.date));
-    const planned=allUpcoming.filter(e=>guestInterestDates.has(e.date));
+      .sort((a,b)=>a.date.localeCompare(b.date)||
+        (a.startTime||"").localeCompare(b.startTime||"")||
+        (a.id||a.date).localeCompare(b.id||b.date));
+    const planned=allUpcoming.filter(e=>guestInterestDates.has(e.id||e.date));
     const upcoming=showOnlyPlannedEvents?planned:allUpcoming;
     if(!upcoming.length) {
         const empty=document.createElement("div");
@@ -696,6 +699,7 @@ function renderUpcomingEvents() {
         const card=document.createElement("article");
         card.className="event-card";
         card.dataset.eventDate=event.date;
+        card.dataset.eventId=event.id||event.date;
         if(typeof event.dotColor==="string"&&/^#[0-9a-fA-F]{6}$/.test(event.dotColor))
             card.dataset.dotColor=event.dotColor;
         const posterWrap=document.createElement("div");
@@ -746,16 +750,16 @@ function renderUpcomingEvents() {
         interested.textContent="Хочет пойти: "+count;
         const planBtn=document.createElement("button");
         planBtn.type="button";
-        planBtn.className="event-want-to-go"+(guestInterestDates.has(event.date)?" selected":"");
-        planBtn.setAttribute("aria-pressed",String(guestInterestDates.has(event.date)));
-        planBtn.textContent=guestInterestDates.has(event.date)?"✓ В моих планах":"Хочу пойти";
-        planBtn.title=guestInterestDates.has(event.date)
+        planBtn.className="event-want-to-go"+(guestInterestDates.has(event.id||event.date)?" selected":"");
+        planBtn.setAttribute("aria-pressed",String(guestInterestDates.has(event.id||event.date)));
+        planBtn.textContent=guestInterestDates.has(event.id||event.date)?"✓ В моих планах":"Хочу пойти";
+        planBtn.title=guestInterestDates.has(event.id||event.date)
             ?"Нажмите, чтобы убрать мероприятие из планов":"Добавить мероприятие в планы";
-        planBtn.disabled=pendingInterestDates.has(event.date);
+        planBtn.disabled=pendingInterestDates.has(event.id||event.date);
         const message=document.createElement("p");
         message.className="event-interest-message";
         message.setAttribute("role","status");
-        planBtn.addEventListener("click",()=>void toggleGuestInterest(event.date,message));
+        planBtn.addEventListener("click",()=>void toggleGuestInterest(event.id||event.date,message));
         // Date appears once, in the badge over the square poster.
         // The information can scroll independently when long; actions stay
         // at the absolute bottom of the visible event card.
@@ -770,7 +774,7 @@ function renderUpcomingEvents() {
         grid.append(card);
     }
     syncInterestVisuals();
-    const restoreIndex=changedView?0:Math.max(0,upcoming.findIndex(e=>e.date===previousDate));
+    const restoreIndex=changedView?0:Math.max(0,upcoming.findIndex(e=>(e.id||e.date)===previousDate));
     const restore=()=>{
         const cards=carouselEventCards(grid);
         if(!cards.length)return;
