@@ -117,7 +117,10 @@
       (x.senderName||"Гость BALI")+" · BALI ID "+(x.senderNumber||"—")+" перевёл вам "+
       (x.items||[]).map(i=>i.quantity+" "+({shot:"шотов",cocktail:"коктейлей",hookah:"кальянов",entry:"входов"}[i.kind]||i.kind)).join(", ")+
       (x.comment?" · Пожелание: «"+x.comment+"»":"")}));
-    for(const g of d.fresh||[])if(!read.includes(g.id))announce("Подарок от "+(g.senderName||"гостя BALI")+(g.comment?" · «"+g.comment+"»":""));
+    for(const g of d.fresh||[])if(!read.includes(g.id)){
+      const quantities=(g.items||[]).map(i=>i.quantity+" "+({shot:"шотов",cocktail:"коктейлей",hookah:"кальянов",entry:"входов"}[i.kind]||i.kind)).join(", ");
+      announce("BALI ID "+(g.senderNumber||"—")+" · "+(g.senderName||"Гость BALI")+" перевёл вам "+quantities+(g.comment?" · «"+g.comment+"»":""));
+    }
     render();
   });
   window.addEventListener("bali:orders",event=>snapshot(event.detail?.ownerUid,"guest",event.detail?.orders));
