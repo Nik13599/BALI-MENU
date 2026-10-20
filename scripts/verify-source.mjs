@@ -171,8 +171,37 @@ assert(admin.includes('bali-design-studio.css?v=') &&
   sitePublic.includes('label("#baliMenuHeading",data.menuPageTitle)') &&
   rules.includes('function validHomeInterface(d)') &&
   rules.includes("settingId == 'homeInterface' && validHomeInterface(request.resource.data)") &&
-  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder']"),
+  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder','siteBuilderPublished']"),
   "Live admin design studio must preview all 3 real device layouts, permit block editing and protect the site settings in Firestore");
+
+// Site builder must remain presentation-only, with admin drafts not readable by guests.
+const builderCore=source("bali-builder-core.js");
+const builderEditor=source("bali-builder-admin.js");
+const builderPublic=source("bali-builder-public.js");
+const builderCss=source("bali-builder-admin.css");
+assert(admin.includes('id="baliBuilderInspector"') &&
+  admin.includes('id="baliBuilderSaveDraft"') &&
+  admin.includes('id="baliBuilderPublish"') &&
+  admin.includes('data-bali-builder-add="button"') &&
+  admin.includes('bali-builder-core.js?v=') &&
+  admin.includes('bali-builder-admin.js?v=') &&
+  admin.includes('bali-builder-admin.css?v=') &&
+  html.includes('bali-builder-core.js?v=') &&
+  html.includes('bali-builder-public.js?v=') &&
+  builderCore.includes('sanitizeProps') &&
+  builderCore.includes('prefers-reduced-motion:reduce') &&
+  builderCore.includes('bali-builder-shimmer') &&
+  builderCore.includes('bali-builder-heartbeat') &&
+  builderEditor.includes('siteBuilderDraft') &&
+  builderEditor.includes('siteBuilderPublished') &&
+  builderPublic.includes('siteBuilderPublished') &&
+  !builderPublic.includes('siteBuilderDraft') &&
+  builderPublic.includes('bali-admin-design-preview') &&
+  builderCss.includes('.bali-builder-top') &&
+  rules.includes("settingId == 'siteBuilderDraft' && isAdmin()") &&
+  rules.includes("settingId in ['siteBuilderDraft','siteBuilderPublished'] && validSiteBuilder(request.resource.data)"),
+  "Builder must have live visual controls, safe published presentation and protected drafts");
+
 // Mobile About artwork follows the user's new design while remaining separate
 // from the desktop About card; staff can upload, reorder and publish 8 photos.
 const mobileAboutCss=source("bali-mobile-about-hero.css");
