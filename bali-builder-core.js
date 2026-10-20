@@ -134,14 +134,22 @@ function navigate(win,link){
  if(!safeLink(link))return;
  if(link.startsWith("route:")){
   const route=link.slice(6);
-  if(route==="cart"){win.document.querySelector("#baliPcCartBtn, #cartBtn")?.click();return;}
+  // "О клубе" is a same-origin iframe: internal links must open the host site,
+  // not attempt to find a navigation panel inside the editorial iframe.
+  let target=win;
+  try{
+   if(win.parent&&win.parent!==win&&win.parent.document.querySelector("#homeSection"))
+    target=win.parent;
+  }catch{}
+  if(route==="cart"){target.document.querySelector("#baliPcCartBtn, #cartBtn")?.click();return;}
   const selectors={home:'[data-bali-nav="home"]',events:'[data-bali-nav="events"]',menu:'[data-bali-nav="menu"]',
    info:'[data-bali-nav="contacts"],[data-bali-nav="info"]',profile:'[data-bali-nav="profile"]',id:'[data-bali-nav="id"],#baliMobileIdBtn',
    about:'[data-bali-nav="about"]'};
-  const button=win.document.querySelector(selectors[route]);
+  const button=target.document.querySelector(selectors[route]);
   if(button){button.click();return;}
-  if(route==="id"&&!win.BaliAuth?.isRegistered?.()){win.BaliAuth?.open?.();return;}
-  if(typeof win.navigateGuestPage==="function")win.navigateGuestPage(route==="info"?"contacts":route);
+  if(route==="id"&&!target.BaliAuth?.isRegistered?.()){target.BaliAuth?.open?.();return;}
+  if(typeof target.navigateGuestPage==="function"){target.navigateGuestPage(route==="info"?"contacts":route);return;}
+  if(route!=="cart")target.location.href="./index.html#"+(route==="info"?"contacts":route);
   return;
  }
  if(link.startsWith("tel:"))win.location.href=link;
