@@ -1,7 +1,7 @@
 /* BALI Builder: responsive visual overrides without changing business logic. */
 (() => {
 "use strict";
-const ROOTS={home:"#homeSection",events:"#eventsSection",menu:"#menuPage",info:"#contactsSection",profile:"#profileSection",id:"#baliIdSection"};
+const ROOTS={home:"#homeSection",events:"#eventsSection",menu:"#menuPage",info:"#contactsSection",profile:"#profileSection",id:"#baliIdSection",about:"#baliAboutSection"};
 const fonts=["Manrope, sans-serif","Inter, sans-serif","Arial, sans-serif","Georgia, serif","Trebuchet MS, sans-serif","system-ui, sans-serif","monospace"];
 const safeUrl=x=>typeof x==="string"&&(/^https:\/\/[^\s"'<>]{1,2048}$/i.test(x)||/^data:image\/webp;base64,[A-Za-z0-9+/=]{1,180000}$/.test(x));
 const safeLink=x=>typeof x==="string"&&(/^(route:(home|events|menu|info|profile|id|about|cart))$/.test(x)||/^https:\/\/[^\s"'<>]{1,2048}$/i.test(x)||/^tel:\+?[0-9]{5,22}$/.test(x));
