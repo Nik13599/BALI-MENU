@@ -565,8 +565,7 @@ service cloud.firestore {
         && (eventId == data.date || eventId == data.date + '__2' || eventId == data.date + '__3')
         && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
-        && (!('dotColor' in data) || (data.dotColor is string
-          && data.dotColor.matches('^#[0-9a-fA-F]{6}
+        && (!('dotColor' in data) || (data.dotColor is string && data.dotColor.matches('^#[0-9a-fA-F]{6}
         && (!('description' in data) || (data.description is string && data.description.size() <= 600))
         && (!('startTime' in data) || (data.startTime is string &&
           (data.startTime == '' || data.startTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'))))
@@ -1077,8 +1076,7 @@ service cloud.firestore {
         && (eventId == data.date || eventId == data.date + '__2' || eventId == data.date + '__3')
         && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && data.title is string && data.title.size() >= 2 && data.title.size() <= 150
-        && (!('dotColor' in data) || (data.dotColor is string
-          && data.dotColor.matches('^#[0-9a-fA-F]{6}
+        && (!('dotColor' in data) || (data.dotColor is string && data.dotColor.matches('^#[0-9a-fA-F]{6}
         && (!('description' in data) || (data.description is string && data.description.size() <= 600))
         && (!('startTime' in data) || (data.startTime is string &&
           (data.startTime == '' || data.startTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'))))
