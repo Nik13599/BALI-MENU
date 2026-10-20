@@ -81,6 +81,18 @@
     color:#c9fc92;
     font:800 clamp(10px,.83vw,15px)/1.2 Manrope,Arial,sans-serif;
   }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-events-link{
+    position:relative;z-index:4;
+    display:inline-flex;gap:6px;align-items:center;
+    color:#e9efea;
+    font:650 clamp(10px,.75vw,13px)/1.2 Manrope,Arial,sans-serif;
+    text-decoration:underline;
+    text-decoration-color:rgba(233,239,234,.45);
+    text-underline-offset:3px;
+  }
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-events-link:focus-visible{
+    outline:2px solid #b9ff51;outline-offset:3px;
+  }
   body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-action span{
     font-size:clamp(16px,1.4vw,23px);
     transition:transform 170ms ease;
@@ -108,6 +120,7 @@
 }
 @media(min-width:1180px) and (max-height:560px){
   body.bali-guest-theme #homeSection .bali-pc-about>summary #baliPcAboutTitle{display:none!important}
+  body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-events-link{display:none!important}
   body.bali-guest-theme #homeSection .bali-pc-about>summary .bali-pc-about-facts>span:last-child{display:none!important}
 }
 @media(prefers-reduced-motion:reduce){
