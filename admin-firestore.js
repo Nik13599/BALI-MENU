@@ -406,6 +406,7 @@ function eventRender() {
         $("eventDateAdmin").readOnly=true;
         $("eventSlotAdmin").value=String(slot);
         $("eventSlotAdmin").disabled=true;
+        updateEventPreorderControl();
         $("eventTitle").value=event.title;
         $("eventDescription").value=event.description||"";
         $("eventDotColor").value=/^#[0-9a-fA-F]{6}$/.test(event.dotColor||"")?event.dotColor:"#b9ff51";
@@ -453,8 +454,21 @@ function clearEvent() {
   $("eventSlotAdmin").disabled=false;
   $("eventDateAdmin").readOnly=false;
   $("eventOpen").checked=true;
+  updateEventPreorderControl();
 }
 
+// Preorders are currently tied to a DATE (not a unique evening slot). Until
+// order schema migration, expose them only on legacy slot №1 rather than
+// promising unavailable orders for slots №2/№3.
+function updateEventPreorderControl(){
+  const extra=$("eventSlotAdmin").value!=="1";
+  const input=$("eventOpen");
+  if(extra)input.checked=false;
+  input.disabled=extra;
+  const help=$("eventSlotPreorderHint");
+  if(help)help.hidden=!extra;
+}
+$("eventSlotAdmin").addEventListener("change",updateEventPreorderControl);
 $("clearEvent").addEventListener("click", clearEvent);
 
 $("menuForm").addEventListener("submit",async event=>{
@@ -580,7 +594,7 @@ $("eventForm").addEventListener("submit",async (event)=>{
   renderStatus("eventStatus","Сохраняем мероприятие...");
   try{
     const payload={
-      date, title, cutoff, dotColor, preorderEnabled:$("eventOpen").checked,
+      date, title, cutoff, dotColor, preorderEnabled:slot===1&&$("eventOpen").checked,
       closesAt: Timestamp.fromDate(closesAt),
       updatedAt:serverTimestamp()
     };
