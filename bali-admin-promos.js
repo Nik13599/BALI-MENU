@@ -47,18 +47,18 @@ if(form&&list&&status){
   }
   function validContactLink(name,value){
     if(!value)return true; // Empty field inherits the club's global contact.
-    if(name==="phone")return /^tel:\\+?[0-9]{5,22}$/.test(value);
+    if(name==="phone")return /^tel:\+?[0-9]{5,22}$/.test(value);
     if(name==="viber"){
       try{
         const url=new URL(value);
         return url.protocol==="viber:"&&url.hostname==="chat"&&
-          /^\\+[0-9]{5,22}$/.test(url.searchParams.get("number")||"");
+          /^\+[0-9]{5,22}$/.test(url.searchParams.get("number")||"");
       }catch{return false;}
     }
     try{
       const url=new URL(value);
       if(url.protocol!=="https:")return false;
-      const host=url.hostname.toLowerCase().replace(/^www\\./,"");
+      const host=url.hostname.toLowerCase().replace(/^www\./,"");
       const hosts={
         telegram:["t.me","telegram.me"],
         instagram:["instagram.com"],
