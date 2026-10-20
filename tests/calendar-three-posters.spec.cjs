@@ -200,3 +200,30 @@ test('poster edges dissolve while the desktop page heading is absent',async({pag
   expect(fades.mask).toContain('linear-gradient');
   expect(fades.crisp).toBe('none');
 });
+
+test('center poster has no decorative backing or glow on any screen',async({page})=>{
+  await prepare(page,3);
+  const style=await page.locator('#eventsGrid .event-card.is-active>.bali-event-poster-wrap').evaluate(el=>{
+    const computed=getComputedStyle(el);
+    const pseudo=getComputedStyle(el,'::before');
+    const card=getComputedStyle(el.closest('.event-card'));
+    return {
+      background:computed.backgroundColor,
+      image:computed.backgroundImage,
+      shadow:computed.boxShadow,
+      border:computed.borderTopWidth,
+      overlay:pseudo.display,
+      cardBackground:card.backgroundColor,
+      cardShadow:card.boxShadow,
+      photoVisible:getComputedStyle(el.querySelector('.event-poster')).display
+    };
+  });
+  expect(style.background).toBe('rgba(0, 0, 0, 0)');
+  expect(style.image).toBe('none');
+  expect(style.shadow).toBe('none');
+  expect(style.border).toBe('0px');
+  expect(style.overlay).toBe('none');
+  expect(style.cardBackground).toBe('rgba(0, 0, 0, 0)');
+  expect(style.cardShadow).toBe('none');
+  expect(style.photoVisible).not.toBe('none');
+});
