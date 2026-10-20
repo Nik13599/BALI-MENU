@@ -69,8 +69,12 @@ async function geometry(page){
 test('ten published events show at most three distinct posters: no hidden pile',async({page})=>{
   await prepare(page,10);
   let g=await geometry(page);
+  expect(g.visible.map(x=>x.index)).toEqual([0,1]);
+  expect(g.visible).toHaveLength(2);
+  // The first upcoming event has no phantom left-hand poster.
+  await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(1,false));
+  g=await geometry(page);
   expect(g.visible.map(x=>x.index)).toEqual([0,1,2]);
-  expect(g.visible).toHaveLength(3);
   await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(7,false));
   g=await geometry(page);
   expect(g.total).toBe(10);
@@ -111,6 +115,7 @@ test('no rectangular footer or event name below square poster: only two buttons'
 test('desktop spends the left column on three non-overlapping 58° cards',async({page})=>{
   await prepare(page,10);
   if(page.viewportSize().width<1180)return;
+  await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(1,false));
   const g=await geometry(page);
   const [left,center,right]=g.visible;
   expect(g.stageWidth).toBeGreaterThan(g.calendarWidth*1.3);
@@ -129,6 +134,7 @@ test('desktop spends the left column on three non-overlapping 58° cards',async(
 test('phone scene and calendar use all viewport width, square posters and swipe-only controls',async({page})=>{
   await prepare(page,10);
   if(page.viewportSize().width>=1180)return;
+  await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(1,false));
   const g=await geometry(page);
   expect(g.stageWidth).toBeGreaterThanOrEqual(g.viewport-14);
   expect(g.stageLeft).toBeLessThanOrEqual(8);
