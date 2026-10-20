@@ -1,0 +1,56 @@
+/* BALI ID: never place the 3D card behind artificial vertical crop lines.
+   Do not re-introduce a container panel or any visible framing rectangle. */
+body.bali-guest-theme #baliIdSection>.container {
+  overflow:visible!important;
+  clip-path:none!important;
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+}
+body.bali-guest-theme #baliIdSection .bali-profile-card.bali-id-profile{
+  overflow:visible!important;
+  clip-path:none!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene{
+  box-sizing:border-box!important;
+  position:relative!important;
+  width:min(calc(100% - clamp(16px,5vw,54px)),645px)!important;
+  max-width:calc(100% - clamp(16px,5vw,54px))!important;
+  margin-inline:auto!important;
+  overflow:visible!important;
+  clip-path:none!important;
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+  outline:0!important;
+  border:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-track{
+  overflow:visible!important;
+  outline:0!important;
+  border:0!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene .bali-id-card{
+  /* The real rounded card is the ONLY visible boundary. */
+  outline:0!important;
+  outline-offset:0!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene .bali-id-card:focus-visible {
+  outline:2px solid var(--bali-card-main,#b9ff51)!important;
+  outline-offset:2px!important;
+}
+@media(max-width:767px){
+  body.bali-guest-theme #baliIdSection .bali-id-flip-scene{
+    width:calc(100% - 20px)!important;
+    max-width:calc(100% - 20px)!important;
+  }
+}
+/* Keep the page itself viewport-fixed: no vertical scroll even as overflow
+   inside the presentation area is allowed to render the 3D side walls. */
+body.bali-guest-theme #baliIdSection {
+  overflow:hidden!important;
+  overscroll-behavior:none!important;
+}
