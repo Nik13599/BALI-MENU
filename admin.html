@@ -713,6 +713,14 @@
                 <label class="bali-promo-contact-channel"><span><input type="checkbox" id="baliPromoContactViberEnabled" checked> Viber</span><input type="text" id="baliPromoContactViber" maxlength="300" placeholder="viber://chat?number=%2B375296700300" aria-label="Ссылка: Viber"></label>
               </div>
               <p class="hint">На сайте откроется окно с включёнными кнопками: звонок, Telegram, Instagram, WhatsApp и Viber. Для ссылок действуют проверки адресов.</p>
+              <label class="bali-promo-hotspot-enable"><input type="checkbox" id="baliPromoHotspotEnabled"> Кнопка уже нарисована на баннере — сделать её область кликабельной без второго видимого текста</label>
+              <div id="baliPromoHotspotFields" class="bali-promo-hotspot-grid" hidden>
+                <label>Отступ слева, % <input id="baliPromoHotspotLeft" type="number" min="0" max="100" step="1" value="5"></label>
+                <label>Отступ сверху, % <input id="baliPromoHotspotTop" type="number" min="0" max="100" step="1" value="73"></label>
+                <label>Ширина, % <input id="baliPromoHotspotWidth" type="number" min="1" max="100" step="1" value="36"></label>
+                <label>Высота, % <input id="baliPromoHotspotHeight" type="number" min="1" max="100" step="1" value="16"></label>
+                <p class="hint">Координаты задаются относительно всей картинки, чтобы нажатие попадало точно на нарисованную надпись.</p>
+              </div>
             </fieldset>
             <div class="double">
               <label>Порядок показа<input type="number" id="baliPromoSort" min="0" max="100000" step="1" value="100" required></label>
