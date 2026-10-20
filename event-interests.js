@@ -1,8 +1,8 @@
 /**
  * BALI MENU — private "Хочу пойти" lists and public event counts.
  * Firestore transaction updates TWO documents atomically:
- *   events/{YYYY-MM-DD}.interestCount
- *   users/{uid}/eventInterests/{YYYY-MM-DD}
+ *   events/{date OR date__2 OR date__3}.interestCount
+ *   users/{uid}/eventInterests/{eventId}
  * A validated interest change is the only way for guests to change the count.
  */
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
@@ -20,7 +20,7 @@ let selected=new Set();
 const working=new Set();
 let loaded=false;
 const publish=()=>window.dispatchEvent(new CustomEvent("bali:interests",{
-  detail:{dates:[...selected],ready:loaded}
+  detail:{ids:[...selected],dates:[...new Set([...selected].map(id=>id.slice(0,10)))],ready:loaded}
 }));
 function todayInMinsk(){
   const p=Object.fromEntries(new Intl.DateTimeFormat("en-GB",{
@@ -59,17 +59,18 @@ onAuthStateChanged(auth,user=>{
     }
   );
 });
-async function toggle(date){
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error("Некорректная дата мероприятия.");
+async function toggle(eventId){
+  if(!/^\d{4}-\d{2}-\d{2}(?:__(?:2|3))?$/.test(eventId))throw new Error("Некорректный номер мероприятия.");
+  const date=eventId.slice(0,10);
   if(date<todayInMinsk())throw new Error("Прошедшие мероприятия нельзя добавлять в планы.");
   if(!window.BaliAuth || !(await window.BaliAuth.requireProfile()))return {loginRequired:true};
   const user=auth.currentUser;
   if(!user?.emailVerified||!user.email)throw new Error("Войдите через Google.");
-  if(working.has(date))return {busy:true};
-  working.add(date);
+  if(working.has(eventId))return {busy:true};
+  working.add(eventId);
   try {
-    const eventRef=doc(db,"events",date);
-    const selectedRef=doc(db,"users",user.uid,"eventInterests",date);
+    const eventRef=doc(db,"events",eventId);
+    const selectedRef=doc(db,"users",user.uid,"eventInterests",eventId);
     const result=await runTransaction(db,async transaction=>{
       const eventSnap=await transaction.get(eventRef);
       const wishSnap=await transaction.get(selectedRef);
@@ -91,7 +92,7 @@ async function toggle(date){
     return result;
   }catch(error){
     throw new Error(errorMessage(error));
-  }finally{working.delete(date);}
+  }finally{working.delete(eventId);}
 }
 window.BaliInterests={
   toggle,
