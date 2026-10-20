@@ -864,6 +864,10 @@ service cloud.firestore {
     match /bonusTransfers/{transferId} {
       allow read, write: if false;
     }
+    match /baliTransferInbox/{uid}/items/{transferId} {
+      allow get, list: if signedInAs(uid);
+      allow create, update, delete: if false;
+    }
 
     match /{document=**} {
       allow read, write: if false;

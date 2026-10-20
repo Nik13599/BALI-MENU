@@ -74,6 +74,7 @@ function renderBalance(){
 function resetTransfer(){
   ++run;
   recipient=null;selected.clear();choicePage=0;stage="lookup";requestId=null;busy=false;
+  if($("baliTransferWish"))$("baliTransferWish").value="";
   const input=$("baliTransferRecipient");if(input)input.value="";
   $("baliTransferRecipientPreview").hidden=true;
   $("baliTransferCompleted").hidden=true;
@@ -210,6 +211,7 @@ $("baliTransferReviewOpen")?.addEventListener("click",()=>{
   say("baliTransferReviewStatus","Проверьте имя и количество. Бонусы спишутся у вас и начислятся получателю.");
   showStage("review");
 });
+$("baliTransferWish")?.addEventListener("input",()=>{requestId=null});
 $("baliTransferReviewBack")?.addEventListener("click",()=>{showStage("choices");renderChoices()});
 $("baliTransferConfirm")?.addEventListener("click",async()=>{
   if(busy||!logged()||!recipient)return;
@@ -217,7 +219,8 @@ $("baliTransferConfirm")?.addEventListener("click",async()=>{
   if(!items.length||items.length>12||items.reduce((s,x)=>s+x.quantity,0)>100)return;
   busy=true;const button=$("baliTransferConfirm");button.disabled=true;
   if(!requestId)requestId=createRequestId();
-  const payload={number:recipient.number,items:items.map(x=>({grantId:x.grantId,quantity:x.quantity})),requestId};
+  const payload={number:recipient.number,items:items.map(x=>({grantId:x.grantId,quantity:x.quantity})),
+    comment:($("baliTransferWish")?.value||"").trim().slice(0,160),requestId};
   const token=++run,myUid=uid;
   say("baliTransferReviewStatus","Подтверждаем и выполняем перевод на защищённом сервере…");
   try{
@@ -247,6 +250,7 @@ function operationRow(x){
   const note=Array.isArray(x.items)&&x.items.length?x.items.map(v=>(names[v.kind]||v.kind)+" × "+v.quantity).join(", "):
     x.kind&&x.kind!=="mixed"?(names[x.kind]||x.kind)+(x.count?" × "+x.count:""):"";
   item.append(line,node("p","",[from,note,x.reason].filter(Boolean).join(" · ")));
+  if(x.comment)item.append(node("blockquote","bali-bank-history-wish","«"+x.comment+"»"));
   return item;
 }
 function historyRender(){

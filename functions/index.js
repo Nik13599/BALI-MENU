@@ -94,6 +94,9 @@ exports.transferBaliBenefits=api("transferBaliBenefits",async req=>{
   const requestId=req.data?.requestId;
   if(typeof requestId!=="string"||!/^[a-f0-9]{32}$/.test(requestId))
     fail("invalid-argument","Ошибка идентификатора перевода.");
+  const comment=textValue(req.data?.comment,161);
+  if(typeof req.data?.comment!=="undefined"&&(typeof req.data.comment!=="string"||req.data.comment.trim().length>160))
+    fail("invalid-argument","Пожелание не более 160 символов.");
   const payload=req.data?.items;
   if(!Array.isArray(payload)||payload.length<1||payload.length>12)
     fail("invalid-argument","Выберите от 1 до 12 позиций.");
@@ -127,7 +130,7 @@ exports.transferBaliBenefits=api("transferBaliBenefits",async req=>{
     if(previous.exists){
       const done=previous.data();
       if(done.fromUid!==uid||done.toUid!==recipient.uid||done.toNumber!==recipient.number||
-        JSON.stringify(done.requestItems)!==JSON.stringify(items))
+        JSON.stringify(done.requestItems)!==JSON.stringify(items)||(done.comment||"")!==comment)
         fail("already-exists","Идентификатор запроса уже был использован.");
       return {ok:true,alreadyProcessed:true,transferId};
     }
@@ -162,7 +165,7 @@ exports.transferBaliBenefits=api("transferBaliBenefits",async req=>{
       fromUid:uid,toUid:recipient.uid,
       fromNumber,toNumber:toNumberText,fromName:senderName,toName:receiverName,
       items:transferred,requestItems:items,createdAt:at,requestId,
-      total,source:"guest-transfer",status:"completed"
+      total,comment,source:"guest-transfer",status:"completed"
     };
     tx.set(fromRef,{...source,updatedAt:at});
     tx.set(toRef,{...target,updatedAt:at});
@@ -171,10 +174,14 @@ exports.transferBaliBenefits=api("transferBaliBenefits",async req=>{
     const common={
       source:"guest-transfer",transferId,items:transferred,
       fromNumber,toNumber:toNumberText,fromName:senderName,toName:receiverName,
-      createdAt:at
+      createdAt:at,comment
     };
     tx.create(debitRef,{...common,guestUid:uid,type:"transfer-out",kind:"mixed",count:total});
     tx.create(creditRef,{...common,guestUid:recipient.uid,type:"transfer-in",kind:"mixed",count:total});
+    tx.create(db.doc("baliTransferInbox/"+recipient.uid+"/items/"+transferId),{
+      senderName,senderNumber:fromNumber,fromUid:uid,items:transferred.map(x=>({kind:x.kind,quantity:x.quantity})),
+      total,comment,createdAt:at,transferId
+    });
     return {ok:true,alreadyProcessed:false,transferId};
   },{maxAttempts:5});
   return result;
@@ -201,6 +208,9 @@ exports.listMyBaliHistory=api("listMyBaliHistory",async req=>{
       percent:Number.isFinite(d.percent)?d.percent:null,reason:textValue(d.reason||d.note,200),
       items:components,fromNumber:textValue(d.fromNumber,6),toNumber:textValue(d.toNumber,6),
       fromName:textValue(d.fromName),toName:textValue(d.toName),
+      comment:textValue(d.comment,160),name:textValue(d.name,90),
+      receiptExpiresAt:d.receiptExpiresAt?.toMillis?.()||0,
+      balanceAfter:Number.isInteger(d.balanceAfter)?d.balanceAfter:null,
       createdAt:d.createdAt?.toMillis?.()||0
     };
   });
