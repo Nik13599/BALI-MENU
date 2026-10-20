@@ -81,7 +81,7 @@ if(image&&title&&description&&counter&&action&&hero){
      (value.startsWith("data:image/webp;base64,")&&value.length<=155000));
   function setPoster(offer){
     // For the seasonal card, display the original customer-approved PNG, unchanged.
-    const primary=offer?.id===holidayId?holidayArt:(validImage(offer?.imageUrl)?offer.imageUrl:"");
+    const primary=validImage(offer?.imageUrl)?offer.imageUrl:(offer?.id===holidayId?holidayArt:"");
     const tablet=validImage(offer?.imageTabletUrl)?offer.imageTabletUrl:primary;
     const mobile=validImage(offer?.imageMobileUrl)?offer.imageMobileUrl:primary;
     image.hidden=!primary;
@@ -105,6 +105,9 @@ if(image&&title&&description&&counter&&action&&hero){
   }
   function show(){
     const offer=offers[index];
+    // Identifies the active slide to the administrator’s live visual editor.
+    hero.dataset.baliOfferId=offer?.id||"";
+    hero.dataset.baliManagedPromo="true";
     if(!offer){
       hero.classList.remove("is-seasonal");
       hero.removeAttribute("aria-label");
