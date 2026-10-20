@@ -175,8 +175,13 @@ function initialize(){
  renderInspector();
 }
 function frameDoc(){try{return frame.contentDocument;}catch{return null;}}
+function aboutDoc(){
+ try{return frameDoc()?.getElementById("baliAboutFrame")?.contentDocument||null;}
+ catch{return null;}
+}
+function activeDoc(){return selection?.scope==="about"?aboutDoc():frameDoc();}
 function liveNode(){
- const d=frameDoc();if(!d||!selection)return null;
+ const d=activeDoc();if(!d||!selection)return null;
  if(selection.id)return d.querySelector('[data-bali-builder-id="'+selection.id+'"]');
  try{return d.querySelector(selection.selector);}catch{return null;}
 }
@@ -264,7 +269,7 @@ function clearOverlay(){
 }
 function positionOverlay(){
  if(!overlay||!selection)return;
- const node=liveNode(),d=frameDoc();
+ const node=liveNode(),d=activeDoc();
  if(!node||!d){overlay.style.display="none";return;}
  const rect=node.getBoundingClientRect();
  overlay.style.display="block";
@@ -272,7 +277,7 @@ function positionOverlay(){
 }
 function attachOverlay(){
  clearOverlay();
- const d=frameDoc();if(!d)return;
+ const d=activeDoc();if(!d)return;
  if(!d.getElementById("baliBuilderEditingOverlayStyle")){
   const st=d.createElement("style");st.id="baliBuilderEditingOverlayStyle";
   st.textContent=".bali-builder-selection-overlay{position:fixed;z-index:2147483000;pointer-events:none;outline:2px solid #b9ff51;outline-offset:1px}"+
@@ -330,68 +335,31 @@ function attachOverlay(){
  d.defaultView.addEventListener("resize",positionOverlay,{passive:true});
 }
 function choose(target){
- const d=frameDoc();if(!d||!target)return;
+ const d=target?.ownerDocument;if(!d||!target)return;
+ const scope=d===aboutDoc()?"about":"main";
  const custom=target.closest("[data-bali-builder-id]");
- if(custom)selection={id:custom.dataset.baliBuilderId,selector:null};
+ if(custom)selection={id:custom.dataset.baliBuilderId,selector:null,scope};
  else {
   const node=target.closest("a,button,h1,h2,h3,h4,p,span,strong,em,img,article,section,aside,div,li");
   if(!node||node===d.body)return;
   const selector=core.selectorFor(node);if(!selector)return;
-  selection={id:null,selector};
+  selection={id:null,selector:scope==="about"?"about::"+selector:selector,scope};
  }
+ if(overlay?.ownerDocument!==activeDoc())attachOverlay();
  renderInspector();
 }
 function refreshCanvas(){
- const d=frameDoc();if(!d||!d.body||!d.defaultView?.BaliBuilderCore)return;
- d.defaultView.BaliBuilderCore.mount(d,model,currentDevice,{editor:true});
+ const d=frameDoc();if(!d?.body)return;
+ core.mount(d,model,currentDevice,{editor:true});
+ const inner=aboutDoc();
+ if(inner?.body)core.mount(inner,model,currentDevice,{editor:true,scope:"about"});
  if(overlay&&!overlay.isConnected)attachOverlay();
  if(selection)renderInspector();
 }
-// Double-click to edit text in the live canvas without opening a separate page.
-let inlineEditor=null;
-function beginInlineText(clicked){
- if(!enabled||!authorized||!clicked||inlineEditor)return;
- const node=clicked.closest?.("h1,h2,h3,h4,p,span,strong,em,small,label,a,button,.bali-builder-added");
- if(!node||node.matches("img,svg,input,textarea")||node.closest(".bali-builder-selection-overlay"))return;
- const children=[...node.children].filter(ch=>!["SVG"].includes(ch.tagName));
- // Inline text changes must not destroy nested UI controls or structured cards.
- const textNode=[...node.childNodes].find(ch=>ch.nodeType===3&&ch.textContent.trim());
- if(children.length&&!textNode&&node.dataset.kind!=="text"&&node.dataset.kind!=="button")return;
- choose(node);
- if(!selection)return;
- const d=frameDoc(),selected=liveNode();if(!d||!selected)return;
- const value=(selection.id?getItem()?.text:undefined)??(textNode?.textContent?.trim()||(!selected.children.length?selected.textContent?.trim():""));
- if(value===undefined)return;
- const area=d.createElement("textarea");
- area.className="bali-builder-inline-text";
- area.setAttribute("aria-label","Редактирование текста выбранного элемента");
- area.value=value||"";
- const r=selected.getBoundingClientRect();
- area.style.cssText="position:fixed!important;z-index:2147483100!important;"+
- "top:"+Math.max(5,r.top)+"px!important;left:"+Math.max(5,r.left)+"px!important;"+
- "width:"+Math.min(Math.max(170,r.width),d.defaultView.innerWidth-12)+"px!important;"+
- "height:"+Math.max(52,Math.min(220,r.height+25))+"px!important;"+
- "box-sizing:border-box!important;resize:both!important;"+
- "padding:9px 11px!important;background:#111d15!important;color:#f5ffee!important;"+
- "border:2px solid #b9ff51!important;border-radius:7px!important;"+
- "font:600 15px/1.5 Manrope,Arial,sans-serif!important;outline:none!important;";
- d.body.append(area);inlineEditor=area;let cancelled=false;
- area.addEventListener("click",e=>{e.stopImmediatePropagation();},true);
- area.addEventListener("keydown",e=>{
-  e.stopImmediatePropagation();
-  if(e.key==="Escape"){cancelled=true;area.blur();}
-  else if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();area.blur();}
- });
- area.addEventListener("blur",()=>{
-  const value=area.value;
-  area.remove();inlineEditor=null;
-  if(!cancelled&&value!==undefined&&value.length<=1500)changeMain("text",value);
- },{once:true});
- area.focus();area.select();
-}
-function attachFrame(){
- const d=frameDoc();if(!d?.body)return;
- // Old inspector and site scripts do not handle interactions while Builder mode is on.
+const capturedDocs=new WeakSet();
+function attachInteractions(d){
+ if(!d?.body||capturedDocs.has(d))return;
+ capturedDocs.add(d);
  d.addEventListener("click",event=>{
   if(!enabled||event.target===inlineEditor)return;
   event.preventDefault();event.stopImmediatePropagation();
@@ -399,11 +367,27 @@ function attachFrame(){
   choose(event.target);
  },true);
  d.addEventListener("dblclick",event=>{
-  if(!enabled)return;
+  if(!enabled||event.target===inlineEditor)return;
   event.preventDefault();event.stopImmediatePropagation();
   beginInlineText(event.target);
  },true);
- d.addEventListener("submit",event=>{if(enabled){event.preventDefault();event.stopImmediatePropagation();}},true);
+ d.addEventListener("submit",event=>{
+  if(enabled){event.preventDefault();event.stopImmediatePropagation();}
+ },true);
+}
+function attachFrame(){
+ const d=frameDoc();if(!d?.body)return;
+ attachInteractions(d);
+ const nested=d.getElementById("baliAboutFrame");
+ if(nested&&!nested.dataset.baliBuilderFrameBound){
+  nested.dataset.baliBuilderFrameBound="true";
+  nested.addEventListener("load",()=>{
+   const inside=aboutDoc();
+   if(inside)attachInteractions(inside);
+   refreshCanvas();
+  });
+ }
+ if(aboutDoc()?.body)attachInteractions(aboutDoc());
  if(!overlay)attachOverlay();
  refreshCanvas();
 }
