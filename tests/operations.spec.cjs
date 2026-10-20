@@ -9,10 +9,10 @@ test('guest status notices are deduplicated and cleared on logout',async({page})
   send('pending');send('confirmed');send('confirmed');
  });
  await page.locator('#baliOrderNoticeLive').click();
- await expect(page.locator('#baliOrderNoticeList button')).toHaveCount(1);
- await expect(page.locator('#baliOrderNoticeList')).toContainText('подтверждён');
+ await expect(page.locator('#baliProfileNoticeList button')).toHaveCount(1);
+ await expect(page.locator('#baliProfileNoticeList')).toContainText('подтверждён');
  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('bali:auth-state',{detail:{signedIn:false}})));
- await expect(page.locator('#baliOrderNoticeList button')).toHaveCount(0);
+ await expect(page.locator('#baliProfileNoticeList button')).toHaveCount(0);
 });
 test('empty initial admin queue still notifies about the first incoming order',async({page})=>{
  await page.goto('/admin.html');
