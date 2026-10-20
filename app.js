@@ -122,22 +122,18 @@ function initEventCarousel() {
         event.preventDefault();
         scrollEventCarousel(event.key==="ArrowRight"?1:-1);
     });
-    // Подгоняем слайд под вертикальную пропорцию сторис 9:16.
-    // Высота берётся из реального пространства между верхним меню и нижней панелью.
+    // A poster has a SQUARE image plus a small caption and two actions BELOW it.
+    // The viewport controls the final size, so the full month and poster fit
+    // together on compact phones without shrinking the hero unnecessarily.
     const fitStorySlides=()=>{
         if(track.clientWidth<1||track.clientHeight<1)return;
-        const mobile=window.matchMedia("(max-width: 767px)").matches;
+        const mobile=window.matchMedia("(max-width: 1179px)").matches;
         const width=Math.min(
-            390,
-            track.clientWidth*(mobile?.82:.40),
-            (track.clientHeight-14)*9/16,
-            // Reserve a readable information area and two pinned CTAs below
-            // the square image, including on small landscape devices.
-            Math.max(96,track.clientHeight-(mobile?185:195))
+            310,
+            track.clientWidth*(mobile?.62:.46),
+            Math.max(88,track.clientHeight-(mobile?90:105))
         );
-        // On low-height phones and rotated tablets, the slide must fit inside
-        // the available carousel height rather than imposing a fixed 155px width.
-        const rounded=Math.max(96,Math.floor(width));
+        const rounded=Math.max(88,Math.floor(width));
         const previous=track.style.getPropertyValue("--bali-event-slide-width");
         if(previous===rounded+"px")return;
         const active=carouselEventCards(track).find(card=>card.classList.contains("is-active"));
