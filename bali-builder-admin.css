@@ -1,0 +1,58 @@
+/* Visual site builder — admin extension; does not replace legacy configuration. */
+body[data-bali-admin-section="design"] .admin-tab[data-admin-tab="design"]{font-weight:800}
+.bali-builder-top{background:linear-gradient(120deg,#17231c,#0e1517);border:1px solid rgba(185,255,81,.28);border-radius:15px;margin:0 0 16px;padding:15px;display:grid;gap:12px}
+.bali-builder-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.bali-builder-title strong{font:800 clamp(17px,1.5vw,22px)/1.2 Manrope,Inter,sans-serif;color:#eefbe9}
+.bali-builder-title span{font:600 11px/1.5 Manrope,Inter,sans-serif;color:#a7b8aa}
+.bali-builder-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bali-builder-top button,.bali-builder-top select{
+ appearance:none;border:1px solid #415549;border-radius:10px;padding:10px 13px;min-height:40px;
+ background:#222f29;color:#e8fae0;font:700 12px/1.3 Manrope,Inter,sans-serif;cursor:pointer
+}
+.bali-builder-top button:hover{border-color:#b9ff51}
+.bali-builder-top button:disabled{opacity:.42;cursor:not-allowed}
+.bali-builder-top .bali-builder-publish{background:#b9ff51;color:#142013;border-color:#b9ff51}
+.bali-builder-top .bali-builder-secondary{background:#131a1a;color:#d5ead6}
+.bali-builder-additions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.bali-builder-additions span{color:#b9c8b6;font-size:11px;margin-right:6px}
+.bali-builder-utilities{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
+#baliBuilderStatus{margin:0;font:600 12px/1.5 Manrope,Inter,sans-serif;color:#bedbb9}
+.bali-builder-active .bali-design-inspector-pages{display:none!important}
+.bali-builder-active .bali-design-inspector-top{display:none}
+.bali-builder-active .bali-design-inspector{top:75px}
+#baliBuilderInspector{display:none}
+.bali-builder-active #baliBuilderInspector{display:grid;gap:13px}
+.bali-builder-inspector-heading{display:grid;gap:5px;padding:8px 6px 14px;border-bottom:1px solid #405446;overflow-wrap:anywhere}
+.bali-builder-inspector-heading strong{font:800 16px Manrope,Inter,sans-serif;color:#f1ffe9}
+.bali-builder-inspector-heading small{font:500 11px/1.45 Manrope,Inter,sans-serif;color:#b3bdb6}
+.bali-builder-content{display:grid;gap:12px}
+.bali-builder-field{display:flex;flex-direction:column;gap:6px;min-width:0;font:650 11px/1.3 Manrope,Inter,sans-serif;color:#dbe7dd}
+.bali-builder-field>span{display:block}
+.bali-builder-field>small{font-weight:450;color:#9fafa8}
+.bali-builder-field input,.bali-builder-field select,.bali-builder-field textarea{
+ width:100%;box-sizing:border-box;border:1px solid #42564a;border-radius:9px;
+ padding:9px 10px;min-height:39px;background:#1c2924;color:#e9f7e5;
+ font:600 12px/1.5 Manrope,Inter,sans-serif
+}
+.bali-builder-field input[type=color]{padding:4px;min-width:0;height:40px;cursor:pointer}
+.bali-builder-field input[type=file]{min-height:46px;font-size:10px;cursor:pointer}
+.bali-builder-field input:focus,.bali-builder-field select:focus,.bali-builder-field textarea:focus{outline:2px solid #b9ff51;outline-offset:1px}
+.bali-builder-field textarea{resize:vertical;min-height:66px}
+.bali-builder-group{margin:0;border:1px solid #3b4c41;border-radius:11px;background:#17211b;overflow:hidden}
+.bali-builder-group summary{padding:13px;cursor:pointer;color:#e6f1e7;font:800 12px Manrope,Inter,sans-serif;list-style-position:inside}
+.bali-builder-group[open] summary{border-bottom:1px solid #304136}
+.bali-builder-grid{padding:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 9px}
+.bali-builder-grid .bali-builder-field:nth-child(odd):last-child{grid-column:1 / -1}
+.bali-builder-element-actions{display:grid;gap:8px;margin:0}
+.bali-builder-element-actions button{min-height:40px;cursor:pointer;border:1px solid #3c5141;border-radius:9px;background:#223027;color:#d3ead8;font:700 11px Manrope,Inter,sans-serif}
+.bali-builder-element-actions button.danger{border-color:#734b4b;color:#f3b7b7}
+.bali-builder-element-actions button:disabled{cursor:not-allowed;opacity:.48}
+.bali-builder-active .bali-design-preview-canvas{background-color:#111815;background-image:linear-gradient(45deg,rgba(255,255,255,.025) 25%,transparent 25%),linear-gradient(-45deg,rgba(255,255,255,.025) 25%,transparent 25%);background-size:18px 18px}
+.bali-builder-active #baliStudioLoadStatus{color:#d3e6ce}
+.bali-builder-selection-overlay{position:fixed;z-index:2147483000;pointer-events:none;outline:2px solid #b9ff51;outline-offset:1px;box-shadow:0 0 0 99999px rgba(0,0,0,0)}
+.bali-builder-bounding-label{position:absolute;bottom:100%;left:0;transform:translateY(-4px);height:22px;min-width:96px;padding:3px 8px;display:flex;align-items:center;justify-content:center;background:#b9ff51;color:#152010;border-radius:5px;font:700 12px/1.2 Arial,sans-serif;pointer-events:auto;cursor:grab;touch-action:none;user-select:none}
+.bali-builder-bounding-label:active{cursor:grabbing}
+.bali-builder-handle{position:absolute;right:-7px;bottom:-7px;width:17px;height:17px;background:#b9ff51;border:2px solid #101510;border-radius:4px;box-sizing:border-box;pointer-events:auto;cursor:nwse-resize;touch-action:none}
+@media(max-width:1190px){.bali-builder-grid{grid-template-columns:1fr}}
+@media(max-width:1020px){.bali-builder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:550px){.bali-builder-toolbar button,.bali-builder-toolbar select{flex:1 1 auto}.bali-builder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bali-builder-top{padding:11px}}
