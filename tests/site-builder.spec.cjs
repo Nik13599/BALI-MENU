@@ -181,3 +181,21 @@ test("builder movement never overwrites an existing transform-based animation",a
  expect(result.scale).toBe("1.15");
  expect(result.restored).toBe(true);
 });
+
+
+test("button links from embedded About navigate on the main site, not inside the iframe",async({page})=>{
+ await page.goto("/index.html?bali-admin-design-preview=1",{waitUntil:"domcontentloaded"});
+ await page.waitForFunction(()=>Boolean(window.BaliBuilderCore));
+ await page.locator("#baliAboutFrame").evaluate(el=>{el.loading="eager";});
+ await page.waitForFunction(()=>Boolean(document.querySelector("#baliAboutFrame")?.contentDocument?.body));
+ const actual=await page.evaluate(()=>{
+  const nested=document.getElementById("baliAboutFrame").contentWindow;
+  window.BaliBuilderCore.navigate(nested,"route:menu");
+  return {
+   parentPage:document.body.dataset.baliPage,
+   nestedLocation:nested.location.pathname
+  };
+ });
+ expect(actual.parentPage).toBe("menu");
+ expect(actual.nestedLocation).toContain("about.html");
+});
