@@ -59,3 +59,24 @@
   .bali-promo-contact-dialog h2{font-size:24px}
 }
 @media(prefers-reduced-motion:reduce){.bali-promo-contact-link{transition:none}}
+
+/* Coordinates are percentages of the uploaded artwork, not the desktop card. */
+.bali-promo-hotspot-grid[hidden]{display:none!important}
+.bali-promo-hotspot-grid{
+  display:grid;grid-template-columns:repeat(4,minmax(75px,1fr));gap:10px;
+  margin:10px 0
+}
+.bali-promo-hotspot-grid>.hint{grid-column:1/-1;margin:0}
+.bali-promo-hotspot-enable{display:flex!important;align-items:center;gap:9px;margin-top:17px}
+.bali-promo-hotspot-enable input{width:18px;height:18px;accent-color:#c3f36d}
+#baliPcOfferAction[hidden],.bali-pc-artwork-hotspot[hidden]{display:none!important}
+.bali-pc-artwork-hotspot{
+  position:absolute!important;z-index:8!important;display:block!important;
+  border:2px solid transparent!important;border-radius:12px!important;
+  background:transparent!important;box-shadow:none!important;
+  padding:0!important;margin:0!important;cursor:pointer!important;
+  touch-action:manipulation
+}
+.bali-pc-artwork-hotspot:hover{background:rgba(196,247,114,.07)!important}
+.bali-pc-artwork-hotspot:focus-visible{outline:3px solid #d3f980!important;outline-offset:3px;border-color:#d3f980!important}
+@media(max-width:600px){.bali-promo-hotspot-grid{grid-template-columns:repeat(2,minmax(80px,1fr))}}
