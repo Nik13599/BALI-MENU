@@ -28,3 +28,44 @@ body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="residen
   font-size:clamp(9px,2.5vw,12px)!important;
  }
 }
+
+/* Render the exact BALI master emblem in the identical solid ink as card text.
+   The source SVG is used as an alpha mask (not recreated or recolored by filter).
+   The original image stays in the DOM for accessibility and layout. */
+@supports ((-webkit-mask-image:url("assets/bali-id-card-readable.svg")) or (mask-image:url("assets/bali-id-card-readable.svg"))){
+  body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="residentdj"] .bali-id-card-front .bali-id-centre-art img.bali-id-brand-master{
+    opacity:0!important;
+  }
+  body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="residentdj"] .bali-id-card-front .bali-id-centre-art::after{
+    content:"";
+    position:absolute;
+    z-index:6;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    display:block;
+    width:auto;
+    height:clamp(110px,23vw,195px);
+    aspect-ratio:450/531;
+    max-width:58%;
+    max-height:195px;
+    background-color:var(--bali-card-ink);
+    -webkit-mask-image:url("assets/bali-id-card-readable.svg?v=20261020-no-subtitle");
+    mask-image:url("assets/bali-id-card-readable.svg?v=20261020-no-subtitle");
+    -webkit-mask-size:contain;
+    mask-size:contain;
+    -webkit-mask-position:center;
+    mask-position:center;
+    -webkit-mask-repeat:no-repeat;
+    mask-repeat:no-repeat;
+    filter:drop-shadow(0 0 5px var(--bali-card-halo));
+    pointer-events:none;
+  }
+  @media(max-width:767px){
+    body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="residentdj"] .bali-id-card-front .bali-id-centre-art::after{
+      height:clamp(106px,34vw,145px);
+      max-width:55%;
+      max-height:145px;
+    }
+  }
+}
