@@ -108,7 +108,11 @@ function syncCards(){
   // Preserve the active event by DATE when Firebase replaces the HTML cards.
   if(entries.length){
     const same=lastCardDate?entries.findIndex(c=>c.dataset.eventDate===lastCardDate):-1;
-    if(firstSync){activeIndex=0;position=0;firstSync=false;}
+    if(firstSync){
+      // The reference opens with a central poster and a visible neighbor on
+      // BOTH sides whenever at least three events have been published.
+      activeIndex=entries.length>=3?1:0;position=activeIndex;firstSync=false;
+    }
     else if(same>=0){activeIndex=same;position=same;}
     else{activeIndex=clamp(activeIndex,0,entries.length-1);position=activeIndex;}
     lastCardDate=entries[activeIndex].dataset.eventDate||"";
@@ -227,15 +231,13 @@ const decorate=()=>{
       poster.addEventListener("click",()=>{
         if(performance.now()<ignoreTapUntil)return;
         const index=cards().indexOf(card);
-        if(index!==activeIndex){focusIndex(index,true);return;}
         openDetails(card);
       });
       poster.addEventListener("keydown",event=>{
         if(event.key==="Enter"||event.key===" "){
           event.preventDefault();
           const index=cards().indexOf(card);
-          if(index!==activeIndex)focusIndex(index,true);
-          else openDetails(card);
+          openDetails(card);
         }
       });
     }
