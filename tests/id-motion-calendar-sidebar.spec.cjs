@@ -46,6 +46,23 @@ test('BALI ID preserves original emblem without footer, and rounds its real 3D s
   }));
   expect(edgeCorners.radius).toBeGreaterThan(4);
   expect(edgeCorners.height).toBeLessThan(edgeCorners.cardHeight);
+  const corners=await page.locator('#baliIdFlipScene').evaluate(scene=>{
+    const face=scene.querySelector('.bali-id-card-front');
+    const wall=scene.querySelector('.bali-id-3d-edge-left');
+    return {
+      clip:getComputedStyle(face).clipPath,
+      sideMask:getComputedStyle(wall).maskImage,
+      sideRadius:getComputedStyle(wall).borderRadius,
+      top:getComputedStyle(scene.querySelector('.bali-id-3d-edge-top')).display,
+      bottom:getComputedStyle(scene.querySelector('.bali-id-3d-edge-bottom')).display
+    };
+  });
+  expect(corners.clip).toContain('inset(');
+  expect(corners.clip).toContain('round');
+  expect(corners.sideMask).toContain('linear-gradient');
+  expect(corners.sideRadius).toContain('999px');
+  expect(corners.top).toBe('none');
+  expect(corners.bottom).toBe('none');
   const dims=await logo.evaluate(n=>{const r=n.getBoundingClientRect();return [r.width,r.height]});
   expect(dims[0]).toBeGreaterThan(25);
   expect(dims[1]).toBeGreaterThan(45);
