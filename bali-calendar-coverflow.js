@@ -31,7 +31,7 @@ function measure(){
   // A large central SQUARE remains fully visible above two action buttons.
   const width=Math.floor(Math.min(
     phone?340:500,
-    area.width*(phone?.64:.55),
+    area.width*(phone?.66:.60),
     Math.max(100,area.height-(phone?65:76))
   ));
   if(slideWidth!==width){
