@@ -1,0 +1,26 @@
+/* Club-friendly QR manager, print-optimized A4 sheets. */
+.bali-qr-admin{display:grid;gap:15px}
+.bali-qr-admin-form{display:grid;gap:9px;padding:16px;border-radius:14px;background:#141e17;border:1px solid #52694e}
+.bali-qr-admin-form h4{margin:0;font:800 17px Manrope,Inter,sans-serif}
+.bali-qr-admin-form label{display:grid;gap:5px;font:650 12px Manrope,Inter,sans-serif}
+.bali-qr-admin-form input:not([type=checkbox]),.bali-qr-admin-form select{box-sizing:border-box;width:100%;min-width:0;padding:10px;border-radius:9px;border:1px solid #51634f;background:#213025;color:#fff;font-size:13px}
+.bali-qr-admin-form .bali-qr-checkbox{display:flex;align-items:center;gap:8px}
+.bali-qr-admin-form .bali-qr-checkbox input{width:18px;height:18px}
+.bali-qr-admin-form [data-bali-qr-status]{font-size:12px;color:#d7e9d3;margin:0}
+.bali-qr-output{display:grid;gap:12px;padding:14px;border-radius:14px;border:1px solid #415843}
+.bali-qr-output-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.bali-qr-print-area{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:13px}
+.bali-qr-print-ticket{min-width:0;box-sizing:border-box;display:grid;justify-items:center;text-align:center;gap:8px;padding:15px 10px;border:1px dashed #95b78d;border-radius:12px;background:#fff;color:#101910;break-inside:avoid}
+.bali-qr-print-ticket img{display:block;width:150px;height:150px;max-width:100%;object-fit:contain}
+.bali-qr-print-ticket strong{font:800 14px Manrope,Inter,sans-serif}.bali-qr-print-ticket span{font:650 12px Manrope,Inter,sans-serif}
+.bali-qr-manage-list{display:grid;gap:9px}.bali-qr-manage-row{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px;background:#1b2820;border:1px solid #425b43;border-radius:9px}
+.bali-qr-manage-row strong{font-size:12px}.bali-qr-manage-row small{display:block;font-size:11px;color:#b5ccb1}
+.bali-qr-manage-row button{padding:7px 9px;border:1px solid #71936b;color:white;background:#344637;border-radius:8px;cursor:pointer}
+@media print{
+ @page{size:A4;margin:9mm}
+ body *{visibility:hidden!important}
+ #baliQrPrintArea,#baliQrPrintArea *{visibility:visible!important}
+ #baliQrPrintArea{position:absolute!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;left:0!important;top:0!important;width:100%!important;gap:5mm!important;background:#fff!important;max-width:none!important}
+ #baliQrPrintArea .bali-qr-print-ticket{padding:4mm 2mm!important;border:1px dashed #aaa!important;border-radius:0!important;min-height:67mm}
+ #baliQrPrintArea img{width:39mm!important;height:39mm!important}
+}
