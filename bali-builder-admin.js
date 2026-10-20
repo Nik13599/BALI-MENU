@@ -125,7 +125,7 @@ const titleGroups=[
  ["Габариты и позиция",["width","height","minWidth","maxWidth","minHeight","maxHeight","translateX","translateY","padding","marginTop","marginBottom","marginLeft","marginRight","borderRadius"]],
  ["Макет и медиа",["display","flexDirection","justifyContent","alignItems","gap","objectFit","objectPosition","backgroundPosition","backgroundSize","aspectRatio","overflow","zIndex"]],
  ["Шрифты и текст",["fontFamily","fontSize","fontWeight","fontStyle","textAlign","textTransform","lineHeight","letterSpacing"]],
- ["Цвета и кнопки",["color","backgroundColor","borderColor","borderWidth","opacity","shadow","buttonStyle"]],
+ ["Цвета и кнопки",["color","backgroundColor","borderColor","borderWidth","borderRadius","opacity","shadow","buttonStyle"]],
  ["Анимация и эффекты",["animation","animationDuration","animationDelay","animationIteration","animationEasing","effect","rotate","scale"]]
 ];
 const inputs=new Map();
