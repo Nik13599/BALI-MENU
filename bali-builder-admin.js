@@ -393,7 +393,7 @@ function attachFrame(){
  const d=frameDoc();if(!d?.body)return;
  // Old inspector and site scripts do not handle interactions while Builder mode is on.
  d.addEventListener("click",event=>{
-  if(!enabled)return;
+  if(!enabled||event.target===inlineEditor)return;
   event.preventDefault();event.stopImmediatePropagation();
   if(event.target.closest(".bali-builder-selection-overlay"))return;
   choose(event.target);
