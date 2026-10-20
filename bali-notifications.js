@@ -110,7 +110,7 @@
       const summary=document.createElement("summary");summary.append("Уведомления о заказах");
       const counter=document.createElement("span");counter.id="baliNoticeCount";summary.append(counter);
       const list=document.createElement("div");list.id="baliOrderNoticeList";
-      const clear=document.createElement("button");clear.type="button";clear.textContent="Отметить прочитанными";clear.addEventListener("click",markRead);
+      const clear=document.createElement("button");clear.type="button";clear.textContent="Отметить прочитанными";clear.addEventListener("click",()=>{feed=[];saveFeed();render();});
       panel.append(summary,list,clear);adminHost.append(panel);
     }else{
       el("baliProfileNoticeBtn")?.addEventListener("click",showDialog);
