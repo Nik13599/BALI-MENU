@@ -31,7 +31,34 @@
    month=Number(selected.slice(5,7));
  let hasInteracted=false,lockUntil=0,opened=0;
  let lastEventDate=null,expanded=false;
- const publishedDates=()=>new Set(eventCards().map(card=>card.dataset.eventDate).filter(valid));
+ let plannedDates=new Set(),eventSnapshot=[];
+ const validHexColor=c=>typeof c==="string"&&/^#[0-9a-fA-F]{6}$/.test(c);
+ const calendarEvents=()=>{
+   // Live server snapshots include past and future dates; local poster cards
+   // are also accepted, allowing multiple dots for multiple event instances
+   // if/when publishing on the same date is enabled.
+   const items=eventSnapshot.map(event=>({
+     date:event.date,color:validHexColor(event.dotColor)?event.dotColor:"#b9ff51",
+     id:event.id||event.date
+   })).filter(event=>valid(event.date));
+   const existing=new Set(items.map(event=>event.id));
+   for(const card of eventCards()){
+     const date=card.dataset.eventDate,id=card.dataset.eventId||date;
+     if(!valid(date)||existing.has(id))continue;
+     items.push({date,id,color:validHexColor(card.dataset.dotColor)?card.dataset.dotColor:"#b9ff51"});
+     existing.add(id);
+   }
+   return items;
+ };
+ const eventsByDate=()=>{
+   const map=new Map();
+   for(const event of calendarEvents()){
+     if(!map.has(event.date))map.set(event.date,[]);
+     map.get(event.date).push(event);
+   }
+   return map;
+ };
+ const publishedDates=()=>new Set(calendarEvents().map(event=>event.date));
  const stamp=(s)=>s.split("-").map(Number);
  const setLabel=()=>{
    const live=getNow();
@@ -45,7 +72,9 @@
    }
  };
  function makeDay(s,compact=false){
-   const published=publishedDates().has(s);
+   const items=eventsByDate().get(s)||[];
+   const published=items.length>0;
+   const planned=plannedDates.has(s);
    const today=s===getNow().date;
    const btn=document.createElement("button");
    btn.type="button";btn.className="bali-calendar-day";
@@ -53,9 +82,12 @@
    btn.dataset.selected=String(s===selected);
    btn.dataset.today=String(today);
    btn.dataset.event=String(published);
+   btn.dataset.planned=String(planned);
+   btn.dataset.eventCount=String(items.length);
    btn.setAttribute("aria-pressed",String(s===selected));
    btn.setAttribute("aria-label",describe(s,{weekday:"long",day:"numeric",month:"long",year:"numeric"})+
-     (published?". Есть опубликованное мероприятие.":"."));
+     (published?". Мероприятий: "+items.length+".":"")+
+     (planned?" В моих планах.":""));
    const number=document.createElement("span");number.className="bali-calendar-day-number";
    number.textContent=String(Number(s.slice(-2)));
    btn.append(number);
@@ -65,8 +97,16 @@
      btn.prepend(dayName);
    }
    if(published){
-     const dot=document.createElement("span");dot.className="bali-calendar-event-dot";
-     dot.setAttribute("aria-hidden","true");btn.append(dot);
+     const dots=document.createElement("span");
+     dots.className="bali-calendar-event-dots";
+     dots.setAttribute("aria-hidden","true");
+     for(const item of items){
+       const dot=document.createElement("span");
+       dot.className="bali-calendar-event-dot";
+       dot.style.setProperty("--bali-event-dot-color",item.color);
+       dots.append(dot);
+     }
+     btn.append(dots);
    }
    return btn;
  }
@@ -160,6 +200,20 @@
    if(date===lastEventDate&&date===selected)return;
    lastEventDate=date;selected=date;
    [year,month]=stamp(date);render();
+ });
+ // Repaint immediately after optimistic RSVP (and after the authoritative
+ // Firebase snapshot), without resetting selected month or carousels.
+ window.addEventListener("bali:calendar:plans-changed",event=>{
+   plannedDates=new Set((event.detail?.dates||[]).filter(valid));
+   render();
+ });
+ window.addEventListener("bali:interests",event=>{
+   plannedDates=new Set((event.detail?.dates||[]).filter(valid));
+   render();
+ });
+ window.addEventListener("bali:events",event=>{
+   eventSnapshot=Array.isArray(event.detail?.events)?event.detail.events:[];
+   render();
  });
  const mutation=new MutationObserver(()=>render());
  mutation.observe(grid,{childList:true});
