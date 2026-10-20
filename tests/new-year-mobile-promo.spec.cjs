@@ -57,3 +57,51 @@ test("Desktop keeps the complete original holiday artwork",async({page})=>{
   expect(await poster.evaluate(image=>getComputedStyle(image).objectFit)).toBe("contain");
   await expect(page.locator(".bali-pc-artwork-hotspot:not(.bali-pc-artwork-hotspot-secondary):not(.bali-pc-artwork-hotspot-third)")).toBeVisible();
 });
+
+test("Published seasonal campaign can replace built-in artwork and still be resized in the visual builder",async({page})=>{
+  await page.goto("/index.html");
+  const source=fs.readFileSync(path.join(__dirname,"..","bali-pc-offers.js"),"utf8")
+    .replace(/^import\s+.*?;\s*$/gm,"");
+  // Simulate a published admin change without production Firebase credentials.
+  await page.addScriptTag({content:`(()=>{
+    const initializeApp=()=>({}),getApps=()=>[],getApp=()=>({});
+    const getFirestore=()=>({}),collection=()=>({}),query=()=>({}),where=()=>({});
+    const onSnapshot=(_,notify)=>{
+      notify({docs:[{id:"bali-new-year-2026",data:()=>({
+        title:"БРОНИРОВАНИЕ НОВОГОДНИХ КОРПОРАТИВОВ",
+        description:"Новая кампания",imageUrl:"https://example.com/holiday.png",
+        imageTabletUrl:"https://example.com/holiday-tablet.png",
+        imageMobileUrl:"https://example.com/holiday-phone.png",
+        destination:"contact-modal",buttonText:"Забронировать заранее",
+        contactHotspot:{enabled:true,left:4,top:69,width:30,height:17},
+        sort:0,published:true
+      })}]});
+      return ()=>{};
+    };
+    `+source+"\n})();"});
+  const result=await page.evaluate(()=>{
+    const hero=document.querySelector(".bali-pc-hero"),poster=document.querySelector("#baliPcHeroPoster");
+    const core=window.BaliBuilderCore,model=core.emptyModel();
+    const selector=core.selectorFor(hero);
+    model.phone.rules[selector]={props:{width:"96%",height:"210px"}};
+    core.mount(document,model,"phone",{editor:true});
+    const adjusted={
+      width:hero.style.width,height:hero.style.height,
+      artwork:poster.getAttribute("src"),
+      mobile:document.querySelector("#baliPcHeroMobileSource").getAttribute("srcset"),
+      tablet:document.querySelector("#baliPcHeroTabletSource").getAttribute("srcset"),
+      offerId:hero.dataset.baliOfferId,
+      managed:hero.dataset.baliManagedPromo
+    };
+    document.__baliBuilderRestore();
+    return {...adjusted,restored:hero.style.width!=="96%"&&hero.style.height!=="210px"};
+  });
+  expect(result.offerId).toBe("bali-new-year-2026");
+  expect(result.managed).toBe("true");
+  expect(result.artwork).toBe("https://example.com/holiday.png");
+  expect(result.mobile).toBe("https://example.com/holiday-phone.png");
+  expect(result.tablet).toBe("https://example.com/holiday-tablet.png");
+  expect(result.width).toBe("96%");
+  expect(result.height).toBe("210px");
+  expect(result.restored).toBe(true);
+});
