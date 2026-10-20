@@ -344,6 +344,9 @@ function renderInspector(){
   const hero=node?.closest?.(".bali-pc-hero");
   const isManaged=Boolean(hero?.dataset.baliManagedPromo==="true"&&selection?.scope==="main");
   managed.hidden=!isManaged;
+  // Carousel content comes from Firestore: avoid overwriting a single slide
+  // with generic global text/photo rules intended for static page elements.
+  inspector.querySelector(".bali-builder-content").hidden=isManaged;
   if(isManaged){
    const id=hero.dataset.baliOfferId;
    managed.querySelector("strong").textContent=id==="bali-new-year-2026"?
@@ -553,7 +556,7 @@ function add(kind){
   id,page,kind,x:15,y:20,text:kind==="button"?"Новая кнопка":kind==="text"?"Новый текст":"Новый блок",
   image:"",link:"route:home",props:{width:kind==="panel"?"300px":"220px",height:kind==="image"?"180px":kind==="panel"?"120px":"50px",fontSize:16}
  }));
- selection={id,selector:null};renderInspector();
+ selection={id,selector:null,scope:page==="about"?"about":"main"};renderInspector();
 }
 async function save(publish=false){
  if(!authorized||saving)return;
