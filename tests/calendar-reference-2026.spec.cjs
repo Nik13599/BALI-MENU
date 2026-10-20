@@ -235,3 +235,56 @@ test('touch swipes directly move the 3D cards left and right without native scro
   expect(result.index).toBe(1);
   expect(result.scrollLeft).toBe(0);
 });
+
+test('past party dates are ruby red, while today stays emerald even in my plans', async ({page}) => {
+  await openCalendar(page);
+  const dates=await page.evaluate(()=>{
+    const pieces=new Intl.DateTimeFormat('en-GB',{
+      timeZone:'Europe/Minsk',year:'numeric',month:'2-digit',day:'2-digit'
+    }).formatToParts(new Date());
+    const p=Object.fromEntries(pieces.map(x=>[x.type,x.value]));
+    const today=p.year+'-'+p.month+'-'+p.day;
+    const shift=delta=>{
+      const date=new Date(today+'T12:00:00Z');
+      date.setUTCDate(date.getUTCDate()+delta);
+      return date.toISOString().slice(0,10);
+    };
+    const past=shift(-1),future=shift(1);
+    window.dispatchEvent(new CustomEvent('bali:events',{detail:{events:[
+      {id:past,date:past,title:'Прошедшая вечеринка',dotColor:'#b9ff51'},
+      {id:past+'__2',date:past,title:'Прошедшая вечеринка 2',dotColor:'#b9ff51'},
+      {id:future,date:future,title:'Будущая вечеринка',dotColor:'#b9ff51'}
+    ]}}));
+    window.dispatchEvent(new CustomEvent('bali:calendar:plans-changed',{
+      detail:{dates:[past,today]}
+    }));
+    return {past,today,future};
+  });
+  const locate=async date=>{
+    // The calendar also renders adjacent-month days. Move a month if
+    // the requested date is outside those visible cells.
+    await page.evaluate(()=>window.dispatchEvent(new Event('bali:calendar:open')));
+    let cell=page.locator('#baliCalendarDays .bali-calendar-day[data-date="'+date+'"]');
+    if(!(await cell.count()))await page.locator(date<dates.today?'#baliCalendarPrev':'#baliCalendarNext').click();
+    await expect(cell).toHaveCount(1);
+    return cell;
+  };
+  const today=await locate(dates.today);
+  await expect(today).toHaveAttribute('data-today','true');
+  await expect(today).toHaveAttribute('data-planned','true');
+  await expect(today).toHaveCSS('background-color','rgba(27, 176, 132, 0.21)');
+  await expect(today.locator('.bali-calendar-day-number')).toHaveCSS('color','rgb(131, 255, 208)');
+  const past=await locate(dates.past);
+  await expect(past).toHaveAttribute('data-past','true');
+  await expect(past).toHaveAttribute('data-planned','true');
+  await expect(past).toHaveAttribute('data-event-count','2');
+  await expect(past).toHaveCSS('background-color','rgba(204, 63, 76, 0.14)');
+  await expect(past.locator('.bali-calendar-event-dot')).toHaveCount(2);
+  for(const dot of await past.locator('.bali-calendar-event-dot').all())
+    await expect(dot).toHaveCSS('background-color','rgb(255, 89, 103)');
+  await past.click();
+  await expect(past).toHaveCSS('background-color','rgba(210, 65, 77, 0.22)');
+  const future=await locate(dates.future);
+  await expect(future).toHaveAttribute('data-past','false');
+  await expect(future.locator('.bali-calendar-event-dot')).toHaveCSS('background-color','rgb(185, 255, 81)');
+});
