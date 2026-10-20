@@ -152,3 +152,32 @@ test("advanced responsive layout controls are opt-in and revert cleanly",async({
  expect(result.bad.marginLeft).toBe(-2000);
  expect(result.clean).toBe(true);
 });
+
+
+test("builder movement never overwrites an existing transform-based animation",async({page})=>{
+ await page.goto("/index.html?bali-admin-design-preview=1",{waitUntil:"domcontentloaded"});
+ await page.waitForFunction(()=>Boolean(window.BaliBuilderCore));
+ const result=await page.evaluate(()=>{
+  const core=window.BaliBuilderCore,model=core.emptyModel();
+  const element=document.getElementById("baliMenuHeading");
+  const originalTransform=element.style.transform;
+  element.style.transform="rotateY(12deg)";
+  model.desktop.rules["#baliMenuHeading"]={props:{translateX:24,translateY:9,rotate:5,scale:1.15}};
+  core.mount(document,model,"desktop",{editor:true});
+  const state={
+   transform:element.style.transform,
+   translate:element.style.translate,
+   rotate:element.style.rotate,
+   scale:element.style.scale
+  };
+  document.__baliBuilderRestore();
+  const restored=element.style.transform==="rotateY(12deg)"&&!element.style.translate&&!element.style.rotate&&!element.style.scale;
+  element.style.transform=originalTransform;
+  return {...state,restored};
+ });
+ expect(result.transform).toBe("rotateY(12deg)");
+ expect(result.translate).toBe("24px 9px");
+ expect(result.rotate).toBe("5deg");
+ expect(result.scale).toBe("1.15");
+ expect(result.restored).toBe(true);
+});
