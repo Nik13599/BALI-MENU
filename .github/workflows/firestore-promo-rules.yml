@@ -1,10 +1,11 @@
 name: BALI — Firestore rules (promo contacts)
 # Scoped rules deployment only. No Hosting, functions, indexes or data writes.
-# The push trigger runs on initial addition or a future modification of this workflow.
+# Changes to Firestore rules on main deploy automatically after emulator tests.
 on:
   push:
     branches: [main]
     paths:
+      - 'firestore.rules'
       - '.github/workflows/firestore-promo-rules.yml'
   workflow_dispatch:
 
