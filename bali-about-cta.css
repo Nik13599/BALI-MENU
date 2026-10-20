@@ -23,7 +23,7 @@
     content:"";
     position:absolute;
     inset:0;
-    z-index:0;
+    z-index:1;
     pointer-events:none;
     background:linear-gradient(180deg,rgba(4,7,8,.12) 0%,rgba(4,7,8,.32) 26%,rgba(4,7,8,.89) 65%,rgba(4,7,8,.98) 100%);
   }
@@ -33,7 +33,7 @@
     display:block;
     width:100%!important;
     height:100%!important;
-    z-index:-1!important;
+    z-index:0!important;
     pointer-events:none!important;
   }
   body.bali-guest-theme #homeSection .bali-pc-about-picture img{
@@ -56,7 +56,7 @@
     color:#eaf2e4!important;
     text-shadow:0 3px 15px #0009!important;
     opacity:.26;
-    z-index:0;
+    z-index:2;
     pointer-events:none;
   }
   body.bali-guest-theme #homeSection .bali-pc-about-content{
