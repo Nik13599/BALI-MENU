@@ -1,3 +1,6 @@
+/* A horizontal carousel gesture is handled by BALI while vertical page gestures keep scrolling. */
+body.bali-guest-theme #homeSection .bali-pc-hero{touch-action:pan-y}
+body.bali-guest-theme #homeSection .bali-pc-hero img{-webkit-user-drag:none;user-select:none}
 /* Approved BALI artwork is unmodified. Desktop shows its full aspect ratio;
    phone fills its available card using a left-aligned crop and visible CTA. */
 body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal{
