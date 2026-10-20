@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
   <script src="bali-monitor.js?v=20261020-2"></script>
-  <script src="bali-notifications.js?v=20261020-2"></script>
+  <script src="bali-notifications.js?v=20261020-3"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>if("scrollRestoration" in history)history.scrollRestoration="manual";</script>
     <meta name="theme-color" content="#080b11">
@@ -16,6 +16,7 @@
   <link rel="icon" href="assets/bali-favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/manrope-variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" data-bali-bundle="index" href="generated/index.css?v=1b1bc6a1bed1">
+  <link rel="stylesheet" href="bali-profile-viewport.css?v=20261020-1">
 </head>
 
 <body class="bali-guest-theme">
@@ -499,11 +500,20 @@
         <h1 id="profileHeading" class="bali-id-page-title">МОЙ BALI</h1>
         <div class="bali-profile-card bali-id-profile">
           <div class="bali-profile-head">
-            <div class="bali-profile-avatar" aria-hidden="true">B</div>
-            <div><strong id="baliProfileName">Гость BALI</strong>
+            <button type="button" class="bali-profile-avatar" id="baliAvatarButton" aria-label="Загрузить фотографию профиля" title="Изменить фото">
+              <span class="bali-avatar-initial" id="baliAvatarInitial" aria-hidden="true">B</span>
+              <img class="bali-avatar-image" id="baliAvatarImage" alt="" hidden>
+              <span class="bali-avatar-camera" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h4l2-2h4l2 2h4v12H4z"/><circle cx="12" cy="13" r="3"/></svg></span>
+            </button>
+            <input type="file" id="baliAvatarUpload" accept="image/jpeg,image/png,image/webp" hidden>
+            <div class="bali-profile-identity"><strong id="baliProfileName">Гость BALI</strong>
               <span id="baliProfilePhone">Войдите в личный кабинет</span>
               <span id="baliProfileEmail"></span>
             </div>
+            <button type="button" class="bali-notice-bell" id="baliProfileNoticeBtn" aria-label="Уведомления о предзаказах" aria-haspopup="dialog" aria-controls="baliProfileNoticeDialog">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg>
+              <span class="bali-notice-badge" id="baliProfileNoticeBadge" hidden>0</span>
+            </button>
           </div>
 <button type="button" id="profileBaliIdBtn" data-bali-nav="id" class="bali-profile-action bali-profile-id-link"><span aria-hidden="true">▣</span> Моя BALI ID <b>›</b></button>
           <button type="button" id="profileMyOrdersBtn" class="bali-profile-action"><span>▤</span> Мои заказы <b>›</b></button>
@@ -513,6 +523,18 @@
         </div>
       </div>
     </section>
+
+    <div id="baliAvatarFeedback" class="bali-avatar-feedback" role="status" aria-live="polite" hidden></div>
+    <dialog id="baliProfileNoticeDialog" class="bali-notice-dialog" aria-labelledby="baliProfileNoticeTitle">
+      <div class="bali-notice-dialog-inner">
+        <div class="bali-notice-dialog-head">
+          <h2 id="baliProfileNoticeTitle">Уведомления о заказах</h2>
+          <button type="button" id="baliProfileNoticeClose" class="bali-notice-dialog-close" aria-label="Закрыть уведомления">×</button>
+        </div>
+        <div id="baliProfileNoticeList" class="bali-notice-list"></div>
+        <button type="button" id="baliProfileNoticeClear" class="bali-notice-clear">Очистить уведомления</button>
+      </div>
+    </dialog>
 
     <!-- Отдельная страница BALI ID -->
     <section id="baliIdSection" class="bali-profile-page bali-id-page" aria-labelledby="baliIdPageHeading" hidden>
@@ -854,6 +876,7 @@
     <script src="bali-icon-atelier.js?v=20261017-58" defer></script>
     <script type="module" src="bali-theme.js?v=20261017-60"></script>
     <script src="bali-mobile-reference.js?v=20261019-shell1" defer></script>
+    <script type="module" src="bali-profile-media.js?v=20261020-1"></script>
     <script type="module" src="bali-id.js?v=20261019-6"></script>
     <script src="bali-pc-id-home.js?v=20261019-1" defer></script>
     <script type="module" src="bali-id-flip.js?v=20261019-4"></script>
