@@ -1039,7 +1039,7 @@ assert(!html.includes('id="plannedEventsCount"') &&
   "Calendar filters must be removed; profile My Plans stays accessible and Calendar opens all events");
 assert(app.includes('Хочу пойти') &&
   app.includes('Хочет пойти: ') &&
-  app.includes('guestInterestDates.has(event.date)'), "Event cards must display RSVP button and public counts");
+  app.includes('guestInterestDates.has(event.id||event.date)'), "Event cards must display RSVP button and public counts");
 assert(app.includes('window.setInterval(()=>') &&
   app.includes('renderUpcomingEvents();'), "Past events must disappear automatically from My Plans");
 assert(app.includes('details.append(name,times,description,interested,message);') &&
