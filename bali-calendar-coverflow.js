@@ -82,6 +82,7 @@ function animateTo(next,smooth=true){
   if(last<0)return;
   next=clamp(next,0,last);
   activeIndex=next;
+  lastCardDate=cards()[next]?.dataset.eventDate||"";
   notify();
   if(!smooth||reduce.matches||Math.abs(position-next)<.001){
     position=next;render();return;
@@ -106,7 +107,7 @@ function syncCards(){
   const entries=cards();
   // Preserve the active event by DATE when Firebase replaces the HTML cards.
   if(entries.length){
-    const same=lastCardDate&&entries.findIndex(c=>c.dataset.eventDate===lastCardDate);
+    const same=lastCardDate?entries.findIndex(c=>c.dataset.eventDate===lastCardDate):-1;
     if(firstSync){activeIndex=0;position=0;firstSync=false;}
     else if(same>=0){activeIndex=same;position=same;}
     else{activeIndex=clamp(activeIndex,0,entries.length-1);position=activeIndex;}
