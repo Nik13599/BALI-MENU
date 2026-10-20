@@ -7,7 +7,7 @@ import {getFirestore,collection,onSnapshot} from "https://www.gstatic.com/fireba
 
 import {categoryLabel,catalogCard,catalogGroup} from "./bali-menu-cards.js?v=20261020-2";
 
-import {hasCatalogDetails,catalogDetailsAction,openCatalogDetails} from "./bali-catalog-details.js?v=20261020-1";
+import {hasCatalogDetails,catalogDetailsAction,openCatalogDetails} from "./bali-catalog-details.js?v=20261020-2";
 
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const db=getFirestore(app);

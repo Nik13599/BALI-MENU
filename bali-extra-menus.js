@@ -3,7 +3,7 @@
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getFirestore,collection,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {node,categoryLabel,catalogCard,catalogGroup} from "./bali-menu-cards.js?v=20261020-2";
-import {hasCatalogDetails,catalogDetailsAction,openCatalogDetails} from "./bali-catalog-details.js?v=20261020-1";
+import {hasCatalogDetails,catalogDetailsAction,openCatalogDetails} from "./bali-catalog-details.js?v=20261020-2";
 import {BALI_TEA_SEED} from "./bali-tea-seed.js";
 
 const firebase=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
