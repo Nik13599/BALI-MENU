@@ -134,6 +134,11 @@ function initialize(){
  const heading=document.createElement("div");heading.className="bali-builder-inspector-heading";
  heading.innerHTML='<strong id="baliBuilderSelected">Выберите элемент на сайте</strong><small id="baliBuilderSelector">Настройки применяются только к выбранному устройству</small>';
  inspector.append(heading);
+ const trail=document.createElement("nav");
+ trail.id="baliBuilderLayerTrail";
+ trail.className="bali-builder-layer-trail";
+ trail.setAttribute("aria-label","Иерархия элементов страницы");
+ inspector.append(trail);
  const content=document.createElement("div");content.className="bali-builder-content";
  content.innerHTML='<label class="bali-builder-field"><span>Текст элемента</span><textarea data-builder-main="text" rows="3" placeholder="Новый текст"></textarea></label>'+
  '<label class="bali-builder-field"><span>Переход кнопки / ссылки</span><select data-builder-main="link"></select><input data-builder-main="url" type="text" placeholder="https://... или tel:+375..." hidden></label>'+
@@ -176,11 +181,20 @@ function initialize(){
   details.append(grid);inspector.append(details);
  }
  const actions=document.createElement("div");actions.className="bali-builder-element-actions";
- actions.innerHTML='<button type="button" data-builder-action="reset">Сбросить оформление элемента</button><button type="button" data-builder-action="delete" class="danger">Удалить добавленный элемент</button>';
+ actions.innerHTML='<button type="button" data-builder-action="reset">Сбросить оформление элемента</button><button type="button" data-builder-action="duplicate">Дублировать добавленный элемент</button><button type="button" data-builder-action="delete" class="danger">Удалить добавленный элемент</button>';
  actions.addEventListener("click",e=>{
   const button=e.target.closest("button");if(!button||!selection)return;
   const what=button.dataset.builderAction;
   if(what==="delete"&&selection.id)commit(()=>{model[currentDevice].blocks=model[currentDevice].blocks.filter(b=>b.id!==selection.id);selection=null;});
+  else if(what==="duplicate"&&selection.id){
+   const item=getItem();if(!item)return;
+   if(model[currentDevice].blocks.length>=30){msg("Достигнут лимит 30 дополнительных элементов для одного устройства.");return;}
+   const copy=clone(item);
+   copy.id="bali-"+copy.kind+"-"+Date.now().toString(36)+"-"+Math.floor(Math.random()*1e6).toString(36);
+   copy.x=Math.min(95,copy.x+3);copy.y=Math.min(5000,copy.y+24);
+   commit(()=>model[currentDevice].blocks.push(copy));
+   selection={id:copy.id,selector:null,scope:item.page==="about"?"about":"main"};
+  }
   else if(what==="reset")commit(()=>{
    if(selection.id){const b=getItem();if(b)b.props={};}
    else delete model[currentDevice].rules[selection.selector];
@@ -261,8 +275,37 @@ function valueFromComputed(k,node){
  }
  return raw;
 }
+function renderLayerTrail(){
+ const trail=inspector.querySelector("#baliBuilderLayerTrail");
+ if(!trail)return;
+ trail.replaceChildren();
+ const node=liveNode();
+ if(!selection||!node){trail.hidden=true;return;}
+ trail.hidden=false;
+ const parents=[];let current=node;
+ while(current?.nodeType===1&&current!==current.ownerDocument.body&&parents.length<9){
+  parents.push(current);current=current.parentElement;
+ }
+ parents.reverse();
+ for(const [i,element] of parents.entries()){
+  const button=document.createElement("button");
+  button.type="button";button.className="bali-builder-layer-node";
+  const shortId=element.id?"#"+element.id:element.classList?.length?"."+element.classList[0]:"";
+  const name=element.tagName.toLowerCase()+shortId;
+  button.textContent=name.length>38?name.slice(0,37)+"…":name;
+  button.title="Выбрать "+name;
+  button.setAttribute("aria-current",i===parents.length-1?"true":"false");
+  button.addEventListener("click",()=>choose(element));
+  trail.append(button);
+  if(i<parents.length-1){
+   const sep=document.createElement("span");sep.textContent="›";sep.setAttribute("aria-hidden","true");
+   trail.append(sep);
+  }
+ }
+}
 function renderInspector(){
  const node=liveNode(),item=getItem();
+ renderLayerTrail();
  inspector.querySelector("#baliBuilderSelected").textContent=selection?(selection.id?"Новый "+(item?.kind||"элемент"):node?.tagName+" · "+(node?.classList?.[0]||node?.id||"элемент")):"Выберите элемент на сайте";
  inspector.querySelector("#baliBuilderSelector").textContent=selection?.id?selection.id:selection?.selector||"Нажмите на любой текст, кнопку, карточку или изображение";
  const text=inspector.querySelector('[data-builder-main="text"]');
@@ -286,6 +329,7 @@ function renderInspector(){
   }else input.value=v??"";
  }
  inspector.querySelector('[data-builder-action="delete"]').hidden=!selection?.id;
+ inspector.querySelector('[data-builder-action="duplicate"]').hidden=!selection?.id;
  setControls();positionOverlay();
 }
 function clearOverlay(){
@@ -399,6 +443,7 @@ function attachInteractions(d){
  d.addEventListener("submit",event=>{
   if(enabled){event.preventDefault();event.stopImmediatePropagation();}
  },true);
+ d.addEventListener("keydown",onBuilderShortcut,true);
 }
 function attachFrame(){
  const d=frameDoc();if(!d?.body)return;
@@ -500,8 +545,22 @@ function toggle(on){
  if(on){selection=null;if(!overlay&&frameDoc()?.body)attachOverlay();refreshCanvas();renderInspector();}
  else {clearOverlay();frameDoc()?.__baliBuilderRestore?.();}
 }
+function onBuilderShortcut(event){
+ if(!enabled||!authorized||document.body.dataset.baliAdminSection!=="design")return;
+ const target=event.target;
+ if(target?.closest?.("input,textarea,select,[contenteditable=true]"))return;
+ const command=event.ctrlKey||event.metaKey;
+ if(command&&!event.altKey&&(event.key.toLowerCase()==="z"||event.key.toLowerCase()==="y")){
+  event.preventDefault();
+  if(event.key.toLowerCase()==="y"||(event.shiftKey&&event.key.toLowerCase()==="z"))doRedo();
+  else doUndo();
+ }else if(event.key==="Escape"&&selection){
+  event.preventDefault();selection=null;renderInspector();
+ }
+}
 function init(){
  initialize();
+ window.addEventListener("keydown",onBuilderShortcut);
  view.page.addEventListener("change",()=>updatePage(view.page.value));
  for(const field of [view.viewportWidth,view.viewportHeight]){
   field?.addEventListener("change",()=>{
