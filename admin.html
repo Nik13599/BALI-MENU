@@ -416,6 +416,14 @@
             <div class="card-heading"><h3>Настройки мероприятия</h3><span class="tag">Минск</span></div>
             <form id="eventForm">
               <label>Дата мероприятия <input type="date" id="eventDateAdmin" required></label>
+              <label>Мероприятие в эту дату
+                <select id="eventSlotAdmin" aria-label="Номер мероприятия в выбранный день">
+                  <option value="1">№ 1 — основное</option>
+                  <option value="2">№ 2 — дополнительное</option>
+                  <option value="3">№ 3 — дополнительное</option>
+                </select>
+                <small class="hint">Можно создать до трёх отдельных мероприятий на одну дату. У каждого будет своя афиша, описание, время, цвет точки и отметка «Хочу пойти».</small>
+              </label>
               <label>Название мероприятия <input id="eventTitle" minlength="2" maxlength="150" placeholder="Например, BALI ICE NIGHT" required></label>
               <label>Описание мероприятия
                 <textarea id="eventDescription" maxlength="600" rows="3" placeholder="Кратко расскажите о программе, артистах или атмосфере"></textarea>
