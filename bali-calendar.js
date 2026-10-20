@@ -72,7 +72,7 @@
  }
  function render(){
    const monthStart=iso(year,month,1);
-   monthName.textContent=describe(monthStart,{month:"long"})+" "+year+" год";
+   monthName.textContent=describe(monthStart,{month:"long"})+" "+year;
    days.replaceChildren();weekstrip.replaceChildren();
    const monthFirst=new Date(Date.UTC(year,month-1,1));
    const offset=(monthFirst.getUTCDay()+6)%7;

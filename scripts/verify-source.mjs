@@ -1151,8 +1151,8 @@ assert(squareCss.includes("aspect-ratio:1 / 1") &&
   squareCss.includes("margin-top:auto") &&
   squareCss.includes("overflow-y:auto"),
   "Square poster, independently scrollable info and bottom pinned actions required");
-assert(app.includes('track.clientHeight-(mobile?185:195)') &&
-  app.includes('(track.clientHeight-14)*9/16'),
+assert(app.includes('track.clientHeight-(mobile?90:105)') &&
+  app.includes('track.clientHeight-(mobile?90:105)'),
   "Carousel must reserve vertical space for square image and event actions");
 
 const premiumCss=source("bali-home-premium.css");
@@ -1275,8 +1275,8 @@ assert(adaptiveCss.includes("/* BALI v44") &&
   adaptiveCss.includes("overflow-y:auto!important") &&
   adaptiveCss.includes(".bali-home .bali-home-inner{"),
   "Phone/tablet/desktop breakpoints need viewport fitting, fixed category/cart and catalog scroll");
-assert(app.includes("const rounded=Math.max(96,Math.floor(width));") &&
-  app.includes("(track.clientHeight-14)*9/16"),
+assert(app.includes("const rounded=Math.max(88,Math.floor(width));") &&
+  app.includes("track.clientHeight-(mobile?90:105)"),
   "Event slide sizing must respond to viewport height and never force old 155px minimum");
 
 assert(approvedCss.includes("/* BALI v42") &&
@@ -1381,9 +1381,19 @@ assert(carouselCss.includes('line-clamp:2') &&
   carouselCss.includes('flex-wrap:nowrap'),
   "Calendar topbar and footer must remain compact");
 assert(app.includes('const fitStorySlides=()=>') &&
-  app.includes('(track.clientHeight-14)*9/16') &&
+  app.includes('track.clientHeight-(mobile?90:105)') &&
   app.includes('observer.observe(track)'),
   "Stories must size from measured available height");
+assert(html.includes('bali-calendar-reference.css?v=') &&
+  html.includes('bali-calendar-coverflow.js?v=') &&
+  html.includes('id="baliEventDetailDialog"') &&
+  html.includes('id="baliPosterPrevious"') &&
+  html.includes('id="baliPosterNext"') &&
+  source("bali-calendar-reference.css").includes('#eventsSection #eventsGrid') &&
+  source("bali-calendar-coverflow.js").includes('event.deltaY>0?-1:1') &&
+  source("bali-calendar-coverflow.js").includes('openDetails(card)'),
+  "BALI calendar must have the clean reference layout, 3D swipe motion, arrows, wheel and event details");
+
 // BALI ID: complete profile, immutable atomic sequence, admin-only tier assignment.
 const centredIdCss=source("bali-id-flip.css");
 assert(html.includes('bali-id-flip.css?v=') &&

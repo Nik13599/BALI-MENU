@@ -1,0 +1,380 @@
+/* BALI calendar / two reference layouts: PC poster coverflow at left,
+   pure month grid at right; mobile month grid above swipe-only posters.
+   All rules scoped to #eventsSection; homepage and BALI ID are untouched. */
+body.bali-guest-theme #eventsSection{
+  background:radial-gradient(ellipse at 34% 51%,rgba(155,215,53,.065),transparent 61%),linear-gradient(170deg,#111613,#080b0b 76%)!important;
+  overflow:hidden!important;
+}
+body.bali-guest-theme #eventsSection>.container{
+  box-sizing:border-box!important;min-height:0!important;height:100%!important;
+  max-width:1400px!important;gap:0!important;
+}
+body.bali-guest-theme #eventsSection .events-topbar{
+  box-sizing:border-box!important;flex:0 0 auto!important;min-height:0!important;
+  margin:0 0 clamp(5px,.9dvh,12px)!important;padding:0!important;
+}
+body.bali-guest-theme #eventsSection #eventsHeadingGuest{
+  color:#f4f5ee!important;font:650 clamp(17px,1.6vw,24px)/1.2 Manrope,Inter,sans-serif!important;
+  letter-spacing:.01em!important;text-transform:none!important;
+}
+body.bali-guest-theme #eventsSection #eventsHeadingGuest::first-letter{font-weight:850}
+body.bali-guest-theme #eventsSection #baliCalendarPurpose,
+body.bali-guest-theme #eventsSection .events-info-panel,
+body.bali-guest-theme #eventsSection .events-carousel-footer,
+body.bali-guest-theme #eventsSection .bali-calendar-today-line,
+body.bali-guest-theme #eventsSection .bali-calendar-selection,
+body.bali-guest-theme #eventsSection .bali-calendar-today-button,
+body.bali-guest-theme #eventsSection .bali-calendar-chevron {display:none!important}
+body.bali-guest-theme #eventsSection .events-interest-status:empty{display:none!important}
+body.bali-guest-theme #eventsSection .events-interest-status:not(:empty){
+  flex:0 0 auto!important;color:#caff83!important;font-size:11px!important;
+  margin:2px 0!important;padding:0!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-calendar-layout{
+  display:flex!important;flex:1 1 0!important;min-height:0!important;min-width:0!important;
+  align-items:stretch!important;gap:clamp(14px,2vw,36px)!important;
+}
+/* No decorative backing, blur, card shadow or border around calendar. */
+body.bali-guest-theme #eventsSection .bali-event-calendar-layout>#baliCalendarPanel{
+  box-sizing:border-box!important;order:2!important;display:flex!important;
+  flex:0 0 clamp(220px,26%,330px)!important;
+  width:clamp(220px,26%,330px)!important;
+  min-width:0!important;height:auto!important;min-height:0!important;
+  align-self:flex-start!important;overflow:visible!important;
+  margin:0!important;padding:clamp(2px,.7vw,10px) 0!important;
+  gap:clamp(8px,1.2dvh,15px)!important;
+  background:transparent!important;backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;border:0!important;border-radius:0!important;
+  box-shadow:none!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-month-row{
+  display:flex!important;justify-content:space-between!important;align-items:center!important;
+  gap:8px!important;margin:0!important;padding:0 0 clamp(5px,1dvh,13px)!important;
+  border:0!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-month-label{
+  display:inline-flex!important;justify-content:flex-start!important;
+  cursor:default!important;padding:0!important;border:0!important;
+  color:#eee!important;font:630 clamp(14px,1.3vw,19px)/1.2 Manrope,Inter,sans-serif!important;
+  text-transform:capitalize!important;white-space:nowrap!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-month-arrows{
+  display:flex!important;gap:clamp(6px,.65vw,10px)!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-month-arrows button{
+  display:grid!important;place-items:center!important;
+  width:29px!important;height:29px!important;flex:none!important;
+  padding:0!important;border:1px solid rgba(214,228,208,.23)!important;
+  border-radius:5px!important;background:rgba(255,255,255,.025)!important;
+  color:#e6eddf!important;font:400 22px/1 Manrope,Arial,sans-serif!important;
+  transition:color .18s,border-color .18s,background .18s!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-month-arrows button:hover{
+  background:rgba(185,255,81,.09)!important;border-color:rgba(185,255,81,.55)!important;
+  color:#c9ff86!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-grid{
+  display:flex!important;flex-direction:column!important;gap:5px!important;
+  min-width:0!important;width:100%!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-weekdays,
+body.bali-guest-theme #eventsSection .bali-calendar-days{
+  width:100%!important;display:grid!important;
+  grid-template-columns:repeat(7,minmax(0,1fr))!important;
+  gap:0!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-weekdays{margin-bottom:4px!important}
+body.bali-guest-theme #eventsSection .bali-calendar-weekdays span{
+  color:#9fa6a0!important;text-align:center!important;
+  font:750 clamp(8px,.63vw,11px)/1.25 Manrope,Arial,sans-serif!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-day{
+  box-sizing:border-box!important;display:flex!important;flex-direction:column!important;
+  align-items:center!important;justify-content:center!important;position:relative!important;
+  width:100%!important;min-width:0!important;
+  min-height:0!important;height:auto!important;aspect-ratio:1.08!important;
+  padding:0 0 3px!important;gap:1px!important;
+  border:1px solid rgba(230,243,228,.13)!important;border-radius:0!important;
+  color:#c6d0c8!important;background:rgba(9,14,14,.28)!important;
+  font:550 clamp(10px,.7vw,12px)/1.1 Manrope,Arial,sans-serif!important;
+  transition:background .18s,color .18s,border-color .18s!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-day.is-outside{opacity:.23!important}
+body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"]:not([data-selected="true"]){
+  background:rgba(151,209,49,.075)!important;color:#cefa78!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-day[data-today="true"]:not([data-selected="true"]){
+  border-color:rgba(185,255,81,.35)!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-day[data-selected="true"]{
+  background:rgba(185,255,81,.14)!important;
+  border-color:#b9ff51!important;color:#e4ffac!important;font-weight:820!important;
+  box-shadow:inset 0 0 0 1px rgba(185,255,81,.25),0 0 9px rgba(185,255,81,.13)!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-day:not(.is-outside):hover{
+  border-color:rgba(185,255,81,.65)!important;background:rgba(185,255,81,.13)!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-event-dot{
+  bottom:clamp(2px,.4dvh,4px)!important;width:3px!important;height:3px!important;
+  border-radius:50%!important;background:#baff57!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-day[data-selected="true"] .bali-calendar-event-dot{
+  background:#e4ffb9!important;
+}
+body.bali-guest-theme #eventsSection .bali-calendar-weekstrip{display:none!important}
+
+/* Perspective carousel, intentionally without background cards or overlays. */
+body.bali-guest-theme #eventsSection .bali-event-calendar-layout>#eventsCarouselShell{
+  box-sizing:border-box!important;order:1!important;position:relative!important;
+  display:flex!important;flex:1 1 0!important;flex-direction:column!important;
+  min-width:0!important;min-height:0!important;width:auto!important;
+  height:100%!important;max-height:100%!important;
+  margin:0!important;padding:0!important;overflow:visible!important;
+  isolation:isolate;
+}
+body.bali-guest-theme #eventsSection #eventsGrid{
+  box-sizing:border-box!important;position:relative!important;display:flex!important;
+  flex:1 1 0!important;align-items:flex-start!important;
+  min-height:0!important;height:100%!important;max-height:100%!important;
+  min-width:0!important;width:100%!important;
+  gap:clamp(7px,1.2vw,18px)!important;
+  padding:clamp(1px,.8dvh,9px) max(10px,calc((100% - var(--bali-event-slide-width))/2))!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  scroll-padding-inline:max(10px,calc((100% - var(--bali-event-slide-width))/2))!important;
+  scroll-snap-type:x mandatory!important;
+  scrollbar-width:none!important;
+  perspective:950px!important;
+  mask-image:none!important;-webkit-mask-image:none!important;
+  background:transparent!important;
+  touch-action:pan-x!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid::-webkit-scrollbar{display:none!important}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+  box-sizing:border-box!important;position:relative!important;
+  flex:0 0 var(--bali-event-slide-width)!important;width:var(--bali-event-slide-width)!important;
+  min-width:0!important;max-width:none!important;height:auto!important;
+  max-height:100%!important;align-self:flex-start!important;
+  display:flex!important;flex-direction:column!important;
+  padding:0!important;gap:0!important;margin:0!important;
+  overflow:visible!important;isolation:isolate!important;
+  border:0!important;border-radius:0!important;background:transparent!important;
+  box-shadow:none!important;
+  z-index:var(--bali-poster-z,1)!important;
+  opacity:var(--bali-poster-opacity,.65)!important;
+  filter:brightness(var(--bali-poster-brightness,.78)) saturate(var(--bali-poster-sat,.78))!important;
+  transform-origin:center 44%!important;
+  transform:perspective(900px) rotateY(var(--bali-poster-angle,0deg)) translateZ(var(--bali-poster-depth,0px)) scale(var(--bali-poster-scale,.85))!important;
+  transition:transform .46s cubic-bezier(.2,.76,.18,1),opacity .3s ease,filter .38s ease!important;
+  scroll-snap-align:center!important;scroll-snap-stop:always!important;
+  will-change:transform;
+}
+body.bali-guest-theme #eventsSection #eventsGrid.is-swipe-active>.event-card{
+  transition-duration:.10s,.12s,.12s!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card::before{content:none!important}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.bali-event-poster-wrap{
+  box-sizing:border-box!important;position:relative!important;display:block!important;
+  flex:0 0 auto!important;width:100%!important;height:auto!important;
+  max-height:none!important;aspect-ratio:1/1!important;
+  border:1px solid rgba(200,222,180,.20)!important;border-radius:6px!important;
+  overflow:hidden!important;background:#070c09!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.45)!important;
+  cursor:zoom-in!important;
+  transition:border-color .3s ease,box-shadow .4s ease!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active>.bali-event-poster-wrap{
+  border-color:rgba(204,255,93,.88)!important;
+  box-shadow:0 0 0 1px rgba(192,255,100,.1),0 0 31px rgba(165,246,68,.31),0 17px 34px rgba(0,0,0,.55)!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-poster-wrap>.event-poster{
+  width:100%!important;height:100%!important;object-fit:cover!important;
+  position:absolute!important;inset:0!important;display:block!important;
+  aspect-ratio:1!important;user-select:none;-webkit-user-drag:none;
+}
+body.bali-guest-theme #eventsSection .bali-event-poster-wrap::before,
+body.bali-guest-theme #eventsSection .bali-event-poster-wrap::after,
+body.bali-guest-theme #eventsSection .bali-event-date-badge,
+body.bali-guest-theme #eventsSection .bali-event-preorder-badge{
+  display:none!important;content:none!important;
+}
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body{
+  box-sizing:border-box!important;display:flex!important;flex:0 0 auto!important;
+  flex-direction:column!important;min-height:0!important;max-height:none!important;
+  width:100%!important;height:auto!important;
+  margin:0!important;padding:clamp(5px,.9dvh,10px) 0 0!important;
+  gap:0!important;overflow:visible!important;align-items:stretch!important;
+  background:transparent!important;border:0!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-info{
+  box-sizing:border-box!important;flex:0 0 auto!important;display:flex!important;
+  flex-direction:column!important;align-items:center!important;gap:3px!important;
+  width:100%!important;max-height:none!important;height:auto!important;
+  overflow:hidden!important;touch-action:pan-x!important;
+  text-align:center!important;padding:0!important;margin:0!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-info h3{
+  display:block!important;width:100%!important;overflow:hidden!important;
+  text-overflow:ellipsis!important;white-space:nowrap!important;
+  margin:0!important;color:#f0f5ed!important;
+  font:750 clamp(12px,1.05vw,17px)/1.3 Manrope,Arial,sans-serif!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-info .bali-event-hours{
+  color:#aeb7af!important;font:500 clamp(10px,.77vw,13px)/1.25 Manrope,Arial,sans-serif!important;
+  margin:0!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-info :is(.bali-event-description,.event-interest-count,.event-preorder-state,.event-interest-message){
+  display:none!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions{
+  display:flex!important;flex:0 0 auto!important;align-items:center!important;
+  justify-content:center!important;gap:6px!important;
+  width:100%!important;padding:clamp(8px,1dvh,12px) 0 0!important;
+  margin:0!important;background:transparent!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions>button{
+  box-sizing:border-box!important;height:clamp(33px,4.4dvh,42px)!important;
+  min-height:33px!important;border-radius:5px!important;margin:0!important;
+  padding:7px 8px!important;font:720 clamp(10px,.83vw,13px)/1 Manrope,Arial,sans-serif!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions>.event-want-to-go{
+  flex:1 1 auto!important;border:1px solid #b9ff51!important;
+  color:#131e0c!important;background:#b9ff51!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions>.event-share{
+  display:grid!important;place-items:center!important;flex:0 0 41px!important;
+  width:41px!important;border:1px solid rgba(242,245,242,.45)!important;
+  background:rgba(255,255,255,.025)!important;color:#f1f4ed!important;
+  font-size:19px!important;
+}
+body.bali-guest-theme #eventsSection .bali-event-actions>.event-share:hover{border-color:#b9ff51!important;color:#b9ff51!important}
+body.bali-guest-theme #eventsSection .bali-poster-nav{
+  display:grid!important;place-items:center!important;position:absolute!important;
+  top:36%!important;z-index:10!important;
+  width:35px!important;height:35px!important;
+  padding:0!important;border:1px solid rgba(250,250,250,.43)!important;
+  border-radius:50%!important;background:rgba(4,8,7,.73)!important;
+  color:#f6f8f2!important;font:500 24px/1 Arial,sans-serif!important;
+  backdrop-filter:blur(7px)!important;cursor:pointer;
+  transition:background .2s,border-color .2s,transform .2s!important;
+}
+body.bali-guest-theme #eventsSection .bali-poster-nav:hover{
+  border-color:#c8ff87!important;background:rgba(25,40,19,.84)!important;transform:scale(1.06)!important;
+}
+body.bali-guest-theme #eventsSection .bali-poster-nav:disabled{opacity:.3!important;cursor:default!important}
+body.bali-guest-theme #eventsSection .bali-poster-nav-prev{left:clamp(2px,.8vw,10px)!important}
+body.bali-guest-theme #eventsSection .bali-poster-nav-next{right:clamp(2px,.8vw,10px)!important}
+body.bali-guest-theme #eventsSection .bali-poster-nav:focus-visible,
+body.bali-guest-theme #eventsSection .bali-event-poster-wrap:focus-visible{
+  outline:2px solid #c4ff77!important;outline-offset:3px!important;
+}
+/* Single event photo can reveal full information in a real accessible dialog. */
+body.bali-guest-theme #baliEventDetailDialog{
+  box-sizing:border-box!important;position:fixed!important;
+  top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;
+  width:min(90vw,540px)!important;max-height:min(86dvh,800px)!important;
+  overflow-y:auto!important;margin:0!important;padding:0!important;
+  color:#f0f5ee!important;border:1px solid rgba(190,255,95,.42)!important;
+  border-radius:16px!important;background:linear-gradient(145deg,#131b16,#090e0c)!important;
+  box-shadow:0 30px 90px rgba(0,0,0,.68)!important;
+}
+body.bali-guest-theme #baliEventDetailDialog::backdrop{
+  background:rgba(0,0,0,.82)!important;backdrop-filter:blur(8px)!important;
+}
+body.bali-guest-theme #baliEventDetailDialog .bali-event-detail-image{
+  display:block;width:100%;height:auto;max-height:45dvh;
+  aspect-ratio:1;object-fit:contain;background:#080d09;
+}
+body.bali-guest-theme #baliEventDetailDialog .bali-event-detail-copy{
+  padding:clamp(17px,3vw,29px);display:flex;flex-direction:column;gap:11px;
+}
+body.bali-guest-theme #baliEventDetailDialog .bali-event-detail-date{color:#caff86!important;font-size:12px}
+body.bali-guest-theme #baliEventDetailDialog h2{font:820 clamp(19px,3vw,28px)/1.15 Manrope,Arial,sans-serif}
+body.bali-guest-theme #baliEventDetailDialog #baliEventDetailHours{font-weight:700;color:#e3ebdf}
+body.bali-guest-theme #baliEventDetailDialog #baliEventDetailDescription{
+  white-space:pre-line;line-height:1.55;color:#c4d0c3;font-size:13px;
+}
+body.bali-guest-theme #baliEventDetailDialog .bali-event-detail-close{
+  position:sticky;top:10px;float:right;margin:10px 10px -48px 0;z-index:5;
+  display:grid;place-items:center;width:35px;height:35px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.35);color:white;background:rgba(0,0,0,.75);
+  font-size:26px;cursor:pointer;
+}
+/* Screen-height responsive: never introduce vertical scrolling on calendar page. */
+@media(min-width:1180px){
+  body.bali-guest-theme #eventsSection{padding:clamp(14px,2dvh,23px) clamp(8px,1.3vw,24px) 10px!important}
+  body.bali-guest-theme #eventsSection>.container{max-width:1400px!important}
+  body.bali-guest-theme #eventsSection .bali-event-calendar-layout>#eventsCarouselShell{
+    max-width:calc(100% - clamp(220px,26%,330px) - 18px)!important;
+  }
+}
+@media(max-width:1179px){
+  body.bali-guest-theme #eventsSection{
+    padding:clamp(9px,1.4dvh,16px) clamp(9px,2.8vw,20px) 6px!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-calendar-layout{
+    flex-direction:column!important;gap:clamp(8px,1.5dvh,14px)!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-calendar-layout>#baliCalendarPanel{
+    order:1!important;flex:0 0 auto!important;
+    width:100%!important;max-width:100%!important;padding:0!important;
+    gap:6px!important;align-self:stretch!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-calendar-layout>#eventsCarouselShell{
+    order:2!important;flex:1 1 0!important;
+    height:100%!important;max-height:100%!important;min-height:0!important;
+    width:100%!important;max-width:100%!important;
+    overflow:visible!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-calendar-month-row{
+    position:relative!important;display:grid!important;
+    grid-template-columns:32px minmax(0,1fr) 32px!important;
+    gap:7px!important;margin:0!important;padding:0 0 4px!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-calendar-month-label{
+    grid-column:2!important;grid-row:1!important;justify-content:center!important;
+    text-align:center!important;font-size:clamp(13px,3.25vw,18px)!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-calendar-month-arrows{display:contents!important}
+  body.bali-guest-theme #eventsSection #baliCalendarPrev{grid-column:1!important;grid-row:1!important}
+  body.bali-guest-theme #eventsSection #baliCalendarNext{grid-column:3!important;grid-row:1!important}
+  body.bali-guest-theme #eventsSection .bali-calendar-grid{display:flex!important}
+  body.bali-guest-theme #eventsSection .bali-calendar-days{gap:0!important}
+  body.bali-guest-theme #eventsSection .bali-calendar-day{
+    aspect-ratio:1.42!important;font-size:clamp(9px,2.3vw,12px)!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-calendar-weekdays span{font-size:clamp(8px,2vw,10px)!important}
+  body.bali-guest-theme #eventsSection .bali-poster-nav{display:none!important}
+}
+@media(max-width:767px){
+  body.bali-guest-theme #eventsSection #eventsHeadingGuest{
+    font-size:clamp(16px,4.4vw,20px)!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-calendar-layout{
+    gap:clamp(7px,1dvh,12px)!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-calendar-day{
+    aspect-ratio:1.44!important;
+    padding-bottom:1px!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-calendar-event-dot{
+    width:3px!important;height:3px!important;bottom:1px!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-actions>button{
+    min-height:32px!important;height:clamp(33px,5.2dvh,40px)!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-event-info h3{font-size:clamp(12px,3.45vw,15px)!important}
+  body.bali-guest-theme #eventsSection .bali-event-info .bali-event-hours{font-size:clamp(10px,2.7vw,12px)!important}
+}
+@media(max-height:620px){
+  body.bali-guest-theme #eventsSection .events-topbar{margin-bottom:3px!important}
+  body.bali-guest-theme #eventsSection .bali-calendar-panel{gap:2px!important}
+  body.bali-guest-theme #eventsSection .bali-calendar-day{aspect-ratio:1.65!important}
+  body.bali-guest-theme #eventsSection #eventsGrid{padding-block:0!important}
+  body.bali-guest-theme #eventsSection .bali-event-actions{padding-top:4px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+    transition:none!important;transform:scale(var(--bali-poster-scale,1))!important;
+  }
+  body.bali-guest-theme #eventsSection .bali-poster-nav{transition:none!important}
+}

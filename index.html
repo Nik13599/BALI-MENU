@@ -27,6 +27,8 @@
   <link rel="stylesheet" href="bali-experience-system.css?v=20261020-1">
   <link rel="stylesheet" href="bali-id-calendar-only.css?v=20261020-fix1">
   <link rel="stylesheet" href="bali-id-premium-refine.css?v=20261020-cinematic2">
+  <link rel="stylesheet" href="bali-calendar-reference.css?v=20261020-1">
+  <link rel="stylesheet" href="bali-id-visibility.css?v=20261020-1">
 </head>
 
 <body class="bali-guest-theme">
@@ -407,8 +409,8 @@
             <div class="bali-calendar-month-row">
               <button type="button" id="baliCalendarToggle" class="bali-calendar-month-label" aria-expanded="false" aria-controls="baliCalendarGrid"><span id="baliCalendarMonthName">Месяц</span><span class="bali-calendar-chevron" aria-hidden="true">⌄</span></button>
               <div class="bali-calendar-month-arrows">
-                <button type="button" id="baliCalendarPrev" aria-label="Предыдущий месяц">↑</button>
-                <button type="button" id="baliCalendarNext" aria-label="Следующий месяц">↓</button>
+                <button type="button" id="baliCalendarPrev" aria-label="Предыдущий месяц">‹</button>
+                <button type="button" id="baliCalendarNext" aria-label="Следующий месяц">›</button>
               </div>
             </div>
             <div id="baliCalendarWeekstrip" class="bali-calendar-weekstrip" aria-label="Дни выбранной недели"></div>
@@ -420,6 +422,8 @@
             <button type="button" id="baliCalendarToday" class="bali-calendar-today-button">Сегодня</button>
           </aside>
           <div class="events-carousel-shell" id="eventsCarouselShell">
+          <button type="button" class="bali-poster-nav bali-poster-nav-prev" id="baliPosterPrevious" aria-label="Предыдущее мероприятие">‹</button>
+          <button type="button" class="bali-poster-nav bali-poster-nav-next" id="baliPosterNext" aria-label="Следующее мероприятие">›</button>
           <div id="eventsGrid" class="events-grid" role="region" tabindex="0"
                aria-roledescription="карусель" aria-label="Ближайшие мероприятия, по датам"
                aria-live="polite">Загружаем события...</div>
@@ -429,6 +433,16 @@
           </div>
         </div>
         </div><!-- /.bali-event-calendar-layout -->
+        <dialog class="bali-event-detail-dialog" id="baliEventDetailDialog" aria-labelledby="baliEventDetailTitle">
+          <button type="button" class="bali-event-detail-close" id="baliEventDetailClose" aria-label="Закрыть подробности">×</button>
+          <img id="baliEventDetailImage" class="bali-event-detail-image" alt="">
+          <div class="bali-event-detail-copy">
+            <p id="baliEventDetailDate" class="bali-event-detail-date"></p>
+            <h2 id="baliEventDetailTitle"></h2>
+            <p id="baliEventDetailHours"></p>
+            <p id="baliEventDetailDescription"></p>
+          </div>
+        </dialog>
         <aside class="events-info-panel" aria-label="О мероприятиях BALI">
           <span class="events-info-icon" aria-hidden="true">✦</span>
           <div class="events-info-content">
@@ -582,7 +596,7 @@
     <!-- Отдельная страница BALI ID -->
     <section id="baliIdSection" class="bali-profile-page bali-id-page" aria-labelledby="baliIdPageHeading" hidden>
       <div class="container">
-        <h1 id="baliIdPageHeading" class="bali-id-page-title">BALI ID</h1>
+        <h1 id="baliIdPageHeading" class="bali-id-page-title">BALI ID <span class="bali-id-page-descriptor">— цифровая карта гостя</span></h1>
         <div class="bali-profile-card bali-id-profile">
           <div class="bali-id-flip-scene" id="baliIdFlipScene">
             <div class="bali-id-flip-track" id="baliIdFlipTrack">
@@ -903,7 +917,8 @@
     <script src="firebase-config.js?v=20261020-2"></script>
     <script type="module" src="bali-age-gate.js?v=20261018-98"></script>
     <script src="app.js?v=20261020-2"></script>
-    <script src="bali-calendar.js?v=20261019-1" defer></script>
+    <script src="bali-calendar.js?v=20261020-coverflow1" defer></script>
+    <script src="bali-calendar-coverflow.js?v=20261020-coverflow1" defer></script>
     <script src="bali-pc-reference.js?v=20261019-1" defer></script>
     <script type="module" src="auth.js?v=20261020-2"></script>
     <script type="module" src="menu-firestore.js?v=20261017-10"></script>
