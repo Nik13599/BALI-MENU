@@ -12,7 +12,7 @@ const draftRef=doc(db,"settings","siteBuilderDraft"),publishedRef=doc(db,"settin
 const listDevices=["desktop","tablet","phone"];
 let model=core.emptyModel(),published=core.emptyModel(),currentDevice="desktop",currentPage="home";
 let authorized=false,loading=false,saving=false,dirty=false,enabled=true,authEpoch=0,unsub=null,selection=null,overlay=null,drag=null,history=[],future=[];
-let writingImage=false;
+let writingImage=false,styleClipboard=null;
 const view={
  status:$("baliBuilderStatus"),page:$("baliBuilderPage"),mode:$("baliBuilderMode"),
  draft:$("baliBuilderSaveDraft"),publish:$("baliBuilderPublish"),restore:$("baliBuilderRestore"),
@@ -181,11 +181,21 @@ function initialize(){
   details.append(grid);inspector.append(details);
  }
  const actions=document.createElement("div");actions.className="bali-builder-element-actions";
- actions.innerHTML='<button type="button" data-builder-action="reset">Сбросить оформление элемента</button><button type="button" data-builder-action="duplicate">Дублировать добавленный элемент</button><button type="button" data-builder-action="delete" class="danger">Удалить добавленный элемент</button>';
+ actions.innerHTML='<button type="button" data-builder-action="copy">Копировать стиль элемента</button><button type="button" data-builder-action="paste">Применить скопированный стиль</button><button type="button" data-builder-action="reset">Сбросить оформление элемента</button><button type="button" data-builder-action="duplicate">Дублировать добавленный элемент</button><button type="button" data-builder-action="delete" class="danger">Удалить добавленный элемент</button>';
  actions.addEventListener("click",e=>{
   const button=e.target.closest("button");if(!button||!selection)return;
   const what=button.dataset.builderAction;
-  if(what==="delete"&&selection.id)commit(()=>{model[currentDevice].blocks=model[currentDevice].blocks.filter(b=>b.id!==selection.id);selection=null;});
+  if(what==="copy"){
+   const props=core.sanitizeProps(getItem()?.props);
+   if(!Object.keys(props).length){msg("Для копирования сначала настройте внешний вид элемента.");return;}
+   styleClipboard=clone(props);
+   msg("Оформление скопировано. Выберите другой элемент и нажмите «Применить скопированный стиль».");
+  }else if(what==="paste"){
+   if(!styleClipboard){msg("Сначала скопируйте оформление другого элемента.");return;}
+   commit(()=>{const item=ensureItem();if(item)item.props={...(item.props||{}),...clone(styleClipboard)};});
+   msg("Скопированное оформление применено. Изменения доступны в предпросмотре.");
+  }
+  else if(what==="delete"&&selection.id)commit(()=>{model[currentDevice].blocks=model[currentDevice].blocks.filter(b=>b.id!==selection.id);selection=null;});
   else if(what==="duplicate"&&selection.id){
    const item=getItem();if(!item)return;
    if(model[currentDevice].blocks.length>=30){msg("Достигнут лимит 30 дополнительных элементов для одного устройства.");return;}
@@ -330,7 +340,9 @@ function renderInspector(){
  }
  inspector.querySelector('[data-builder-action="delete"]').hidden=!selection?.id;
  inspector.querySelector('[data-builder-action="duplicate"]').hidden=!selection?.id;
- setControls();positionOverlay();
+ setControls();
+ inspector.querySelector('[data-builder-action="paste"]').disabled=!selection||!authorized||!styleClipboard;
+ positionOverlay();
 }
 function clearOverlay(){
  overlay?.remove();overlay=null;
