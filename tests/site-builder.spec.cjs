@@ -257,3 +257,34 @@ test("unfinished uploaded-photo slots stay visible to editors but hidden from vi
  expect(result.editable).toBe(true);
  expect(result.hidden).toBe(true);
 });
+
+
+test("editing a button label keeps its icon and adjacent markup unchanged",async({page})=>{
+ await page.goto("/index.html?bali-admin-design-preview=1",{waitUntil:"domcontentloaded"});
+ await page.waitForFunction(()=>Boolean(window.BaliBuilderCore));
+ const result=await page.evaluate(()=>{
+  const core=window.BaliBuilderCore,model=core.emptyModel();
+  const button=document.createElement("button");
+  button.id="baliBuilderIconTest";
+  button.innerHTML='  <span class="icon" aria-hidden="true">✦</span> Исходная надпись';
+  const before=button.innerHTML;
+  document.getElementById("homeSection").append(button);
+  model.desktop.rules["#baliBuilderIconTest"]={props:{fontWeight:"800"},text:" Новая надпись"};
+  core.mount(document,model,"desktop",{editor:true});
+  const applied={
+   visible:button.textContent,
+   icon:button.querySelector("span.icon")?.textContent,
+   iconCount:button.querySelectorAll("span.icon").length,
+   duplicates:button.textContent.includes("Исходная надпись")
+  };
+  document.__baliBuilderRestore();
+  const restored=button.innerHTML===before;
+  button.remove();
+  return {applied,restored};
+ });
+ expect(result.applied.visible).toContain("Новая надпись");
+ expect(result.applied.icon).toBe("✦");
+ expect(result.applied.iconCount).toBe(1);
+ expect(result.applied.duplicates).toBe(false);
+ expect(result.restored).toBe(true);
+});
