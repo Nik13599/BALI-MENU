@@ -405,6 +405,7 @@ function eventRender() {
         $("eventDateAdmin").readOnly=true;
         $("eventTitle").value=event.title;
         $("eventDescription").value=event.description||"";
+        $("eventDotColor").value=/^#[0-9a-fA-F]{6}$/.test(event.dotColor||"")?event.dotColor:"#b9ff51";
         $("eventStartTime").value=event.startTime||"";
         $("eventEndTime").value=event.endTime||"";
         $("eventCutoff").value=event.cutoff;
@@ -444,6 +445,7 @@ function clearEvent() {
   pendingEventPoster="";
   imagePreview("eventPosterPreview","");
   $("eventForm").reset();
+  $("eventDotColor").value="#b9ff51";
   $("eventDateAdmin").readOnly=false;
   $("eventOpen").checked=true;
 }
@@ -528,6 +530,7 @@ $("eventForm").addEventListener("submit",async (event)=>{
   const date=$("eventDateAdmin").value,title=$("eventTitle").value.trim(),
     cutoff=$("eventCutoff").value||"",
     description=$("eventDescription").value.trim(),
+    dotColor=$("eventDotColor").value||"#b9ff51",
     startTime=$("eventStartTime").value||"",
     endTime=$("eventEndTime").value||"";
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || title.length<2) {
@@ -536,6 +539,9 @@ $("eventForm").addEventListener("submit",async (event)=>{
   // Start/end describe the party itself. Cutoff controls preorders separately.
   // Overnight events (e.g. 22:00–03:00) are valid.
   const validTime=/^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+  if(!/^#[0-9a-fA-F]{6}$/.test(dotColor)){
+    renderStatus("eventStatus","Выберите цвет точки в формате #RRGGBB.");return;
+  }
   if(description.length>600 || (!!startTime!==!!endTime) ||
      (startTime && (!validTime.test(startTime)||!validTime.test(endTime)))) {
     renderStatus("eventStatus","Заполните оба времени в формате ЧЧ:ММ или оставьте оба пустыми. Описание — до 600 символов.");
@@ -558,7 +564,7 @@ $("eventForm").addEventListener("submit",async (event)=>{
   renderStatus("eventStatus","Сохраняем мероприятие...");
   try{
     const payload={
-      date, title, cutoff, preorderEnabled:$("eventOpen").checked,
+      date, title, cutoff, dotColor, preorderEnabled:$("eventOpen").checked,
       closesAt: Timestamp.fromDate(closesAt),
       updatedAt:serverTimestamp()
     };
