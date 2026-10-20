@@ -41,7 +41,7 @@ assert(backend.includes("where(\"guestUid\",\"==\",uid)") &&
 assert(css.includes("overflow:hidden!important")&&
   css.includes(".bali-bank-history-scroll{overflow-y:auto!important"),
   "Main page must be fixed and scrolling restricted to history");
-assert(bank.includes("wallet.hidden=aggregates.size===0") &&
+assert(bank.includes("wallet.hidden=true") && bank.includes("baliIdBonusStrip") &&
   !bank.includes("Войдите в аккаунт для просмотра баланса"),
   "Do not show an empty wallet placeholder in the banking screen");
 assert(rules.includes("match /guestWallets/{uid}") &&

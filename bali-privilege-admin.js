@@ -68,8 +68,8 @@ $("baliPrivilegeAssignForm")?.addEventListener("submit",async e=>{
   if(!authorized||!selected)return setStatus("baliPrivilegeAssignStatus","Выберите гостя из списка.");
   const tier=$("baliPrivilegeTier").value;
   const benefits=normalize($("baliPrivilegePersonal").value);
-  if(!TIERS.includes(tier)||benefits.length>10||benefits.some(x=>x.length>180))
-    return setStatus("baliPrivilegeAssignStatus","Максимум 10 преимуществ длиной до 180 символов.");
+  if(!TIERS.includes(tier)||benefits.length>5||benefits.some(x=>x.length>180))
+    return setStatus("baliPrivilegeAssignStatus","Максимум 5 персональных привилегий длиной до 180 символов.");
   const submit=e.currentTarget.querySelector('button[type="submit"]');
   submit.disabled=true;
   try{
@@ -89,8 +89,8 @@ $("baliPrivilegeRulesForm")?.addEventListener("submit",async e=>{
     const root=$("baliPrivilegeRulesFields");
     const get=key=>root.querySelector('[data-tier="'+tier+'"][data-field="'+key+'"]').value.trim();
     levels[tier]={description:get("description"),criteria:get("criteria"),benefits:normalize(get("benefits"))};
-    if(levels[tier].benefits.length>10||levels[tier].benefits.some(x=>x.length>180))
-      return setStatus("baliPrivilegeRulesStatus","У "+tier+" максимум 10 преимуществ по 180 символов.");
+    if(levels[tier].benefits.length>5||levels[tier].benefits.some(x=>x.length>180))
+      return setStatus("baliPrivilegeRulesStatus","У "+tier+" максимум 5 преимуществ по 180 символов.");
   }
   const submit=e.currentTarget.querySelector('button[type="submit"]');submit.disabled=true;
   try{

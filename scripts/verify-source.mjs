@@ -1483,7 +1483,7 @@ assert(html.includes('id="baliCardNumber"') &&
   "BALI ID must use a protected sequential transaction and a full guest profile.");
 assert(admin.includes('id="baliPrivilegeAssignForm"') &&
   admin.includes('id="baliPrivilegeRulesForm"') &&
-  admin.includes('bali-privilege-admin.js?v=20261021-residentdj') &&
+  admin.includes('bali-privilege-admin.js?v=20261021-5priv') &&
   privilegeClient.includes('setDoc(doc(db,"guestPrivileges",selected)') &&
   privilegeClient.includes('setDoc(doc(db,"privilegeRules","main")'),
   "Privilege statuses and assignment rules must be admin-editable without client self-upgrades.");
@@ -1549,7 +1549,8 @@ assert(idLogo.includes('<svg') &&
   !html.includes('class="bali-id-seal"') &&
   !html.includes('✺') &&
   tierCss.includes('img.bali-id-brand-master') &&
-  tierCss.includes('var(--bali-card-logo-filter'),
+  tierCss.includes('var(--bali-card-logo-filter') &&
+  html.includes('class="bali-id-inline-mark"'),
   "BALI ID must preserve its original mask/BALI emblem without a subtitle on all tiers");
 assert(!html.includes('data-bali-transfer-form') &&
   !html.includes('bali-bonus-transfer-scaffold.js') &&

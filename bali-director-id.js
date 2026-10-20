@@ -94,8 +94,8 @@ $("directorAssignForm").addEventListener("submit",async event=>{
   if(!authorized||!selectedUid||isBusy)return;
   const tier=$("directorTier").value;
   const benefits=$("directorBenefits").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
-  if(!TIERS.includes(tier)||benefits.length>10||benefits.some(x=>x.length>180)){
-    status("directorSaveStatus","Допустимо до 10 привилегий по 180 символов.");
+  if(!TIERS.includes(tier)||benefits.length>5||benefits.some(x=>x.length>180)){
+    status("directorSaveStatus","Допустимо до 5 привилегий по 180 символов.");
     return;
   }
   if(!confirm("Назначить "+displayTier(tier)+" гостю "+selectedGuestName+" (№ "+selectedId+")?"))return;
@@ -125,8 +125,8 @@ $("directorBonusGrantForm")?.addEventListener("submit",async event=>{
   const quantity=Number($("directorBonusQuantity").value);
   const transferable=$("directorBonusTransferable").checked;
   const reason=$("directorBonusReason").value.trim();
-  if(!["shot","cocktail","hookah","entry"].includes(kind)||!Number.isInteger(quantity)||quantity<1||quantity>500||reason.length<5){
-    status("directorBonusGrantStatus","Укажите вид, количество 1–500 и основание (не менее 5 символов).");return;
+  if(!["shot","cocktail","hookah","entry"].includes(kind)||!Number.isInteger(quantity)||quantity<1||quantity>999||reason.length<5){
+    status("directorBonusGrantStatus","Укажите вид, количество 1–999 и основание (не менее 5 символов).");return;
   }
   const destination=selectedUid,guestName=selectedGuestName,number=selectedId;
   if(!confirm("Начислить "+quantity+" ед. ("+kind+") гостю "+guestName+" · BALI ID "+number+"?"))return;
