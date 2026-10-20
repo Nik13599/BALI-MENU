@@ -143,3 +143,8 @@ body[data-bali-admin-section="design"] .admin-tab[data-admin-tab="design"]{font-
 .bali-builder-top [data-bali-builder-add=panel]{display:none!important}
 .bali-builder-top .bali-builder-additions::before{content:"В выбранный блок:";color:#b9c8b6;font:600 11px Manrope,Inter,sans-serif}
 .bali-builder-top .bali-builder-additions>span{display:none}
+
+/* A single homepage preview; the older page tabs belong to legacy tools. */
+.bali-builder-active .bali-studio-page-tabs{display:none!important}
+.bali-builder-active .bali-builder-home-picker select:focus-visible{outline:2px solid #b9ff51;outline-offset:2px}
+.bali-builder-active .bali-builder-home-picker select:disabled{opacity:.55}
