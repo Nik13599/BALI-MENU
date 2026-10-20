@@ -59,3 +59,25 @@ body[data-bali-admin-section="design"] .admin-tab[data-admin-tab="design"]{font-
 
 .bali-builder-viewport-field{display:flex;flex-direction:column;gap:3px;font:600 10px Manrope,Inter,sans-serif;color:#b5c8b7}
 .bali-builder-viewport-field input{width:92px;box-sizing:border-box;min-height:38px;border:1px solid #405a48;border-radius:8px;background:#132017;color:#e3fbe5;padding:6px 9px;font:700 12px Manrope,Inter,sans-serif}
+
+/* Layer path: select enclosing columns/cards directly from the inspector. */
+.bali-builder-layer-trail{
+ display:flex;flex-wrap:wrap;align-items:center;gap:5px;
+ border:1px solid #344d3b;border-radius:10px;
+ background:#0d1914;padding:8px;min-width:0
+}
+.bali-builder-layer-trail[hidden]{display:none!important}
+.bali-builder-layer-node{
+ max-width:100%;min-width:0;cursor:pointer;
+ border:1px solid #355443;background:#1b2a22;color:#d2ead9;
+ border-radius:6px;padding:6px 8px;line-height:1.2;
+ font:600 10px/1.3 Manrope,Inter,sans-serif;
+ overflow-wrap:anywhere;transition:background .18s,border-color .18s
+}
+.bali-builder-layer-node[aria-current=true]{
+ border-color:#b9ff51;background:#2d482d;color:#edffd9
+}
+.bali-builder-layer-node:hover,.bali-builder-layer-node:focus-visible{
+ border-color:#b9ff51;outline:0
+}
+.bali-builder-layer-trail>span{color:#839b89;font-size:14px}
