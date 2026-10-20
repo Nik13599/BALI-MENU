@@ -163,8 +163,7 @@ test('3D carousel keeps older posters mounted through several changes',async({pa
   await page.evaluate(()=>{
     const grid=document.getElementById('eventsGrid');
     for(let n=4;n<=6;n++){
-      const c=grid.querySelector('.event-card').lastElementChild;
-      const clone=grid.querySelector('.event-card').lastElementChild;
+      const clone=grid.querySelector('.event-card');
       const copy=clone.cloneNode(true);
       copy.dataset.eventDate='2026-11-0'+n;
       copy.querySelector('h3').textContent='Событие '+n;
