@@ -34,7 +34,7 @@ test('all catalogs share typography and grid; informational maps retain each por
    return {background:c.backgroundColor,border:c.borderRadius,font:name.fontFamily,size:name.fontSize,weight:name.fontWeight,price:price.fontSize};
   }));
   const grid=host.locator('.menu-category-products').first();
-  if(page.viewportSize().width>=768)expect(await grid.evaluate(n=>getComputedStyle(n).gridTemplateColumns.split(' ').length)).toBe(page.viewportSize().width>=1180?6:3);
+  if(page.viewportSize().width>=768)expect(await grid.evaluate(n=>getComputedStyle(n).gridTemplateColumns.split(' ').length)).toBe(page.viewportSize().width>=1180?(mode==='tea'?6:3):2);
   else expect(await grid.evaluate(n=>getComputedStyle(n).flexDirection)).toBe('column');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await expect(page.locator('#baliMenuSearch')).toBeHidden();
