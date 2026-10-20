@@ -111,10 +111,15 @@ function navigate(win,link){
  if(!safeLink(link))return;
  if(link.startsWith("route:")){
   const route=link.slice(6);
-  if(route==="about"){win.document.querySelector('[data-bali-nav="about"],.bali-mobile-home-hero-copy button')?.click();return;}
   if(route==="cart"){win.document.querySelector("#baliPcCartBtn, #cartBtn")?.click();return;}
-  const selectors={home:'[data-bali-nav="home"]',events:'[data-bali-nav="events"]',menu:'[data-bali-nav="menu"]',info:'[data-bali-nav="info"]',profile:'#accountBtn',id:'#baliMobileIdBtn'};
-  win.document.querySelector(selectors[route])?.click();return;
+  const selectors={home:'[data-bali-nav="home"]',events:'[data-bali-nav="events"]',menu:'[data-bali-nav="menu"]',
+   info:'[data-bali-nav="contacts"],[data-bali-nav="info"]',profile:'[data-bali-nav="profile"]',id:'[data-bali-nav="id"],#baliMobileIdBtn',
+   about:'[data-bali-nav="about"]'};
+  const button=win.document.querySelector(selectors[route]);
+  if(button){button.click();return;}
+  if(route==="id"&&!win.BaliAuth?.isRegistered?.()){win.BaliAuth?.open?.();return;}
+  if(typeof win.navigateGuestPage==="function")win.navigateGuestPage(route==="info"?"contacts":route);
+  return;
  }
  if(link.startsWith("tel:"))win.location.href=link;
  else win.open(link,"_blank","noopener,noreferrer");
