@@ -17,20 +17,21 @@ if(image&&title&&description&&counter&&action&&hero){
   const collator=new Intl.Collator("ru",{numeric:true,sensitivity:"base"});
   const holidayId="bali-new-year-2026";
   const holidayArt="assets/BALI_banner_badge_rectangular_only.png";
-  const holidayExtraSpot={left:67,top:55,width:27,height:29};
+  const holidayExtraSpot={left:41,top:55,width:25,height:29};
+  const holidayThirdSpot={left:67,top:55,width:27,height:29};
   // The campaign lives in the shipped site until staff replace it with
   // a published Firestore offer. No existing offers are overwritten.
   const holidayOffer={
     id:holidayId,title:"БРОНИРОВАНИЕ НОВОГОДНИХ КОРПОРАТИВОВ",
     description:"Проведите незабываемый праздник в центре Минска. Выберите дату заранее.",
     imageUrl:"",imageTabletUrl:"",imageMobileUrl:"",
-    destination:"contact-modal",buttonText:"ЗАБРОНИРОВАТЬ ДАТУ",
+    destination:"contact-modal",buttonText:"Забронировать заранее",
     contactTitle:"Забронировать новогодний корпоратив",
     contactLinks:{},contactEnabled:{phone:true,telegram:true,instagram:true,whatsapp:true,viber:true},
-    contactHotspot:{enabled:true,left:41,top:55,width:25,height:29},
+    contactHotspot:{enabled:true,left:4,top:69,width:30,height:17},
     sort:-1,published:true
   };
-  let offers=[holidayOffer],index=0,pause=false,activeHotspot=null,activeSecondarySpot=null;
+  let offers=[holidayOffer],index=0,pause=false,activeHotspot=null,activeSecondarySpot=null,activeThirdSpot=null;
   const artHotspot=document.createElement("button");
   artHotspot.type="button";
   artHotspot.className="bali-pc-artwork-hotspot";
@@ -44,6 +45,13 @@ if(image&&title&&description&&counter&&action&&hero){
   secondaryHotspot.setAttribute("aria-label","Связаться с BALI для новогоднего корпоратива");
   hero.append(secondaryHotspot);
   secondaryHotspot.addEventListener("click",()=>action.click());
+  const thirdHotspot=document.createElement("button");
+  thirdHotspot.type="button";
+  thirdHotspot.className="bali-pc-artwork-hotspot bali-pc-artwork-hotspot-third";
+  thirdHotspot.hidden=true;
+  thirdHotspot.setAttribute("aria-label","Совместный новогодний корпоратив — забронировать заранее");
+  hero.append(thirdHotspot);
+  thirdHotspot.addEventListener("click",()=>action.click());
   function positionHotspot(){
     if(!activeHotspot||artHotspot.hidden)return;
     const h=hero.getBoundingClientRect(),box=image.getBoundingClientRect();
@@ -52,8 +60,11 @@ if(image&&title&&description&&counter&&action&&hero){
     const style=getComputedStyle(image);
     const ratio=(style.objectFit==="cover"?Math.max:Math.min)(box.width/imgW,box.height/imgH);
     const drawW=imgW*ratio,drawH=imgH*ratio;
-    const x=box.left-h.left+(box.width-drawW)/2,y=box.top-h.top+(box.height-drawH)/2;
-    for(const [button,spot] of [[artHotspot,activeHotspot],[secondaryHotspot,activeSecondarySpot]]){
+    // On a narrow phone the approved artwork uses left-aligned cover cropping.
+    // On desktop/tablet it remains the original uncropped, centered image.
+    const coverLeft=hero.classList.contains("is-seasonal")&&window.matchMedia("(max-width:767px)").matches;
+    const x=box.left-h.left+(coverLeft?0:(box.width-drawW)/2),y=box.top-h.top+(box.height-drawH)/2;
+    for(const [button,spot] of [[artHotspot,activeHotspot],[secondaryHotspot,activeSecondarySpot],[thirdHotspot,activeThirdSpot]]){
       if(!spot||button.hidden)continue;
       button.style.left=(x+drawW*spot.left/100)+"px";
       button.style.top=(y+drawH*spot.top/100)+"px";
@@ -105,7 +116,7 @@ if(image&&title&&description&&counter&&action&&hero){
       hero.classList.remove("has-artwork","is-image-only","has-no-action");
       counter.textContent="— / —";
       action.hidden=true;
-      artHotspot.hidden=true;secondaryHotspot.hidden=true;activeHotspot=null;activeSecondarySpot=null;
+      artHotspot.hidden=true;secondaryHotspot.hidden=true;thirdHotspot.hidden=true;activeHotspot=null;activeSecondarySpot=null;activeThirdSpot=null;
     }else{
       const seasonal=offer.id===holidayId;
       hero.classList.toggle("is-seasonal",seasonal);
@@ -128,10 +139,14 @@ if(image&&title&&description&&counter&&action&&hero){
         &&spot.left>=0&&spot.top>=0&&spot.width>=1&&spot.height>=1
         &&spot.left+spot.width<=100&&spot.top+spot.height<=100?spot:null;
       activeSecondarySpot=seasonal?holidayExtraSpot:null;
+      activeThirdSpot=seasonal?holidayThirdSpot:null;
       artHotspot.hidden=!activeHotspot;
       secondaryHotspot.hidden=!activeSecondarySpot;
+      thirdHotspot.hidden=!activeThirdSpot;
       artHotspot.setAttribute("aria-label",offer.buttonText||"Связаться с менеджером BALI");
-      action.hidden=offer.destination==="none"||!!activeHotspot;
+      // Keep a readable real CTA on mobile seasonal artwork; desktop uses the
+      // invisible clickable regions drawn over the original three tile areas.
+      action.hidden=offer.destination==="none"||(!seasonal&&!!activeHotspot);
       if(!action.hidden)action.firstChild.textContent=offer.buttonText||"Подробнее ";
       if(activeHotspot)positionHotspot();
     }
