@@ -835,9 +835,15 @@
                     <input type="email" id="customerEmail" autocomplete="email" readonly required>
                 </div>
                 <div class="form-group">
-                    <label for="eventSelect">Дата мероприятия *</label>
-                    <select id="eventSelect" required>
-                      <option value="">Мероприятия загружаются...</option>
+                    <label for="eventDateSelect">Дата мероприятия *</label>
+                    <select id="eventDateSelect" required>
+                      <option value="">Выбери дату</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="eventSelect">Название мероприятия *</label>
+                    <select id="eventSelect" required disabled>
+                      <option value="">Сначала выбери дату</option>
                     </select>
                     <input type="hidden" id="eventDate">
                 </div>
