@@ -62,8 +62,10 @@
     // Remove stale transitions. Allow any new pointerdown to interrupt cleanly.
     if(reduce.matches||Math.abs(current-target)<.5){normalize();return;}
     void track.offsetWidth;
-    const duration=clamp(Math.abs(target-current)*3.8,200,770);
-    track.style.transition="transform "+duration+"ms cubic-bezier(.17,.76,.23,1)";
+    // Direct swipes remain responsive, but the remainder eases into place
+    // gently: no sudden snap when the pointer is released.
+    const duration=clamp(280+Math.abs(target-current)*2.6,330,850);
+    track.style.transition="transform "+duration+"ms cubic-bezier(.23,.65,.17,1)";
     displayedAngle=target;
     track.style.transform="rotateY("+target+"deg)";
     finishTimer=setTimeout(normalize,duration+70);
@@ -90,20 +92,23 @@
     faceState(!flipped,focus);
     scene.classList.add("is-cinematic");
     const travel=target-current;
+    // Smooth monotonic rotation with only one soft retreat-and-return.
+    // An ease-in-out per half prevents jerks at the old four animation
+    // keyframe junctions; no changes to the manual-swipe path.
     const keyframes=[
-      {offset:0,transform:"translateZ(0px) rotateY("+current+"deg) scale(1)"},
-      {offset:.2,transform:"translateZ(-56px) rotateY("+(current+travel*.11)+"deg) scale(.975)"},
-      {offset:.48,transform:"translateZ(-98px) rotateY("+(current+travel*.48)+"deg) scale(.945)"},
-      {offset:.74,transform:"translateZ(-65px) rotateY("+(current+travel*.83)+"deg) scale(.975)"},
+      {offset:0,transform:"translateZ(0px) rotateY("+current+"deg) scale(1)",
+        easing:"cubic-bezier(.39,.02,.25,.95)"},
+      {offset:.5,transform:"translateZ(-76px) rotateY("+(current+travel*.5)+"deg) scale(.958)",
+        easing:"cubic-bezier(.4,0,.56,1)"},
       {offset:1,transform:"translateZ(0px) rotateY("+target+"deg) scale(1)"}
     ];
     track.style.transition="none";
     cinematicEffect=track.animate(keyframes,{
-      duration:960,easing:"cubic-bezier(.16,.64,.2,1)",fill:"forwards"
+      duration:1150,easing:"linear",fill:"forwards"
     });
     const running=cinematicEffect;
     running.addEventListener("finish",()=>{if(cinematicEffect===running&&!drag)normalize();},{once:true});
-    finishTimer=setTimeout(()=>{if(cinematicEffect===running&&!drag)normalize();},1060);
+    finishTimer=setTimeout(()=>{if(cinematicEffect===running&&!drag)normalize();},1240);
   }
   track.addEventListener("transitionend",event=>{
     if(event.target===track&&event.propertyName==="transform"&&!drag)normalize();
@@ -123,10 +128,9 @@
       current,dx:0,dy:0,lastX:event.clientX,lastTime:performance.now(),
       velocity:0,axis:null,wasFlipped:flipped
     };
-    // A shallow physical response on every touch, including edge/centre taps.
-    const fraction=clamp((event.clientX-rect.left)/Math.max(1,rect.width),0,1);
-    const direction=fraction>=.5?1:-1;
-    if(!reduce.matches)frame(current+direction*3);
+    // Every touch starts capturing immediately. Avoid a synthetic ±3° kick
+    // that made light touches look like a sudden unintended flip.
+    if(!reduce.matches)frame(current);
     try{scene.setPointerCapture(event.pointerId);}catch{}
     if(event.pointerType==="mouse")event.preventDefault();
   });
