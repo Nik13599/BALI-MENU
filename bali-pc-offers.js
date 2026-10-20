@@ -110,6 +110,8 @@ if(image&&title&&description&&counter&&action&&hero){
     // Identifies the active slide to the administrator’s live visual editor.
     hero.dataset.baliOfferId=offer?.id||"";
     hero.dataset.baliManagedPromo="true";
+    hero.dataset.baliCarouselCount=String(offers.length);
+    hero.dataset.baliCarouselInterval=String(slideIntervalMs);
     if(!offer){
       hero.classList.remove("is-seasonal");
       hero.removeAttribute("aria-label");
