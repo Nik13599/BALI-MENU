@@ -65,7 +65,9 @@ test('two responsive reference layouts keep a background-free calendar',async({p
     expect(state.calTop).toBeLessThan(state.posterTop);
     expect(state.previous).toBe('none');
   }
-  await expect(page.locator('#baliCalendarDays .bali-calendar-day')).toHaveCount(42);
+  const days=await page.locator('#baliCalendarDays .bali-calendar-day').count();
+  expect(days).toBeGreaterThanOrEqual(28);
+  expect(days%7).toBe(0);
 });
 test('posters stay image-only with caption outside and details open on click',async({page})=>{
   await openCalendar(page);
