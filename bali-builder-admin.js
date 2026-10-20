@@ -183,7 +183,11 @@ function activeDoc(){return selection?.scope==="about"?aboutDoc():frameDoc();}
 function liveNode(){
  const d=activeDoc();if(!d||!selection)return null;
  if(selection.id)return d.querySelector('[data-bali-builder-id="'+selection.id+'"]');
- try{return d.querySelector(selection.selector);}catch{return null;}
+ try{
+  const selector=selection.scope==="about"&&selection.selector.startsWith("about::")?
+   selection.selector.slice(7):selection.selector;
+  return d.querySelector(selector);
+ }catch{return null;}
 }
 function getItem(){
  if(!selection)return null;
@@ -268,7 +272,8 @@ function clearOverlay(){
  overlay?.remove();overlay=null;
 }
 function positionOverlay(){
- if(!overlay||!selection)return;
+ if(!overlay)return;
+ if(!selection){overlay.style.display="none";return;}
  const node=liveNode(),d=activeDoc();
  if(!node||!d){overlay.style.display="none";return;}
  const rect=node.getBoundingClientRect();
@@ -286,7 +291,7 @@ function attachOverlay(){
   ".bali-builder-handle{position:absolute;right:-7px;bottom:-7px;width:17px;height:17px;background:#b9ff51;border:2px solid #101510;border-radius:4px;box-sizing:border-box;pointer-events:auto;cursor:nwse-resize;touch-action:none}";
   d.head.append(st);
  }
- overlay=d.createElement("div");overlay.className="bali-builder-selection-overlay";
+ overlay=d.createElement("div");overlay.className="bali-builder-selection-overlay";overlay.style.display="none";
  overlay.innerHTML='<div class="bali-builder-bounding-label">Переместить</div><div class="bali-builder-handle" title="Изменить размер" aria-label="Изменить размер"></div>';
  d.body.append(overlay);
  for(const [handle,mode] of [[overlay.querySelector(".bali-builder-bounding-label"),"move"],[overlay.querySelector(".bali-builder-handle"),"size"]]){
