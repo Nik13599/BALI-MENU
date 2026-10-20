@@ -126,6 +126,7 @@ function hide() {
 
 function friendlyError(error) {
   const code = String(error?.code || "unknown-error");
+  window.BaliMonitor?.report("auth",code);
   const errors = {
     "auth/invalid-api-key": "Некорректный Firebase API-ключ. Проверьте настройки приложения.",
     "auth/app-not-authorized": "Этот сайт не разрешён для Firebase API-ключа.",

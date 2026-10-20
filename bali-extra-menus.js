@@ -36,6 +36,8 @@ function normalize(data,id){
     hidden:data.hidden===true
   };
 }
+const categoryLabel=value=>value===value.toLocaleUpperCase("ru-RU")?value.slice(0,1)+value.slice(1).toLocaleLowerCase("ru-RU"):value;
+const teaPrice=new Intl.NumberFormat("ru-RU",{maximumFractionDigits:2});
 const sortItems=(a,b)=>a.sort-b.sort||collator.compare(a.category,b.category)||collator.compare(a.name,b.name);
 function mergeTeaItems(firebaseItems){
   // Seed is a full locally available menu; an edited Firestore document overrides
@@ -90,43 +92,33 @@ function openTeaInfo(item){
     body.append(node("p","bali-tea-details-source","Описание составлено по чайной методичке, страница "+item.sourcePage+"."));
   if(!dialog.open)dialog.showModal();
 }
-const infoSvg=()=>{
-  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
-  svg.setAttribute("viewBox","0 0 24 24");
-  svg.setAttribute("width","25");svg.setAttribute("height","25");
-  svg.setAttribute("fill","none");svg.setAttribute("stroke","currentColor");
-  svg.setAttribute("stroke-width","1.8");svg.setAttribute("stroke-linecap","round");
-  svg.setAttribute("aria-hidden","true");
-  const circle=document.createElementNS(svg.namespaceURI,"circle");
-  circle.setAttribute("cx","12");circle.setAttribute("cy","12");circle.setAttribute("r","9.2");
-  const path=document.createElementNS(svg.namespaceURI,"path");
-  path.setAttribute("d","M12 10.7v5.5M12 7.65h.01");
-  svg.append(circle,path);return svg;
-};
 function drawTeaItem(item){
   // Share kitchen card markup and typography, but render a compact tea-specific size.
   const card=node("article","menu-item bali-tea-item menu-item--no-image");
-  const info=node("button","menu-details-btn");
   const hasDetails=Boolean([item.description,item.taste,item.ingredients,item.brewing].some(Boolean));
-  info.classList.add(hasDetails?"has-details":"no-details");
-  info.type="button";info.append(infoSvg());
-  info.setAttribute("aria-label",(hasDetails?"Подробная информация: ":"Описание пока не добавлено: ")+item.name);
-  info.title=hasDetails?"Информация о чае":"Подробное описание пока не добавлено";
-  if(hasDetails)info.addEventListener("click",()=>openTeaInfo(item));
-  else{info.disabled=true;info.setAttribute("aria-disabled","true");}
+  card.classList.toggle("has-tea-details",hasDetails);
   const inner=node("div","menu-item-content");
   inner.append(node("span","menu-item-category",item.category));
   const header=node("div","menu-item-header");
   header.append(node("h3","menu-item-name",item.name));
-  header.append(node("span","menu-item-price","BYN "+item.price1.toFixed(2)));
-  // Compact catalog shows just name, price and the ⓘ button.
+  const price=node("span","menu-item-price");
+  price.append(node("span","bali-tea-amount",teaPrice.format(item.price1)),node("small","bali-tea-currency","BYN"));
+  header.append(price);
+  // A compact name/price preview opens details through a plain-language action.
   // Origin, tasting notes, ingredients and brewing stay in openTeaInfo().
   inner.append(header);
   if(item.volume1&&item.volume1!=="Порция"&&item.volume1!=="Цена")
     inner.append(node("span","menu-item-weight",item.volume1));
   if(item.volume2)
     inner.append(node("span","menu-item-weight",item.volume2+" — BYN "+item.price2.toFixed(2)));
-  card.append(info,inner);
+  if(hasDetails){
+    const more=node("button","bali-tea-readmore","Подробнее о чае");
+    more.type="button";
+    more.setAttribute("aria-label","Подробнее о чае: "+item.name);
+    const arrow=node("span","","→");arrow.setAttribute("aria-hidden","true");more.append(arrow);
+    more.addEventListener("click",()=>openTeaInfo(item));inner.append(more);
+  }else{const space=node("span","bali-tea-footer-space");space.setAttribute("aria-hidden","true");inner.append(space);}
+  card.append(inner);
   return card;
 }
 function setup({prefix,collection:collectionName,title,all}){
@@ -142,7 +134,7 @@ function setup({prefix,collection:collectionName,title,all}){
     const categories=[...new Set(state.items.map(x=>x.category))];
     if(state.selected!=="all"&&!categories.includes(state.selected))state.selected="all";
     for(const [category,label] of [["all",all],...categories.map(x=>[x,x])]){
-      const button=node("button","bali-bar-filter"+(state.selected===category?" is-active":""),label);
+      const button=node("button","bali-bar-filter"+(state.selected===category?" is-active":""),isTea?categoryLabel(label):label);
       button.type="button";button.dataset.extraMenuCategory=category;
       button.setAttribute("aria-pressed",String(state.selected===category));filters.append(button);
     }
@@ -169,7 +161,7 @@ function setup({prefix,collection:collectionName,title,all}){
         // Same sections/headings/six-column (desktop) and list (mobile) as kitchen.
         const group=node("section","menu-category-block");
         const heading=node("div","menu-category-heading");
-        heading.append(node("h3","menu-category-title",category));
+        heading.append(node("h3","menu-category-title",categoryLabel(category)));
         const count=items.length;
         const ending=count===1?"позиция":(count%10>=2&&count%10<=4&&(count%100<12||count%100>14)?"позиции":"позиций");
         heading.append(node("span","menu-category-count",count+" "+ending));

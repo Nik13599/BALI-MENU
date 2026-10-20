@@ -18,7 +18,55 @@
       "*.yaml",
       "*.yml",
       "**/*.test.js",
-      "functions/**"
+      "functions/**",
+      "styles/**",
+      "storage.rules",
+      "firebase-debug.log",
+      "firestore-debug.log",
+      "playwright.config.cjs",
+      "docs/**"
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
+          }
+        ]
+      },
+      {
+        "source": "**/*.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=0,must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "assets/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=604800"
+          }
+        ]
+      },
+      {
+        "source": "generated/*.css",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=31536000,immutable"
+          }
+        ]
+      }
     ]
   },
   "functions": [
@@ -26,5 +74,8 @@
       "source": "functions",
       "codebase": "bali-id"
     }
-  ]
+  ],
+  "storage": {
+    "rules": "storage.rules"
+  }
 }

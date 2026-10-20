@@ -285,6 +285,7 @@ async function subscribe(user) {
   if(unsubMenu){unsubMenu();unsubMenu=null;}
   const current=++generation;
   orders=[];catalog=[];authorized=false;
+  window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
   $("ordersAdminList").textContent="Проверяем права...";
   if(!user||!user.emailVerified)return;
   try{
@@ -308,6 +309,7 @@ async function subscribe(user) {
         orders=prepared;
         renderDates();renderOrders();
         window.dispatchEvent(new CustomEvent("bali:admin:orders",{detail:{
+          ownerUid:user.uid,orders:orders.map(({id,status,orderNumber})=>({id,status,orderNumber})),
           count:orders.length,pending:orders.filter(x=>x.status==="pending"&&!x.archived).length
         }}));
         setStatus("Последние "+orders.length+" заказов. Для полной истории по гостю откройте «Клиенты».");

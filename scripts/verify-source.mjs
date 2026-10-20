@@ -1,7 +1,13 @@
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 
-const source = (name) => readFileSync(name, "utf8");
+const styleEntries = JSON.parse(readFileSync("styles/entries.json", "utf8"));
+const source = (name) => {
+  const contents=readFileSync(name, "utf8");
+  // Evaluate the same ordered source cascade now compiled into one network asset.
+  return styleEntries[name] ? contents.replace(/<link rel="stylesheet" data-bali-bundle="[^"]+"[^>]+>/,
+    styleEntries[name].map(href=>'<link rel="stylesheet" href="'+href+'">').join('\n')) : contents;
+};
 const html = source("index.html");
 
 const auth = source("auth.js");
@@ -188,7 +194,7 @@ assert(html.includes('id="baliMobileAboutBackgroundA"') &&
   admin.includes('data-design-editor="mobileAbout"') &&
   admin.includes('id="baliMobileAboutFiles"') &&
   admin.includes('multiple>') &&
-  admin.includes('bali-mobile-about-admin.js?v=20261019-1') &&
+  admin.includes('bali-mobile-about-admin.js?v=20261020-2') &&
   admin.includes('bali-mobile-about-admin.css?v=20261019-1') &&
   mobileAboutAdmin.includes('const MAX=8') &&
   mobileAboutAdmin.includes('writeBatch(db)') &&

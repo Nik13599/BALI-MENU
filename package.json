@@ -6,10 +6,21 @@
   "scripts": {
     "test": "node scripts/verify-source.mjs && node scripts/verify-bali-bank.mjs && node scripts/verify-bali-transfers.mjs && node scripts/test-bali-backend.mjs",
     "test:browser": "playwright test",
-    "start": "python3 -m http.server 8000"
+    "start": "python3 -m http.server 8000",
+    "build:styles": "node scripts/build-styles.mjs",
+    "check:styles": "node scripts/build-styles.mjs --check",
+    "build:images": "node scripts/build-images.mjs",
+    "test:firebase": "node scripts/run-emulators.cjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
-    "@playwright/test": "^1.58.2"
+    "@firebase/rules-unit-testing": "^3.0.4",
+    "@playwright/test": "^1.58.2",
+    "cssnano": "^9.9.0",
+    "firebase": "^10.14.1",
+    "firebase-tools": "^15.34.0",
+    "postcss": "^8.5.31",
+    "sharp": "^0.35.5",
+    "undici": "^7.30.1"
   }
 }

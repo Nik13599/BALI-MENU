@@ -1,6 +1,6 @@
 // BALI MENU: администратор через Google Auth + вручную назначенный admins/{uid}.
 import { BALI_MENU_SEED } from "./menu-seed.js?v=20261017-9";
-import { compressImage } from "./image-compressor.js?v=20261018-99";
+import { prepareImage as compressImage } from "./image-compressor.js?v=20261020-2";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
@@ -647,13 +647,13 @@ async function checkAdminAccess(user) {
       menu.clear();
       for(const d of snap.docs){const x=d.data();if(typeof x.name==="string"&&Number.isFinite(x.price))menu.set(d.id,x);}
       menuRender();
-      window.dispatchEvent(new CustomEvent("bali:admin:menu",{detail:{count:menu.size}}));
+      window.dispatchEvent(new CustomEvent("bali:admin:menu",{detail:{count:menu.size,items:[...menu.values()]}}));
     },error=>renderStatus("menuStatus","Не удалось прочитать каталог: "+(error.code||"unknown")));
     unsubEvents=onSnapshot(collection(db,"events"),snap=>{
       events.clear();
       for(const d of snap.docs)events.set(d.id,d.data());
       eventRender();
-      window.dispatchEvent(new CustomEvent("bali:admin:events",{detail:{count:events.size}}));
+      window.dispatchEvent(new CustomEvent("bali:admin:events",{detail:{count:events.size,items:[...events.values()]}}));
     },error=>renderStatus("eventStatus","Не удалось прочитать мероприятия: "+(error.code||"unknown")));
   } catch(error) {
     if(auth.currentUser?.uid!==user.uid) return;

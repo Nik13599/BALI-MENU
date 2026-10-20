@@ -9,3 +9,7 @@ window.BALI_FIREBASE_CONFIG = Object.freeze({
   "appId": "1:855889005555:web:7be9b914a1fc4d016f6086",
   "measurementId": "G-VYT1D6FBGE"
 });
+
+// Enable only after provisioning the bucket and deploying storage.rules.
+// Existing Firestore data-URI images remain compatible during migration.
+window.BALI_IMAGE_STORAGE_ENABLED = false;

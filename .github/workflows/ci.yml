@@ -80,6 +80,7 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - run: npm run check:styles
       - run: npx playwright install --with-deps chromium
       - name: Проверка гостевых сценариев на телефоне и ПК (без доступа к Firebase)
         run: npm run test:browser
@@ -89,3 +90,19 @@ jobs:
           name: browser-test-results
           path: test-results/
           retention-days: 7
+
+  firebase-emulators:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - run: npm ci --no-audit --no-fund
+      - name: Test Auth, Firestore and Storage in isolated demo project
+        run: npm run test:firebase

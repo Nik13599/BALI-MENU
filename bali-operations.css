@@ -1,0 +1,9 @@
+.bali-service-card{box-sizing:border-box;padding:16px;margin:14px 0;border:1px solid rgba(240,245,240,.15);border-radius:12px;background:#13191e;color:#eff3ed;font:13px/1.6 Manrope,Arial,sans-serif}
+.bali-service-card summary{cursor:pointer;font-weight:750;min-height:30px}
+.bali-service-card button{display:block;max-width:100%;margin-top:10px;padding:10px 14px;border:1px solid rgba(240,245,240,.2);border-radius:8px;background:#20282d;color:#f2f5ef;text-align:left;cursor:pointer}
+.bali-notice-live{position:fixed;z-index:2200;left:50%;transform:translateX(-50%);bottom:110px;max-width:min(90vw,480px);padding:14px 20px;border:1px solid var(--bt-primary,#b9ff51);border-radius:12px;background:#172027;color:#f2f7ed;box-shadow:0 5px 25px #0008;cursor:pointer;font:700 14px/1.5 Manrope,Arial,sans-serif}
+.bali-notice-live[hidden]{display:none}
+body[data-bali-page="profile"] #profileSection{overflow-y:auto!important}
+.bali-content-readiness{margin-top:12px;color:#dce6d2}
+
+.bali-notice-open{display:block;width:100%;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}

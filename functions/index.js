@@ -10,7 +10,19 @@ if(!admin.apps.length)admin.initializeApp();
 const db=admin.firestore();
 const TS=admin.firestore.Timestamp;
 const REGION="europe-west1";
-const api=fn=>onCall({region:REGION,maxInstances:12,timeoutSeconds:30},fn);
+const api=(name,fn)=>onCall({region:REGION,maxInstances:12,timeoutSeconds:30},async req=>{
+  const start=Date.now();
+  try{
+    const result=await fn(req);
+    console.info(JSON.stringify({severity:"INFO",event:"bali.callable",operation:name,outcome:"ok",durationMs:Date.now()-start}));
+    return result;
+  }catch(error){
+    // Never log request data, tokens, UID, recipient numbers or exception messages.
+    const code=typeof error?.code==="string"&&/^[a-z-]{1,40}$/.test(error.code)?error.code:"internal";
+    console.error(JSON.stringify({severity:code==="internal"?"ERROR":"WARNING",event:"bali.callable",operation:name,outcome:"error",code,durationMs:Date.now()-start}));
+    throw error;
+  }
+});
 const fail=(code,message)=>{throw new HttpsError(code,message);};
 const verified=req=>{
   const uid=req.auth?.uid;
@@ -56,7 +68,7 @@ async function limitPreview(uid){
 }
 /* A recipient preview contains ONLY the BALI display name and six-digit ID.
  * No email, phone, UID or privileges of other guests are returned. */
-exports.previewBaliRecipient=api(async req=>{
+exports.previewBaliRecipient=api("previewBaliRecipient",async req=>{
   const uid=verified(req),number=number6(req.data?.number);
   await nameAndId(uid);
   await limitPreview(uid);
@@ -76,7 +88,7 @@ function isTransferable(g,now){
   }
   return typeof g.id==="string"&&g.id.length>0;
 }
-exports.transferBaliBenefits=api(async req=>{
+exports.transferBaliBenefits=api("transferBaliBenefits",async req=>{
   const uid=verified(req);
   const toNumber=number6(req.data?.number);
   const requestId=req.data?.requestId;
@@ -167,7 +179,7 @@ exports.transferBaliBenefits=api(async req=>{
   },{maxAttempts:5});
   return result;
 });
-exports.listMyBaliHistory=api(async req=>{
+exports.listMyBaliHistory=api("listMyBaliHistory",async req=>{
   const uid=verified(req);
   const after=textValue(req.data?.after,95);
   if(after&&!/^[a-zA-Z0-9_-]{8,95}$/.test(after))fail("invalid-argument","Некорректная страница истории.");
@@ -200,7 +212,7 @@ async function privileged(uid){
     s.exists&&s.data().active===true&&s.data().role==="director");
 }
 /* Staff issue tangible benefits separately from cosmetic level descriptions. */
-exports.issueBaliQuantity=api(async req=>{
+exports.issueBaliQuantity=api("issueBaliQuantity",async req=>{
   const staffUid=verified(req);
   if(!await privileged(staffUid))fail("permission-denied","Начислять бонусы может только руководство.");
   const guestUid=textValue(req.data?.uid,128),kind=req.data?.kind;

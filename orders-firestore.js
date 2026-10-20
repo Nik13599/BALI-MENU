@@ -158,7 +158,7 @@ async function cancel(id) {
 function watchUserOrders(user) {
   if(orderListener){orderListener();orderListener=null;}
   const current=++generation;
-  if(!user) {emit("bali:orders",{orders:[]}); return;}
+  if(!user) {emit("bali:orders",{orders:[],ownerUid:null}); return;}
   orderListener=onSnapshot(
     query(collection(db,"orders"),where("ownerUid","==",user.uid),limit(40)),
     async snapshots=>{
@@ -171,7 +171,7 @@ function watchUserOrders(user) {
         }));
         if(current!==generation) return;
         orders.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-        emit("bali:orders",{orders});
+        emit("bali:orders",{orders,ownerUid:user.uid});
       }catch(error){if(current===generation)emit("bali:orders-error",{message:errorText(error)});}
     },
     error=>{if(current===generation)emit("bali:orders-error",{message:errorText(error)});}

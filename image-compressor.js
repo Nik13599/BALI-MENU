@@ -80,3 +80,28 @@ export async function compressImage(file,kind="product") {
   if(!result)throw new Error("Не удалось сжать фото до безопасного размера. Выберите другое изображение.");
   return result;
 }
+
+/** Upload mode is explicit: no silent fallback when a configured bucket fails. */
+export async function prepareImage(file,kind="product") {
+  const encoded=await compressImage(file,kind);
+  if(window.BALI_IMAGE_STORAGE_ENABLED!==true)return encoded;
+  const [{getApp},{getAuth},{getStorage,ref,getMetadata,getDownloadURL,uploadBytes}]=await Promise.all([
+    import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"),
+    import("https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"),
+    import("https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js")
+  ]);
+  const app=getApp(),user=getAuth(app).currentUser;
+  if(!user?.emailVerified)throw new Error("Войдите в аккаунт администратора перед загрузкой.");
+  const blob=await (await fetch(encoded)).blob();
+  const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer())))
+    .map(x=>x.toString(16).padStart(2,'0')).join('');
+  if(!/^[a-z-]{1,40}$/.test(kind))throw new Error("Неизвестный тип изображения.");
+  const target=ref(getStorage(app),`public/${user.uid}/${kind}/${hash}.webp`);
+  try{
+    let exists=false;
+    try{await getMetadata(target);exists=true;}catch(error){if(error.code!=="storage/object-not-found")throw error;}
+    if(!exists)await uploadBytes(target,blob,{contentType:'image/webp',cacheControl:'public,max-age=31536000,immutable'});
+    window.BaliMonitor?.ok("image-storage");
+    return await getDownloadURL(target);
+  }catch(error){window.BaliMonitor?.report("image-storage",error);throw new Error("Не удалось загрузить фото в хранилище. Проверьте подключение и права Storage; изображение не опубликовано.");}
+}
