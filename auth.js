@@ -43,7 +43,10 @@ let profile = null;
 let resolved = false;
 let authGeneration = 0;
 let privacyAcceptedUid = null;
-let preLoginConsent = false;
+// Only an explicit Google login (popup or redirect) sends a returning guest
+// straight home; restoring an existing Firebase session preserves navigation.
+let pendingGoogleLogin = false;
+const redirectLoginKey = "bali-google-login-pending";
 const privacyVersion = "2026-10-21";
 const consentRef = uid => doc(database,"users",uid,"privacyConsents",privacyVersion);
 const withdrawalRef = uid => doc(database,"users",uid,"privacyWithdrawals",privacyVersion);
@@ -198,6 +201,7 @@ async function startGoogleSignIn() {
     return;
   }
   message("Открываем вход через Google...");
+  pendingGoogleLogin = true;
   els.google.disabled = true;
   try {
     const provider = new GoogleAuthProvider();
@@ -207,16 +211,17 @@ async function startGoogleSignIn() {
     if (error.code === "auth/popup-blocked" ||
         error.code === "auth/operation-not-supported-in-this-environment") {
       try {
-        if(preLoginConsent)sessionStorage.setItem("bali-privacy-entry",JSON.stringify({version:privacyVersion,at:Date.now()}));
-        else sessionStorage.removeItem("bali-privacy-entry");
+        try { sessionStorage.setItem(redirectLoginKey,"1"); } catch (_error) {}
         await signInWithRedirect(auth, new GoogleAuthProvider());
         return;
       } catch (redirectError) {
+        pendingGoogleLogin = false;
+        try { sessionStorage.removeItem(redirectLoginKey); } catch (_error) {}
         message(friendlyError(redirectError), true);
         return;
       }
     }
-    preLoginConsent=false;
+    pendingGoogleLogin = false;
     message(friendlyError(error), true);
   } finally {
     els.google.disabled = false;
@@ -225,15 +230,8 @@ async function startGoogleSignIn() {
 
 els.google.addEventListener("click", () => {
   if (!auth || els.google.disabled) return;
-  preLoginConsent=false;
-  if(!window.BaliPrivacy?.hasEntryConsent()){
-    // The first click opens consent; the final Accept click opens Google
-    // in the same trusted gesture, avoiding popup blocking on real browsers.
-    void window.BaliPrivacy.review({
-      onAccepted:()=>{preLoginConsent=true;void startGoogleSignIn();}
-    }).then(accepted=>{if(!accepted)hide();});
-    return;
-  }
+  // We cannot know if this is a returning account until Google identifies it.
+  // Sign in directly; require consent only when Firestore has no valid receipt.
   void startGoogleSignIn();
 });
 
@@ -340,21 +338,18 @@ async function handleUser(authUser) {
       if(!stillCurrent())return;
       if(withdrawal.exists())throw Object.assign(new Error(),{code:"privacy/withdrawn"});
       if(!hasPrivacyConsent(consent)){
-        let entry=preLoginConsent;
-        preLoginConsent=false;
-        try{
-          const saved=JSON.parse(sessionStorage.getItem("bali-privacy-entry")||"null");
-          sessionStorage.removeItem("bali-privacy-entry");
-          if(saved?.version===privacyVersion&&Date.now()-saved.at>=0&&Date.now()-saved.at<600000)entry=true;
-        }catch(_e){}
-        if(!entry&&!await window.BaliPrivacy?.review()){
-          if(stillCurrent()){
-            await signOut(auth);
-            hide();
-          }
+        // A first-time guest must explicitly consent. Returning guests with
+        // an existing receipt never see the consent dialog again, even on a
+        // new browser or device.
+        const accepted = await window.BaliPrivacy?.review();
+        if(!stillCurrent())return;
+        if(accepted!==true){
+          pendingGoogleLogin=false;
+          try{sessionStorage.removeItem(redirectLoginKey);}catch(_error){}
+          await signOut(auth);
+          hide();
           return;
         }
-        if(!stillCurrent())return;
         try{
           await setDoc(consentRef(authUser.uid),{version:privacyVersion,processing:true,international:true,acceptedAt:serverTimestamp()});
         }catch(error){
@@ -365,16 +360,32 @@ async function handleUser(authUser) {
         }
         if(!stillCurrent())return;
       }
-      preLoginConsent=false;
       privacyAcceptedUid=authUser.uid;
       const snapshot = await getDoc(doc(database, "users", authUser.uid));
       if (!stillCurrent()) return;
       const candidate = snapshot.exists() ? snapshot.data() : null;
       profile = validProfile(candidate, authUser) ? candidate : null;
-      if (!profile) show();
-      else if (els.dialog.classList.contains("active")) hide();
+      if (!profile) {
+        pendingGoogleLogin=false;
+        try{sessionStorage.removeItem(redirectLoginKey);}catch(_error){}
+        show();
+      } else {
+        if (els.dialog.classList.contains("active")) hide();
+        let redirected=false;
+        try {
+          redirected=sessionStorage.getItem(redirectLoginKey)==="1";
+          sessionStorage.removeItem(redirectLoginKey);
+        } catch (_error) {}
+        if (pendingGoogleLogin || redirected) {
+          pendingGoogleLogin=false;
+          // No profile/consent forms or success popups on repeat Google login.
+          window.location.hash="home";
+        }
+      }
     } catch (error) {
       if (!stillCurrent()) return;
+      pendingGoogleLogin=false;
+      try{sessionStorage.removeItem(redirectLoginKey);}catch(_error){}
       show();
       message(friendlyError(error), true);
     }
@@ -397,6 +408,8 @@ if (!isConfigured) {
       finishInitialization();
     });
     getRedirectResult(auth).catch((error) => {
+      pendingGoogleLogin=false;
+      try{sessionStorage.removeItem(redirectLoginKey);}catch(_error){}
       message(friendlyError(error), true);
     });
   } catch (error) {
