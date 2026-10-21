@@ -22,6 +22,8 @@ let baliMenuSearchText = '';
 let availableEvents = [];
 let receivedEventSnapshot=false;
 let receivedMenuSnapshot=false;
+// Keep unchanged event nodes mounted so the timeline can slide left smoothly.
+const homeCardSignatures=new WeakMap();
 let guestInterestDates=new Set();
 const pendingInterestDates=new Set();
 let showOnlyPlannedEvents=false;
@@ -32,7 +34,7 @@ const withinCalendar=event=>event?.date>=baliVisibleEventRange.start&&event?.dat
 // An overnight party can have yesterday's date while it is still live.
 // Use the real event end, in Minsk time, everywhere on the homepage.
 const homeUpcomingEvents=()=>availableEvents
-    .filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date||"")&&eventStatus(e)!=="past")
+    .filter(e=>window.BaliEventLifecycle.homeVisible(e))
     .sort((a,b)=>a.date.localeCompare(b.date)||
         (a.startTime||"").localeCompare(b.startTime||"")||
         (a.id||a.date).localeCompare(b.id||b.date));
@@ -485,14 +487,27 @@ function renderHomeEvents() {
     const track=document.getElementById("homeEventCarousel");
     if(!track)return;
     const previousScroll=track.scrollLeft;
+    const oldCards=[...track.querySelectorAll(":scope>.bali-home-event-card")];
+    const savedEvents=new Map(oldCards.filter(card=>card.dataset.eventId)
+        .map(card=>[card.dataset.eventId,card]));
+    const rendered=[];
     const preserveScroll=track.dataset.homeView==="all";
     track.dataset.homeView="all";
     // Completed events stay in the calendar archive, not the homepage.
     const homeSlots=window.matchMedia("(min-width:1180px)").matches?5:3;
     // The FULL events calendar remains unlimited; only the homepage is capped.
     const upcoming=homeUpcomingEvents().slice(0,homeSlots);
-    track.replaceChildren();
     for(const event of upcoming){
+        const id=String(event.id||event.date);
+        const signature=JSON.stringify([
+            event.date,event.title,event.poster_url,event.startTime,
+            event.endTime,event.description,event.interestCount
+        ]);
+        const existing=savedEvents.get(id);
+        if(existing&&homeCardSignatures.get(existing)===signature){
+            rendered.push(existing);
+            continue;
+        }
         // The homepage visually matches the square-poster event cards, without
         // the two CTA buttons. The heart uses the exact existing RSVP transaction.
         const card=document.createElement("article");
@@ -506,7 +521,7 @@ function renderHomeEvents() {
         img.alt="Афиша "+event.title;
         img.loading="eager";
         // The published hero has fetchpriority=high; do not let five posters compete.
-        img.fetchPriority=track.childElementCount===0?"auto":"low";
+        img.fetchPriority=rendered.length===0?"auto":"low";
         posterWrap.append(img);
         const dateBadge=document.createElement("time");
         dateBadge.className="bali-home-date-badge";
@@ -588,7 +603,8 @@ function renderHomeEvents() {
             void toggleGuestInterest(event.id||event.date,document.getElementById("homeInterestFeedback"));
         });
         card.append(posterWrap,information,openCard,heart);
-        track.append(card);
+        rendered.push(card);
+        homeCardSignatures.set(card,signature);
         // Initial paint matches current Firestore/optimistic state.
         if(guestInterestDates.has(event.id||event.date))heart.classList.add("is-liked");
         heart.setAttribute("aria-pressed",String(guestInterestDates.has(event.id||event.date)));
@@ -641,9 +657,19 @@ function renderHomeEvents() {
             hint.textContent=settings.footerSubtitle;
             information.append(name,hint);
             card.append(poster,information);
-            track.append(card);
+            rendered.push(card);
         }
     }
+    // Reuse unchanged real cards during a time rollover. Existing DOM elements
+    // retain their CSS transforms, so they visibly move one place left.
+    const retained=new Set(rendered);
+    for(const old of oldCards)if(!retained.has(old))old.remove();
+    let anchor=track.querySelector(":scope>.bali-home-event-card");
+    for(const card of rendered){
+        if(card===anchor)anchor=anchor.nextElementSibling;
+        else track.insertBefore(card,anchor);
+    }
+    window.BaliHomeCarousel?.focusUpcoming?.();
     if(preserveScroll&&previousScroll>0){
         requestAnimationFrame(()=>{
             track.scrollLeft=Math.min(previousScroll,Math.max(0,track.scrollWidth-track.clientWidth));
