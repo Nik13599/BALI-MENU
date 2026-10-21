@@ -96,10 +96,12 @@
      // One live + one upcoming makes a half-yellow, half-lime day.
      const total=items.length;
      const sectors=items.map((event,i)=>{
-       const color={past:"rgba(250,96,112,.24)",live:"rgba(244,200,75,.30)",upcoming:"rgba(185,255,81,.13)"}[event.status];
+       const color=lifecycle.colors[event.status]||lifecycle.colors.upcoming;
        return color+" "+(i*100/total).toFixed(3)+"% "+((i+1)*100/total).toFixed(3)+"%";
      });
+     const statuses=new Set(items.map(event=>event.status));
      btn.dataset.lifecycle="true";
+     btn.dataset.lifecycleStatus=statuses.size>1?"mixed":items[0].status;
      btn.style.setProperty("--bali-day-segments","linear-gradient(90deg,"+sectors.join(",")+")");
      btn.style.setProperty("--bali-day-accent",live?"#f4c84b":past?"#fa6070":"#b9ff51");
    }
