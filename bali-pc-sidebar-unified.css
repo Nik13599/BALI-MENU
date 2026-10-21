@@ -1,0 +1,13 @@
+/* BALI desktop shell — one sidebar geometry across every guest page.
+   Increasing the sidebar's reserved space automatically moves the content
+   right and narrows both home columns without scaling or clipping their text.
+   Keep the left/centre and centre/right gutters equal through --bali-pc-gap.
+   Phone and tablet layouts are deliberately untouched. */
+@media (min-width:1180px) {
+  :root {
+    /* Was clamp(195px,15vw,640px): modest, responsive PC sidebar widening. */
+    --bali-pc-side:clamp(215px,16.5vw,700px);
+    /* Reduce the right rail at the same relative rate as remaining page width. */
+    --bali-pc-right:clamp(270px,20.3vw,882px);
+  }
+}
