@@ -134,9 +134,9 @@ function animateTo(next,smooth=true){
     const progress=clamp((now-started)/duration,0,1);
     position=initial+delta*ease(progress);
     render();
-    // Start raising during the final part of the slide. The CSS rise
-    // finishes before the incoming poster reaches its resting position.
-    if(progress>=.70)raiseActions();
+    // Begin raising once the new poster becomes the central card (55% of
+    // travel); the fast CSS lift finishes well BEFORE the poster stops.
+    if(progress>=.55)raiseActions();
     if(progress<1)running.raf=requestAnimationFrame(tick);
     else{position=next;animation=null;render();raiseActions();}
   };
