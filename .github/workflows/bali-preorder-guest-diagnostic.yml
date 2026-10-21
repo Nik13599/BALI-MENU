@@ -1,0 +1,33 @@
+name: BALI — Guest preorder production diagnosis (read-only)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/bali-preorder-guest-diagnostic.yml'
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    environment: firebase-production
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.FIREBASE_WIF_PROVIDER || 'projects/855889005555/locations/global/workloadIdentityPools/bali-github-pool/providers/bali-github' }}
+          service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Read only preorder backend switch (never list guest data)
+        run: |
+          set -euo pipefail
+          token="$(gcloud auth print-access-token)"
+          url="https://firestore.googleapis.com/v1/projects/bali-menu-5a48b/databases/(default)/documents/settings/preorderSecurity"
+          code="$(curl -sS -m 20 -w '%{http_code}' -o /tmp/preorder-switch.json \
+             -H "Authorization: Bearer $token" "$url")"
+          if [ "$code" = "404" ]; then
+            echo "GUEST_PREORDER_MODE=LEGACY_DIRECT_FIRESTORE (no switch document)"
+          elif [ "$code" = "200" ]; then
+            node -e 'const d=require("/tmp/preorder-switch.json");const x=d.fields?.backendRequired?.booleanValue;console.log("GUEST_PREORDER_MODE="+(x===true?"BACKEND_REQUIRED":"LEGACY_DIRECT_FIRESTORE"));'
+          else
+            echo "GUEST_PREORDER_MODE=UNKNOWN (metadata read HTTP $code)"
+          fi
