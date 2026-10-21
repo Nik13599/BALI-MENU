@@ -16,7 +16,9 @@
     const date=card.dataset.eventDate||"";
     const img=card.querySelector(".event-poster,.bali-home-poster-wrap img");
     const title=card.querySelector(".bali-event-info h3,.event-card-body h3,.bali-home-event-info h3")?.textContent||"BALI NIGHT";
-    return {date,title,src:img?.currentSrc||img?.src||""};
+    const timeLabel=card.querySelector(".bali-event-hours")?.textContent||"";
+    const startTime=/\b(?:[01]\d|2[0-3]):[0-5]\d\b/.exec(timeLabel)?.[0]||"";
+    return {date,title,startTime,src:img?.currentSrc||img?.src||""};
   }
   function attach(){
     for(const card of document.querySelectorAll("#eventsGrid .event-card")){
@@ -69,32 +71,35 @@
   async function generate(data){
     const canvas=document.createElement("canvas");canvas.width=WIDTH;canvas.height=HEIGHT;
     const ctx=canvas.getContext("2d",{alpha:false});
-    const fill=ctx.createLinearGradient(0,0,WIDTH,HEIGHT);fill.addColorStop(0,"#121d19");fill.addColorStop(.55,"#050809");fill.addColorStop(1,"#17231b");
-    ctx.fillStyle=fill;ctx.fillRect(0,0,WIDTH,HEIGHT);
-    // subtle club rings and atmosphere
-    ctx.strokeStyle="rgba(185,255,81,.12)";ctx.lineWidth=2;
-    for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(940,1450,175+i*108,0,Math.PI*2);ctx.stroke();}
+    if(!ctx)throw Error("Ваш браузер не поддерживает экспорт сторис.");
+    // Instagram Stories, 9:16. No decorative text, URLs or dummy comments.
+    ctx.fillStyle="#050505";ctx.fillRect(0,0,WIDTH,HEIGHT);
     const poster=await load(data.src);
-    if(poster){
-      ctx.fillStyle="#121515";ctx.fillRect(72,285,936,1190);
-      // Keep original poster entirely visible (no text cropped).
-      contain(ctx,poster,72,285,936,1190);
-    }
-    const shade=ctx.createLinearGradient(0,1160,0,1800);shade.addColorStop(0,"transparent");shade.addColorStop(1,"rgba(2,5,4,.95)");
-    ctx.fillStyle=shade;ctx.fillRect(0,1120,WIDTH,690);
+    if(!poster)throw Error("Не удалось загрузить афишу для сторис.");
     const logo=await load("assets/bali-nightclub-logo.png");
-    if(logo)contain(ctx,logo,66,45,355,142);
-    else{ctx.fillStyle="#fff";ctx.font="900 104px Arial";ctx.fillText("BALI",72,155);}
-    ctx.fillStyle="#b9ff51";ctx.font="800 30px Arial";ctx.letterSpacing="8px";ctx.fillText("BALI SHARE · ТВОЙ ВЕЧЕР",72,242);
-    ctx.fillStyle="#fff";ctx.font="900 70px Arial";
-    let yy=1560;for(const line of lines(ctx,data.title.toUpperCase(),940,3)){ctx.fillText(line,72,yy);yy+=84;}
-    let formatted=data.date;
-    try{formatted=new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"long",year:"numeric",timeZone:"Europe/Minsk"}).format(new Date(data.date+"T12:00:00+03:00"));}catch{}
-    ctx.fillStyle="#b9ff51";ctx.font="750 43px Arial";ctx.fillText(formatted.toUpperCase(),72,Math.max(1727,yy+16));
-    const guestName=window.BaliAuth?.getProfile?.()?.name?.trim()?.split(" ")?.[0]||"";
-    const guestLabel=guestName?("Я, "+guestName.slice(0,24)+", ХОЧУ ПОЙТИ"):"Я ХОЧУ ПОЙТИ";
-    ctx.fillStyle="#dfe6e0";ctx.font="500 31px Arial";ctx.fillText(guestLabel+" · BALI",72,1800);
-    ctx.fillStyle="#fff";ctx.font="600 26px Arial";ctx.fillText("nik13599.github.io/BALI-MENU/",72,1860);
+    if(logo)contain(ctx,logo,230,115,620,222);
+    else{
+      ctx.fillStyle="#fff";ctx.font="900 128px Arial";
+      ctx.textAlign="center";ctx.fillText("BALI",WIDTH/2,260);
+    }
+    ctx.fillStyle="#101010";ctx.fillRect(92,408,896,896);
+    cover(ctx,poster,100,416,880,880); // exact 1:1 square
+    ctx.textAlign="center";
+    ctx.fillStyle="#fff";
+    ctx.font="800 65px Arial";
+    let titleLines=lines(ctx,String(data.title||"BALI NIGHT CLUB").toUpperCase(),930,3);
+    let yy=1410;
+    for(const line of titleLines){ctx.fillText(line,WIDTH/2,yy,920);yy+=76;}
+    let formatted="";
+    if(/^\d{4}-\d{2}-\d{2}$/.test(data.date||"")){
+      formatted=new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(data.date+"T12:00:00Z"));
+    }
+    ctx.fillStyle="#d7ff9f";ctx.font="700 41px Arial";
+    ctx.fillText(formatted.toUpperCase(),WIDTH/2,1682,930);
+    ctx.fillStyle="#fff";ctx.font="650 43px Arial";
+    ctx.fillText(data.startTime?("НАЧАЛО · "+data.startTime):"ВРЕМЯ УТОЧНЯЕТСЯ",WIDTH/2,1758,930);
+    ctx.fillStyle="#f1f1f1";ctx.font="600 39px Arial";
+    ctx.fillText("Я хочу пойти в Бали",WIDTH/2,1860,950);
     return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(Error("Ошибка создания PNG")),"image/png"));
   }
   async function start(data){
@@ -127,5 +132,5 @@
       else download();
     }catch(err){if(err.name!=="AbortError")download();}
   });
-  window.BaliShare={open:start};
+  window.BaliShare={open:start,openForCard:card=>start(getData(card))};
 })();
