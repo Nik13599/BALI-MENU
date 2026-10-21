@@ -399,7 +399,8 @@ function eventRender() {
       event.date + " · №"+slot+" — " + event.title,
       (event.preorderEnabled ? "Приём включён" : "Приём выключен") +
         (event.startTime && event.endTime ? " · "+event.startTime+"–"+event.endTime : "") +
-        (event.cutoff ? " · Предзаказ до " + event.cutoff + " по Минску" : "") +
+        (event.cutoff ? " · Предзаказ до " + event.cutoff +
+          (event.cutoffNextDay ? " следующего дня" : " в день мероприятия") + " по Минску" : "") +
         " · Хочет пойти: " + (Number.isSafeInteger(event.interestCount)?event.interestCount:0),
       () => {
         $("eventDateAdmin").value=event.date;
@@ -412,7 +413,8 @@ function eventRender() {
         $("eventDotColor").value=/^#[0-9a-fA-F]{6}$/.test(event.dotColor||"")?event.dotColor:"#b9ff51";
         $("eventStartTime").value=event.startTime||"";
         $("eventEndTime").value=event.endTime||"";
-        $("eventCutoff").value=event.cutoff;
+        $("eventCutoff").value=event.cutoff||"23:59";
+        $("eventCutoffNextDay").checked=event.cutoffNextDay===true;
         $("eventOpen").checked=event.preorderEnabled;
         pendingEventPoster="";
         $("eventPosterFile").value="";
@@ -454,6 +456,8 @@ function clearEvent() {
   $("eventSlotAdmin").disabled=false;
   $("eventDateAdmin").readOnly=false;
   $("eventOpen").checked=true;
+  $("eventCutoff").value="23:59";
+  $("eventCutoffNextDay").checked=false;
   updateEventPreorderControl();
 }
 
@@ -548,6 +552,7 @@ $("eventForm").addEventListener("submit",async (event)=>{
   const date=$("eventDateAdmin").value,title=$("eventTitle").value.trim(),
     slot=Number($("eventSlotAdmin").value),
     cutoff=$("eventCutoff").value||"",
+    cutoffNextDay=$("eventCutoffNextDay").checked,
     description=$("eventDescription").value.trim(),
     dotColor=$("eventDotColor").value||"#b9ff51",
     startTime=$("eventStartTime").value||"",
@@ -566,9 +571,13 @@ $("eventForm").addEventListener("submit",async (event)=>{
     renderStatus("eventStatus","Заполните оба времени в формате ЧЧ:ММ или оставьте оба пустыми. Описание — до 600 символов.");
     return;
   }
-  const closesAt = new Date(date+"T"+(cutoff || "23:59")+":00+03:00");
-  if (!Number.isFinite(closesAt.getTime()) || closesAt <= new Date()) {
-    renderStatus("eventStatus","Время окончания приёма должно быть в будущем (по Минску)."); return;
+  if(!validTime.test(cutoff)){
+    renderStatus("eventStatus","Укажите время закрытия предзаказов вручную.");return;
+  }
+  const closesAt = new Date(date+"T"+cutoff+":00+03:00");
+  if(cutoffNextDay)closesAt.setUTCDate(closesAt.getUTCDate()+1);
+  if (!Number.isFinite(closesAt.getTime())) {
+    renderStatus("eventStatus","Недопустимая дата или время закрытия предзаказов.");return;
   }
   const eventId=slot===1?date:date+"__"+slot;
   const isEditing=$("eventDateAdmin").readOnly;
@@ -593,7 +602,7 @@ $("eventForm").addEventListener("submit",async (event)=>{
   renderStatus("eventStatus","Сохраняем мероприятие...");
   try{
     const payload={
-      date, title, cutoff, dotColor, preorderEnabled:$("eventOpen").checked,
+      date, title, cutoff, cutoffNextDay, dotColor, preorderEnabled:$("eventOpen").checked,
       closesAt: Timestamp.fromDate(closesAt),
       updatedAt:serverTimestamp()
     };
