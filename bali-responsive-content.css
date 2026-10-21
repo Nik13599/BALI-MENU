@@ -1,0 +1,81 @@
+/* Shared scale for Home, About and Information. Also loaded inside About's iframe. */
+:root{
+ --bali-ui-button-size:clamp(10px,.75vw,13px);
+ --bali-ui-button-height:clamp(32px,4dvh,42px);
+ --bali-ui-button-padding:7px clamp(10px,.9vw,15px);
+ --bali-ui-body-size:clamp(12px,1vw,14px);
+ --bali-ui-heading-size:clamp(20px,2.2vw,32px);
+}
+@media(max-width:1179px){
+ :root{--bali-ui-button-height:40px;--bali-ui-button-padding:9px clamp(12px,3.6vw,17px);--bali-ui-button-size:12px}
+}
+@media(max-width:767px){
+ :root{--bali-ui-button-size:clamp(10px,2.6vw,12px);--bali-ui-heading-size:clamp(20px,5.5vw,27px)}
+}
+body.bali-guest-theme #homeSection :is(#baliMobileAboutBtn.bali-mobile-about-action,.bali-pc-about-links>button),
+body.bali-guest-theme #contactsSection .bali-info-inline-nav,
+.bali-embedded :is(.event-cta,.vaction){
+ box-sizing:border-box!important;min-height:var(--bali-ui-button-height)!important;
+ padding:var(--bali-ui-button-padding)!important;border-radius:9px!important;
+ font:800 var(--bali-ui-button-size)/1.25 Manrope,Arial,sans-serif!important;
+ letter-spacing:.025em!important;white-space:normal!important;
+}
+/* Keep the Information heading below the actual fixed header, like About. */
+body.bali-guest-theme #contactsSection.bali-info-page{
+ top:calc(var(--bali-banner-height,0px) + var(--bali-header-height,72px) + 2px)!important;
+ bottom:0!important;height:auto!important;min-height:0!important;margin:0!important;
+}
+body.bali-guest-theme #contactsSection #contactsHeading{
+ font:600 var(--bali-ui-heading-size)/1.25 var(--bali-font-display)!important;
+ overflow-wrap:anywhere;
+}
+body.bali-guest-theme #contactsSection .bali-info-heading{padding-right:44px!important}
+body.bali-guest-theme #contactsSection :is(.bali-info-section-title,.bali-info-disclosure>h2,.bali-info-block h2){
+ font-size:clamp(15px,1.5vw,21px)!important;line-height:1.35!important;
+}
+body.bali-guest-theme #contactsSection :is(.bali-info-heading>p:last-child,.bali-info-block p,.bali-info-details-body p,.bali-info-legal-intro){
+ font-size:var(--bali-ui-body-size)!important;line-height:1.6!important;
+}
+body.bali-guest-theme #contactsSection :is(.bali-info-contact-panel,.bali-info-disclosure){padding:clamp(12px,2vw,24px)!important}
+body.bali-guest-theme #contactsSection .bali-info-block{padding:clamp(12px,1.8vw,22px)!important;gap:10px!important}
+body.bali-guest-theme #contactsSection .bali-info-btn-arrow{width:20px;height:20px;flex-basis:20px;font-size:15px}
+body.bali-guest-theme #contactsSection .bali-info-floating-close{width:36px!important;height:36px!important}
+body.bali-guest-theme #contactsSection .bali-info-mirror :is(.bali-pc-contact-phone,.bali-pc-contact-location a){
+ min-height:var(--bali-ui-button-height)!important;padding:10px 12px;
+ font-size:clamp(12px,1vw,14px)!important;border-radius:9px;
+}
+body.bali-guest-theme #contactsSection .bali-info-mirror :is(.bali-pc-contact-write a,.bali-pc-contact-socials a,.bali-pc-social-pending){
+ min-height:60px;padding:9px 5px;gap:5px;border-radius:9px;
+ font-size:var(--bali-ui-button-size)!important;
+}
+body.bali-guest-theme #contactsSection .bali-info-block .bali-info-schedule-hours{font-size:clamp(23px,2.7vw,34px)!important;flex-wrap:wrap;gap:6px}
+@media(min-width:1180px){
+ body.bali-guest-theme #contactsSection.bali-info-page{
+  top:calc(var(--bali-banner-height,0px) + var(--bali-pc-edge-y,16px) + 70px)!important;
+  left:var(--bali-pc-side,220px)!important;right:var(--bali-pc-edge-right,16px)!important;
+  bottom:var(--bali-pc-edge-y,16px)!important;width:auto!important;
+ }
+}
+/* Intrinsic grids fit narrow phones, tablet split views and wide monitors. */
+.bali-embedded .wrap{max-width:1140px;width:calc(100% - clamp(28px,5vw,64px))}
+.bali-embedded .hero{padding-top:clamp(18px,3vw,30px)}
+.bali-embedded .hero h1{font-size:var(--bali-ui-heading-size);margin-bottom:14px}
+.bali-embedded :is(.lead,.note,.event p){font-size:var(--bali-ui-body-size);line-height:1.65}
+.bali-embedded :is(.sec-header h2,.event h2){font-size:clamp(17px,1.7vw,24px);line-height:1.3}
+.bali-embedded .section{margin-top:clamp(22px,3vw,32px)}
+.bali-embedded .facts{grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:9px}
+.bali-embedded .facts>.fact{grid-column:auto;min-height:108px;padding:14px}
+.bali-embedded .fact strong{font-size:clamp(16px,1.6vw,21px);overflow-wrap:anywhere}
+.bali-embedded .fact small{font-size:11px;line-height:1.45}
+.bali-embedded .event{padding:clamp(14px,2.2vw,24px);gap:14px}
+.bali-embedded :is(.contact,.bali-about-message-links a){padding:12px;gap:10px;min-width:0;border-radius:9px}
+.bali-embedded :is(.contact>div,.bali-about-message-links a>span){min-width:0}
+.bali-embedded :is(.contact strong,.bali-about-message-links a strong){font-size:clamp(12px,1vw,14px);overflow-wrap:anywhere}
+.bali-embedded :is(.contact small,.contact em,.bali-about-message-links a small,.chip,.hours){font-size:11px}
+.bali-embedded .vactions{gap:8px}
+.bali-embedded .event-cta{max-width:100%;text-align:center}
+@media(max-width:767px){
+ .bali-embedded .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .bali-embedded .facts>.fact:last-child{grid-column:1/-1;min-height:88px}
+ .bali-embedded .vaction{flex:1 1 120px}
+}

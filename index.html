@@ -18,7 +18,7 @@
   <script type="module" src="bali-public-reader.js?v=20261021-fast1"></script>
   <link rel="icon" href="assets/bali-favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/manrope-variable.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" data-bali-bundle="index" href="generated/index.css?v=2251b6664ff2">
+  <link rel="stylesheet" data-bali-bundle="index" href="generated/index.css?v=4fcb74b0ce82">
 
   <!-- Phone and tablet share the same shell; event artwork is square on all views. -->
 
@@ -28,7 +28,7 @@
 
 <body class="bali-guest-theme">
     <div class="bali-preview-banner" role="status">
-      Тестовый режим · Предзаказ подтверждает администратор. Онлайн-оплата недоступна.
+      Предзаказ подтверждает администратор. Оплата — в клубе.
     </div>
     <!-- BALI: минимальная шапка с профилем -->
     <header class="header">
@@ -89,7 +89,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.6" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
             <span>Instagram</span>
           </a>
-          <button type="button" class="bali-pc-social-pending" data-bali-contact="tiktok-pending" title="Ссылка на TikTok пока не добавлена в админке" aria-label="TikTok: ссылка пока не добавлена" disabled>
+          <button type="button" class="bali-pc-social-pending" data-bali-contact="tiktok-pending" title="TikTok" aria-label="TikTok" disabled>
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15.5 2c.4 3 2.3 4.6 5 4.8v3.3a9 9 0 0 1-5-1.4v6.2c0 4-3.2 6.7-6.9 6.7A6.7 6.7 0 0 1 2 15c0-4 3.4-7 7.6-6.7v3.6c-2.2-.4-3.8.8-3.8 2.9a3 3 0 0 0 3 3c1.8 0 3-1.1 3-3.2V2Z"/></svg>
             <span>TikTok</span>
           </button>
@@ -265,7 +265,7 @@
 
     <!-- Embedded About: other pages and navigation remain unchanged. -->
     <section id="baliAboutSection" aria-label="О клубе BALI" hidden>
-      <iframe id="baliAboutFrame" src="./about.html?embed=1"
+      <iframe id="baliAboutFrame" src="./about.html?embed=1&amp;v=20261021-ui1"
         title="О клубе BALI — видео, возможности площадки и контакты"
         loading="lazy" allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
         allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
@@ -519,7 +519,7 @@
                 <span>01 MEMBER</span><span>02 SILVER</span><span>03 GOLD</span><span>04 PLATINUM</span><span>05 BLACK</span><span>06 PRIVATE</span>
               </div>
               <p>Статусы и доступные бонусы определяет администрация; уровень <strong>PRIVATE</strong> присваивается исключительно по приглашению. Повышение уровня не происходит автоматически только из-за наличия карты.</p>
-              <p>В разделе карты можно показать персональный QR-код для проверки сотрудником клуба, посмотреть историю операций и действующие привилегии. Списание бонусов фиксируется в истории; доступность их передачи другому участнику зависит от включения соответствующей функции.</p>
+              <p>В разделе карты можно показать персональный QR-код для проверки сотрудником клуба, посмотреть историю операций и действующие привилегии. Списание бонусов фиксируется в истории; передать можно только привилегии, для которых разрешена передача.</p>
               <p class="bali-info-important">BALI ID не является банковской или платёжной картой, не хранит реальные денежные средства и не используется для оплаты или денежных переводов. Наличие статуса само по себе не гарантирует бесплатный вход и какие-либо бонусы без действующих условий.</p>
               <button type="button" data-bali-nav="id" class="bali-info-inline-nav"><span class="bali-info-btn-label">Открыть мою BALI ID</span><span class="bali-info-btn-arrow" aria-hidden="true">↗</span></button>
             </div>
@@ -548,7 +548,10 @@
               <p>Для работы личного кабинета и BALI ID используются данные учётной записи и профиля. В зависимости от способа регистрации это могут быть имя, телефон, адрес электронной почты и технический идентификатор пользователя.</p>
               <p>При оформлении предзаказов также обрабатываются выбранные позиции, дата, мероприятие и сведения о заказе. Для авторизации и хранения данных используются сервисы Google/Firebase.</p>
               <p>По вопросам обработки, уточнения или удаления данных обратитесь через официальные контакты клуба, указанные выше.</p>
-              <p class="bali-info-important">Этот информационный раздел не заменяет утверждённую политику обработки персональных данных. Политика должна быть подготовлена и опубликована отдельно.</p>
+              <p><a href="privacy.html" target="_blank" rel="noopener">Политика обработки персональных данных ↗</a></p>
+              <p>Обращения: <a href="mailto:Kolyaselekh@gmail.com">Kolyaselekh@gmail.com</a>.</p>
+              <button type="button" id="baliPrivacyWithdraw" class="bali-privacy-withdraw" hidden>Отозвать согласие</button>
+              <p id="baliPrivacyStatus" class="bali-privacy-status" role="status" aria-live="polite"></p>
             </div>
           </details>
           <details>
@@ -639,10 +642,10 @@
                   <ul id="baliBenefitsList"></ul>
                 </section>
                 <div id="baliIdBonusStrip" class="bali-id-back-bonuses" hidden aria-label="Остатки бонусов">
-  <div class="bali-id-bonus" data-bali-bonus="entry" aria-label="Бесплатные входы"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="12" height="18" rx="1.4"/><path d="M11 8l5 4-5 4m5-4H9M20 4v16"/></svg><strong>×<output data-bali-bonus-count="entry">0</output></strong></div>
-  <div class="bali-id-bonus" data-bali-bonus="shot" aria-label="Бесплатные шоты"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 7h8l-1 12H5L3 7Zm10 0h8l-2 12h-4L13 7ZM2 6h10m0 0h10M5 11h5m5 0h5"/></svg><strong>×<output data-bali-bonus-count="shot">0</output></strong></div>
-  <div class="bali-id-bonus" data-bali-bonus="cocktail" aria-label="Бесплатные коктейли"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 5h18l-9 9-9-9ZM12 14v7m-5 0h10M16 4l4-3M6 8h12"/></svg><strong>×<output data-bali-bonus-count="cocktail">0</output></strong></div>
-  <div class="bali-id-bonus" data-bali-bonus="hookah" aria-label="Бесплатные кальяны"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M11 2h3m-1.5 0v5l2 2-2 2v4m-4-1h8l2 7H6l2-7Zm-2 7h12M15 10c4 0 6 2 6 5m-4-8c2-1 3-3 1-5"/></svg><strong>×<output data-bali-bonus-count="hookah">0</output></strong></div>
+  <div class="bali-id-bonus" data-bali-bonus="entry" aria-label="Бесплатные входы"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M13 3h7v18h-7M3 12h12m-4-4 4 4-4 4"/><path d="M13 3v4m0 10v4"/></svg><strong>×<output data-bali-bonus-count="entry">0</output></strong></div>
+  <div class="bali-id-bonus" data-bali-bonus="shot" aria-label="Бесплатные шоты"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 5h12l-2 16H8L6 5Z"/><path d="M7 10h10M9 18h6M5 3h14"/></svg><strong>×<output data-bali-bonus-count="shot">0</output></strong></div>
+  <div class="bali-id-bonus" data-bali-bonus="cocktail" aria-label="Бесплатные коктейли"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m3 6 9 9 9-9H3Zm9 9v6m-4 0h8M16 6l3-4h3M6 9h12"/><circle cx="6" cy="4" r="2"/></svg><strong>×<output data-bali-bonus-count="cocktail">0</output></strong></div>
+  <div class="bali-id-bonus" data-bali-bonus="hookah" aria-label="Бесплатные кальяны"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 2h6l-1 3h-4L9 2Zm3 3v9M6 8h12M9 14c0 2-3 2-3 5 0 3 12 3 12 0 0-3-3-3-3-5H9Z"/><path d="M15 11c8-2 2 10 6 8 2-1 0-8 1-11V6"/></svg><strong>×<output data-bali-bonus-count="hookah">0</output></strong></div>
 </div>
               </div>
             </div>
@@ -788,6 +791,28 @@
     <div class="overlay" id="overlay"></div>
 
     <!-- Личный кабинет: обязательные имя, телефон и подтверждённая почта -->
+    <dialog id="baliPrivacyDialog" class="bali-privacy-dialog" aria-labelledby="baliPrivacyTitle">
+      <div class="bali-privacy-content">
+        <h2 id="baliPrivacyTitle" tabindex="-1">Ваши персональные данные</h2>
+        <p><strong>Оператор:</strong> ООО «МАГИШТЫК», УНП 193849140, 220030, Минск, ул. Кирова, 13, пом. 3. Контакт: <a href="mailto:Kolyaselekh@gmail.com">Kolyaselekh@gmail.com</a>.</p>
+        <p><strong>Цели:</strong> вход и профиль, связь по предзаказам, BALI ID и выбранные вами функции клуба. Обрабатываются имя, e-mail, телефон, идентификатор аккаунта, заказы, карта и операции с привилегиями, планы, отметки, аватар и подтверждения.</p>
+        <p><strong>Действия и срок:</strong> сбор, систематизация, хранение, изменение, использование, предоставление сервисам, блокирование и удаление; автоматизированно и уполномоченными сотрудниками. Согласие действует на период использования аккаунта до удаления аккаунта или отзыва, кроме обязательной обработки по закону.</p>
+        <p><strong>Зарубежные сервисы:</strong> Google/Firebase — Google Cloud EMEA Limited (Ирландия), Google LLC (США). Данные передаются за пределы Беларуси, в том числе в США. При отсутствии надлежащего уровня защиты возможны иные правила доступа к данным, а защита и реализация ваших прав могут быть затруднены.</p>
+        <div class="bali-privacy-rights" aria-labelledby="baliPrivacyRightsTitle">
+          <h3 id="baliPrivacyRightsTitle">Ваши права и свободный выбор</h3>
+          <p>Вы вправе получить сведения об обработке и передаче данных, исправить их, отозвать согласие, потребовать прекращения обработки и удаления, обжаловать действия оператора в Национальный центр защиты персональных данных.</p>
+          <p>Отзыв — в разделе «Информация → Персональные данные». Обращения также принимаются по e-mail выше и юридическому адресу. Без согласия аккаунт недоступен; афиши, публичное меню и контакты можно просматривать без регистрации. Рекламные рассылки в согласие не входят.</p>
+        </div>
+        <p><a href="privacy.html" target="_blank" rel="noopener">Политика обработки персональных данных · 21.10.2026 ↗</a></p>
+        <label class="bali-privacy-choice"><input type="checkbox" id="baliPrivacyProcessing"><span>Даю согласие на обработку перечисленных данных для указанных целей и на указанный срок. Политика и права мне разъяснены.</span></label>
+        <label class="bali-privacy-choice"><input type="checkbox" id="baliPrivacyInternational"><span>Даю отдельное согласие на передачу данных указанным зарубежным сервисам. С рисками ознакомлен.</span></label>
+        <div class="bali-privacy-actions">
+          <button type="button" id="baliPrivacyDecline">Продолжить без аккаунта</button>
+          <button type="button" id="baliPrivacyAccept" disabled>Согласен, продолжить</button>
+        </div>
+      </div>
+    </dialog>
+
     <div class="modal" id="authModal" role="dialog" aria-modal="true" aria-hidden="true"
          aria-labelledby="authModalTitle">
       <div class="modal-content">
@@ -797,6 +822,7 @@
         </div>
         <div class="account-panel">
           <p class="auth-help">Для регистрации войдите через Google. Почтовый адрес подтверждается вашим Google-аккаунтом и используется для последующих входов. Имя и телефон обязательны.</p>
+          <p class="auth-help"><a href="privacy.html" target="_blank" rel="noopener">Как мы обрабатываем персональные данные ↗</a></p>
           <p class="auth-status" id="authMessage" role="status" aria-live="polite"></p>
 
           <div class="auth-actions">
@@ -817,7 +843,7 @@
               <label for="authEmail">Email (подтверждён Google) *</label>
               <input id="authEmail" name="email" type="email" autocomplete="email" readonly required>
             </div>
-            <p class="auth-help">Номер телефона сохраняется как контактный. Подтверждение номера через SMS пока не реализовано.</p>
+            <p class="auth-help">Номер телефона нужен для связи по вашему предзаказу.</p>
             <button type="submit" id="authSaveBtn" class="auth-btn">Сохранить профиль</button>
             <p id="authSaveMessage" class="auth-save-message" role="status" aria-live="polite" aria-atomic="true"></p>
           </form>
@@ -1005,11 +1031,12 @@
     <script src="firebase-config.js?v=20261020-2"></script>
     <script type="module" src="bali-age-gate.js?v=20261021-fast1"></script>
     <script src="bali-event-lifecycle.js?v=20261021-1"></script>
-    <script src="app.js?v=20261021-fast2"></script>
-    <script src="bali-calendar.js?v=20261021-reliability1"></script>
-    <script src="bali-calendar-coverflow.js?v=20261021-detail-publish2"></script>
+    <script src="app.js?v=20261021-release1"></script>
+    <script src="bali-calendar.js?v=20261021-ui1"></script>
+    <script src="bali-calendar-coverflow.js?v=20261021-ui1"></script>
     <script src="bali-pc-reference.js?v=20261021-anchored-home1"></script>
-    <script type="module" src="auth.js?v=20261021-reliability1"></script>
+    <script src="bali-privacy.js?v=20261021-1"></script>
+    <script type="module" src="auth.js?v=20261021-release1"></script>
     <script type="module" async src="menu-firestore.js?v=20261021-fast1"></script>
     <script type="module" async src="bali-bar-menu.js?v=20261021-fast1"></script>
     <script type="module" async src="bali-extra-menus.js?v=20261021-fast1"></script>
@@ -1020,25 +1047,25 @@
     <script type="module" async src="bali-mobile-about-hero.js?v=20261021-fast1"></script>
     <script type="module" async src="bali-home-placeholder.js?v=20261021-fast1"></script>
 
-    <script src="bali-promo-contact-modal.js?v=20261020-1"></script>
+    <script src="bali-promo-contact-modal.js?v=20261021-release1"></script>
     <script type="module" async src="bali-pc-offers.js?v=20261021-fast1"></script>
-    <script type="module" src="orders-firestore.js?v=20261021-reliability1"></script>
-    <script type="module" src="event-interests.js?v=20261021-live1"></script>
-    <script type="module" src="bali-event-checkins.js?v=20261021-1"></script>
+    <script type="module" src="orders-firestore.js?v=20261021-release1"></script>
+    <script type="module" src="event-interests.js?v=20261021-release1"></script>
+    <script type="module" src="bali-event-checkins.js?v=20261021-release1"></script>
     <script src="bali-icon-atelier.js?v=20261021-id-bottom-nav1"></script>
     <script type="module" src="bali-theme.js?v=20261017-60"></script>
     <script src="bali-mobile-reference.js?v=20261019-shell1"></script>
-    <script type="module" src="bali-profile-media.js?v=20261020-1"></script>
+    <script type="module" src="bali-profile-media.js?v=20261021-release1"></script>
     <script type="module" src="bali-id-onboarding.js?v=20261021-fast1"></script>
-    <script type="module" src="bali-id.js?v=20261021-fast1"></script>
+    <script type="module" src="bali-id.js?v=20261021-release1"></script>
     <script src="bali-pc-id-home.js?v=20261021-id-login2"></script>
     <script src="bali-about-teaser.js?v=20261020-1"></script>
     <script src="bali-experience.js?v=20261020-1"></script>
     <script src="bali-id-motion.js?v=20261021-motion3"></script>
-    <script type="module" src="bali-id-flip.js?v=20261020-fix1"></script>
-    <script type="module" src="bali-id-bank.js?v=20261021-fast1"></script>
+    <script type="module" src="bali-id-flip.js?v=20261021-release1"></script>
+    <script type="module" src="bali-id-bank.js?v=20261021-release1"></script>
     <script type="module" src="bali-transfer-inbox.js?v=20261021-1"></script>
-    <script type="module" src="bali-qr-scanner.js?v=20261021-camera2"></script>
+    <script type="module" src="bali-qr-scanner.js?v=20261021-release1"></script>
     <script src="bali-share.js?v=20261021-story-publish3"></script>
     <script src="bali-builder-core.js?v=20261021-home2"></script>
     <script type="module" src="bali-builder-public.js?v=20261020-1"></script>

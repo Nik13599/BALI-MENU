@@ -80,20 +80,11 @@ function measure(){
 function render(){
   const entries=cards(),count=entries.length;
   if(!count){prev.disabled=true;next.disabled=true;raiseActions();return;}
-  const stageWidth=grid.clientWidth||500;
-  const angle=reduce.matches?0:64; // Mirror-turned sides sit behind the centered poster
-  // The two neighbours use the same +/- offset to stay equidistant.
-  // On desktop, halve the previous edge-to-edge gap, preserving the centre
-  // size and both side angles. Phone/tablet geometry remains unchanged.
+  const angle=reduce.matches?0:64;
+  // Bring both neighbours behind the centre on every viewport. The shared
+  // slot scales with the artwork, so phone and desktop retain equal spacing.
   const projectedHalf=slideWidth*Math.cos(Math.max(0,angle-6)*Math.PI/180)*.9*.5;
-  const gap=mobile()?6:Math.max(10,stageWidth*.012);
-  const safety=mobile()?Math.max(7,slideWidth*.035):Math.max(50,slideWidth*.11);
-  const originalSlot=Math.max(stageWidth*(mobile()?.35:.395),
-    slideWidth*.5+projectedHalf+gap)+safety;
-  const projectedEdges=slideWidth*.5+projectedHalf;
-  // A further 50% reduction from the previously published desktop spacing.
-  const slot=mobile()?originalSlot:
-    projectedEdges+Math.max(gap*.5,(originalSlot-projectedEdges)*.25);
+  const slot=(slideWidth*.5+projectedHalf)*.92;
   // Hard cap on visible poster count: one central + at most one each side.
   // All other events remain mounted in the queue but are invisible.
   const center=Math.round(position);
@@ -145,7 +136,7 @@ function notify(){
     detail:{date:card.dataset.eventDate,forced:true}
   }));
 }
-function animateTo(next,smooth=true){
+function animateTo(next,smooth=true,syncSelection=true){
   if(animation){cancelAnimationFrame(animation.raf);animation=null;}
   const last=cards().length-1;
   if(last<0)return;
@@ -157,7 +148,7 @@ function animateTo(next,smooth=true){
   if(moving)lowerActions();
   activeIndex=next;
   lastCardId=cards()[next]?.dataset.eventId||cards()[next]?.dataset.eventDate||"";
-  notify();
+  if(syncSelection)notify();
   if(!moving){
     position=next;render();raiseActions();return;
   }
@@ -179,9 +170,10 @@ function animateTo(next,smooth=true){
   };
   running.raf=requestAnimationFrame(tick);
 }
-function focusIndex(index,smooth=true){animateTo(index,smooth)}
+function focusIndex(index,smooth=true,syncSelection=true){animateTo(index,smooth,syncSelection)}
 function move(delta){focusIndex(activeIndex+delta,true)}
 function syncCards(){
+  const previousId=lastCardId;
   const entries=cards();
   // Several parties can share a date; preserve the exact event ID.
   // The first ongoing/future poster starts in the centre, archival on left.
@@ -199,6 +191,7 @@ function syncCards(){
   if(animation){cancelAnimationFrame(animation.raf);animation=null;}
   raiseActions();
   measure();render();
+  if(lastCardId&&lastCardId!==previousId)notify();
 }
 prev.addEventListener("click",()=>move(-1));
 next.addEventListener("click",()=>move(1));
@@ -242,6 +235,12 @@ grid.addEventListener("pointermove",event=>{
   const step=Math.max(75,slideWidth*(mobile()?.75:.79));
   position=clamp(g.start-dx/step,0,Math.max(0,cards().length-1));
   ignoreTapUntil=performance.now()+450;
+  const center=Math.round(position);
+  if(center!==activeIndex){
+    activeIndex=center;
+    lastCardId=cards()[center]?.dataset.eventId||cards()[center]?.dataset.eventDate||"";
+    notify();
+  }
   render();
 },{passive:false});
 function endGesture(event,cancel=false){
@@ -390,7 +389,7 @@ if(typeof ResizeObserver==="function"){
   const observer=new ResizeObserver(()=>measure());
   observer.observe(grid);
 }
-window.addEventListener("bali:calendar:open",()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{decorate();measure()})));
+window.addEventListener("bali:calendar:open",()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{decorate();measure();notify()})));
 window.BaliCalendarShowcase=Object.freeze({
   mode:"stage",move,focusIndex,refresh:syncCards,
   getState:()=>({activeIndex,cardCount:cards().length,position,animating:!!animation,

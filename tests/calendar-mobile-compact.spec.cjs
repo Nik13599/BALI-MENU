@@ -51,29 +51,14 @@ test("phone shows every day in a six-week month with compact cells",async({page}
 
 test("larger phone posters leave the existing action buttons at stage bottom",async({page})=>{
   test.skip(page.viewportSize().width>767,"mobile-specific layout");
+  await page.clock.setFixedTime(new Date("2026-11-10T12:00:00+03:00"));
   await openCalendar(page);
-  await page.evaluate(()=>{
-    const grid=document.getElementById("eventsGrid");
-    const fragment=document.createDocumentFragment();
-    for(let i=0;i<3;i++){
-      const card=document.createElement("article");
-      card.className="event-card";card.dataset.eventDate="2026-11-"+String(10+i).padStart(2,"0");
-      const wrap=document.createElement("div");wrap.className="bali-event-poster-wrap";
-      const img=document.createElement("img");img.className="event-poster";
-      img.src="assets/bali-id-card-readable.svg";wrap.append(img);
-      const body=document.createElement("div");body.className="event-card-body";
-      const info=document.createElement("div");info.className="bali-event-info";
-      info.innerHTML="<h3>Тест мероприятия</h3><p class='bali-event-hours'>23:00–06:00</p>";
-      const actions=document.createElement("div");actions.className="bali-event-actions";
-      for(const label of ["Хочу пойти","Поделиться"]){
-        const button=document.createElement("button");button.textContent=label;
-        button.className=label==="Хочу пойти"?"event-want-to-go":"bali-share-trigger";
-        actions.append(button);
-      }
-      body.append(info,actions);card.append(wrap,body);fragment.append(card);
-    }
-    grid.replaceChildren(fragment);
-  });
+  // Feed the real store so the new initial poster/date synchronization can
+  // re-render a calendar range without discarding handcrafted DOM cards.
+  await page.evaluate(()=>window.dispatchEvent(new CustomEvent("bali:events",{detail:{events:
+    Array.from({length:3},(_,i)=>({id:"2026-11-"+(10+i),date:"2026-11-"+(10+i),
+      title:"Тест мероприятия",startTime:"23:00",endTime:"06:00",poster_url:"assets/bali-id-card-readable.svg"}))
+  }})));
   await expect(page.locator("#eventsGrid .event-card")).toHaveCount(3);
   await expect.poll(()=>page.evaluate(()=>getComputedStyle(document.getElementById("eventsGrid"))
     .getPropertyValue("--bali-event-slide-width").trim())).not.toBe("");

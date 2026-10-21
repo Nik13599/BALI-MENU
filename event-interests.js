@@ -30,8 +30,8 @@ function todayInMinsk(){
 }
 function errorMessage(error){
   if(error?.code==="permission-denied")
-    return "Firebase запретил сохранение. Администратору нужно опубликовать новые Firestore Rules с eventInterests и interestCount.";
-  if(error?.code==="unavailable")return "Нет связи с Firebase. Попробуйте позже.";
+    return "Не удалось сохранить мероприятие в планах. Повторите попытку позже.";
+  if(error?.code==="unavailable")return "Нет соединения. Попробуйте позже.";
   return error?.message||"Не удалось сохранить выбранное событие.";
 }
 onAuthStateChanged(auth,user=>{

@@ -83,7 +83,7 @@
     if(!list.childElementCount){
       const message=document.createElement("div");
       message.className="bali-promo-contact-empty";
-      message.textContent="Способы связи пока не настроены. Пожалуйста, свяжитесь с администрацией клуба через раздел «Инфо».";
+      message.textContent="Свяжитесь с администрацией через раздел «Информация».";
       list.append(message);
     }
     if(!dialog.open)dialog.showModal();

@@ -32,7 +32,6 @@
     "bali-id-flip.css?v=20261019-4",
     "bali-id-tiers.css?v=20261019-3",
     "bali-id-bank.css?v=20261019-3",
-    "bali-info-page.css?v=20261019-2",
     "bali-mobile-about-hero.css?v=20261019-6",
     "bali-tea-cards.css?v=20261019-3",
     "bali-about-shell.css?v=20261019-fluid2",
@@ -82,7 +81,9 @@
     "bali-promo-action-placement.css?v=20261021-grid9-3",
     "bali-mobile-home-rhythm.css?v=20261021-gap1",
     "bali-mobile-vertical-balance.css?v=20261021-vertical2",
-    "bali-info-page.css?v=20261021-profile-info-redesign1"
+    "bali-info-page.css?v=20261021-profile-info-redesign1",
+    "bali-responsive-content.css?v=20261021-ui1",
+    "bali-privacy.css?v=20261021-1"
   ],
   "admin.html": [
     "admin-catalog.css?v=3",

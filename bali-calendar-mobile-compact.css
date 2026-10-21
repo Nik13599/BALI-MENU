@@ -24,7 +24,7 @@
     display:grid!important;
     grid-template-columns:repeat(7,minmax(0,1fr))!important;
     grid-auto-rows:clamp(24px,3.1dvh,27px)!important;
-    gap:0!important;
+    column-gap:5px!important;row-gap:0!important;
     overflow:visible!important;
   }
   :root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarDays>.bali-calendar-day{

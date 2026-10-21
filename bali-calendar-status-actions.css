@@ -42,42 +42,52 @@
 :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card[data-event-status="past"] .bali-event-actions{
  justify-content:stretch!important;
 }
-/* Each date uses full-strength status colors, as visible as a green plan.
-   Separate events preserve their individual sector (red / yellow / lime).
-   Later rules override old selected, planned, today's emerald and hover tints. */
-:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-lifecycle="true"][data-event="true"]{
- background:var(--bali-day-segments)!important;
- background-color:#172018!important;
- border-color:var(--bali-day-accent)!important;
- color:#151910!important;
+/* A border means an event exists; only the selected upcoming/live day fills.
+   Today has a separate white outer contour, including on a selected event. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-date]{
+ background:transparent!important;
+ border:1px solid transparent!important;border-radius:5px!important;
+ color:#edf4ea!important;box-shadow:none!important;filter:none!important;
+ outline:none;outline-offset:2px;
+ transition:border-color .12s,color .12s!important;
 }
-:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-lifecycle="true"][data-event="true"] .bali-calendar-day-number{
- color:#151910!important;
- font-weight:850!important;
- text-shadow:0 1px 0 rgba(255,255,255,.10)!important;
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-date][data-event="true"]{
+ border-color:#b9ff51!important;
 }
-:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-lifecycle="true"][data-event="true"]:not(.is-outside):hover{
- background:var(--bali-day-segments)!important;
- border-color:var(--bali-day-accent)!important;
- filter:brightness(1.08);
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-date][data-event="true"][data-selected="true"]{
+ background:#b9ff51!important;color:#151910!important;
 }
-/* The visible calendar grid includes adjacent-month dates, e.g. Sep 28–Oct 1.
-   Their published parties must remain fully visible, not faded like empty cells. */
-:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day.is-outside[data-lifecycle="true"][data-event="true"]{
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-date][data-event="true"][data-past="true"]{
+ background:transparent!important;border-color:#fa6070!important;color:#ffb6bd!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-date][data-today="true"]{
+ outline:1.5px solid #fff!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-date]:focus-visible{
+ outline:2px solid #fff!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-date] .bali-calendar-day-number{
+ color:inherit!important;font-weight:800!important;text-shadow:none!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day.is-outside[data-event="true"]{
  opacity:1!important;
 }
-:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-lifecycle="true"][data-event="true"][data-selected="true"]{
- background:var(--bali-day-segments)!important;
- border-color:var(--bali-day-accent)!important;
- box-shadow:inset 0 0 0 1px rgba(18,20,17,.85),0 0 0 1px var(--bali-day-accent),0 0 9px rgba(225,196,120,.24)!important;
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-date] .bali-calendar-event-dots{
+ position:absolute!important;inset:auto 1px 3px!important;
+ display:flex!important;justify-content:center!important;align-items:center!important;
+ gap:3px!important;height:5px!important;width:auto!important;pointer-events:none!important;
 }
-:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-lifecycle="true"] .bali-calendar-event-dots .bali-calendar-event-dot{
- width:clamp(5px,.55vw,7px)!important;
- height:clamp(5px,.55vw,7px)!important;
- border-radius:50%!important;
- background:var(--bali-event-dot-color)!important;
- outline:1px solid rgba(15,18,14,.92)!important;
- box-shadow:0 0 0 1px rgba(255,255,255,.5),0 0 5px var(--bali-event-dot-color)!important;
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-date] .bali-calendar-event-dot{
+ position:static!important;display:block!important;flex:0 0 5px!important;
+ width:5px!important;height:5px!important;min-height:5px!important;
+ margin:0!important;border:0!important;border-radius:50%!important;
+ background:#b9ff51!important;outline:none!important;box-shadow:none!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-date][data-selected="true"] .bali-calendar-event-dot{
+ background:#151910!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-date][data-past="true"] .bali-calendar-event-dot{
+ background:#fa6070!important;
 }
 @media(max-width:767px){
  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-action-icon{

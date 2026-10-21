@@ -79,7 +79,7 @@ input?.addEventListener("change",async()=>{
     if(activeUser.uid===uid){showImage(image);notify("Фотография профиля сохранена.");}
   }catch(error){
     const msg=["unsupported","dimensions","oversize"].includes(error?.message)
-      ?"Выберите JPG, PNG или WebP до 10 МБ.":"Не удалось сохранить фото. Проверьте подключение и правила Firebase.";
+      ?"Выберите JPG, PNG или WebP до 10 МБ.":"Не удалось сохранить фото. Проверьте соединение и повторите попытку.";
     if(activeUser?.uid===uid)notify(msg);
   }finally{saving=false;button.disabled=false;}
 });
@@ -98,7 +98,7 @@ onAuthStateChanged(auth,async user=>{
       if(run!==session)return;
       showImage(snap.exists()?snap.data()?.image:null);
     },()=>{
-      if(run===session)notify("Фото не загружено. Проверьте правила Firebase.");
+      if(run===session)notify("Не удалось получить фото. Повторите попытку позже.");
     });
   }catch(_){if(run===session)notify("Не удалось загрузить фотографию.");}
 });
@@ -111,6 +111,6 @@ window.addEventListener("bali:auth-state",event=>{
     activeUser=user;
     unsubscribe=onSnapshot(avatarDocument(user.uid),snap=>{
       if(run===session)showImage(snap.exists()?snap.data()?.image:null);
-    },()=>{if(run===session)notify("Фото не загружено. Проверьте правила Firebase.");});
+    },()=>{if(run===session)notify("Не удалось получить фото. Повторите попытку позже.");});
   }
 });

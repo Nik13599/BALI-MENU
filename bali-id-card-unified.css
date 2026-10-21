@@ -32,3 +32,23 @@ body.bali-guest-theme #baliIdSection .bali-id-card-back .bali-id-bonus output{fo
  body.bali-guest-theme #baliIdSection .bali-id-card-back .bali-id-bonus svg{width:clamp(12px,4cqw,19px);height:clamp(12px,4cqw,19px)}
  body.bali-guest-theme #baliIdSection .bali-id-card-back .bali-id-bonus strong{font-size:clamp(9px,2.5cqw,13px)}
 }
+
+/* The card number defines one consistent type scale for all identity fields. */
+body.bali-guest-theme #baliIdSection #baliIdFlipScene{
+ --bali-card-meta-size:clamp(12px,3.4cqw,29px);
+}
+body.bali-guest-theme #baliIdSection #baliIdFlipScene :is(.bali-id-brand-label,#baliCardTier,#baliCardHeaderTier,#baliCardName,#baliCardNumber){
+ font:580 var(--bali-card-meta-size)/1.25 Manrope,Inter,sans-serif!important;
+ letter-spacing:.025em!important;min-width:0;
+}
+body.bali-guest-theme #baliIdSection #baliIdFlipScene .bali-id-top{
+ flex-wrap:wrap;column-gap:12px;row-gap:5px;
+}
+body.bali-guest-theme #baliIdSection #baliIdFlipScene #baliCardTier{margin-left:auto}
+body.bali-guest-theme #baliIdSection #baliIdFlipScene #baliCardName{
+ overflow-wrap:anywhere;max-width:72%;
+}
+body.bali-guest-theme #baliIdSection #baliIdFlipScene .bali-id-bonus svg{
+ width:clamp(22px,6cqw,36px);height:clamp(22px,6cqw,36px);
+ overflow:visible;stroke-linecap:round;stroke-linejoin:round;
+}

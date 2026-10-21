@@ -44,7 +44,6 @@ function setBaliHeartButton(button,selected,status="upcoming"){
  label.textContent=status==="live"?(selected?"Я здесь ✓":"Я уже здесь"):(selected?"В моих планах":"Хочу пойти");
  button.classList.toggle("selected",selected);
 }
-let lastWheelSlideAt=0;
 let openOrdersAfterSignIn=new URLSearchParams(location.search).get('view')==='orders';
 let pendingIdNavigation=null;
 
@@ -115,88 +114,6 @@ function updateEventCarouselPosition() {
         ? String(active+1).padStart(2,"0")+" / "+String(cards.length).padStart(2,"0")
         : "Нет мероприятий";
 }
-function scrollEventCarousel(direction) {
-    if(window.BaliCalendarShowcase?.mode==="stage"){
-        window.BaliCalendarShowcase.move(direction);
-        return;
-    }
-    const track=document.getElementById("eventsGrid");
-    if(!track)return;
-    const cards=carouselEventCards(track);
-    if(cards.length<2)return;
-    const current=carouselEventIndex(track,cards);
-    const target=Math.max(0,Math.min(cards.length-1,current+direction));
-    centerEventCard(track,cards[target],true);
-    window.dispatchEvent(new CustomEvent("bali:calendar:active-event",{
-        detail:{date:cards[target]?.dataset.eventDate||null,forced:true}
-    }));
-}
-function initEventCarousel() {
-    if(window.BaliCalendarShowcase?.mode==="stage")return;
-    const track=document.getElementById("eventsGrid");
-    if(!track)return;
-    // Scroll is native/composited; update active styles only once per paint frame.
-    let eventScrollFrame=0;
-    track.addEventListener("scroll",()=>{
-        if(eventScrollFrame)return;
-        eventScrollFrame=requestAnimationFrame(()=>{
-            eventScrollFrame=0;
-            updateEventCarouselPosition();
-        });
-    },{passive:true});
-    track.addEventListener("wheel",event=>{
-        // Don't hijack vertical gestures on mobile devices.
-        if(window.matchMedia("(max-width:767px)").matches)return;
-        if(event.ctrlKey||Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
-        const direction=Math.sign(event.deltaY);
-        if(!direction)return;
-        const cards=carouselEventCards(track);
-        if(cards.length<2)return;
-        // Вертикальное колесо прокручивает карусель по одной карточке.
-        event.preventDefault();
-        const now=performance.now();
-        if(now-lastWheelSlideAt<420)return;
-        lastWheelSlideAt=now;
-        scrollEventCarousel(direction);
-    },{passive:false});
-    track.addEventListener("keydown",event=>{
-        if(event.key!=="ArrowRight"&&event.key!=="ArrowLeft")return;
-        event.preventDefault();
-        scrollEventCarousel(event.key==="ArrowRight"?1:-1);
-    });
-    // A poster has a SQUARE image plus a small caption and two actions BELOW it.
-    // The viewport controls the final size, so the full month and poster fit
-    // together on compact phones without shrinking the hero unnecessarily.
-    const fitStorySlides=()=>{
-        if(track.clientWidth<1||track.clientHeight<1)return;
-        const mobile=window.matchMedia("(max-width: 1179px)").matches;
-        const width=Math.min(
-            310,
-            track.clientWidth*(mobile?.62:.46),
-            Math.max(88,track.clientHeight-(mobile?90:105))
-        );
-        const rounded=Math.max(88,Math.floor(width));
-        const previous=track.style.getPropertyValue("--bali-event-slide-width");
-        if(previous===rounded+"px")return;
-        const active=carouselEventCards(track).find(card=>card.classList.contains("is-active"));
-        const activeDate=active?.dataset.eventDate;
-        track.style.setProperty("--bali-event-slide-width",rounded+"px");
-        requestAnimationFrame(()=>{
-            const cards=carouselEventCards(track);
-            const selected=cards.find(card=>card.dataset.eventDate===activeDate)||cards[0];
-            if(selected)centerEventCard(track,selected,false);
-            updateEventCarouselPosition();
-        });
-    };
-    if(typeof ResizeObserver==="function"){
-        const observer=new ResizeObserver(fitStorySlides);
-        observer.observe(track);
-    }
-    window.addEventListener("resize",fitStorySlides,{passive:true});
-    fitStorySlides();
-    updateEventCarouselPosition();
-}
-
 // Update both RSVP controls in place. Do not recreate the carousel on each click.
 function syncInterestVisuals(){
     for(const card of document.querySelectorAll("#homeEventCarousel .bali-home-event-card[data-event-date]")){
@@ -435,7 +352,11 @@ function renderGuestPage(page,{scroll=true}={}) {
     };
     for(const [name,id] of Object.entries(sections)) {
         const section=document.getElementById(id);
-        if(section)section.hidden=name!==selected;
+        if(section){
+            section.hidden=name!==selected;
+            section.inert=name!==selected;
+            section.setAttribute("aria-hidden",String(name!==selected));
+        }
     }
     const back=document.getElementById("homeFloatingBtn");
     if(back)back.hidden=true;
@@ -447,6 +368,10 @@ function renderGuestPage(page,{scroll=true}={}) {
     }
     const dock=document.getElementById("baliCartDock");
     if(dock)dock.hidden=selected!=="menu"||baliActiveMenuMode!=="kitchen";
+    if(selected==="id" && document.body.dataset.baliPage!=="id"){
+        closeAllModals();
+        for(const dialog of document.querySelectorAll("dialog[open]"))dialog.close();
+    }
     document.body.dataset.baliPage=selected;
     // BALI ID dialogs live at document root to avoid clipping.
     // Close them on any navigation away, just as the page canvas is hidden.
@@ -997,7 +922,6 @@ function startGuestApp() {
         if(signIn)signIn.hidden=Boolean(window.BaliAuth?.isRegistered?.());
     });
     initStickyCategories();
-    initEventCarousel();
     renderGuestPage(routeFromLocation());
     if(openOrdersAfterSignIn)void openMyOrders();
     // Safari can reapply saved scroll positions once layout/fonts become ready.

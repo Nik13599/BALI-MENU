@@ -1,11 +1,13 @@
 const {test,expect}=require('@playwright/test');
 test.beforeEach(async({page})=>{
+  // Exercise the real page router with an already accepted fixture account.
+  await page.addInitScript(()=>{window.BaliIdOnboarding={isAccepted:()=>true,open:async()=>true}});
   await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
 });
 test('BALI ID: QR then History at top; Use, Receive, Transfer are separated below enlarged card',async({page})=>{
   await page.goto('/index.html#id');
   await page.evaluate(()=>{
-    document.getElementById('baliIdSection').hidden=false;
+    navigateGuestPage('id');
     document.body.dataset.baliPage='id';
   });
   const ids=['baliIdHistoryOpen','baliShowQr','baliIdPayOpen','baliIdTopupOpen','baliIdTransferOpen'];
@@ -59,7 +61,7 @@ test('mobile ID: card slightly inset, QR and history aligned just beyond its rig
   await page.setViewportSize({width:390,height:844});
   await page.goto('/index.html');
   await page.evaluate(()=>{
-    document.getElementById('baliIdSection').hidden=false;
+    navigateGuestPage('id');
     document.body.dataset.baliPage='id';
   });
   const measures=await page.evaluate(()=>{
@@ -91,7 +93,7 @@ test('BALI ID: both top tools equal size and near the header, card gently lifted
   await page.goto('/index.html');
   await page.evaluate(()=>{
     document.body.dataset.baliPage='id';
-    document.getElementById('baliIdSection').hidden=false;
+    navigateGuestPage('id');
   });
   for(const id of ['baliIdFlipScene','baliShowQr','baliIdHistoryOpen','baliIdPayOpen','baliIdTopupOpen','baliIdTransferOpen']){
     await expect(page.locator('#'+id)).toBeVisible();

@@ -30,7 +30,7 @@
  const current=getNow();
  let selected=current.date,year=Number(selected.slice(0,4)),
    month=Number(selected.slice(5,7));
- let hasInteracted=false,lockUntil=0,opened=0;
+ let hasInteracted=false;
  let lastEventDate=null,expanded=false;
  let plannedDates=new Set(),eventSnapshot=[];
  const planDates=values=>new Set((Array.isArray(values)?values:[])
@@ -39,20 +39,19 @@
    .filter(valid));
  const lifecycle=window.BaliEventLifecycle;
  let lastRange="";
- const validHexColor=c=>typeof c==="string"&&/^#[0-9a-fA-F]{6}$/.test(c);
  const calendarEvents=()=>{
    // Live server snapshots include past and future dates; local poster cards
    // are also accepted, allowing multiple dots for multiple event instances
    // if/when publishing on the same date is enabled.
    const items=eventSnapshot.map(event=>({
-     date:event.date,color:validHexColor(event.dotColor)?event.dotColor:"#b9ff51",
+     date:event.date,
      id:event.id||event.date,status:lifecycle.state(event),title:event.title||"Мероприятие"
    })).filter(event=>valid(event.date));
    const existing=new Set(items.map(event=>event.id));
    for(const card of eventCards()){
      const date=card.dataset.eventDate,id=card.dataset.eventId||date;
      if(!valid(date)||existing.has(id))continue;
-     items.push({date,id,color:validHexColor(card.dataset.dotColor)?card.dataset.dotColor:"#b9ff51",status:card.dataset.eventStatus||"upcoming",title:card.querySelector("h3")?.textContent||"Мероприятие"});
+     items.push({date,id,status:card.dataset.eventStatus||"upcoming",title:card.querySelector("h3")?.textContent||"Мероприятие"});
      existing.add(id);
    }
    return items;
@@ -95,18 +94,9 @@
    btn.dataset.past=String(past);
    btn.dataset.live=String(live);
    if(published){
-     // The n independent sectors represent the n published events on this date.
-     // One live + one upcoming makes a half-yellow, half-lime day.
-     const total=items.length;
-     const sectors=items.map((event,i)=>{
-       const color=lifecycle.colors[event.status]||lifecycle.colors.upcoming;
-       return color+" "+(i*100/total).toFixed(3)+"% "+((i+1)*100/total).toFixed(3)+"%";
-     });
-     const statuses=new Set(items.map(event=>event.status));
      btn.dataset.lifecycle="true";
+     const statuses=new Set(items.map(event=>event.status));
      btn.dataset.lifecycleStatus=statuses.size>1?"mixed":items[0].status;
-     btn.style.setProperty("--bali-day-segments","linear-gradient(90deg,"+sectors.join(",")+")");
-     btn.style.setProperty("--bali-day-accent",live?"#f4c84b":past?"#fa6070":"#b9ff51");
    }
    btn.dataset.planned=String(planned);
    btn.dataset.eventCount=String(items.length);
@@ -130,7 +120,6 @@
      for(const item of items){
        const dot=document.createElement("span");
        dot.className="bali-calendar-event-dot";
-       dot.style.setProperty("--bali-event-dot-color",lifecycle.colors[item.status]||item.color);
        dot.dataset.status=item.status;
        dots.append(dot);
      }
@@ -179,7 +168,7 @@
  }
  function goToDate(s){
    if(!valid(s))return;
-   selected=s;[year,month]=stamp(s);hasInteracted=false;lockUntil=performance.now()+1100;
+   selected=s;[year,month]=stamp(s);hasInteracted=false;
    render();
    const cards=eventCards();
    const exact=cards.find(c=>c.dataset.eventDate===s);
@@ -187,7 +176,7 @@
    if(next){
      if(window.BaliCalendarShowcase?.mode==="stage"){
        const index=cards.indexOf(next);
-       if(index>=0)window.BaliCalendarShowcase.focusIndex(index,true);
+       if(index>=0)window.BaliCalendarShowcase.focusIndex(index,true,false);
      }else{
        const viewport=grid.getBoundingClientRect(),rect=next.getBoundingClientRect();
        const left=grid.scrollLeft+rect.left+rect.width/2-viewport.left-viewport.width/2;
@@ -230,7 +219,6 @@
  window.addEventListener("bali:calendar:active-event",event=>{
    const date=event.detail?.date;
    if(!valid(date)||document.body.dataset.baliPage!=="events")return;
-   if(performance.now()<lockUntil)return;
    if(!hasInteracted&&!event.detail?.forced)return;
    if(date===lastEventDate&&date===selected)return;
    lastEventDate=date;selected=date;
@@ -255,9 +243,9 @@
  const mutation=new MutationObserver(()=>render());
  mutation.observe(grid,{childList:true});
  window.addEventListener("bali:calendar:open",()=>{
-   opened++;const now=getNow();
+   const now=getNow();
    selected=now.date;[year,month]=stamp(selected);
-   lastEventDate=null;hasInteracted=false;lockUntil=performance.now()+900;
+   lastEventDate=null;hasInteracted=false;
    expanded=false;render();setLabel();
  });
  setLabel();render();

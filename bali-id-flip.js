@@ -46,7 +46,7 @@ function updateExpiry(){
 function readableError(error){
   const code=String(error?.code||"");
   if(["functions/not-found","functions/unimplemented","functions/unavailable"].includes(code))
-    return "Безопасный QR-код пока недоступен: сервер проверки BALI ID ещё не подключён.";
+    return "QR-код временно недоступен. Повторите попытку позже.";
   if(["functions/unauthenticated","functions/permission-denied"].includes(code))
     return "Нет доступа к QR-коду. Войдите в подтверждённый аккаунт BALI.";
   if(code==="functions/resource-exhausted")

@@ -40,6 +40,13 @@ let user = null;
 let profile = null;
 let resolved = false;
 let authGeneration = 0;
+let privacyAcceptedUid = null;
+let preLoginConsent = false;
+const privacyVersion = "2026-10-21";
+const consentRef = uid => doc(database,"users",uid,"privacyConsents",privacyVersion);
+const withdrawalRef = uid => doc(database,"users",uid,"privacyWithdrawals",privacyVersion);
+const hasPrivacyConsent = snapshot => snapshot.exists() && snapshot.data()?.version===privacyVersion &&
+  snapshot.data()?.processing===true && snapshot.data()?.international===true;
 let finishInitialization;
 const ready = new Promise((resolve) => {
   finishInitialization = () => {
@@ -79,7 +86,7 @@ function render() {
   els.button.title = !user ? "Мой BALI" : accountLabel;
   els.button.setAttribute("aria-label", !user ? "Открыть Мой BALI" : "Личный кабинет: " + accountLabel);
   els.google.hidden = !isConfigured || !!user;
-  els.form.hidden = !isConfigured || !user;
+  els.form.hidden = !isConfigured || !user || privacyAcceptedUid !== user.uid;
   els.signOut.hidden = !user;
   if (user) {
     els.email.value = user.email || "";
@@ -88,9 +95,10 @@ function render() {
   } else {
     els.form.reset();
   }
+  if($("baliPrivacyWithdraw"))$("baliPrivacyWithdraw").hidden=!user||privacyAcceptedUid!==user.uid;
   window.dispatchEvent(new CustomEvent("bali:auth-state",{
     detail:{
-      signedIn:!!user, registered:!!profile,
+      signedIn:!!user, registered:!!profile && privacyAcceptedUid===user?.uid,
       name:profile?.name||user?.displayName||"",
       phone:profile?.phone||"",
       email:profile?.email||user?.email||""
@@ -105,7 +113,7 @@ function show() {
   els.dialog.setAttribute("aria-hidden", "false");
   els.overlay.classList.add("active");
   if (!isConfigured) {
-    message("Регистрация станет доступна после настройки Firebase.", true);
+    message("Вход временно недоступен. Повторите попытку позже.", true);
   } else if (user && !profile) {
     message("Для регистрации заполните имя и номер телефона.");
   } else if (user && profile) {
@@ -129,25 +137,17 @@ function friendlyError(error) {
   const code = String(error?.code || "unknown-error");
   window.BaliMonitor?.report("auth",code);
   const errors = {
-    "auth/invalid-api-key": "Некорректный Firebase API-ключ. Проверьте настройки приложения.",
-    "auth/app-not-authorized": "Этот сайт не разрешён для Firebase API-ключа.",
-    "auth/unauthorized-domain": "Домен сайта не разрешён в Firebase Authentication.",
-    "auth/configuration-not-found": "Для проекта не найдены настройки Firebase Authentication.",
-    "auth/operation-not-allowed": "В Firebase не включён вход через Google.",
-    "auth/network-request-failed": "Не удалось связаться с Firebase. Проверьте соединение, VPN или блокировку запросов.",
-    "auth/internal-error": "Ошибка Google-входа. Проверьте конфигурацию и повторите.",
-    "auth/invalid-app-credential": "Ошибка настроек авторизации Firebase.",
-    "auth/invalid-credential": "Не удалось проверить учётные данные Google.",
-    "auth/web-storage-unsupported": "Браузер блокирует хранилище, необходимое для входа.",
-    "auth/popup-blocked": "Браузер заблокировал окно Google. Разрешите всплывающие окна.",
-    "auth/popup-closed-by-user": "Окно входа было закрыто.",
-    "auth/cancelled-popup-request": "Повторный вход отменён.",
-    "auth/account-exists-with-different-credential": "Почта уже связана с другим способом входа.",
-    "permission-denied": "Нет доступа к Firestore. Проверьте опубликованные правила доступа.",
-    "unavailable": "Сервис Firestore временно недоступен."
+    "auth/network-request-failed":"Нет соединения. Проверьте соединение с интернетом.",
+    "auth/web-storage-unsupported":"Разрешите хранение данных сайта в настройках браузера для входа.",
+    "auth/popup-blocked":"Браузер заблокировал окно Google. Разрешите всплывающие окна.",
+    "auth/popup-closed-by-user":"Окно входа было закрыто.",
+    "auth/cancelled-popup-request":"Повторный вход отменён.",
+    "auth/account-exists-with-different-credential":"Почта уже связана с другим способом входа.",
+    "privacy/withdrawn":"По вашему аккаунту получен отзыв согласия. Для возобновления обратитесь в клуб: Kolyaselekh@gmail.com.",
+    "permission-denied":"Не удалось сохранить данные. Повторите попытку позже.",
+    "unavailable":"Сервис временно недоступен. Повторите попытку позже."
   };
-  // Выводим только код ошибки, но не технические детали, токены или email.
-  return (errors[code] || "Не удалось выполнить действие в Firebase.") + " [код: " + code + "]";
+  return errors[code] || "Не удалось выполнить действие. Повторите попытку позже.";
 }
 
 els.button.addEventListener("click", () => {
@@ -168,7 +168,12 @@ els.signOut.addEventListener("click", async () => {
 
 els.google.addEventListener("click", async () => {
   if (!auth) return;
-  message("Открывается окно Google...");
+  preLoginConsent=false;
+  if(!window.BaliPrivacy?.hasEntryConsent()){
+    if(!await window.BaliPrivacy?.review())return;
+    preLoginConsent=true;
+  }
+  message("");
   els.google.disabled = true;
   try {
     const provider = new GoogleAuthProvider();
@@ -178,6 +183,8 @@ els.google.addEventListener("click", async () => {
     if (error.code === "auth/popup-blocked" ||
         error.code === "auth/operation-not-supported-in-this-environment") {
       try {
+        if(preLoginConsent)sessionStorage.setItem("bali-privacy-entry",JSON.stringify({version:privacyVersion,at:Date.now()}));
+        else sessionStorage.removeItem("bali-privacy-entry");
         await signInWithRedirect(auth, new GoogleAuthProvider());
         return;
       } catch (redirectError) {
@@ -185,6 +192,7 @@ els.google.addEventListener("click", async () => {
         return;
       }
     }
+    preLoginConsent=false;
     message(friendlyError(error), true);
   } finally {
     els.google.disabled = false;
@@ -200,6 +208,7 @@ els.form.addEventListener("submit", async (event) => {
     saveMessage(info, true);
     return;
   }
+  if(privacyAcceptedUid!==user.uid){saveMessage("Сначала подтвердите согласие на обработку данных.",true);return;}
   const name = els.name.value.trim().replace(/\s+/g, " ");
   const phone = normalizePhone(els.phone.value);
   if (name.length < 2 || name.length > 100) {
@@ -252,14 +261,14 @@ els.form.addEventListener("submit", async (event) => {
 window.BaliAuth = {
   ready,
   isConfigured,
-  isRegistered: () => !!(user && user.emailVerified && profile),
+  isRegistered: () => !!(user && user.emailVerified && profile && privacyAcceptedUid===user.uid),
   getProfile: () => user && profile ? { ...profile } : null,
   getIdToken: async () => auth?.currentUser ? auth.currentUser.getIdToken() : null,
   open: show,
   close: hide,
   requireProfile: async () => {
     await ready;
-    if (!isConfigured || !user || !user.emailVerified || !profile) {
+    if (!isConfigured || !user || !user.emailVerified || !profile || privacyAcceptedUid!==user.uid) {
       show();
       return false;
     }
@@ -270,8 +279,10 @@ window.BaliAuth = {
 async function handleUser(authUser) {
   const current = ++authGeneration;
   const stillCurrent = () => current === authGeneration && auth.currentUser?.uid === authUser?.uid;
+  window.BaliPrivacy?.cancel();
   user = authUser;
   profile = null;
+  privacyAcceptedUid = null;
   render();
   if (user && (!user.email || !user.emailVerified)) {
     try {
@@ -283,6 +294,34 @@ async function handleUser(authUser) {
     }
   } else if (user) {
     try {
+      const [consent,withdrawal]=await Promise.all([getDoc(consentRef(authUser.uid)),getDoc(withdrawalRef(authUser.uid))]);
+      if(!stillCurrent())return;
+      if(withdrawal.exists())throw Object.assign(new Error(),{code:"privacy/withdrawn"});
+      if(!hasPrivacyConsent(consent)){
+        let entry=preLoginConsent;
+        preLoginConsent=false;
+        try{
+          const saved=JSON.parse(sessionStorage.getItem("bali-privacy-entry")||"null");
+          sessionStorage.removeItem("bali-privacy-entry");
+          if(saved?.version===privacyVersion&&Date.now()-saved.at>=0&&Date.now()-saved.at<600000)entry=true;
+        }catch(_e){}
+        if(!entry&&!await window.BaliPrivacy?.review()){
+          if(stillCurrent())await signOut(auth);
+          return;
+        }
+        if(!stillCurrent())return;
+        try{
+          await setDoc(consentRef(authUser.uid),{version:privacyVersion,processing:true,international:true,acceptedAt:serverTimestamp()});
+        }catch(error){
+          // Another tab may have recorded this immutable receipt first.
+          const [saved,revoked]=await Promise.all([getDoc(consentRef(authUser.uid)),getDoc(withdrawalRef(authUser.uid))]);
+          if(!stillCurrent())return;
+          if(!hasPrivacyConsent(saved)||revoked.exists())throw error;
+        }
+        if(!stillCurrent())return;
+      }
+      preLoginConsent=false;
+      privacyAcceptedUid=authUser.uid;
       const snapshot = await getDoc(doc(database, "users", authUser.uid));
       if (!stillCurrent()) return;
       const candidate = snapshot.exists() ? snapshot.data() : null;
@@ -315,7 +354,22 @@ if (!isConfigured) {
       message(friendlyError(error), true);
     });
   } catch (error) {
-    message("Некорректные настройки Firebase.", true);
+    message("Вход временно недоступен. Повторите попытку позже.", true);
     finishInitialization();
   }
 }
+
+$("baliPrivacyWithdraw")?.addEventListener("click",async()=>{
+  if(!user||privacyAcceptedUid!==user.uid)return;
+  if(!window.confirm("Отозвать согласие на обработку персональных данных? Вы выйдете из аккаунта. Запрос на прекращение обработки и удаление будет передан клубу; сведения, обязательные по закону, могут сохраняться."))return;
+  const withdrawingUser=user,button=$("baliPrivacyWithdraw"),status=$("baliPrivacyStatus");
+  button.disabled=true;
+  try{
+    await setDoc(withdrawalRef(withdrawingUser.uid),{version:privacyVersion,requestedAt:serverTimestamp()});
+    if(auth.currentUser?.uid!==withdrawingUser.uid)return;
+    privacyAcceptedUid=null;profile=null;render();
+    status.textContent="Отзыв согласия получен. Обработка на основании согласия будет прекращена в срок до 15 дней, если нет иных законных оснований. Контакт: Kolyaselekh@gmail.com.";
+    await signOut(auth);
+  }catch(error){status.textContent="Не удалось завершить отзыв. Повторите попытку или напишите на Kolyaselekh@gmail.com.";}
+  finally{button.disabled=false;}
+});

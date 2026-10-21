@@ -567,7 +567,7 @@ const infoSection=html.slice(html.indexOf('id="contactsSection"'),html.indexOf('
 for(const term of ["Контакты и социальные сети","Режим работы","Посещение клуба","Меню и предзаказы","BALI ID · Privilege","Правовая информация","Сведения об организации","Персональные данные","Предзаказы, оплата и обращения"]){
   assert(infoSection.includes(term),"Info is missing required club/site section: "+term);
 }
-assert(html.includes('bali-info-page.css?v=20261019-2') &&
+assert(html.includes('bali-info-page.css?v=') &&
   html.includes('bali-info-page.js?v=20261019-1') &&
   html.includes('id="baliInfoContactMirror"') &&
   infoClient.includes('sidebar.cloneNode(true)') &&
@@ -587,10 +587,10 @@ assert(html.includes('bali-info-page.css?v=20261019-2') &&
   infoSection.includes('Место оказания услуг:') &&
   infoSection.includes('<details open>') &&
   !infoSection.includes('реквизиты пока не подтверждены владельцем проекта') &&
-  infoSection.includes('не заменяет утверждённую политику') &&
+  infoSection.includes('href="privacy.html"') &&
   infoSection.includes('id="baliInfoCloseBtn"') &&
   infoSection.includes('data-bali-nav="profile"') &&
-  html.includes('bali-info-page.css?v=20261019-2') &&
+  html.includes('bali-info-page.css?v=') &&
   infoCss.includes('.bali-info-legal-grid') &&
   infoCss.includes('word-break:break-all;') &&
   html.includes('href="tel:+375296700300"'),
@@ -1167,8 +1167,9 @@ assert(mobileLayoutCss.includes("/* BALI v38: self-contained viewport layout on 
   mobileLayoutCss.includes("overflow-y:auto!important") &&
   mobileLayoutCss.includes("touch-action:pan-x pan-y!important"),
   "Static mobile screens must keep only menu scrolling vertically and event stories horizontally");
+const eventStageJs=source("bali-calendar-coverflow.js");
 assert(app.includes("menuSection.scrollTop = 0") &&
-  app.includes('if(window.matchMedia("(max-width:767px)").matches)return;'),
+  eventStageJs.includes('if(mobile()||event.ctrlKey||Math.abs(event.deltaY)<4)return;'),
   "Mobile category change must scroll the product list without hijacking gestures");
 const approvedCss=source("bali-redesign.css");
 const squareCss=source("bali-event-square.css");
@@ -1182,8 +1183,8 @@ assert(squareCss.includes("aspect-ratio:1 / 1") &&
   squareCss.includes("margin-top:auto") &&
   squareCss.includes("overflow-y:auto"),
   "Square poster, independently scrollable info and bottom pinned actions required");
-assert(app.includes('track.clientHeight-(mobile?90:105)') &&
-  app.includes('track.clientHeight-(mobile?90:105)'),
+assert(eventStageJs.includes('available-actionsHeight-3*targetGap') &&
+  eventStageJs.includes('area.height-(phone?80:76)'),
   "Carousel must reserve vertical space for square image and event actions");
 
 const premiumCss=source("bali-home-premium.css");
@@ -1306,8 +1307,8 @@ assert(adaptiveCss.includes("/* BALI v44") &&
   adaptiveCss.includes("overflow-y:auto!important") &&
   adaptiveCss.includes(".bali-home .bali-home-inner{"),
   "Phone/tablet/desktop breakpoints need viewport fitting, fixed category/cart and catalog scroll");
-assert(app.includes("const rounded=Math.max(88,Math.floor(width));") &&
-  app.includes("track.clientHeight-(mobile?90:105)"),
+assert(eventStageJs.includes("Math.min(390,area.width*.88,") &&
+  eventStageJs.includes("Math.max(100,area.height-(phone?80:76))"),
   "Event slide sizing must respond to viewport height and never force old 155px minimum");
 
 assert(approvedCss.includes("/* BALI v42") &&
@@ -1359,10 +1360,10 @@ assert(html.includes('id="eventsCarouselShell"') &&
   html.includes('aria-roledescription="карусель"'), "Accessible event carousel shell missing");
 assert(!html.includes('<h2 class="section-title">Меню BALI</h2>'),
   "Do not duplicate menu title after category buttons");
-assert(app.includes('function initEventCarousel()') &&
-  app.includes('track.addEventListener("wheel"') &&
-  app.includes('track.addEventListener("keydown"'),
-  "Events must scroll by desktop wheel and keyboard");
+assert(source("bali-calendar-coverflow.js").includes('shell.addEventListener("wheel"') &&
+  source("bali-calendar-coverflow.js").includes('grid.addEventListener("keydown"') &&
+  !app.includes('function initEventCarousel()'),
+  "One stage controller must own desktop wheel and keyboard without a competing legacy carousel");
 assert(app.includes('const previousDate=previousCards[previousIndex]?.dataset.eventId||previousCards[previousIndex]?.dataset.eventDate') &&
   app.includes('centerEventCard(grid,cards[restoreIndex],false)'),
   "Realtime RSVP refreshes must preserve carousel position");
@@ -1411,10 +1412,11 @@ assert(carouselCss.includes('line-clamp:2') &&
   carouselCss.includes('.events-topbar') &&
   carouselCss.includes('flex-wrap:nowrap'),
   "Calendar topbar and footer must remain compact");
-assert(app.includes('const fitStorySlides=()=>') &&
-  app.includes('track.clientHeight-(mobile?90:105)') &&
-  app.includes('observer.observe(track)'),
-  "Stories must size from measured available height");
+assert(source("bali-calendar-coverflow.js").includes('function measure()') &&
+  source("bali-calendar-coverflow.js").includes('area.height-(phone?80:76)') &&
+  source("bali-calendar-coverflow.js").includes('observer.observe(grid)') &&
+  !app.includes('fitStorySlides'),
+  "The stage must measure available height without legacy code overwriting its poster width");
 assert(html.includes('bali-calendar-reference.css?v=') &&
   html.includes('bali-calendar-coverflow.js?v=') &&
   html.includes('id="baliEventDetailDialog"') &&

@@ -12,18 +12,3 @@
   border-color:rgba(250,96,112,.68)!important;
   box-shadow:0 0 16px rgba(250,96,112,.25)!important;
 }
-/* A completed date takes precedence over an old RSVP or the today tint.
-   Days with multiple differently timed events retain individual status sectors. */
-:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"][data-past="true"],
-:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"][data-past="true"][data-selected="true"]{
-  background:#fa6070!important;
-  background-image:none!important;
-  border-color:#fa6070!important;
-  color:#151910!important;
-}
-:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"][data-past="true"] .bali-calendar-day-number{
-  color:#151910!important;
-}
-:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"][data-past="true"] .bali-calendar-event-dots .bali-calendar-event-dot{
-  background:#fa6070!important;
-}

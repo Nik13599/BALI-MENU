@@ -1,0 +1,23 @@
+.bali-privacy-page{margin:0;background:#0b1010;color:#edf4ea;font:14px/1.65 Manrope,Arial,sans-serif}
+.bali-privacy-page main{max-width:850px;margin:auto;padding:clamp(20px,5vw,48px) clamp(16px,4vw,32px) 70px}
+.bali-privacy-page h1{font-size:clamp(23px,4vw,34px);line-height:1.25;overflow-wrap:anywhere}
+.bali-privacy-page h2{font-size:19px;line-height:1.4;margin-top:28px}
+.bali-privacy-page a,.bali-privacy-dialog a{color:#c3ff75;text-underline-offset:3px;overflow-wrap:anywhere}
+.bali-privacy-page li{margin:8px 0}
+.bali-privacy-version{color:#afbbb0;font-size:12px}
+.bali-privacy-dialog{box-sizing:border-box;width:min(620px,calc(100% - 24px));max-height:calc(100dvh - 32px);margin:auto;padding:0;border:1px solid #506542;border-radius:17px;background:#111915;color:#edf4ea;overflow:auto;font:13px/1.55 Manrope,Arial,sans-serif;overscroll-behavior:contain}
+.bali-privacy-dialog::backdrop{background:rgba(0,0,0,.78)}
+.bali-privacy-content{padding:clamp(16px,4vw,26px)}
+.bali-privacy-dialog h2{font-size:clamp(20px,4.5vw,26px);line-height:1.25;margin:0 0 14px}
+.bali-privacy-dialog h2:focus{outline:none}
+.bali-privacy-dialog h3{font-size:14px;margin:18px 0 7px}
+.bali-privacy-dialog p{margin:10px 0}
+.bali-privacy-rights{border-left:2px solid #b9ff51;padding:0 0 0 13px;margin:18px 0}
+.bali-privacy-choice{display:flex;align-items:flex-start;gap:10px;margin:14px 0;cursor:pointer}
+.bali-privacy-choice input{flex:0 0 20px;width:20px;height:20px;margin:2px 0;accent-color:#b9ff51}
+.bali-privacy-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}
+.bali-privacy-actions button,.bali-privacy-withdraw{box-sizing:border-box;flex:1 1 180px;min-height:42px;border:1px solid #65775a;border-radius:9px;padding:10px 13px;background:#1a241d;color:#edf4ea;font:750 12px/1.3 Manrope,Arial,sans-serif;cursor:pointer}
+.bali-privacy-actions #baliPrivacyAccept{background:#b9ff51;border-color:#b9ff51;color:#121a0d}
+.bali-privacy-actions #baliPrivacyAccept:disabled{opacity:.4;cursor:default}
+.bali-privacy-dialog :focus-visible,.bali-privacy-withdraw:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.bali-privacy-status{font-size:12px;line-height:1.5;color:#cedbc8}

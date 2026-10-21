@@ -112,7 +112,7 @@ test('no rectangular footer or event name below square poster: only two buttons'
   expect(state.labels[0]).toMatch(/Хочу пойти/);
   expect(state.labels[1]).toMatch(/Поделиться/);
 });
-test('desktop uses mirrored side posters without covering the center',async({page})=>{
+test('desktop brings mirrored side posters behind the center',async({page})=>{
   await prepare(page,10);
   if(page.viewportSize().width<1180)return;
   await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(1,false));
@@ -123,9 +123,11 @@ test('desktop uses mirrored side posters without covering the center',async({pag
   expect(left.angle).toBeGreaterThan(54);
   expect(right.angle).toBeLessThan(-54);
   expect(center.angle).toBe(0);
-  // Perspective geometry must not lay side artwork on top of the center.
-  expect(left.right,JSON.stringify(g)).toBeLessThanOrEqual(center.left+7);
-  expect(right.left).toBeGreaterThanOrEqual(center.right-7);
+  // Neighbours tuck behind the centre with a symmetric, modest overlap.
+  expect(left.left).toBeLessThan(center.left);
+  expect(right.right).toBeGreaterThan(center.right);
+  expect(left.right).toBeLessThan(center.left+center.width*.2);
+  expect(right.left).toBeGreaterThan(center.right-center.width*.2);
   expect(center.width).toBeGreaterThan(g.stageWidth*.40);
   await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(5,false));
   const q=await geometry(page);
@@ -146,7 +148,7 @@ test('phone scene and calendar use all viewport width, square posters and swipe-
   await expect(page.locator('#baliPosterNext')).toHaveCSS('display','none');
 });
 
-test('planned future date stays vivid green with dark number and three lifecycle-colored dots',async({page})=>{
+test('planned future date has a green outline and three solid dots until selected',async({page})=>{
   await prepare(page,4);
   await page.evaluate(()=>{
     const events=[
@@ -170,13 +172,18 @@ test('planned future date stays vivid green with dark number and three lifecycle
   }
   const day=page.locator('#baliCalendarDays [data-date="2026-12-25"]');
   await expect(day).toBeVisible();
+  // The first loaded poster now selects its date automatically. Pick an empty
+  // day to verify that RSVP alone does not fill other event dates.
+  await page.evaluate(()=>document.querySelector('#baliCalendarDays [data-date="2026-12-26"]').click());
   await expect(day).toHaveAttribute('data-planned','true');
   await expect(day).toHaveAttribute('data-event-count','3');
   await expect(day.locator('.bali-calendar-event-dot')).toHaveCount(3);
   await expect(day).toHaveAttribute('data-lifecycle-status','upcoming');
-  expect(await day.evaluate(n=>getComputedStyle(n).backgroundImage)).toContain('rgb(185, 255, 81)');
+  await expect(day).toHaveCSS('background-image','none');
+  await expect(day).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
+  await expect(day).toHaveCSS('border-color','rgb(185, 255, 81)');
   expect(await day.locator('.bali-calendar-day-number').evaluate(n=>getComputedStyle(n).color))
-    .toBe('rgb(21, 25, 16)');
+    .toBe('rgb(237, 244, 234)');
   for(const dot of await day.locator('.bali-calendar-event-dot').all())
     expect(await dot.evaluate(n=>getComputedStyle(n).backgroundColor)).toBe('rgb(185, 255, 81)');
   await page.evaluate(()=>window.dispatchEvent(new CustomEvent('bali:interests',{detail:{dates:[]}})));

@@ -24,7 +24,7 @@ test("Minsk start/end and overnight 23:00–06:00 are accurate",async({page})=>{
  expect(value.overnight).toBe("live");
  expect(value.overnightEnd).toBe("past");
 });
-test("same date shows independent yellow and lime sectors and dots",async({page})=>{
+test("same date preserves event statuses and shows two solid dots without status sectors",async({page})=>{
  await page.goto("/index.html#events");
  await page.evaluate(()=>{
   document.getElementById("eventsSection").hidden=false;
@@ -43,10 +43,10 @@ test("same date shows independent yellow and lime sectors and dots",async({page}
  await expect(day.locator(".bali-calendar-event-dot")).toHaveCount(2);
  const state=await day.evaluate(el=>({
   statuses:[...el.querySelectorAll(".bali-calendar-event-dot")].map(x=>x.dataset.status),
-  fill:el.style.getPropertyValue("--bali-day-segments")
+  fill:getComputedStyle(el).backgroundImage
  }));
  expect(state.statuses).toEqual(["live","upcoming"]);
- expect(state.fill).toContain("50.000%");
+ expect(state.fill).toBe("none");
 });
 test("expired dates show a passive notice while future events have share + heart icons",async({page})=>{
  await page.goto("/index.html#events");

@@ -135,3 +135,7 @@ body.bali-guest-theme #profileSection .bali-profile-id-link{
     padding:17px;
   }
 }
+
+/* A route is a separate page: hidden canvases never paint through BALI ID. */
+:root[data-bali-theme] body.bali-guest-theme :is(#homeSection,#menuPage,#eventsSection,#profileSection,#baliIdSection,#contactsSection,#baliAboutSection)[hidden]{display:none!important}
+:root[data-bali-theme] body.bali-guest-theme[data-bali-page="id"] :is(#homeSection,#menuPage,#eventsSection,#profileSection,#contactsSection,#baliAboutSection){display:none!important}
