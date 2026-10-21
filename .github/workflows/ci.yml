@@ -71,6 +71,7 @@ jobs:
       - name: Проверка интерфейса и безопасных ограничений
         run: |
           node scripts/verify-source.mjs
+          node scripts/verify-promo-placement.mjs
           node scripts/verify-bali-bank.mjs
           node scripts/verify-bali-id-onboarding.mjs
 
