@@ -130,7 +130,7 @@ async function initializeForUser(user,{force=false}={}){
     if(run!==session||auth.currentUser?.uid!==user.uid)return;
     if(!consent.exists()||consent.data()?.version!==1){render();setLoading(false);return;}
     activeUid=user.uid;profile=profileData;
-    setText("baliIdStatus","Загружаем вашу карту...");
+    setText("baliIdStatus","");
     // Register once: the counter and guest number form one atomic transaction.
     const [allocated,tierRules,assigned]=await Promise.all([
       allocate(user.uid,run),

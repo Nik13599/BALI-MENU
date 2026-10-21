@@ -287,7 +287,7 @@ async function historyLoad(){
   if(historyBusy||!logged()||!historyDlg.open)return;
   historyBusy=true;const token=++run,myUid=uid;
   const more=$("baliIdHistoryMore");more.disabled=true;
-  say("baliIdHistoryStatus","Загружаем историю…");
+  say("baliIdHistoryStatus","");
   try{
     const result=(await historyFn({after:cursor||""})).data;
     if(token!==run||myUid!==uid||!historyDlg.open)return;

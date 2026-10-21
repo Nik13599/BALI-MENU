@@ -1,7 +1,7 @@
 /* BALI v82 — public read-only realtime text and icon overrides.
    The live design preview loads this same file: no fake data or screenshots. */
-import {getApp,getApps,initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getFirestore,doc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getApp,getApps,initializeApp} from "./bali-public-reader.js?v=20261021-fast1";
+import {getFirestore,doc,onSnapshot} from "./bali-public-reader.js?v=20261021-fast1";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const db=getFirestore(app);
 const one=s=>document.querySelector(s);

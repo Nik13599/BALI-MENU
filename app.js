@@ -976,7 +976,7 @@ const elements = {
 // INITIALIZATION
 // ============================================
 
-document.addEventListener('DOMContentLoaded', () => {
+function startGuestApp() {
     loadConfig();
     loadCart();
     initializeApp();
@@ -1021,7 +1021,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderUpcomingEvents();
         }
     },60000);
-});
+}
 
 // Высота шапки меняется при переходе между телефоном/планшетом/ПК.
 // Категории остаются закреплены ровно ПОД шапкой без перекрытия кнопок.
@@ -1214,9 +1214,9 @@ function attachEventListeners() {
 // ============================================
 
 async function fetchMenuItems() {
-    elements.menuGrid.innerHTML = '<div class="loading-state"><p>Загружаем меню BALI...</p></div>';
+    if(!receivedMenuSnapshot)elements.menuGrid.replaceChildren();
     window.setTimeout(()=>{
-        if(!receivedMenuSnapshot)showError('Меню загружается дольше обычного. Проверьте соединение и обновите страницу.');
+        if(!receivedMenuSnapshot)showError('Меню недоступно. Проверьте соединение и обновите страницу.');
     },15000);
 }
 
@@ -1424,14 +1424,6 @@ document.getElementById("baliMenuDetailsDialog")?.addEventListener("close",()=>{
     openMenuDetailsProductId=null;
 });
 
-function showLoading() {
-    elements.menuGrid.innerHTML = `
-        <div class="loading-state">
-            <div class="spinner"></div>
-            <p>Загружаем меню...</p>
-        </div>
-    `;
-}
 
 function showError(message) {
     elements.menuGrid.innerHTML = `
@@ -1874,7 +1866,7 @@ function renderMyOrders() {
     list.replaceChildren();
     if (!myOrders.length) {
         const empty = document.createElement('p');
-        empty.textContent = myOrdersLoading ? 'Загружаем предзаказы…' : 'Пока нет оформленных предзаказов.';
+        empty.textContent = myOrdersLoading ? '' : 'Пока нет оформленных предзаказов.';
         list.append(empty);
         return;
     }
@@ -1968,3 +1960,6 @@ function closeAllModals() {
     closeSuccess();
     closeMyOrders();
 }
+
+// The markup is complete here; network modules must not delay navigation.
+startGuestApp();

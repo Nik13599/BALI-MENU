@@ -45,7 +45,8 @@ test('startup ignores a cached old holiday until the current server publication 
   await expectEmpty(page);
   await emit(page,[offer('bali-new-year-2026',{title:'СТАРАЯ НОВОГОДНЯЯ АКЦИЯ'})],{fromCache:true,hasPendingWrites:false});
   await expectEmpty(page);
-  await expect(page.locator('#baliPcOfferTitle')).toHaveText('Загружаем предложения…');
+  await expect(page.locator('#baliPcOfferTitle')).toBeHidden();
+  await expect(page.locator('#baliPcOfferDescription')).toBeHidden();
   await emit(page,[offer()]);
   await expect(page.locator('.bali-pc-hero')).toHaveAttribute('data-bali-offer-id','current-campaign');
   await expect(page.locator('.bali-pc-hero')).toHaveAttribute('data-bali-carousel-count','1');

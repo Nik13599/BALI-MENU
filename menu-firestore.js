@@ -2,8 +2,8 @@
  * BALI MENU — публичный Firestore каталог и даты мероприятий.
  * НЕ записывает и НЕ подтверждает предзаказы.
  */
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { initializeApp, getApps, getApp } from "./bali-public-reader.js?v=20261021-fast1";
+import { getFirestore, collection, onSnapshot } from "./bali-public-reader.js?v=20261021-fast1";
 
 const config = window.BALI_FIREBASE_CONFIG;
 const app = getApps().length ? getApp() : initializeApp(config);

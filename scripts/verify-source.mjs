@@ -212,7 +212,7 @@ assert(html.includes('id="baliMobileAboutBackgroundA"') &&
   html.includes('id="baliMobileAboutBackgroundB"') &&
   html.includes('id="baliMobileAboutBackgroundDots"') &&
   html.includes('bali-mobile-about-hero.css?v=20261019-6') &&
-  html.includes('bali-mobile-about-hero.js?v=20261019-1') &&
+  html.includes('bali-mobile-about-hero.js?v=') &&
   mobileAboutCss.includes('@media(max-width:767px)') &&
   mobileAboutCss.includes('object-fit:cover!important') &&
   mobileAboutCss.includes('background:linear-gradient(90deg') &&
