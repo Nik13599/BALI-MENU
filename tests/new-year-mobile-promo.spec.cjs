@@ -146,3 +146,42 @@ test("carousel rotates multiple promotions by swipe/drag and exposes 15-second c
  });
  await expect(hero).toHaveAttribute("data-bali-offer-id","bali-new-year-2026");
 });
+
+test("Composed Christmas banner renders uploaded art, foreground title and colored rounded booking button",async({page})=>{
+ await page.goto("/index.html");
+ const source=fs.readFileSync(path.join(__dirname,"..","bali-pc-offers.js"),"utf8")
+  .replace(/^import\s+.*?;\s*$/gm,"");
+ await page.addScriptTag({content:`(()=>{
+  const initializeApp=()=>({}),getApps=()=>[],getApp=()=>({});
+  const getFirestore=()=>({}),collection=()=>({}),query=()=>({}),where=()=>({});
+  const onSnapshot=(_,notify)=>{notify({docs:[{id:"bali-new-year-2026",data:()=>({
+   title:"НОВОГОДНИЙ КОРПОРАТИВ",description:"",
+   imageUrl:"https://example.com/new-artwork.webp",imageMobileUrl:"",imageTabletUrl:"",
+   destination:"contact-modal",buttonText:"Забронировать сейчас",
+   contactHotspot:{enabled:true,left:4,top:69,width:30,height:17},
+   sort:0,published:true,
+   overlay:{enabled:true,fontSize:40,textColor:"#ffcc22",
+     buttonBackground:"#00dd99",buttonColor:"#220011",buttonRadius:18,align:"center"}
+  })}]});return ()=>{}};
+  `+source+"\n})();"});
+ const hero=page.locator(".bali-pc-hero");
+ await expect(hero).toHaveClass(/is-composed/);
+ await expect(hero).toHaveAttribute("data-bali-promo-align","center");
+ await expect(page.locator("#baliPcHeroPoster")).toHaveAttribute("src","https://example.com/new-artwork.webp");
+ const title=page.locator("#baliPcOfferTitle"),button=page.locator("#baliPcOfferAction");
+ await expect(title).toBeVisible();
+ await expect(title).toHaveText("НОВОГОДНИЙ КОРПОРАТИВ");
+ await expect(button).toBeVisible();
+ await expect(button).toContainText("Забронировать сейчас");
+ expect(await title.evaluate(el=>getComputedStyle(el).color)).toBe("rgb(255, 204, 34)");
+ expect(await button.evaluate(el=>getComputedStyle(el).backgroundColor)).toBe("rgb(0, 221, 153)");
+ expect(await button.evaluate(el=>getComputedStyle(el).color)).toBe("rgb(34, 0, 17)");
+ expect(await button.evaluate(el=>getComputedStyle(el).borderRadius)).toBe("18px");
+ expect(await hero.evaluate(el=>el.querySelectorAll(".bali-pc-artwork-hotspot:not([hidden])").length)).toBe(0);
+ await page.evaluate(()=>{
+   window.__promoClicked=0;
+   window.addEventListener("bali:promo-contacts",()=>window.__promoClicked++);
+   document.getElementById("baliPcOfferAction").click();
+ });
+ expect(await page.evaluate(()=>window.__promoClicked)).toBe(1);
+});
