@@ -25,7 +25,9 @@ const els = {
   status: $("authMessage"),
   saveStatus: $("authSaveMessage"),
   signOut: $("authSignOutBtn"),
-  overlay: $("overlay")
+  overlay: $("overlay"),
+  title: $("authModalTitle"),
+  submit: $("authSaveBtn")
 };
 
 const config = window.BALI_FIREBASE_CONFIG || {};
@@ -85,13 +87,20 @@ function render() {
   els.button.textContent = accountLabel;
   els.button.title = !user ? "Мой BALI" : accountLabel;
   els.button.setAttribute("aria-label", !user ? "Открыть Мой BALI" : "Личный кабинет: " + accountLabel);
+  const step = user && !profile && privacyAcceptedUid === user.uid
+    ? "complete" : user && profile ? "edit" : "sign-in";
+  els.dialog.dataset.authStep = step;
+  els.title.textContent = step === "complete" ? "Завершите регистрацию" : "Личный кабинет BALI";
+  els.submit.textContent = step === "complete" ? "Продолжить" : "Сохранить профиль";
   els.google.hidden = !isConfigured || !!user;
   els.form.hidden = !isConfigured || !user || privacyAcceptedUid !== user.uid;
   els.signOut.hidden = !user;
   if (user) {
     els.email.value = user.email || "";
-    els.name.value = profile?.name || user.displayName || "";
-    els.phone.value = profile?.phone || "+375";
+    // In the first-time form the guest must enter their own name,
+    // not silently inherit Google displayName.
+    els.name.value = profile?.name || "";
+    els.phone.value = profile?.phone || "";
   } else {
     els.form.reset();
   }
@@ -115,11 +124,18 @@ function show() {
   if (!isConfigured) {
     message("Вход временно недоступен. Повторите попытку позже.", true);
   } else if (user && !profile) {
-    message("Для регистрации заполните имя и номер телефона.");
+    message("Введите имя и номер телефона, чтобы завершить регистрацию.");
   } else if (user && profile) {
     message("Профиль сохранён. Вы можете изменить имя или телефон.");
   } else {
     message("Войдите через Google, чтобы подтвердить электронную почту.");
+  }
+  if (els.dialog.dataset.authStep === "complete") {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (els.dialog.classList.contains("active") &&
+          els.dialog.dataset.authStep === "complete" &&
+          !document.querySelector("dialog[open]")) els.name.focus({preventScroll:true});
+    }));
   }
 }
 
@@ -268,7 +284,17 @@ els.form.addEventListener("submit", async (event) => {
     render();
     message("Профиль успешно сохранён.");
     hide();
-    els.button.focus();
+    // Only the successful initial profile save sends the guest home.
+    // Editing a completed profile must not change the current page.
+    if (!existing.exists()) {
+      window.location.hash = "home";
+    } else if (document.body.dataset.baliPage !== "home" &&
+               !window.location.hash.includes("profile")) {
+      // An incomplete existing document has just been completed.
+      window.location.hash = "home";
+    } else {
+      window.location.hash = "home";
+    }
   } catch (error) {
     if (savingGeneration !== authGeneration) return;
     const info = friendlyError(error);
@@ -276,7 +302,7 @@ els.form.addEventListener("submit", async (event) => {
     saveMessage(info, true);
   } finally {
     submit.disabled = false;
-    submit.textContent = "Сохранить профиль";
+    submit.textContent = profile ? "Сохранить профиль" : "Продолжить";
   }
 });
 
