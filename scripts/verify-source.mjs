@@ -1460,7 +1460,8 @@ assert(html.includes('id="baliCardNumber"') &&
   html.includes('id="baliIdBack"') &&
   html.includes('id="baliShowQr"') &&
   html.includes('id="baliQrDialog"') &&
-  html.indexOf('id="baliShowQr"') > html.indexOf('id="baliIdFlipScene"') &&
+  html.indexOf('id="baliShowQr"') < html.indexOf('id="baliIdFlipScene"') &&
+  html.indexOf('id="baliShowQr"') > html.indexOf('id="baliIdPageHeading"') &&
   html.includes('id="baliMobileProfileBtn"') &&
   html.includes('id="baliMobileIdBtn"') &&
   source("bali-id-flip.js").includes('httpsCallable(functions,"issueGuestQr")') &&
