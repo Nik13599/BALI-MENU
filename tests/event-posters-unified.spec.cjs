@@ -106,6 +106,9 @@ test("Calendar image is square, surrounding metadata hidden, action buttons and 
 test("Administrator previews 1:1 for event artwork and editable SECRET placeholders",async({page})=>{
  await page.goto("/admin.html");
  const state=await page.evaluate(()=>{
+  document.getElementById("adminView").hidden=false;
+  const workspace=document.querySelector('[data-admin-panel="events"]');
+  if(workspace)workspace.hidden=false;
   const poster=document.getElementById("eventPosterPreview");
   poster.hidden=false;
   const secret=document.getElementById("baliPlaceholderAdminPreview");
