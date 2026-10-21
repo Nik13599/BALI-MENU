@@ -1,6 +1,6 @@
 /* BALI — live About card only. BALI ID is provided by its own authenticated module. */
-import {getApp,getApps,initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getFirestore,doc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getApp,getApps,initializeApp} from "./bali-public-reader.js?v=20261021-fast1";
+import {getFirestore,doc,onSnapshot} from "./bali-public-reader.js?v=20261021-fast1";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const db=getFirestore(app),el=id=>document.getElementById(id);
 const validImage=value=>typeof value==="string"&&(

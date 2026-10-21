@@ -1,7 +1,7 @@
 /* BALI guest hookah and tea catalogs. Informational only: NEVER add to cart.
    Tea seed uses the owner's menu; detailed tasting notes cite the attached manual. */
-import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getFirestore,collection,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {initializeApp,getApps,getApp} from "./bali-public-reader.js?v=20261021-fast1";
+import {getFirestore,collection,onSnapshot} from "./bali-public-reader.js?v=20261021-fast1";
 import {node,categoryLabel,catalogCard,catalogGroup} from "./bali-menu-cards.js?v=20261020-2";
 import {hasCatalogDetails,catalogDetailsAction,openCatalogDetails} from "./bali-catalog-details.js?v=20261020-2";
 import {BALI_TEA_SEED} from "./bali-tea-seed.js";

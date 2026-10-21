@@ -46,6 +46,18 @@ function setBaliHeartButton(button,selected,status="upcoming"){
 }
 let lastWheelSlideAt=0;
 let openOrdersAfterSignIn=new URLSearchParams(location.search).get('view')==='orders';
+let pendingIdNavigation=null;
+
+function requestBaliId(replace=false) {
+    if(!window.BaliIdOnboarding?.open){pendingIdNavigation={replace};return;}
+    pendingIdNavigation=null;
+    void window.BaliIdOnboarding.open().then(allowed=>{
+        if(allowed)navigateGuestPage("id",{replace});
+    });
+}
+window.addEventListener("bali:id-onboarding-ready",()=>{
+    if(pendingIdNavigation)requestBaliId(pendingIdNavigation.replace);
+});
 
 // Карточки могут иметь разную ширину на ПК и мобильном экране.
 // Индекс рассчитывается по реальным позициям, а не по фиксированным пикселям.
@@ -413,9 +425,7 @@ function renderGuestPage(page,{scroll=true}={}) {
         if(window.location.hash==="#id"){
             history.replaceState({baliPage:"home"},"",window.location.pathname+window.location.search);
         }
-        void window.BaliIdOnboarding?.open?.().then(allowed=>{
-            if(allowed)navigateGuestPage("id");
-        });
+        requestBaliId();
         page="home";
     }
     const selected=BALI_GUEST_PAGES.has(page)?page:"home";
@@ -516,10 +526,9 @@ function switchBaliMenuMode(nextMode) {
 
 function navigateGuestPage(page,{replace=false}={}) {
     const selected=BALI_GUEST_PAGES.has(page)?page:"home";
+    if(selected!=="id")pendingIdNavigation=null;
     if(selected==="id" && !window.BaliIdOnboarding?.isAccepted?.()){
-        void window.BaliIdOnboarding?.open?.().then(allowed=>{
-            if(allowed)navigateGuestPage("id",{replace});
-        });
+        requestBaliId(replace);
         return;
     }
     const path=selected==="home"?
@@ -976,7 +985,7 @@ const elements = {
 // INITIALIZATION
 // ============================================
 
-document.addEventListener('DOMContentLoaded', () => {
+function startGuestApp() {
     loadConfig();
     loadCart();
     initializeApp();
@@ -1021,7 +1030,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderUpcomingEvents();
         }
     },60000);
-});
+}
 
 // Высота шапки меняется при переходе между телефоном/планшетом/ПК.
 // Категории остаются закреплены ровно ПОД шапкой без перекрытия кнопок.
@@ -1214,9 +1223,9 @@ function attachEventListeners() {
 // ============================================
 
 async function fetchMenuItems() {
-    elements.menuGrid.innerHTML = '<div class="loading-state"><p>Загружаем меню BALI...</p></div>';
+    if(!receivedMenuSnapshot)elements.menuGrid.replaceChildren();
     window.setTimeout(()=>{
-        if(!receivedMenuSnapshot)showError('Меню загружается дольше обычного. Проверьте соединение и обновите страницу.');
+        if(!receivedMenuSnapshot)showError('Меню недоступно. Проверьте соединение и обновите страницу.');
     },15000);
 }
 
@@ -1424,14 +1433,6 @@ document.getElementById("baliMenuDetailsDialog")?.addEventListener("close",()=>{
     openMenuDetailsProductId=null;
 });
 
-function showLoading() {
-    elements.menuGrid.innerHTML = `
-        <div class="loading-state">
-            <div class="spinner"></div>
-            <p>Загружаем меню...</p>
-        </div>
-    `;
-}
 
 function showError(message) {
     elements.menuGrid.innerHTML = `
@@ -1874,7 +1875,7 @@ function renderMyOrders() {
     list.replaceChildren();
     if (!myOrders.length) {
         const empty = document.createElement('p');
-        empty.textContent = myOrdersLoading ? 'Загружаем предзаказы…' : 'Пока нет оформленных предзаказов.';
+        empty.textContent = myOrdersLoading ? '' : 'Пока нет оформленных предзаказов.';
         list.append(empty);
         return;
     }
@@ -1968,3 +1969,6 @@ function closeAllModals() {
     closeSuccess();
     closeMyOrders();
 }
+
+// The markup is complete here; network modules must not delay navigation.
+startGuestApp();

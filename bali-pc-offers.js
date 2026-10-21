@@ -1,6 +1,6 @@
 /* BALI PRIVILEGE: published offers rotate independently of event posters. */
-import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getFirestore,collection,query,where,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {initializeApp,getApps,getApp} from "./bali-public-reader.js?v=20261021-fast1";
+import {getFirestore,collection,query,where,onSnapshot} from "./bali-public-reader.js?v=20261021-fast1";
 import {promoPositionStyle} from "./bali-promo-placement.js?v=20261021-3";
 
 const image=document.getElementById("baliPcHeroPoster");
@@ -109,10 +109,10 @@ if(image&&title&&description&&counter&&action&&hero){
       hero.classList.remove("is-seasonal","is-composed","has-removed-artwork");
       hero.removeAttribute("aria-label");
       setPoster(null);
-      title.textContent=receivedOffers?"Предложений пока нет":"Загружаем предложения…";
-      title.hidden=false;
-      description.textContent=receivedOffers?"Новые предложения появятся после публикации клубом.":"Получаем актуальные данные клуба.";
-      description.hidden=false;
+      title.textContent=receivedOffers?"Предложений пока нет":"";
+      title.hidden=!receivedOffers;
+      description.textContent=receivedOffers?"Новые предложения появятся после публикации клубом.":"";
+      description.hidden=!receivedOffers;
       hero.classList.remove("has-artwork","is-image-only","has-no-action");
       counter.textContent="— / —";
       action.hidden=true;
@@ -294,8 +294,8 @@ if(image&&title&&description&&counter&&action&&hero){
   },error=>{
     if(!receivedOffers){
       offers=[];index=0;show();
-      title.textContent="Не удалось загрузить предложения";
-      description.textContent="Проверьте подключение и обновите страницу.";
+      title.textContent="";title.hidden=true;
+      description.textContent="";description.hidden=true;
     }
     if(error.code!=="permission-denied")console.warn("BALI offers unavailable:",error.code);
   });

@@ -132,3 +132,4 @@ onAuthStateChanged(auth,user=>{
   if(loginDialog?.open && user?.emailVerified && window.BaliAuth?.isRegistered?.())loginDialog.close();
 });
 window.BaliIdOnboarding={open,isAccepted};
+window.dispatchEvent(new Event("bali:id-onboarding-ready"));

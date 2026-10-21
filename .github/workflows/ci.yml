@@ -20,6 +20,7 @@ jobs:
       - name: Проверка JavaScript
         run: |
           node --check app.js
+          node --input-type=module --check < bali-public-reader.js
           node --input-type=module --check < auth.js
           node --input-type=module --check < bali-id-flip.js
           node --input-type=module --check < bali-id-onboarding.js
