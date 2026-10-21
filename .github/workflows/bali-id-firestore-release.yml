@@ -1,0 +1,43 @@
+name: BALI ID — публикация правил Firestore
+
+# Changes to this workflow explicitly trigger the BALI ID release only.
+# Other pushes never automatically redeploy security rules.
+on:
+  push:
+    paths:
+      - .github/workflows/bali-id-firestore-release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy-rules:
+    name: Опубликовать правила BALI ID
+    runs-on: ubuntu-latest
+    environment: firebase-preview
+    if: vars.FIREBASE_PROJECT_ID == 'bali-menu-5a48b'
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Убедиться, что публикуем только в BALI MENU
+        run: |
+          test "$FIREBASE_PROJECT_ID" = "bali-menu-5a48b"
+          test -f firestore.rules
+          grep -q 'hasBaliIdAgreement' firestore.rules
+          node --input-type=module --check < bali-id-onboarding.js
+          node scripts/verify-bali-id-onboarding.mjs
+      - name: Подключение к Google Cloud через GitHub OIDC
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.FIREBASE_WIF_PROVIDER }}
+          service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Установка Firebase CLI
+        run: npm install --global firebase-tools@15.34.0
+      - name: Опубликовать только правила Firestore
+        run: firebase deploy --only firestore:rules --project "$FIREBASE_PROJECT_ID" --non-interactive
