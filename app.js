@@ -1834,8 +1834,10 @@ function closeSuccess() {
 }
 
 let myOrders = [];
+let myOrdersLoading = false;
 window.addEventListener('bali:orders', ({detail}) => {
     myOrders = detail.orders;
+    myOrdersLoading = detail.loading === true;
     renderMyOrders();
 });
 window.addEventListener('bali:orders-error', ({detail}) => {
@@ -1872,7 +1874,7 @@ function renderMyOrders() {
     list.replaceChildren();
     if (!myOrders.length) {
         const empty = document.createElement('p');
-        empty.textContent = 'Пока нет оформленных предзаказов.';
+        empty.textContent = myOrdersLoading ? 'Загружаем предзаказы…' : 'Пока нет оформленных предзаказов.';
         list.append(empty);
         return;
     }

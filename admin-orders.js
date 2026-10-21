@@ -5,6 +5,11 @@ import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/1
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBatch,
   serverTimestamp,runTransaction,query,limit,orderBy,where} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1";
+const readOrderLines=async row=>{
+  const lines=await getDocs(collection(row.ref,"items"));
+  return lines.docs.map(line=>line.data());
+};
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=false,orders=[],catalog=[];
@@ -175,20 +180,20 @@ function watchDateOrders(){
   const date=$("ordersDateFilter").value,revision=++dateRevision;
   dateOrders=[];loadedDate="";
   if(!date){renderEventFilter();renderOrders();return;}
+  if(!authorized)return;
+  const readOrders=createOrderSnapshotReader(readOrderLines);
+  let snapshotRevision=0;
   renderOrders();
   unsubDateOrders=onSnapshot(query(collection(db,"orders"),where("eventDate","==",date)),async snap=>{
+    const run=++snapshotRevision;
     try{
-      const prepared=await Promise.all(snap.docs.map(async row=>{
-        const lines=await getDocs(collection(row.ref,"items"));
-        const items=lines.docs.map(x=>x.data());
-        return {id:row.id,...row.data(),items,total:total(items)};
-      }));
-      if(revision!==dateRevision)return;
+      const prepared=await readOrders(snap);
+      if(revision!==dateRevision||run!==snapshotRevision)return;
       dateOrders=prepared;loadedDate=date;
       renderEventFilter();renderOrders();
       setStatus("За "+date+" загружены все "+prepared.length+" предзаказов.");
-    }catch(e){if(revision===dateRevision)setStatus("Ошибка загрузки даты: "+(e.code||e.message));}
-  },e=>setStatus("Ошибка списка даты: "+(e.code||e.message)));
+    }catch(e){if(revision===dateRevision&&run===snapshotRevision)setStatus("Ошибка загрузки даты: "+(e.code||e.message));}
+  },e=>{if(revision===dateRevision){snapshotRevision++;setStatus("Ошибка списка даты: "+(e.code||e.message));}});
 }
 $("ordersDateFilter").addEventListener("change",watchDateOrders);
 $("ordersEventFilter").addEventListener("change",()=>{renderEventFilter();renderOrders();});
@@ -394,27 +399,29 @@ async function subscribe(user) {
   if(!user||!user.emailVerified)return;
   try{
     const role=await getDoc(doc(db,"admins",user.uid));
-    if(current!==generation||!role.exists()||role.data().active!==true) {
+    if(current!==generation)return;
+    if(!role.exists()||role.data().active!==true) {
       $("ordersAdminList").textContent="Нет прав администратора.";return;
     }
     authorized=true;
+    const readOrders=createOrderSnapshotReader(readOrderLines);
+    let revision=0;
     unsubEvents=onSnapshot(collection(db,"events"),snap=>{
+      if(current!==generation)return;
       events=new Map(snap.docs.map(row=>[row.id,row.data()]));
       renderDates();renderOrders();
       if($("orderEditDialog").open)fillOrderEventOptions($("editOrderEvent").value);
-    },e=>setStatus("Ошибка списка мероприятий: "+(e.code||"unknown")));
+    },e=>{if(current===generation)setStatus("Ошибка списка мероприятий: "+(e.code||"unknown"));});
     unsubMenu=onSnapshot(collection(db,"menu"),snap=>{
+      if(current!==generation)return;
       catalog=snap.docs.map(x=>x.data()).filter(x=>Number.isSafeInteger(x.id)&&Number.isFinite(x.price));
       menuSelect();
-    },e=>setStatus("Ошибка каталога для редактирования: "+(e.code||"unknown")));
+    },e=>{if(current===generation)setStatus("Ошибка каталога для редактирования: "+(e.code||"unknown"));});
     unsubOrders=onSnapshot(query(collection(db,"orders"),orderBy("createdAt","desc"),limit(100)),async snap=>{
+      const run=++revision;
       try{
-        const prepared=await Promise.all(snap.docs.map(async row=>{
-          const lines=await getDocs(collection(row.ref,"items"));
-          const items=lines.docs.map(x=>x.data());
-          return {id:row.id,...row.data(),items,total:total(items)};
-        }));
-        if(current!==generation)return;
+        const prepared=await readOrders(snap);
+        if(current!==generation||run!==revision)return;
         orders=prepared;
         renderDates();renderOrders();
         window.dispatchEvent(new CustomEvent("bali:admin:orders",{detail:{
@@ -422,8 +429,8 @@ async function subscribe(user) {
           count:orders.length,pending:orders.filter(x=>x.status==="pending"&&!x.archived).length
         }}));
         setStatus("Последние "+orders.length+" заказов. Выберите дату, чтобы загрузить всю очередь за день, затем мероприятие для отчёта.");
-      }catch(e){if(current===generation)setStatus("Ошибка состава заказов: "+(e.code||e.message));}
-    },e=>{if(current===generation)setStatus("Не удалось загрузить заказы: "+(e.code||"unknown"));});
+      }catch(e){if(current===generation&&run===revision)setStatus("Ошибка состава заказов: "+(e.code||e.message));}
+    },e=>{if(current===generation){revision++;setStatus("Не удалось загрузить заказы: "+(e.code||"unknown"));}});
   }catch(e){if(current===generation)setStatus("Ошибка проверки роли: "+(e.code||"unknown"));}
 }
 // Полная выгрузка делается непосредственно из Firestore, а не из очереди

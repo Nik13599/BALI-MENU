@@ -4,7 +4,7 @@
   "private": true,
   "description": "BALI NIGHTCLUB guest menu and staff dashboard",
   "scripts": {
-    "test": "node scripts/verify-source.mjs && node scripts/verify-promo-placement.mjs && node scripts/verify-bali-bank.mjs && node scripts/verify-bali-id-onboarding.mjs && node scripts/verify-bali-transfers.mjs && node scripts/test-bali-backend.mjs",
+    "test": "node scripts/verify-source.mjs && node scripts/verify-promo-placement.mjs && node scripts/verify-bali-bank.mjs && node scripts/verify-bali-id-onboarding.mjs && node scripts/verify-bali-transfers.mjs && node scripts/test-bali-backend.mjs && node --test scripts/test-order-snapshots.mjs",
     "test:browser": "playwright test",
     "start": "python3 -m http.server 8000",
     "build:styles": "node scripts/build-styles.mjs",

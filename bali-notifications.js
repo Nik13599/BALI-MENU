@@ -123,7 +123,10 @@
     }
     render();
   });
-  window.addEventListener("bali:orders",event=>snapshot(event.detail?.ownerUid,"guest",event.detail?.orders));
+  window.addEventListener("bali:orders",event=>{
+    if(event.detail?.loading){reset(event.detail.ownerUid,"guest");return;}
+    snapshot(event.detail?.ownerUid,"guest",event.detail?.orders);
+  });
   window.addEventListener("bali:admin:orders",event=>{if("orders" in (event.detail||{}))snapshot(event.detail.ownerUid,"admin",event.detail.orders);});
   window.addEventListener("bali:admin:session",event=>reset(event.detail?.uid,"admin"));
   window.addEventListener("bali:auth-state",event=>{if(!event.detail?.signedIn)reset(null,"guest");});

@@ -35,7 +35,8 @@ const visual=readFileSync("bali-promo-simple-editor.js","utf8");
 const host=readFileSync("bali-pc-offers.js","utf8");
 const css=readFileSync("bali-admin-promo-placement.css","utf8");
 assert(html.includes('id="baliPromoButtonPlacement"'),"Admin editor selector missing");
-assert(html.includes("bali-admin-promo-placement.css"),"Admin preview styling missing");
+const styles=JSON.parse(readFileSync("styles/entries.json","utf8"));
+assert(html.includes('data-bali-bundle="admin"')&&styles['admin.html'].some(file=>file.split('?')[0]==="bali-admin-promo-placement.css"),"Admin preview styling missing");
 for(const [key] of presets){
   assert(html.includes('<option value="'+key+'">'),"Admin dropdown missing "+key);
 }

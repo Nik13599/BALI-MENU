@@ -30,7 +30,7 @@ assert(/type="module"\s+src="auth\.js(?:\?v=[A-Za-z0-9_-]+)?"/.test(html), "auth
 assert(auth.includes("GoogleAuthProvider"), "Google sign-in missing");
 assert(auth.includes("emailVerified"), "Email must be verified");
 assert(auth.includes("serverTimestamp()"), "Server timestamps missing");
-assert(auth.includes('doc(database, "users", user.uid)'), "User profile persistence missing");
+assert(auth.includes('doc(database, "users", savingUser.uid)'), "User profile persistence missing");
 assert(app.includes("BaliAuth.requireProfile()"), "Checkout must require profile");
 const ordersClient = source("orders-firestore.js");
 assert(app.includes("window.BaliOrders.save"), "Checkout must use Firestore order service");

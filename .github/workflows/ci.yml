@@ -79,6 +79,7 @@ jobs:
         run: |
           node scripts/verify-bali-transfers.mjs
           node scripts/test-bali-backend.mjs
+          node --test scripts/test-order-snapshots.mjs
 
   browser:
     runs-on: ubuntu-latest

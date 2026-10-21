@@ -22,7 +22,8 @@ assert(pc.includes("BaliIdOnboarding?.open?.()"),"Desktop ID showcase must use t
 assert(!app.includes('if(nav.dataset.baliNav==="id"&&!window.BaliAuth?.isRegistered?.())'),"Navigation must not bypass the login notice");
 assert(!app.includes('if(!window.BaliAuth?.isRegistered?.()){window.BaliAuth?.open?.();return;}\n        navigateGuestPage("id")'),"Mobile ID button must not bypass the login notice");
 
-assert(html.includes('bali-id-onboarding.css?v=')&&css.includes("#baliIdWelcomeDialog"),"Welcome dialog styles missing");
+const styles=JSON.parse(read("styles/entries.json"));
+assert(html.includes('data-bali-bundle="index"')&&styles['index.html'].some(file=>file.split('?')[0]==='bali-id-onboarding.css')&&css.includes("#baliIdWelcomeDialog"),"Welcome dialog styles missing");
 assert(html.includes("MEMBER, SILVER, GOLD, PLATINUM, BLACK и PRIVATE"),"Public explanation of programme tiers missing");
 assert(html.includes("кода")&&html.includes("Ознакомлен"),"QR and acknowledgement explanation missing");
 assert(welcome.includes("scroll.scrollTop+scroll.clientHeight>=scroll.scrollHeight-12"),"Must scroll to end before acknowledging");
