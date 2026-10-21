@@ -723,6 +723,15 @@ function init(){
   });
  }
  updateViewportFields();
+ const directPromo=$("baliBuilderOpenPromo");
+ directPromo?.addEventListener("click",()=>{
+  if(!authorized){msg("Для редактирования баннера нужен вход администратора.");return;}
+  if(!enabled)toggle(true);
+  const hero=frameDoc()?.querySelector(".bali-pc-hero");
+  if(!hero){msg("Блок ещё загружается. Обновите предпросмотр и повторите.");return;}
+  choose(hero,{deep:true});
+  promoEditor?.root.scrollIntoView({block:"nearest",behavior:"smooth"});
+ });
  view.mode.addEventListener("click",()=>toggle(!enabled));
  view.draft.addEventListener("click",()=>save(false));
  view.publish.addEventListener("click",()=>save(true));
