@@ -5,9 +5,17 @@
 <title>BALI | Предзаказы · Сотрудники</title>
 <link rel="icon" href="assets/bali-favicon.svg">
 <link rel="stylesheet" href="generated/admin.css?v=faac21ed7332">
-<link rel="stylesheet" href="preorders-workspace.css?v=20261021-staff1">
+<link rel="stylesheet" href="preorders-workspace.css?v=20261021-fixed1">
 </head><body class="bali-preorders-workspace">
-<header class="topbar"><span class="brand">BALI <span>STAFF</span></span><span class="topbar-label">ПРЕДЗАКАЗЫ</span></header>
+<header class="topbar" role="banner">
+<span class="brand">BALI <span>STAFF</span></span>
+<h1 class="topbar-label" id="ordersHeading">Предзаказы</h1>
+<div id="staffHeaderAccount" class="preorder-header-account" hidden>
+<span class="preorder-online-indicator" aria-hidden="true"></span>
+<span id="adminEmail" class="preorder-staff-identity" title="Текущий сотрудник"></span>
+<button type="button" id="adminSignOut">Выйти</button>
+</div>
+</header>
 <main class="layout preorder-main">
 <section class="card login-card" id="loginView">
 <div class="login-logo" aria-hidden="true">✦</div><div class="eyebrow">BALI · ПРЕДЗАКАЗЫ</div>
@@ -25,18 +33,17 @@
 <button type="button" id="adminSwitchAccount" hidden>Сменить учётную запись</button>
 <p class="hint" id="loginIdentity"></p><p id="loginStatus" class="status" role="status"></p></section>
 <section id="adminView" class="preorder-workspace" hidden>
-<div class="preorder-workspace-toolbar"><div><div class="eyebrow">BALI / STAFF</div><h1 id="ordersHeading">Предзаказы</h1></div><div class="preorder-workspace-account"><span id="adminEmail"></span><button id="adminSignOut" type="button">Выйти</button></div></div>
+
 <section class="admin-panel" id="adminOrdersPanel" data-admin-panel="orders" aria-labelledby="ordersHeading">
 <div class="preorder-controls">
   <div class="preorder-filters">
     <label for="ordersDateFilter">Дата<select id="ordersDateFilter"><option value="">Все даты</option></select></label>
     <label for="ordersEventFilter">Мероприятие<select id="ordersEventFilter"><option value="">Все мероприятия</option></select></label>
-    <label class="check admin-archive-toggle"><input id="showArchivedOrders" type="checkbox"> Архив</label>
   </div>
   <button type="button" id="createManualOrder" class="primary">＋ Новый предзаказ</button>
 </div>
 <div id="ordersStats" class="preorder-stats" aria-live="polite"></div>
-<details class="preorder-tools" open>
+<details class="preorder-tools">
 <summary>Отчёт по мероприятию <span>PDF · PNG · Telegram ⌄</span></summary>
 <div class="preorder-tools-body">
   <p class="preorder-report-note">Выберите дату и мероприятие. Отчёты доступны и после закрытия приёма предзаказов в пределах срока хранения истории (30 дней).</p>
@@ -57,7 +64,7 @@
     </div>
   </div>
   <label class="check"><input id="exportIncludeCancelled" type="checkbox"> Учитывать отменённые и архивные в отчёте по блюдам</label>
-  <div class="preorder-history-controls"><span>История предзаказов хранится 30 дней</span><button type="button" id="clearExpiredOrders">Удалить историю старше 30 дней</button></div>
+  <div class="preorder-history-controls"><button type="button" id="showArchivedOrders" aria-pressed="false">Показать архив</button><span>История предзаказов хранится 30 дней</span><button type="button" id="clearExpiredOrders">Удалить историю старше 30 дней</button></div>
 </div>
 </details>
         <p id="ordersAdminStatus" class="status" role="status" aria-live="polite"></p>
@@ -121,6 +128,6 @@
   </dialog>
 </main>
 <script src="firebase-config.js?v=20261020-2"></script>
-<script type="module" src="preorders-access.js?v=20261021-staff1"></script>
-<script type="module" src="admin-orders.js?v=20261021-staff1"></script>
+<script type="module" src="preorders-access.js?v=20261021-fixed1"></script>
+<script type="module" src="admin-orders.js?v=20261021-fixed1"></script>
 </body></html>

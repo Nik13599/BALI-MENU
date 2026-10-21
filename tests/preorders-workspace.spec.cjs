@@ -18,8 +18,11 @@ test("dedicated preorder page contains no general admin editors",async({page})=>
   await expect(page.locator("#adminMenuPanel, #adminDesignPanel, #adminClientsPanel")).toHaveCount(0);
   await page.evaluate(()=>document.getElementById("adminView").hidden=false);
   await expect(page.locator("#createManualOrder")).toBeVisible();
-  await expect(page.locator(".preorder-tools")).toHaveAttribute("open", "");
+  await expect(page.locator(".preorder-tools")).not.toHaveAttribute("open","");
+  await page.locator(".preorder-tools summary").click();
   await expect(page.locator("#clearExpiredOrders")).toBeVisible();
+  await expect(page.locator("#showArchivedOrders")).toHaveAttribute("type","button");
+  await expect(page.locator("#showArchivedOrders")).toHaveAttribute("aria-pressed","false");
   await expect(page.locator('a[href="admin.html"]')).toHaveCount(0);
   await expect(page.locator("#editOrderStatus option")).toHaveCount(3);
   await expect(page.locator("#ordersStats")).toHaveCount(1);
@@ -62,4 +65,44 @@ test("mobile full-order viewer is a centered modal separate from editing",async(
   await expect(page.locator("#closeOrderDetails")).toHaveAttribute("aria-label","Закрыть просмотр заказа");
   await page.evaluate(()=>document.getElementById("orderDetailsDialog").close());
   await expect(dialog).not.toBeVisible();
+});
+
+test("phone and desktop are viewport-locked, with the order list as the only scroll area",async({page})=>{
+  for(const [width,height] of [[375,812],[320,640],[1366,768]]){
+    await page.setViewportSize({width,height});
+    await page.goto("/preorders.html");
+    await page.evaluate(()=>{
+      document.getElementById("loginView").hidden=true;
+      document.getElementById("adminView").hidden=false;
+      document.getElementById("staffHeaderAccount").hidden=false;
+      document.getElementById("adminEmail").textContent="Менеджер";
+      const list=document.getElementById("ordersAdminList");
+      list.innerHTML=Array.from({length:35},()=>'<article class="preorder-compact-row" style="height:66px">Заказ</article>').join("");
+      document.getElementById("ordersStats").innerHTML=["Всего заказов","Ожидают","Подтверждены"].map(label=>
+        '<div class="preorder-stat"><span class="preorder-stat-label">'+label+'</span><strong class="preorder-stat-number">12</strong></div>').join("");
+    });
+    const sizes=await page.evaluate(()=>{
+      const list=document.getElementById("ordersAdminList");
+      return {
+        viewHeight:innerHeight,bodyHeight:document.body.getBoundingClientRect().height,
+        documentHeight:document.documentElement.scrollHeight,
+        rootOverflow:getComputedStyle(document.body).overflowY,
+        listOverflow:getComputedStyle(list).overflowY,
+        listScrollHeight:list.scrollHeight,listClientHeight:list.clientHeight,
+        stats:document.getElementById("ordersStats").children.length,
+        header:document.querySelector(".topbar").getBoundingClientRect().height
+      };
+    });
+    expect(sizes.rootOverflow).toBe("hidden");
+    expect(sizes.documentHeight).toBeLessThanOrEqual(height+3);
+    expect(sizes.bodyHeight).toBeLessThanOrEqual(height+3);
+    expect(sizes.listOverflow).toBe("auto");
+    expect(sizes.listScrollHeight).toBeGreaterThan(sizes.listClientHeight);
+    expect(sizes.listClientHeight).toBeGreaterThan(45);
+    expect(sizes.stats).toBe(3);
+    await expect(page.locator(".topbar #adminSignOut")).toBeVisible();
+    await expect(page.locator(".topbar #adminEmail")).toBeVisible();
+    await expect(page.locator("#showArchivedOrders")).toBeHidden();
+    await expect(page.locator('input[type="checkbox"]#showArchivedOrders')).toHaveCount(0);
+  }
 });

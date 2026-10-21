@@ -34,6 +34,7 @@ $("adminSwitchAccount").addEventListener("click",()=>void signOut(auth));
 onAuthStateChanged(auth,async user=>{
   const current=++seq;
   $("adminView").hidden=true;$("loginView").hidden=false;
+  $("staffHeaderAccount").hidden=true;
   $("adminSwitchAccount").hidden=!user;
   if(!user){status("Введите логин и пароль сотрудника.");return;}
   if(!user.emailVerified){status("Нет подтверждённого доступа к предзаказам.");return;}
@@ -47,6 +48,7 @@ onAuthStateChanged(auth,async user=>{
     const staff=staffRole?.exists()&&staffRole.data().active===true&&staffRole.data().role==="preorders";
     if(!owner&&!staff){status("Учётная запись не имеет доступа к предзаказам.");return;}
     $("adminEmail").textContent=staff?staffRole.data().name:("Администратор");
-    $("adminView").hidden=false;$("loginView").hidden=true;status("");
+    $("adminView").hidden=false;$("loginView").hidden=true;
+    $("staffHeaderAccount").hidden=false;status("");
   }catch(error){if(current===seq)status("Ошибка проверки прав: "+(error.code||error.message));}
 });

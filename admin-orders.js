@@ -245,11 +245,11 @@ function compactOrderRow(o){
 function renderOrders(){
   const container=$("ordersAdminList"),date=$("ordersDateFilter").value;
   const selectedEvent=$("ordersEventFilter").value;
-  const showArchive=$("showArchivedOrders")?.checked===true;
+  const showArchive=$("showArchivedOrders")?.getAttribute("aria-pressed")==="true";
   container.replaceChildren();
   const summary=$("ordersDishSummary");
   summary.replaceChildren();
-  summary.hidden=!(date&&selectedEvent);
+  summary.hidden=compactWorkspace||!(date&&selectedEvent);
   if(date&&loadedDate!==date){
     $("ordersStats")?.replaceChildren();
     container.append(node("p","Загружаем предзаказы выбранной даты..."));return;
@@ -281,11 +281,9 @@ function renderOrders(){
     if(stats){
       stats.replaceChildren();
       const counters=[
-        ["В списке",shown.length,"all"],
+        ["Всего заказов",shown.length,"all"],
         ["Ожидают",shown.filter(o=>normalizedOrderStatus(o.status)==="pending"&&!o.archived).length,"awaiting"],
-        ["Подтверждены",shown.filter(o=>normalizedOrderStatus(o.status)==="confirmed"&&!o.archived).length,"accepted"],
-        ["Порций",shown.filter(o=>o.status!=="cancelled"&&!o.archived)
-          .reduce((sum,o)=>sum+o.items.reduce((n,line)=>n+Number(line.quantity||0),0),0),"dishes"]
+        ["Подтверждены",shown.filter(o=>normalizedOrderStatus(o.status)==="confirmed"&&!o.archived).length,"accepted"]
       ];
       for(const [title,count,type] of counters){
         const card=node("div","","preorder-stat "+type);
@@ -381,7 +379,13 @@ function watchDateOrders(){
 }
 $("ordersDateFilter").addEventListener("change",watchDateOrders);
 $("ordersEventFilter").addEventListener("change",()=>{renderEventFilter();renderOrders();});
-$("showArchivedOrders")?.addEventListener("change",renderOrders);
+$("showArchivedOrders")?.addEventListener("click",()=>{
+  const toggle=$("showArchivedOrders");
+  const next=toggle.getAttribute("aria-pressed")!=="true";
+  toggle.setAttribute("aria-pressed",String(next));
+  toggle.textContent=next?"Скрыть архив":"Показать архив";
+  renderOrders();
+});
 function fillOrderEventOptions(preferredId=""){
   const select=$("editOrderEvent"),date=$("editOrderDate").value;
   const previous=preferredId||select.value;
