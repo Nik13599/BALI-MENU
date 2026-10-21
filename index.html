@@ -32,6 +32,68 @@
     }
   </style>
 
+  <style>
+    /* The only post-Google first-time step: a compact name/phone form. */
+    body.bali-guest-theme #authModal[data-auth-step="complete"] .modal-content{
+      box-sizing:border-box;width:min(420px,calc(100vw - 24px))!important;
+      max-height:calc(100dvh - 32px)!important;overflow-y:auto!important;
+      border:1px solid rgba(185,255,81,.34)!important;
+      border-radius:17px!important;background:#101510!important;
+      color:#f4f7f1!important;box-shadow:0 24px 78px rgba(0,0,0,.72)!important;
+    }
+    body.bali-guest-theme #authModal[data-auth-step="complete"] .modal-header{
+      background:#101510!important;padding:19px 21px 15px!important;
+      border-bottom:1px solid rgba(255,255,255,.09)!important;
+    }
+    body.bali-guest-theme #authModal[data-auth-step="complete"] .modal-header h3{
+      font:800 clamp(19px,5vw,23px)/1.25 Manrope,Arial,sans-serif!important;
+      color:#f4f7f1!important;
+    }
+    body.bali-guest-theme #authModal[data-auth-step="complete"] .account-panel{
+      padding:18px 21px 22px!important;display:block!important;
+    }
+    body.bali-guest-theme #authModal[data-auth-step="complete"] :is(
+      .auth-login-help,.auth-privacy-link,.auth-actions,.bali-account-orders-link,
+      .auth-email-group,#authMessage
+    ){display:none!important}
+    body.bali-guest-theme #authModal .auth-profile-intro{display:none}
+    body.bali-guest-theme #authModal[data-auth-step="complete"] .auth-profile-intro{
+      display:block!important;margin:0 0 16px!important;color:#bfcab9!important;
+      font:500 13px/1.55 Manrope,Arial,sans-serif!important;
+    }
+    body.bali-guest-theme #authModal[data-auth-step="complete"] #authProfileForm{
+      display:grid;gap:14px;margin:0;
+    }
+    body.bali-guest-theme #authModal[data-auth-step="complete"] #authProfileForm[hidden]{
+      display:none!important;
+    }
+    body.bali-guest-theme #authModal[data-auth-step="complete"] .form-group{gap:6px!important}
+    body.bali-guest-theme #authModal[data-auth-step="complete"] .form-group label{
+      font:750 13px/1.4 Manrope,Arial,sans-serif!important;color:#e8ede2!important;
+    }
+    body.bali-guest-theme #authModal[data-auth-step="complete"] .form-group input{
+      min-height:46px!important;border:1px solid #465541!important;
+      border-radius:10px!important;background:#1b241c!important;color:white!important;
+      padding:11px 13px!important;font:500 15px/1.3 Manrope,Arial,sans-serif!important;
+    }
+    body.bali-guest-theme #authModal[data-auth-step="complete"] .form-group input:focus-visible{
+      outline:2px solid #b9ff51!important;outline-offset:2px!important;
+    }
+    body.bali-guest-theme #authModal[data-auth-step="complete"] #authSaveBtn{
+      display:block;width:100%;min-height:46px;padding:11px 16px!important;
+      background:#b9ff51!important;color:#10180c!important;border:0!important;
+      border-radius:10px!important;font:800 14px/1.3 Manrope,Arial,sans-serif!important;
+    }
+    body.bali-guest-theme #authModal[data-auth-step="complete"] #authSaveBtn:disabled{opacity:.55}
+    body.bali-guest-theme #authModal[data-auth-step="complete"] #authSaveMessage{
+      margin:0!important;min-height:0!important;
+      color:#c7d4c1!important;font-size:12px!important;
+    }
+    body.bali-guest-theme #authModal[data-auth-step="complete"] #authSaveMessage.error{
+      color:#ffaaaa!important;
+    }
+  </style>
+
   <!-- Phone and tablet share the same shell; event artwork is square on all views. -->
 
   <script src="bali-mobile-vertical-balance.js?v=20261021-vertical2" defer></script>
@@ -833,8 +895,9 @@
           <button class="close-modal" id="closeAuth" type="button" aria-label="Закрыть">✕</button>
         </div>
         <div class="account-panel">
-          <p class="auth-help">Для регистрации войдите через Google. Почтовый адрес подтверждается вашим Google-аккаунтом и используется для последующих входов. Имя и телефон обязательны.</p>
-          <p class="auth-help"><a href="privacy.html" target="_blank" rel="noopener">Как мы обрабатываем персональные данные ↗</a></p>
+          <p class="auth-help auth-login-help">Для регистрации войдите через Google. Почтовый адрес подтверждается вашим Google-аккаунтом и используется для последующих входов. Имя и телефон обязательны.</p>
+          <p class="auth-help auth-privacy-link"><a href="privacy.html" target="_blank" rel="noopener">Как мы обрабатываем персональные данные ↗</a></p>
+          <p class="auth-profile-intro">Введите ваше имя и номер телефона, чтобы завершить регистрацию. Оба поля обязательны.</p>
           <p class="auth-status" id="authMessage" role="status" aria-live="polite"></p>
 
           <div class="auth-actions">
@@ -845,17 +908,17 @@
           <form id="authProfileForm" hidden>
             <div class="form-group">
               <label for="authName">Имя *</label>
-              <input id="authName" name="name" minlength="2" maxlength="100" autocomplete="name" required>
+              <input id="authName" name="name" type="text" minlength="2" maxlength="100" autocomplete="given-name" placeholder="Как к вам обращаться" required>
             </div>
             <div class="form-group">
               <label for="authPhone">Номер телефона *</label>
-              <input id="authPhone" name="phone" type="tel" autocomplete="tel" placeholder="+375291234567" required>
+              <input id="authPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+375291234567" required>
             </div>
-            <div class="form-group">
+            <div class="form-group auth-email-group">
               <label for="authEmail">Email (подтверждён Google) *</label>
               <input id="authEmail" name="email" type="email" autocomplete="email" readonly required>
             </div>
-            <p class="auth-help">Номер телефона нужен для связи по вашему предзаказу.</p>
+            <p class="auth-help auth-profile-help">Номер телефона нужен для связи по вашему предзаказу.</p>
             <button type="submit" id="authSaveBtn" class="auth-btn">Сохранить профиль</button>
             <p id="authSaveMessage" class="auth-save-message" role="status" aria-live="polite" aria-atomic="true"></p>
           </form>
@@ -1048,7 +1111,7 @@
     <script src="bali-calendar-coverflow.js?v=20261021-ui1"></script>
     <script src="bali-pc-reference.js?v=20261021-anchored-home1"></script>
     <script src="bali-privacy.js?v=20261021-google-popup1"></script>
-    <script type="module" src="auth.js?v=20261021-google-popup1"></script>
+    <script type="module" src="auth.js?v=20261021-required-contact1"></script>
     <script type="module" async src="menu-firestore.js?v=20261021-fast1"></script>
     <script type="module" async src="bali-bar-menu.js?v=20261021-fast1"></script>
     <script type="module" async src="bali-extra-menus.js?v=20261021-fast1"></script>
