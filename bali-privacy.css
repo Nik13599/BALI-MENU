@@ -21,27 +21,3 @@
 .bali-privacy-actions #baliPrivacyAccept:disabled{opacity:.4;cursor:default}
 .bali-privacy-dialog :focus-visible,.bali-privacy-withdraw:focus-visible{outline:2px solid #fff;outline-offset:3px}
 .bali-privacy-status{font-size:12px;line-height:1.5;color:#cedbc8}
-
-/* Sign-in is a centered viewport dialog on desktop, tablet and phone.
-   Override the older generic bottom-sheet rule without changing cart dialogs. */
-body.bali-guest-theme #authModal{
- position:fixed!important;inset:0!important;display:flex!important;
- align-items:center!important;justify-content:center!important;
- width:100vw!important;height:100dvh!important;margin:0!important;
- padding:16px!important;box-sizing:border-box!important;
-}
-body.bali-guest-theme #authModal>.modal-content{
- box-sizing:border-box!important;flex:0 1 560px!important;
- width:min(560px,100%)!important;max-width:min(560px,100%)!important;
- max-height:calc(100dvh - 32px)!important;margin:0!important;
- overflow-y:auto!important;border-radius:18px!important;transform:none!important;
-}
-/* Native privacy consent opens in the top layer, exactly at viewport center. */
-body.bali-guest-theme #baliPrivacyDialog[open]{
- position:fixed!important;top:50%!important;left:50%!important;
- right:auto!important;bottom:auto!important;
- transform:translate(-50%,-50%)!important;margin:0!important;
- width:min(620px,calc(100vw - 24px))!important;
- max-width:calc(100vw - 24px)!important;
- max-height:calc(100dvh - 32px)!important;
-}
