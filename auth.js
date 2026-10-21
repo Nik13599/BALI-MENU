@@ -142,6 +142,10 @@ function friendlyError(error) {
     "auth/popup-blocked":"Браузер заблокировал окно Google. Разрешите всплывающие окна.",
     "auth/popup-closed-by-user":"Окно входа было закрыто.",
     "auth/cancelled-popup-request":"Повторный вход отменён.",
+    "auth/unauthorized-domain":"Домен сайта не разрешён в Firebase Authentication. Администратору нужно добавить его в Authorized domains.",
+    "auth/operation-not-allowed":"Вход через Google пока не включён в Firebase Authentication.",
+    "auth/invalid-api-key":"Ошибка конфигурации Firebase. Сообщите администрации клуба.",
+    "auth/invalid-continue-uri":"Ошибка адреса возврата Google. Проверьте разрешённые домены Firebase.",
     "auth/account-exists-with-different-credential":"Почта уже связана с другим способом входа.",
     "privacy/withdrawn":"По вашему аккаунту получен отзыв согласия. Для возобновления обратитесь в клуб: Kolyaselekh@gmail.com.",
     "permission-denied":"Не удалось сохранить данные. Повторите попытку позже.",
@@ -166,18 +170,18 @@ els.signOut.addEventListener("click", async () => {
   }
 });
 
-els.google.addEventListener("click", async () => {
-  if (!auth) return;
-  preLoginConsent=false;
-  if(!window.BaliPrivacy?.hasEntryConsent()){
-    if(!await window.BaliPrivacy?.review()){
-      // Declining processing must close the underlying sign-in sheet too.
-      hide();
-      return;
-    }
-    preLoginConsent=true;
+// Start signInWithPopup synchronously inside the actual user click.
+ // The consent dialog's accept handler invokes this directly, without
+ // awaiting a Promise (which would lose transient browser user activation).
+async function startGoogleSignIn() {
+  if (!auth || els.google.disabled) return;
+  const insecure = location.protocol === "http:" &&
+    !["localhost","127.0.0.1","[::1]"].includes(location.hostname);
+  if (insecure) {
+    message("Для входа через Google нужен защищённый HTTPS. Откройте сайт по адресу https://" + location.host + location.pathname, true);
+    return;
   }
-  message("");
+  message("Открываем вход через Google...");
   els.google.disabled = true;
   try {
     const provider = new GoogleAuthProvider();
@@ -201,6 +205,20 @@ els.google.addEventListener("click", async () => {
   } finally {
     els.google.disabled = false;
   }
+}
+
+els.google.addEventListener("click", () => {
+  if (!auth || els.google.disabled) return;
+  preLoginConsent=false;
+  if(!window.BaliPrivacy?.hasEntryConsent()){
+    // The first click opens consent; the final Accept click opens Google
+    // in the same trusted gesture, avoiding popup blocking on real browsers.
+    void window.BaliPrivacy.review({
+      onAccepted:()=>{preLoginConsent=true;void startGoogleSignIn();}
+    }).then(accepted=>{if(!accepted)hide();});
+    return;
+  }
+  void startGoogleSignIn();
 });
 
 els.form.addEventListener("submit", async (event) => {
@@ -334,6 +352,7 @@ async function handleUser(authUser) {
       const candidate = snapshot.exists() ? snapshot.data() : null;
       profile = validProfile(candidate, authUser) ? candidate : null;
       if (!profile) show();
+      else if (els.dialog.classList.contains("active")) hide();
     } catch (error) {
       if (!stillCurrent()) return;
       show();

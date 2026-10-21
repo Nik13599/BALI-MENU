@@ -7,12 +7,17 @@
  const international=document.getElementById("baliPrivacyInternational");
  const accept=document.getElementById("baliPrivacyAccept");
  const decline=document.getElementById("baliPrivacyDecline");
- let resolveReview=null,pending=null;
+ let resolveReview=null,pending=null,acceptAction=null;
  const update=()=>{accept.disabled=!(processing.checked&&international.checked)};
  const finish=value=>{
-  const resolve=resolveReview;resolveReview=null;pending=null;
+  const resolve=resolveReview,onAccepted=acceptAction;
+  resolveReview=null;pending=null;acceptAction=null;
   if(dialog.open)dialog.close();
   if(value){try{localStorage.setItem("bali-privacy-entry-approved","2026-10-21")}catch(_e){}}
+  // Called directly from the trusted Accept button click, before resolving
+  // the review Promise. Otherwise browsers may block the Google popup after
+  // the asynchronous consent step has consumed its user activation.
+  if(value && onAccepted)onAccepted();
   resolve?.(value);
  };
  processing.addEventListener("change",update);
@@ -24,8 +29,9 @@
  window.BaliPrivacy=Object.freeze({
   version:"2026-10-21",
   hasEntryConsent(){try{return localStorage.getItem("bali-privacy-entry-approved")==="2026-10-21"}catch(_e){return false}},
-  review(){
+  review({onAccepted}={}){
    if(pending)return pending;
+   acceptAction=typeof onAccepted==="function"?onAccepted:null;
    processing.checked=false;international.checked=false;update();
    pending=new Promise(resolve=>{resolveReview=resolve});
    dialog.showModal();dialog.querySelector("h2").focus({preventScroll:true});
