@@ -69,6 +69,19 @@ test('calendar event shows its schedule first, then reveals the caption on По�
   await expect(page.locator('#baliEventDetailDescription'))
     .toHaveText('Подробное описание BALI, видимое только после клика');
   await expect(button).toHaveAttribute('aria-expanded','true');
+  await expect(button).toHaveAttribute('aria-label','Скрыть подробности мероприятия');
+  await expect(dialog).toHaveAttribute('data-scroll-unlocked','true');
+
+  // Repeated presses of the SAME control must hide and show the details.
+  await button.click();
+  await expect(caption).toBeHidden();
+  await expect(button).toHaveAttribute('aria-expanded','false');
+  await expect(button).toHaveAttribute('aria-label','Читать подробности мероприятия');
+  await expect(dialog).toHaveAttribute('data-scroll-unlocked','false');
+  expect(await dialog.evaluate(node=>node.scrollTop)).toBe(0);
+  await button.click();
+  await expect(caption).toBeVisible();
+  await expect(button).toHaveAttribute('aria-expanded','true');
   await expect(dialog).toHaveAttribute('data-scroll-unlocked','true');
 
   await page.locator('#baliEventDetailClose').click();

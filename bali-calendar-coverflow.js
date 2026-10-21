@@ -282,6 +282,8 @@ function setDetailCaptionExpanded(expanded){
   if(detailCaption)detailCaption.hidden=!expanded;
   dialog.dataset.scrollUnlocked=String(expanded);
   detailComments?.setAttribute("aria-expanded",String(expanded));
+  detailComments?.setAttribute("aria-label",expanded
+    ?"Скрыть подробности мероприятия":"Читать подробности мероприятия");
 }
 function syncDetailLike(){
   if(!activeDetailCard||!detailLike)return;
@@ -311,9 +313,16 @@ detailShare?.addEventListener("click",()=>{
 // The original poster opens in a fixed, non-scrollable view. Explicitly
 // pressing "Подробнее" unlocks the same native modal scroll on every device.
 detailComments?.addEventListener("click",()=>{
-  setDetailCaptionExpanded(true);
+  // Подробнее is a toggle: the next click returns to the compact, locked poster view.
+  const expanded=detailCaption?.hidden!==false;
+  setDetailCaptionExpanded(expanded);
+  if(!expanded){
+    dialog.scrollTop=0;
+    return;
+  }
   requestAnimationFrame(()=>{
-    detailCaption?.scrollIntoView({
+    if(detailCaption?.hidden||!dialog.open)return;
+    detailCaption.scrollIntoView({
       behavior:reduce.matches?"instant":"smooth",block:"nearest"
     });
   });
