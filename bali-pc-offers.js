@@ -230,7 +230,7 @@ if(image&&title&&description&&counter&&action&&hero){
   hero.addEventListener("focusin",()=>{pause=true;});
   hero.addEventListener("focusout",()=>{pause=false;});
   window.setInterval(()=>{
-    if(offers.length>1&&!pause&&!document.hidden
+    if(!new URLSearchParams(window.location.search).has("bali-admin-design-preview")&&offers.length>1&&!pause&&!document.hidden
         &&Date.now()-lastInteraction>=slideIntervalMs
         &&!window.matchMedia("(prefers-reduced-motion:reduce)").matches)advance(1);
   },slideIntervalMs);
