@@ -259,8 +259,11 @@ if(form&&list&&status){
       const payload={title,description,imageUrl,imageTabletUrl:versions.tablet,
         imageMobileUrl:versions.mobile,destination,buttonText,sort,published,updatedAt:serverTimestamp()};
       // Keep text/button styling created in the simple banner composer.
-      const previous=records.get(id)?.overlay;
-      if(previous)payload.overlay=previous;
+      const existing=records.get(id);
+      if(existing?.overlay)payload.overlay=existing.overlay;
+      if(existing&&Object.prototype.hasOwnProperty.call(existing,"imageRemoved")){
+        payload.imageRemoved=imageUrl||versions.mobile||versions.tablet?false:existing.imageRemoved;
+      }
       if(destination==="contact-modal"){
         Object.assign(payload,{contactTitle,contactLinks,contactEnabled,contactHotspot});
       }
