@@ -12,7 +12,7 @@ export async function compressImage(file,kind="product") {
   const poster=kind==="poster";
   const designPresets={
     "design-icon":{ratio:1,maxChars:24000,widths:[160,128,96,80,64]},
-    "design-placeholder":{ratio:3/4,maxChars:120000,widths:[720,600,520,440,360]},
+    "design-placeholder":{ratio:1,maxChars:120000,widths:[720,600,520,440,360]},
     "menu-detail":{ratio:4/3,maxChars:95000,widths:[720,600,480,380,300]},
     "design-hero":{ratio:8/3,maxChars:155000,widths:[1280,1120,960,800,640]},
     "design-hero-tablet":{ratio:16/9,maxChars:155000,widths:[1050,900,760,640,520]},
@@ -27,7 +27,7 @@ export async function compressImage(file,kind="product") {
   };
   const design=designPresets[kind];
   const maxChars=design?.maxChars||(poster?145000:90000);
-  let ratio=design?.ratio||(poster?4/5:1);
+  let ratio=design?.ratio||1;
   const url=URL.createObjectURL(file);
   let image;
   try {
@@ -44,7 +44,7 @@ export async function compressImage(file,kind="product") {
   // Use its native aspect. The website will display the whole image (contain),
   // and the admin live preview reports the exact target dimensions to designers.
   if(kind==="design-hero"||kind.startsWith("design-hero-"))ratio=iw/ih;
-  // Product images are centered square, event posters 4:5; homepage artwork uses designer-sized ratios.
+  // Event posters and SECRET placeholders have a square 1:1 output on every device.
   let cropWidth,cropHeight;
   if(iw/ih > ratio){cropHeight=ih;cropWidth=ih*ratio;}
   else{cropWidth=iw;cropHeight=iw/ratio;}
@@ -57,7 +57,7 @@ export async function compressImage(file,kind="product") {
     canvas.height=Math.round(width/ratio);
     const ctx=canvas.getContext("2d",{alpha:false});
     if(!ctx)throw new Error("Браузер не смог обработать фотографию.");
-    if(design&&kind!=="design-icon"&&kind!=="design-mobile-about-hero"){
+    if((design&&kind!=="design-icon"&&kind!=="design-mobile-about-hero")||poster){
       // Creative posters can contain essential text and logos near the edges.
       // Fit all their pixels into the target aspect ratio instead of cropping.
       const scale=Math.min(canvas.width/iw,canvas.height/ih);
