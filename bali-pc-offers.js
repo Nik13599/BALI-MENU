@@ -1,6 +1,7 @@
 /* BALI PRIVILEGE: published offers rotate independently of event posters. */
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getFirestore,collection,query,where,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {promoPositionStyle} from "./bali-promo-placement.js?v=20261021-3";
 
 const image=document.getElementById("baliPcHeroPoster");
 const tabletSource=document.getElementById("baliPcHeroTabletSource");
@@ -125,7 +126,8 @@ if(image&&title&&description&&counter&&action&&hero){
       hero.classList.remove("has-artwork","is-image-only","has-no-action");
       counter.textContent="— / —";
       action.hidden=true;
-      for(const prop of ["left","top","bottom","right","transform","position"])action.style.removeProperty(prop);
+      for(const prop of ["left","top","bottom","right","transform","position","max-width"])action.style.removeProperty(prop);
+      hero.classList.remove("bali-promo-cta-lower-right");
       artHotspot.hidden=true;secondaryHotspot.hidden=true;thirdHotspot.hidden=true;activeHotspot=null;activeSecondarySpot=null;activeThirdSpot=null;
     }else{
       const seasonal=offer.id===holidayId;
@@ -168,9 +170,10 @@ if(image&&title&&description&&counter&&action&&hero){
       // Optional positioning of the CTA, independent for each published slide.
       const placement=offer.buttonPlacement;
       const mode=placement?.mode;
-      for(const property of ["left","top","bottom","right","transform","position"]){
+      for(const property of ["left","top","bottom","right","transform","position","max-width"]){
         action.style.removeProperty(property);
       }
+      hero.classList.remove("bali-promo-cta-lower-right");
       const disabled=mode==="none";
       const explicitPlacement=["none","left","center","right","manual"].includes(mode);
       const heroContent=action.closest(".bali-pc-hero-content");
@@ -190,13 +193,15 @@ if(image&&title&&description&&counter&&action&&hero){
         artHotspot.hidden=true;secondaryHotspot.hidden=true;thirdHotspot.hidden=true;
       }
       if(["left","center","right","manual"].includes(mode)){
-        const x=mode==="left"?17:mode==="right"?83:mode==="center"?50:
-          Math.max(5,Math.min(95,Number(placement.x)||50));
-        const y=mode==="manual"?Math.max(5,Math.min(95,Number(placement.y)||82)):82;
-        for(const [property,value] of Object.entries({
-          position:"absolute",left:x+"%",top:y+"%",bottom:"auto",right:"auto",
-          transform:"translate(-50%,-50%)"
-        }))action.style.setProperty(property,value,"important");
+        const position=promoPositionStyle(placement);
+        if(position){
+          hero.classList.toggle("bali-promo-cta-lower-right",position.lowerRight);
+          for(const [property,value] of Object.entries({
+            position:"absolute",left:position.left,top:position.top,
+            bottom:position.bottom,right:position.right,transform:position.transform,
+            "max-width":position.maxWidth
+          }))action.style.setProperty(property,value,"important");
+        }
       }
       if(disabled){
         activeHotspot=null;activeSecondarySpot=null;activeThirdSpot=null;
