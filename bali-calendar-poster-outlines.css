@@ -1,0 +1,41 @@
+/* Calendar coverflow — a real border around every square poster, NO glow.
+   Works on phone, tablet and desktop without changing the 3-D positions.
+   Load after calendar archive, post-mobile and theme styles. */
+
+/* Regular posters, both side and centre: one crisp perimeter, no halo. */
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.bali-event-poster-wrap,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.bali-event-poster-wrap {
+  box-sizing:border-box!important;
+  border:1px solid rgba(211,238,190,.72)!important;
+  box-shadow:none!important;
+  filter:none!important;
+  background-image:none!important;
+  transition:border-color .22s ease!important;
+}
+
+/* Current/selected event retains a brighter GREEN stroke, with no glow. */
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active>.bali-event-poster-wrap,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active>.bali-event-poster-wrap {
+  border-color:#c9ff86!important;
+  box-shadow:none!important;
+}
+
+/* Past events remain RED, including selected and neighbouring posters. */
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card[data-event-status="past"]>.bali-event-poster-wrap,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card[data-event-status="past"]>.bali-event-poster-wrap,
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card[data-event-status="past"].is-active>.bali-event-poster-wrap,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card[data-event-status="past"].is-active>.bali-event-poster-wrap,
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card[data-event-status="past"].is-neighbor>.bali-event-poster-wrap,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card[data-event-status="past"].is-neighbor>.bali-event-poster-wrap {
+  border-color:#fa6070!important;
+  box-shadow:none!important;
+}
+
+/* Never create a second illuminated contour or panel behind the artwork. */
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.bali-event-poster-wrap::before,
+body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.bali-event-poster-wrap::after,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.bali-event-poster-wrap::before,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.bali-event-poster-wrap::after {
+  display:none!important;
+  content:none!important;
+}
