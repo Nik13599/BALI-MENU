@@ -47,3 +47,27 @@
   border-color:rgba(170,207,158,.12)!important;
   box-shadow:none!important;
 }
+
+/* Phone: the two existing buttons fall as a swipe/slide starts, then rise
+   into their original positions only after the next square has arrived.
+   No change to button dimensions, spacing, or the compact date grid. */
+@media(max-width:767px){
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active .bali-event-actions{
+    transform:translate3d(0,0,0)!important;
+    opacity:1!important;
+    transition:transform .36s cubic-bezier(.16,1,.3,1),opacity .30s ease-out!important;
+    will-change:transform,opacity;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid.is-actions-lowered>.event-card.is-active .bali-event-actions{
+    transform:translate3d(0,clamp(48px,8dvh,76px),0)!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    transition:transform .19s cubic-bezier(.55,0,1,.45),opacity .18s ease-in!important;
+  }
+}
+@media(max-width:767px) and (prefers-reduced-motion:reduce){
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active .bali-event-actions{
+    transition:none!important;
+    will-change:auto;
+  }
+}
