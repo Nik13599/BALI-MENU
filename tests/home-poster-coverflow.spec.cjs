@@ -60,9 +60,10 @@ test('Desktop carousel arrows and wheel change active event while keeping it abo
    z:Number(getComputedStyle(n).zIndex),angle:n.style.getPropertyValue('--bali-home-turn'),
    visible:getComputedStyle(n).visibility
  })));
- expect(cards[1].z).toBeGreaterThan(cards[0].z);
- expect(cards[0].angle).toContain('45deg');
- expect(cards[2].angle).toContain('-45deg');
+ expect(cards[2].z).toBeGreaterThan(cards[1].z);
+ expect(cards[2].z).toBeGreaterThan(cards[3].z);
+ expect(cards[1].angle).toContain('45deg');
+ expect(cards[3].angle).toContain('-45deg');
  const track=page.locator('#homeEventCarousel');
  const box=await track.boundingBox();
  await page.mouse.move(box.x+box.width*.5,box.y+box.height*.5);
