@@ -2,8 +2,8 @@
  * Read-only Firestore query; no user upload, no background for PC.
  * A single photo is static; a gallery gently cycles in mobile view.
  */
-import {getApp,getApps,initializeApp} from "./bali-public-reader.js?v=20261021-live-content3";
-import {getFirestore,collection,query,where,onSnapshot} from "./bali-public-reader.js?v=20261021-live-content3";
+import {getApp,getApps,initializeApp} from "./bali-public-reader.js?v=20261021-instant-pages2";
+import {getFirestore,collection,query,where,onSnapshot} from "./bali-public-reader.js?v=20261021-instant-pages2";
 const root=document.querySelector(".bali-mobile-home-hero");
 const a=document.getElementById("baliMobileAboutBackgroundA");
 const b=document.getElementById("baliMobileAboutBackgroundB");

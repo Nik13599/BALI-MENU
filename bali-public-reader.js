@@ -1,5 +1,5 @@
-/* Public reads start without waiting for the Firebase SDK. Authentication and
- * writes continue to use the original SDK; this adapter exposes reads only. */
+/* Public shell stays available while data arrives. Catalogs prefer a single
+ * SDK read with a fast fallback for stalled downloads. This adapter is read-only. */
 const collections=new Set(['promotions','events','menu','bar_menu','hookah_menu','tea_menu','mobileAboutBackgrounds']);
 const documents=new Set(['settings/homeDesign','settings/homeInterface','settings/homeEventPlaceholder','settings/siteBuilderPublished']);
 const cachedCollections=new Set(['menu','bar_menu','hookah_menu','tea_menu']);
@@ -59,13 +59,6 @@ function cached(ref){
     return {...snapshot(ref,entry.rows),metadata:{fromCache:true,hasPendingWrites:false}};
   }catch{return null;}
 }
-function remember(ref,rows){
-  if(!cachedCollections.has(ref.path))return;
-  try{
-    const text=JSON.stringify({at:Date.now(),rows});
-    if(text.length<=500000)localStorage.setItem(cacheKey(ref),text);
-  }catch{} // Storage restrictions must never prevent opening the menu.
-}
 function rememberLive(ref,result){
   if(!cachedCollections.has(ref.path)||result.metadata?.fromCache)return;
   try{
@@ -97,7 +90,6 @@ function read(ref){
       if(!response.ok)throw Object.assign(Error('Public read failed'),{code:response.status===403?'permission-denied':'unavailable'});
       const result=await response.json();
       const rows=query?result.filter(item=>item.document).map(item=>item.document):[result];
-      remember(ref,rows);
       return snapshot(ref,rows);
     }finally{clearTimeout(timer);}
   })();
@@ -110,23 +102,37 @@ function read(ref){
 export function onSnapshot(ref,...args){
   const options=typeof args[0]==='function'?null:args.shift();
   const [notify,onError]=args;
+  const catalog=cachedCollections.has(ref.path);
   const deliver=result=>{
     notify(result);
-    // Cached snapshots can be obsolete; only verified data can unlock the UI.
     if(result.metadata?.fromCache!==true)
       queueMicrotask(()=>window.dispatchEvent(new CustomEvent("bali:public-snapshot",{detail:{path:ref.path}})));
   };
-  let active=true,serverLive=false,hasData=false,restFailed=false,sdkFailed=false,stop;
+  let active=true,serverLive=false,hasData=false,restFailed=catalog,sdkFailed=false,stop;
+  let restStarted=false,sdkStarted=false,fallbackTimer;
   const fail=error=>{if(active&&!hasData&&restFailed&&sdkFailed)onError?.(error);};
   const initial=cached(ref);
   if(initial){hasData=true;queueMicrotask(()=>{if(active&&!serverLive)deliver(initial);});}
-  let sdkStarted=false,subscribeTimer;
+  const startRest=()=>{
+    if(!active||restStarted)return;
+    restStarted=true;restFailed=false;
+    read(ref).then(result=>{
+      if(active&&!serverLive){hasData=true;rememberLive(ref,result);deliver(result);}
+    }).catch(error=>{restFailed=true;fail(error);});
+  };
+  const sdkError=error=>{
+    sdkFailed=true;
+    if(catalog)startRest();
+    fail(error);
+  };
   const startLive=()=>{
     if(!active||sdkStarted)return;
     sdkStarted=true;
-    clearTimeout(subscribeTimer);
-    window.removeEventListener('bali:startup-ready',startLive);
+    // Normally each large catalog is read once by the SDK. Only a stalled SDK
+    // download uses REST, so a slow CDN cannot leave the menu unavailable.
+    if(catalog)fallbackTimer=setTimeout(startRest,750);
     sdk().then(([apps,store])=>{
+      clearTimeout(fallbackTimer);
       if(!active)return;
       const app=apps.getApps().length?apps.getApp():apps.initializeApp(config());
       const db=store.getFirestore(app);
@@ -135,39 +141,15 @@ export function onSnapshot(ref,...args){
       const next=result=>{
         if(!active)return;
         if(result.metadata?.fromCache!==true||result.metadata?.hasPendingWrites)serverLive=true;
-        else if(hasData)return; // A late local cache cannot replace a server result.
+        else if(hasData)return;
         hasData=true;rememberLive(ref,result);deliver(result);
       };
-      const error=error=>{sdkFailed=true;fail(error);};
-      stop=options?store.onSnapshot(target,options,next,error):store.onSnapshot(target,next,error);
-    }).catch(error=>{sdkFailed=true;fail(error);});
+      stop=options?store.onSnapshot(target,options,next,sdkError):store.onSnapshot(target,next,sdkError);
+    }).catch(sdkError);
   };
-  // The menu collections used to be read twice on every new session:
-  // REST runQuery first, then a native SDK snapshot (charged per document).
-  // Use one SDK listener for the large catalogs, preserving real-time updates.
-  // Event and promotion fast-start requests retain their verified REST path.
-  if(cachedCollections.has(ref.path)){
-    restFailed=true;
-  }else{
-    read(ref).then(result=>{
-      if(active&&!serverLive){hasData=true;deliver(result);}
-    }).catch(error=>{
-      restFailed=true;fail(error);
-      // If REST cannot fetch current data, start the SDK fallback immediately.
-      startLive();
-    });
-  }
-  if(window.BaliStartupGate&&!window.BaliStartupReady){
-    // Do not compete with the first banner and events download.
-    // A bounded fallback prevents a broken startup gate from disabling live updates.
-    window.addEventListener('bali:startup-ready',startLive,{once:true});
-    subscribeTimer=setTimeout(startLive,4500);
-  }else startLive();
-  return ()=>{
-    active=false;clearTimeout(subscribeTimer);
-    window.removeEventListener('bali:startup-ready',startLive);
-    stop?.();
-  };
+  if(!catalog)startRest();
+  startLive();
+  return ()=>{active=false;clearTimeout(fallbackTimer);stop?.();};
 }
 
 // These requests overlap HTML/CSS parsing and SDK downloads. No cached or

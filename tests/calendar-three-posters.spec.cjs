@@ -317,7 +317,7 @@ test('desktop calendar has one seamless background and vertically centered poste
   test.skip(page.viewportSize().width<1180,'Desktop-only centering; phone uses equal-gap layout');
   await prepare(page,4);
   await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(1,false));
-  const scene=await page.evaluate(()=>{
+  const readScene=()=>page.evaluate(()=>{
     const section=document.getElementById('eventsSection');
     const grid=document.getElementById('eventsGrid');
     const card=grid.querySelector('.event-card.is-active');
@@ -335,6 +335,9 @@ test('desktop calendar has one seamless background and vertically centered poste
       bounds:{top:cardBox.top,bottom:cardBox.bottom,stageTop:stageBox.top,stageBottom:stageBox.bottom}
     };
   });
+  // Image/font measurement can resize the stage after the first focus frame.
+  await expect.poll(async()=>(await readScene()).offset).toBeLessThan(3);
+  const scene=await readScene();
   expect(scene.pageBackground).toBe('rgb(8, 11, 17)');
   expect(scene.pageImage).toBe('none');
   expect(scene.stageBackground).toBe('rgba(0, 0, 0, 0)');

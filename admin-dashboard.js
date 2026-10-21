@@ -9,7 +9,7 @@
     clients: ["Гости", "Поиск зарегистрированных гостей и история заказов"],
     menu: ["Меню и цены", "Четыре отдельные карты: кухня, бар, кальяны и чай"],
     events: ["Мероприятия", "Даты, афиши, расписание и приём предзаказов"],
-    design: ["Конструктор сайта", "Визуальное редактирование страниц, размеров, типографики, изображений и анимаций для всех устройств"],
+    design: ["Конструктор сайта", "Тексты, фотографии и оформление с предпросмотром на ПК, планшете и телефоне"],
     appearance: ["Цвета сайта", "Готовые темы и цвета гостевого интерфейса"]
   };
   const sectionHelp = {
@@ -54,6 +54,7 @@
       tab.classList.toggle("active",active);
       tab.setAttribute("aria-selected",String(active));
       tab.tabIndex = active ? 0 : -1;
+      if(active&&scroll)tab.scrollIntoView({block:"nearest",inline:"nearest"});
     }
     for (const panel of panels) panel.hidden = panel.dataset.adminPanel !== name;
     const guide=$("adminSectionGuide");

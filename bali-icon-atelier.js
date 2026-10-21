@@ -51,7 +51,7 @@
     return svg;
   };
   const put=(target,name)=>{
-    if(!target||target.firstElementChild?.matches?.("svg.bali-custom-icon"))return;
+    if(!target||target.firstElementChild?.matches?.("svg.bali-custom-icon,svg.bali-ui-icon"))return;
     const icon=createIcon(name);
     if(!icon)return;
     target.replaceChildren(icon);

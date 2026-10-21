@@ -1,0 +1,89 @@
+/* Compact general administration. The separate preorder workspace is unaffected. */
+body.bali-admin-workspace{--admin-control-height:40px}
+.bali-ui-icon{display:block;width:20px;height:20px;flex:none}
+body.bali-admin-workspace :is(button,input,select,textarea,a){-webkit-tap-highlight-color:transparent}
+body.bali-admin-workspace :is(button,a,input,select,textarea,summary):focus-visible{outline:2px solid #b9ff51;outline-offset:3px}
+body.bali-admin-workspace :is(button,input,select,textarea){box-sizing:border-box;max-width:100%}
+body.bali-admin-workspace :is(input,select,textarea){min-height:var(--admin-control-height)}
+body.bali-admin-workspace button{min-height:var(--admin-control-height);white-space:normal}
+body.bali-admin-workspace .admin-shell{grid-template-columns:195px minmax(0,1fr);gap:18px}
+body.bali-admin-workspace :is(.admin-toolbar,.section-heading){margin-bottom:14px}
+body.bali-admin-workspace .toolbar-title h1{font-size:clamp(21px,2vw,27px);line-height:1.25;margin:4px 0}
+body.bali-admin-workspace :is(.toolbar-title p,.section-heading p){font-size:12px;line-height:1.5;margin:4px 0}
+body.bali-admin-workspace .eyebrow{font-size:10px;letter-spacing:.1em}
+body.bali-admin-workspace .card{padding:16px;border-radius:12px}
+body.bali-admin-workspace :is(.admin-panel,.admin-main,.toolbar-title,.bali-builder-field){min-width:0}
+body.bali-admin-workspace .admin-tab{min-height:42px;padding:9px 10px;font-size:12px;gap:9px}
+body.bali-admin-workspace .tab-icon{display:grid;place-items:center;min-width:20px}
+body.bali-admin-workspace .admin-nav-group{margin:12px 10px 4px;font-size:9px}
+body.bali-admin-workspace .admin-stats{gap:10px;margin-bottom:16px}
+body.bali-admin-workspace .stat-card{padding:12px 14px;border-radius:10px}
+body.bali-admin-workspace .stat-value{font-size:24px;margin:5px 0}
+body.bali-admin-workspace .admin-overview-welcome{padding:0 0 12px;margin-bottom:12px}
+body.bali-admin-workspace .admin-overview-welcome h2{font-size:23px}
+body.bali-admin-workspace .admin-overview-welcome p{font-size:12px;line-height:1.5}
+body.bali-admin-workspace .admin-quick-grid{gap:10px;margin-bottom:14px}
+body.bali-admin-workspace .admin-quick-card{padding:14px;border-radius:12px;transform:none}
+body.bali-admin-workspace .admin-quick-symbol{width:32px;height:32px;margin-bottom:10px;border-radius:8px}
+body.bali-admin-workspace .admin-quick-card h3{font-size:15px;margin-bottom:5px}
+body.bali-admin-workspace .admin-quick-card p{font-size:12px;line-height:1.5;margin-bottom:12px}
+body.bali-admin-workspace .admin-workflow{padding:14px 17px}
+body.bali-admin-workspace .admin-section-guide{margin-bottom:12px}
+body.bali-admin-workspace .admin-section-guide summary{padding:9px 12px;font-size:12px}
+body.bali-admin-workspace .bali-builder-top{padding:12px;gap:10px}
+body.bali-admin-workspace .bali-builder-title{align-items:baseline;justify-content:flex-start}
+body.bali-admin-workspace .bali-builder-title strong{font-size:17px}
+body.bali-admin-workspace .bali-builder-toolbar{gap:7px}
+.bali-builder-help{font-size:12px;line-height:1.6;color:#b7c9bd}
+.bali-builder-help summary{cursor:pointer;color:#e0eadf;font-weight:650}
+.bali-builder-help p{margin:7px 0}
+body.bali-admin-workspace .bali-builder-top button{padding:8px 11px;font-size:12px}
+body.bali-admin-workspace .bali-builder-toolbar>.bali-builder-field{display:none} /* Only the homepage is editable. */
+body.bali-admin-workspace .bali-builder-group summary{padding:10px;font-size:12px;cursor:pointer}
+body.bali-admin-workspace .bali-builder-grid{gap:9px;padding:8px}
+body.bali-admin-workspace .bali-builder-field{gap:5px;font-size:12px}
+body.bali-admin-workspace .bali-builder-field :is(input,select,textarea){width:100%;min-width:0;font-size:13px}
+body.bali-admin-workspace .bali-builder-inspector-heading{gap:4px}
+body.bali-admin-workspace .bali-builder-home-picker{padding:10px;gap:7px}
+body.bali-admin-workspace .bali-builder-home-picker>small{display:none}
+body.bali-admin-workspace .bali-design-studio{grid-template-columns:minmax(0,1fr) minmax(290px,340px);gap:12px}
+body.bali-admin-workspace .bali-design-canvas-panel{padding:10px;border-radius:12px}
+.bali-admin-dialog{width:min(440px,calc(100% - 28px));box-sizing:border-box;padding:22px;border:1px solid #465a49;border-radius:14px;background:#141d1a;color:#eef6e9;font-family:Manrope,sans-serif}
+.bali-admin-dialog::backdrop{background:#000a}
+.bali-admin-dialog h2{font-size:20px;margin:0 0 12px}
+.bali-admin-dialog p{font-size:13px;color:#b7c6bc;line-height:1.6}
+.bali-admin-dialog label{display:grid;gap:7px;margin:14px 0}
+.bali-admin-dialog .form-actions{display:flex;justify-content:flex-end;gap:8px}
+@media(max-width:1190px){body.bali-admin-workspace .bali-design-studio{grid-template-columns:1fr}body.bali-admin-workspace .bali-design-inspector{position:static;max-height:none}}
+@media(max-width:760px){
+ body.bali-admin-workspace .admin-shell{display:block}
+ body.bali-admin-workspace .admin-sidebar{top:60px!important;padding-top:5px!important;padding-bottom:5px!important}
+ body.bali-admin-workspace .admin-tab{min-height:40px!important;padding:7px 10px!important;font-size:12px!important}
+ body.bali-admin-workspace .admin-toolbar{flex-wrap:wrap;gap:8px}
+ body.bali-admin-workspace .toolbar-account{flex-direction:row;align-items:center;flex-wrap:wrap;margin-left:auto}
+ body.bali-admin-workspace .admin-email{max-width:170px}
+ body.bali-admin-workspace .bali-builder-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.bali-admin-workspace .bali-builder-toolbar button{width:100%}
+ body.bali-admin-workspace .bali-builder-viewport-field input{width:100%}
+ body.bali-admin-workspace :is(input,select,textarea),body.bali-admin-workspace .bali-builder-field :is(input,select,textarea){font-size:16px}
+ body.bali-admin-workspace .bali-builder-utilities{align-items:stretch}
+ body.bali-admin-workspace .bali-builder-utilities>button{flex:1 1 100%}
+ body.bali-admin-workspace .bali-design-preview-canvas{max-height:55dvh}
+ body.bali-admin-workspace .bali-studio-device-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}
+ body.bali-admin-workspace .bali-studio-device{padding:8px 6px;min-width:0}
+ body.bali-admin-workspace .bali-builder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.bali-admin-workspace .topbar{flex-wrap:wrap;gap:8px}
+ body.bali-admin-workspace .topbar-site{font-size:11px}
+}
+@media(max-width:385px){body.bali-admin-workspace .bali-builder-grid{grid-template-columns:1fr}body.bali-admin-workspace .admin-quick-card{padding:12px}}
+.bali-admin-tool{margin:12px 0;border:1px solid #37453c;border-radius:12px;background:#151d1a;min-width:0}
+.bali-admin-tool>summary{padding:13px 15px;cursor:pointer;display:flex;align-items:center;gap:12px;list-style:none}
+.bali-admin-tool>summary::-webkit-details-marker{display:none}
+.bali-admin-tool>summary::after{content:"+";margin-left:auto;font-size:22px;color:#c3f777}
+.bali-admin-tool[open]>summary::after{content:"−"}
+.bali-admin-tool>summary strong{font-size:14px;color:#eef6e9}
+.bali-admin-tool>summary span{font-size:12px;color:#a8b9ad}
+body.bali-admin-workspace .bali-admin-tool>.card{border:0;margin:0;border-top:1px solid #37453c;border-radius:0 0 12px 12px}
+@media(max-width:600px){.bali-admin-tool>summary{flex-wrap:wrap;gap:4px 8px}.bali-admin-tool>summary span{order:3;flex-basis:100%;font-size:11px}}
+body.bali-admin-workspace .topbar-site{display:inline-flex;align-items:center;gap:5px}
+body.bali-admin-workspace .topbar-site .bali-ui-icon{width:15px;height:15px}

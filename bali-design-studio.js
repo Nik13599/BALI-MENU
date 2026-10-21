@@ -225,7 +225,10 @@
   const observer=new ResizeObserver(()=>fit());
   observer.observe(canvas);
   window.addEventListener("bali:admin:section",event=>{
-    if(event.detail.section==="design"){fit();attachFrame();}
+    if(event.detail.section==="design"){
+      if(frame.dataset.src&&!frame.hasAttribute("src"))frame.src=frame.dataset.src;
+      fit();attachFrame();
+    }
   });
   chooseEditor("privilege");
   chooseDevice("desktop");

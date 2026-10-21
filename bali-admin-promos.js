@@ -255,7 +255,7 @@ if(form&&list&&status){
         finally{remove.disabled=false;}
       });
       controls.append(editButton);
-      if(!isBuiltin)controls.append(remove);
+      controls.append(remove);
       row.append(info,controls);list.append(row);
     }
   }

@@ -20,7 +20,6 @@ jobs:
       - name: Проверка JavaScript
         run: |
           node --check app.js
-          node --check bali-startup-gate.js
           node --check bali-privacy.js
           node --check bali-calendar.js
           node --check bali-calendar-coverflow.js

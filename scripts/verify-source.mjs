@@ -875,7 +875,7 @@ assert(['bali-atelier-theme.css','bali-velvet-night.css','bali-editorial-minimal
   .every(name=>!html.includes('href="'+name)&&!admin.includes('href="'+name)),
   "Superseded palettes must not cascade on the live site or dashboard");
 assert(html.includes('class="bali-guest-theme"') &&
-  admin.includes('class="bali-admin-theme"') &&
+  /<body\b[^>]*class="[^"]*\bbali-admin-theme\b/.test(admin) &&
   html.includes('content="#080b11"') &&
   admin.includes('content="#080b11"') &&
   html.includes('bali-brand-system.css?v=') && admin.includes('bali-brand-system.css?v=') && source('bali-brand-system.css').includes('assets/fonts/manrope-variable.woff2'),

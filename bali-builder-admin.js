@@ -51,7 +51,9 @@ const homeBlocks=[
 const homeCardSelector=".bali-pc-hero,.bali-mobile-home-hero,.bali-home-events-panel,.bali-pc-about,.bali-pc-id-card,.bali-home-menu-banner,.bali-home-contacts-card,.bali-pc-sidebar-contacts,#homeSection,.header";
 let model=core.emptyModel(),published=core.emptyModel(),currentDevice="desktop",currentPage="home";
 let authorized=false,loading=false,saving=false,dirty=false,enabled=true,authEpoch=0,unsub=null,selection=null,overlay=null,drag=null,history=[],future=[];
+let inlineEditor=null;
 let writingImage=false,styleClipboard=null,promoEditor=null;
+const canEdit=()=>authorized&&!loading&&!saving&&!writingImage;
 const view={
  status:$("baliBuilderStatus"),page:$("baliBuilderPage"),mode:$("baliBuilderMode"),
  draft:$("baliBuilderSaveDraft"),publish:$("baliBuilderPublish"),restore:$("baliBuilderRestore"),
@@ -132,9 +134,9 @@ const titleGroups=[
 const inputs=new Map();
 function msg(v){if(view.status)view.status.textContent=v;}
 function setControls(){
- const can=authorized&&!saving&&!writingImage;
+ const can=canEdit();
  view.draft.disabled=!can||!dirty;view.publish.disabled=!can;view.restore.disabled=!can;
- view.undo.disabled=!history.length;view.redo.disabled=!future.length;
+ view.undo.disabled=!can||!history.length;view.redo.disabled=!can||!future.length;
  view.copy.disabled=!can;
  for(const b of view.addButtons)b.disabled=!can;
  for(const control of inspector.querySelectorAll("input,select,textarea,button"))
@@ -146,7 +148,7 @@ function remember(){
  history.push(clone(model));if(history.length>40)history.shift();future=[];
 }
 function commit(edit){
- if(!authorized)return;
+ if(!canEdit())return;
  remember();edit();model=core.cleanModel(model);mark();refreshCanvas();
 }
 function optionList(options){
@@ -166,7 +168,9 @@ function newField(id,title,kind,help,choices){
  }else{
   input.type=kind==="color"?"color":kind==="number"?"number":"text";
   if(kind==="number")input.step=["lineHeight","opacity","scale","animationDuration","animationDelay"].includes(id)?"0.1":"1";
-  if(kind==="number"){input.min=id==="fontSize"?"8":id==="scale"?"0.2":undefined;input.max=id==="opacity"?"1":undefined;}
+  if(id==="fontSize")input.min="8";
+  if(id==="scale")input.min="0.2";
+  if(id==="opacity"){input.min="0";input.max="1";}
   input.placeholder=help||"";
  }
  input.addEventListener(kind==="text"||kind==="number"?"change":"input",()=>changeProp(id,input.value));
@@ -223,14 +227,14 @@ function initialize(){
  iconBox.querySelector("[data-builder-icon-reset]").addEventListener("click",()=>commit(()=>{const it=ensureItem();if(it){delete it.props.icon;delete it.props.iconName;delete it.props.iconSize;}}));
  iconBox.querySelector("[data-builder-icon-file]").addEventListener("change",async e=>{
   const file=e.target.files?.[0];if(!file||!authorized||!selection)return;
-  const identity=selection.id||selection.selector;
+  const identity=selection.id||selection.selector,uploadEpoch=authEpoch,uploadDevice=currentDevice;
   writingImage=true;setControls();msg("Обрабатываем иконку…");
   try{
    const url=await prepareImage(file,"design-about");
    if(!core.safeUrl(url))throw Error("Слишком большой файл иконки");
-   if((selection?.id||selection?.selector)===identity)changeIcon("icon",url);
-  }catch(err){msg("Ошибка загрузки: "+(err.message||"ошибка"));}
-  finally{writingImage=false;e.target.value="";setControls();}
+   if(uploadEpoch===authEpoch&&uploadDevice===currentDevice&&(selection?.id||selection?.selector)===identity){writingImage=false;changeIcon("icon",url);}
+  }catch(err){if(uploadEpoch!==authEpoch)return;msg("Ошибка загрузки: "+(err.message||"ошибка"));}
+  finally{if(uploadEpoch===authEpoch){writingImage=false;e.target.value="";setControls();}}
  });
  inspector.append(iconBox);
  const linkSelect=inspector.querySelector('[data-builder-main="link"]');
@@ -249,18 +253,18 @@ function initialize(){
  });
  content.querySelector('[data-builder-main="upload"]').addEventListener("change",async e=>{
   const file=e.target.files?.[0];if(!file||!authorized||!selection)return;
-  const identity=selection.id||selection.selector;
+  const identity=selection.id||selection.selector,uploadEpoch=authEpoch,uploadDevice=currentDevice;
   writingImage=true;setControls();msg("Подготавливаем изображение…");
   try{
    const result=await prepareImage(file,"design-about");
    if(!core.safeUrl(result))throw new Error("Файл слишком большой после сжатия");
-   if((selection?.id||selection?.selector)!==identity)return;
-   changeMain("image",result);msg("Изображение подготовлено. Сохраните черновик или опубликуйте.");
-  }catch(err){msg("Не удалось обработать изображение: "+(err.message||"ошибка"));}
-  finally{writingImage=false;e.target.value="";setControls();}
+   if(uploadEpoch!==authEpoch||uploadDevice!==currentDevice||(selection?.id||selection?.selector)!==identity)return;
+   writingImage=false;changeMain("image",result);msg("Изображение подготовлено. Сохраните черновик или опубликуйте.");
+  }catch(err){if(uploadEpoch!==authEpoch)return;msg("Не удалось обработать изображение: "+(err.message||"ошибка"));}
+  finally{if(uploadEpoch===authEpoch){writingImage=false;e.target.value="";setControls();}}
  });
  for(const [title,ids] of titleGroups){
-  const details=document.createElement("details");details.className="bali-builder-group";details.open=true;
+  const details=document.createElement("details");details.className="bali-builder-group";details.open=title==="Шрифты и текст";
   const summary=document.createElement("summary");summary.textContent=title;details.append(summary);
   const grid=document.createElement("div");grid.className="bali-builder-grid";
   for(const id of ids){
@@ -464,7 +468,7 @@ function renderInspector(){
  inspector.querySelector('[data-builder-action="delete"]').hidden=!selection?.id;
  inspector.querySelector('[data-builder-action="duplicate"]').hidden=!selection?.id;
  setControls();
- inspector.querySelector('[data-builder-action="paste"]').disabled=!selection||!authorized||!styleClipboard;
+ inspector.querySelector('[data-builder-action="paste"]').disabled=!selection||!canEdit()||!styleClipboard;
  positionOverlay();
 }
 function clearOverlay(){
@@ -498,7 +502,7 @@ function attachOverlay(){
  d.body.append(overlay);
  for(const [handle,mode] of [[overlay.querySelector(".bali-builder-bounding-label"),"move"],[overlay.querySelector(".bali-builder-handle"),"size"]]){
   handle.addEventListener("pointerdown",event=>{
-   if(!authorized||!selection?.id)return;
+   if(!canEdit()||!selection?.id)return;
    event.preventDefault();event.stopPropagation();
    const node=liveNode();if(!node)return;
    const rect=node.getBoundingClientRect();
@@ -508,7 +512,7 @@ function attachOverlay(){
    handle.setPointerCapture(event.pointerId);
   });
   handle.addEventListener("pointermove",event=>{
-   if(!drag)return;
+   if(!drag||!canEdit())return;
    const dx=event.clientX-drag.sx,dy=event.clientY-drag.sy;
    if(Math.abs(dx)+Math.abs(dy)<2&&!drag.started)return;
    if(!drag.started){history.push(drag.origin);if(history.length>40)history.shift();future=[];drag.started=true;}
@@ -568,6 +572,12 @@ function refreshCanvas(){
  if(selection)renderInspector();
 }
 const capturedDocs=new WeakSet();
+function beginInlineText(target){
+ if(!canEdit())return;
+ choose(target,{deep:true});
+ const field=inspector.querySelector('[data-builder-main="text"]');
+ if(field&&!field.disabled){field.scrollIntoView({block:"nearest"});field.focus();field.select();}
+}
 function attachInteractions(d){
  if(!d?.body||capturedDocs.has(d))return;
  capturedDocs.add(d);
@@ -629,15 +639,15 @@ function updateDevice(dev){
  msg("Редактируется "+({desktop:"ПК",tablet:"планшет",phone:"телефон"}[dev])+". Изменения изолированы от других устройств.");
 }
 function doUndo(){
- if(!history.length)return;
+ if(!canEdit()||!history.length)return;
  future.push(clone(model));model=history.pop();dirty=true;selection=null;refreshCanvas();renderInspector();mark();
 }
 function doRedo(){
- if(!future.length)return;
+ if(!canEdit()||!future.length)return;
  history.push(clone(model));model=future.pop();dirty=true;selection=null;refreshCanvas();renderInspector();mark();
 }
 function add(kind){
- if(!authorized)return;
+ if(!canEdit())return;
  if(!["text","button"].includes(kind)){
   msg("На главной добавляются текст и кнопки в существующие карточки. Фон задаётся для выбранного блока.");return;
  }
@@ -657,7 +667,8 @@ function add(kind){
  selection={id,selector:null,scope:"main"};renderInspector();
 }
 async function save(publish=false){
- if(!authorized||saving)return;
+ if(!canEdit())return;
+ const epoch=authEpoch;
  const clean=core.cleanModel(model),payload={schemaVersion:1,...clean,updatedAt:serverTimestamp()};
  const size=new Blob([JSON.stringify(clean)]).size;
  if(size>600000){msg("Черновик слишком большой ("+Math.round(size/1024)+" КБ). Используйте HTTPS-картинки вместо встроенных файлов.");return;}
@@ -669,36 +680,44 @@ async function save(publish=false){
    batch.set(draftRef,payload);
    await batch.commit();
   }else await setDoc(draftRef,payload);
+  if(epoch!==authEpoch)return;
   if(publish)published=clone(clean);
   dirty=false;history=[];future=[];
   msg(publish?"Опубликовано в Firestore: изменения доступны посетителям на устройствах соответствующего типа.":"Черновик сохранён. Публичный сайт не изменился.");
- }catch(e){msg(e.code==="permission-denied"?"Недостаточно прав или правила Firestore не опубликованы.":"Ошибка сохранения: "+(e.code||e.message||"неизвестно"));}
- finally{saving=false;setControls();}
+ }catch(e){if(epoch!==authEpoch)return;msg(e.code==="permission-denied"?"Недостаточно прав или правила Firestore не опубликованы.":"Ошибка сохранения: "+(e.code||e.message||"неизвестно"));}
+ finally{if(epoch===authEpoch){saving=false;setControls();}}
 }
 async function restore(){
- if(!authorized)return;
+ if(!canEdit())return;
  if(!confirm("Заменить текущие правки последней опубликованной версией?"))return;
- remember();model=core.cleanModel(published);selection=null;mark();refreshCanvas();renderInspector();
- msg("В редактор загружена последняя опубликованная версия. Для сохранения нажмите «Сохранить черновик».");
+ const epoch=authEpoch;loading=true;setControls();msg("Получаем опубликованную версию…");
+ try{
+  const snap=await getDoc(publishedRef);
+  if(epoch!==authEpoch)return;
+  published=core.cleanModel(snap.exists()?snap.data():core.emptyModel());
+  remember();model=clone(published);selection=null;mark();refreshCanvas();renderInspector();
+  msg("Опубликованная версия загружена в редактор. Сохраните черновик, чтобы заменить прежние правки.");
+ }catch(error){if(epoch===authEpoch)msg("Не удалось получить опубликованную версию. Ваши правки сохранены в редакторе. "+(error.code||""));}
+ finally{if(epoch===authEpoch){loading=false;setControls();}}
 }
+
 function copyDevice(){
- if(!authorized)return;
- const to=listDevices.filter(d=>d!==currentDevice);
- const target=prompt("Куда скопировать оформление текущего устройства? Введите: "+to.join(" / "));
- if(!to.includes(target))return;
- if(!confirm("Заменить все настройки "+target+"?"))return;
- commit(()=>{model[target]=clone(model[currentDevice]);});msg("Настройки скопированы в "+target+". Для публикации сохраните изменения.");
+ if(!canEdit())return;
+ const dialog=$("baliBuilderCopyDialog"),target=$("baliBuilderCopyTarget");
+ target.replaceChildren(...listDevices.filter(d=>d!==currentDevice).map(d=>new Option({desktop:"ПК",tablet:"Планшет",phone:"Телефон"}[d],d)));
+ dialog.showModal();target.focus();
 }
+
 function toggle(on){
  if(!on&&inlineEditor){inlineEditor.remove();inlineEditor=null;}
  enabled=on;
  panel.classList.toggle("bali-builder-active",on);
- view.mode.textContent=on?"Открыть прежние настройки блоков":"Вернуться в конструктор";
+ view.mode.textContent=on?"Другие настройки блоков":"Вернуться в конструктор";
  if(on){selection=null;if(!overlay&&frameDoc()?.body)attachOverlay();refreshCanvas();renderInspector();}
  else {clearOverlay();frameDoc()?.__baliBuilderRestore?.();}
 }
 function onBuilderShortcut(event){
- if(!enabled||!authorized||document.body.dataset.baliAdminSection!=="design")return;
+ if(!enabled||!canEdit()||document.body.dataset.baliAdminSection!=="design")return;
  const target=event.target;
  if(target?.closest?.("input,textarea,select,[contenteditable=true]"))return;
  const command=event.ctrlKey||event.metaKey;
@@ -713,6 +732,14 @@ function onBuilderShortcut(event){
 function init(){
  initialize();
  window.addEventListener("keydown",onBuilderShortcut);
+ window.addEventListener("beforeunload",event=>{if(dirty){event.preventDefault();event.returnValue="";}});
+ $("baliBuilderCopyConfirm")?.addEventListener("click",()=>{
+  const target=$("baliBuilderCopyTarget").value;
+  if(!canEdit()||!listDevices.includes(target)||target===currentDevice)return;
+  commit(()=>{model[target]=clone(model[currentDevice]);});
+  $("baliBuilderCopyDialog").close();
+  msg("Настройки скопированы. Сохраните черновик или опубликуйте изменения.");
+ });
  view.page.value="home";
  view.page.disabled=true;
  view.page.title="Конструктор первого этапа: главная страница";
@@ -753,13 +780,16 @@ function init(){
  window.BaliBuilderEditor={isActive:()=>enabled,refresh:refreshCanvas};
  toggle(true);
  onAuthStateChanged(auth,async user=>{
-  const epoch=++authEpoch;authorized=false;loading=false;unsub?.();unsub=null;setControls();
+  const epoch=++authEpoch;authorized=false;loading=false;saving=false;writingImage=false;
+   unsub?.();unsub=null;model=core.emptyModel();published=core.emptyModel();
+   dirty=false;history=[];future=[];selection=null;styleClipboard=null;drag=null;
+   inlineEditor?.remove();inlineEditor=null;refreshCanvas();renderInspector();setControls();
   if(!user?.emailVerified){msg("Войдите в подтверждённый аккаунт администратора.");return;}
   try{
    const role=await getDoc(doc(db,"admins",user.uid));
    if(epoch!==authEpoch||auth.currentUser?.uid!==user.uid)return;
    if(role.data()?.active!==true){msg("Для работы с конструктором нужна активная роль администратора.");return;}
-   authorized=true;loading=true;setControls();
+   authorized=true;loading=true;msg("Открываем сохранённый черновик…");setControls();
    const pub=await getDoc(publishedRef);
    if(epoch!==authEpoch)return;
    published=core.cleanModel(pub.exists()?pub.data():core.emptyModel());
@@ -767,10 +797,10 @@ function init(){
     if(epoch!==authEpoch)return;
     loading=false;
     if(!dirty){model=core.cleanModel(snap.exists()?snap.data():published);refreshCanvas();renderInspector();}
-    msg("Конструктор доступен: настройте элементы, затем сохраните черновик или опубликуйте.");
+    if(!dirty&&!saving)msg("Черновик готов. Выберите блок и внесите изменения.");
     setControls();
-   },err=>{loading=false;msg("Не удалось загрузить черновик: "+(err.code||err.message));});
-  }catch(err){if(epoch===authEpoch)msg("Не удалось проверить администратора: "+(err.code||err.message));}
+   },err=>{if(epoch!==authEpoch)return;loading=false;authorized=false;setControls();msg("Не удалось загрузить черновик. Обновите страницу и повторите вход. "+(err.code||""));});
+  }catch(err){if(epoch===authEpoch){loading=false;authorized=false;setControls();msg("Не удалось открыть конструктор. Обновите страницу. "+(err.code||""));}}
  });
 }
 init();
