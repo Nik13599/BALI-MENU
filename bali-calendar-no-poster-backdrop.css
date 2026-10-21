@@ -1,25 +1,49 @@
-/* Remove ONLY the plate/halo behind the active, centered calendar poster.
-   The poster image, 3D rotation, swipes and its two existing buttons stay. */
-:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active,
-:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active>.bali-event-poster-wrap{
+/* BALI calendar: no decorative plate behind a poster on phone OR desktop.
+   Keep the green outline/glow on the active poster IMAGE itself. */
+
+/* Neutralise panel-like backgrounds in the desktop gallery without touching
+   the edge fades (#eventsGrid::before/::after) or button styling. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsCarouselShell,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-actions{
   background:transparent!important;
   background-color:transparent!important;
   background-image:none!important;
   box-shadow:none!important;
-  outline:none!important;
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
 }
-:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active>.bali-event-poster-wrap{
-  border:0!important;
-  border-radius:0!important;
-  /* No lingering shadow interpolation when a side card becomes the center. */
-  transition:none!important;
-}
-:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active::before,
-:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active::after,
-:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active>.bali-event-poster-wrap::before,
-:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active>.bali-event-poster-wrap::after{
+
+/* Legacy desktop gallery pseudo-panels must not sit behind the centre poster. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsCarouselShell::before,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsCarouselShell::after,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card::before,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card::after,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body::before,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body::after,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.bali-event-poster-wrap::before,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.bali-event-poster-wrap::after{
   display:none!important;
   content:none!important;
+}
+
+/* Restore only the elegant perimeter highlight; no glowing plate or tinted
+   backdrop around/behind the square artwork. This works at all screen sizes. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active>.bali-event-poster-wrap{
+  background:transparent!important;
+  background-image:none!important;
+  border:1px solid #c9ff86!important;
+  border-radius:5px!important;
+  box-shadow:
+    0 0 0 1px rgba(202,255,120,.48),
+    0 0 10px rgba(176,255,77,.52),
+    0 0 27px rgba(164,245,57,.24)!important;
+  transition:border-color .2s ease,box-shadow .28s ease!important;
+}
+/* Neighboring posters stay neutral; the active one alone has lime edging. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card:not(.is-active)>.bali-event-poster-wrap{
+  border-color:rgba(170,207,158,.12)!important;
+  box-shadow:none!important;
 }
