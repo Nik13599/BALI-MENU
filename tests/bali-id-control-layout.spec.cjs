@@ -85,3 +85,44 @@ test('mobile ID: card slightly inset, QR and history aligned just beyond its rig
   expect(measures.use.right).toBeLessThan(measures.earn.left+3);
   expect(measures.earn.right).toBeLessThan(measures.transfer.left+3);
 });
+
+
+test('BALI ID: both top tools equal size and near the header, card gently lifted without scaling',async({page})=>{
+  await page.goto('/index.html');
+  await page.evaluate(()=>{
+    document.body.dataset.baliPage='id';
+    document.getElementById('baliIdSection').hidden=false;
+  });
+  for(const id of ['baliIdFlipScene','baliShowQr','baliIdHistoryOpen','baliIdPayOpen','baliIdTopupOpen','baliIdTransferOpen']){
+    await expect(page.locator('#'+id)).toBeVisible();
+  }
+  const g=await page.evaluate(()=>{
+    const get=el=>{
+      const r=el.getBoundingClientRect();
+      return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height,centerY:r.top+r.height/2};
+    };
+    const section=document.querySelector('#baliIdSection>.container');
+    return {container:get(section),card:get(document.getElementById('baliIdFlipScene')),
+      qr:get(document.getElementById('baliShowQr')),
+      history:get(document.getElementById('baliIdHistoryOpen')),
+      pay:get(document.getElementById('baliIdPayOpen')),
+      topup:get(document.getElementById('baliIdTopupOpen')),
+      transfer:get(document.getElementById('baliIdTransferOpen'))};
+  });
+  expect(Math.abs(g.qr.width-g.history.width)).toBeLessThanOrEqual(1);
+  expect(Math.abs(g.qr.height-g.history.height)).toBeLessThanOrEqual(1);
+  expect(g.qr.width).toBeGreaterThan(80);
+  expect(g.qr.top-g.container.top).toBeGreaterThanOrEqual(4);
+  expect(g.qr.top-g.container.top).toBeLessThanOrEqual(15);
+  expect(Math.abs(g.qr.top-g.history.top)).toBeLessThanOrEqual(1);
+  expect(g.qr.right).toBeLessThanOrEqual(g.history.left+2);
+  expect(g.history.bottom).toBeLessThan(g.card.top);
+  const shift=g.container.centerY-g.card.centerY;
+  expect(shift).toBeGreaterThanOrEqual(10);
+  expect(shift).toBeLessThanOrEqual(26);
+  expect(g.pay.top).toBeGreaterThanOrEqual(g.card.bottom+12);
+  expect(Math.abs(g.pay.top-g.topup.top)).toBeLessThanOrEqual(1);
+  expect(Math.abs(g.topup.top-g.transfer.top)).toBeLessThanOrEqual(1);
+  expect(g.card.width/g.card.height).toBeGreaterThan(1.6);
+  expect(g.card.width/g.card.height).toBeLessThan(1.8);
+});
