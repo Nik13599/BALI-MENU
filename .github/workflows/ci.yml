@@ -33,6 +33,9 @@ jobs:
           node --input-type=module --check < bali-id-bank.js
           node --check functions/index.js
           node --check functions/preorders.js
+          node --check functions/preorder-staff.js
+          node --input-type=module --check < preorders-access.js
+          node --input-type=module --check < preorder-staff-admin.js
           node --input-type=module --check < bali-privilege-admin.js
           node --input-type=module --check < bali-director-id.js
           node --input-type=module --check < bali-bonus-transfer-scaffold.js

@@ -165,3 +165,12 @@ body.bali-preorders-workspace{--surface:#121713;--surface-2:#1b231d;--border:#34
   .bali-preorders-workspace .preorder-detail-item-amount{gap:7px}
   .bali-preorders-workspace .preorder-details-actions{bottom:-12px}
 }
+
+/* Separate staff login has no email input; authenticated owners may use Google. */
+.bali-preorders-workspace .preorder-login-form{display:grid;gap:8px;margin:16px 0 10px}
+.bali-preorders-workspace .preorder-login-form label{font-size:12px;color:#b4c5b4;margin-top:2px}
+.bali-preorders-workspace .preorder-login-form input{box-sizing:border-box;width:100%;min-height:43px}
+.bali-preorders-workspace .preorder-login-form .login-button{width:100%;min-height:43px;margin-top:6px}
+.bali-preorders-workspace .preorder-admin-owner-entry{border-top:1px solid #354239;margin:13px 0 0;padding-top:11px}
+.bali-preorders-workspace .preorder-admin-owner-entry summary{font-size:11px;color:#90a390;cursor:pointer}
+.bali-preorders-workspace .preorder-admin-owner-entry button{margin-top:10px}

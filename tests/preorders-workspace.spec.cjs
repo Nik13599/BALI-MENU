@@ -26,6 +26,10 @@ test("dedicated preorder page contains no general admin editors",async({page})=>
   await expect(page.locator(".preorder-controls")).toBeVisible();
   await expect(page.locator('[aria-labelledby="ordersHeading"]')).toHaveCount(1);
   await expect(page.locator("#ordersHeading")).toBeVisible();
+  await expect(page.locator("#preorderStaffLogin")).toHaveCount(1);
+  await expect(page.locator("#staffLoginName")).toHaveAttribute("autocomplete","username");
+  await expect(page.locator("#staffLoginPassword")).toHaveAttribute("type","password");
+  await expect(page.locator('a[href="admin.html"]')).toHaveCount(0);
   await expect(page.locator("#orderDetailsDialog")).toHaveCount(1);
   await expect(page.locator("#orderDetailsContent")).toHaveCount(1);
   await expect(page.locator(".preorder-report-row")).toHaveCount(2);

@@ -208,6 +208,34 @@
         <p id="ordersAdminStatus" class="status" role="status" aria-live="polite"></p>
         <section id="ordersDishSummary" class="card" aria-live="polite" hidden></section>
         <div class="order-queue" id="ordersAdminList">Ожидаем входа администратора...</div>
+<details id="preorderStaffManagement" class="card preorder-staff-management" hidden>
+  <summary>Доступ сотрудников к предзаказам · логин и пароль</summary>
+  <div class="preorder-staff-inner">
+    <p class="hint">Назначайте сотрудникам отдельные учётные записи. Доступ открывает только страницу предзаказов, без прав на остальную админку. Пароли не сохраняются в базе данных и не отправляются по почте.</p>
+    <form id="preorderStaffCreateForm" class="preorder-staff-create">
+      <label>Имя сотрудника<input id="preorderStaffName" required minlength="2" maxlength="80" autocomplete="off" placeholder="Например, Администратор зала"></label>
+      <label>Логин<input id="preorderStaffLogin" required minlength="3" maxlength="32" pattern="[a-zA-Z][a-zA-Z0-9_-]{2,31}" autocomplete="off" placeholder="Например, bali_staff1"></label>
+      <label>Пароль<input id="preorderStaffPassword" required type="password" minlength="12" maxlength="72" autocomplete="new-password" placeholder="Не менее 12 символов"></label>
+      <button type="submit" class="primary" id="preorderStaffCreate">Добавить сотрудника</button>
+    </form>
+    <div class="preorder-staff-listhead"><strong>Сотрудники предзаказов</strong><button type="button" id="preorderStaffRefresh">Обновить</button></div>
+    <p id="preorderStaffAdminStatus" role="status" aria-live="polite"></p>
+    <div id="preorderStaffList">Сотрудники загружаются...</div>
+    <p class="hint">Сотрудникам выдавайте ссылку <code>baliminsk.by/preorders.html</code>. При отключении аккаунта доступ к заказам блокируется правилами Firebase.</p>
+  </div>
+</details>
+<style>
+.preorder-staff-management{margin-top:15px}.preorder-staff-management>summary{cursor:pointer;font-weight:800;font-size:14px;color:#b9ff51;padding:6px 0}
+.preorder-staff-inner{padding:8px 0 12px}.preorder-staff-create{display:grid;grid-template-columns:repeat(3,minmax(125px,1fr)) auto;align-items:end;gap:10px;margin:12px 0 18px}
+.preorder-staff-create label{font-size:11px;color:#b2c2b2}.preorder-staff-create input{width:100%;min-height:39px;box-sizing:border-box}
+.preorder-staff-listhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.preorder-staff-entry{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #35413a}
+.preorder-staff-person{display:grid;gap:4px}.preorder-staff-person small{color:#9eb09f}.preorder-staff-actions{display:flex;gap:6px;flex-wrap:wrap}
+.preorder-staff-reset{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0}.preorder-staff-reset input{min-height:36px;flex:1;min-width:150px}
+@media(max-width:850px){.preorder-staff-create{grid-template-columns:1fr 1fr}.preorder-staff-create button{grid-column:1/-1}}
+@media(max-width:520px){.preorder-staff-create{grid-template-columns:1fr}.preorder-staff-entry{align-items:flex-start;flex-direction:column}}
+</style>
+
       </section>
 
       <section class="admin-panel" id="adminClientsPanel" data-admin-panel="clients" aria-labelledby="clientsHeading" hidden>
@@ -1188,6 +1216,7 @@
 <script type="module" src="bali-home-placeholder-admin.js?v=20261021-square1"></script>
 <script type="module" src="admin-orders.js?v=20261021-compact2"></script>
 <script type="module" src="admin-clients.js?v=20261021-retention1"></script>
+<script type="module" src="preorder-staff-admin.js?v=20261021-staff1"></script>
 <script type="module" src="bali-privilege-admin.js?v=20261021-5priv"></script>
 <script type="module" src="bali-qr-admin.js?v=20261021-2"></script>
 <script src="bali-smart-design.js?v=20261019-2" defer></script>

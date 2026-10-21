@@ -6,6 +6,7 @@ on:
       - 'admin.html'
       - 'preorders*'
       - 'bali-preorder-reports.js'
+      - 'preorder-staff-admin.js'
       - 'scripts/test-preorder-reports.mjs'
       - 'orders-firestore.js'
       - 'bali-order-retention.js'
@@ -31,6 +32,9 @@ jobs:
           distribution: temurin
           java-version: '21'
       - run: npm ci --no-audit --no-fund
+      - run: node --check functions/preorder-staff.js
+      - run: node --input-type=module --check < preorders-access.js
+      - run: node --input-type=module --check < preorder-staff-admin.js
       - run: npm test
       - run: node scripts/test-preorder-reports.mjs
       - run: npm run test:firebase
