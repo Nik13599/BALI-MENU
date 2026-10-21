@@ -52,6 +52,7 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time;
     }
 
+    // BALI ID is a non-payment, non-monetary club privilege card.
     // One-time, immutable acknowledgement of the BALI ID programme.
     // Stored separately from registration; the ID cannot be created first.
     function baliIdAgreementPath(uid) {
