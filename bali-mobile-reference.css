@@ -1,8 +1,8 @@
 /* BALI / Mobile reference 2026-10-19.
-   Only <= 767px. Keep the installed site background, brand artwork,
-   real Firebase events/promos, authentication and desktop/tablet layouts. */
+   Phone and tablet <= 1179px share the same mobile first shell and blocks.
+   Real events, authentication and original >=1180px desktop design are preserved. */
 .bali-mobile-home-hero,.bali-mobile-about-dialog {display:none}
-@media(max-width:767px){
+@media(max-width:1179px){
   :root{
     --bali-mobile-neon:var(--bt-primary,#b9ff51);
     --bali-mobile-edge:clamp(10px,3.4vw,18px);
@@ -695,7 +695,7 @@
   .bali-mobile-about-close{position:absolute;right:10px;top:8px;background:none;border:0;color:#fff;font-size:30px;width:37px;height:37px;cursor:pointer}
   .bali-mobile-about-contacts{width:100%;min-height:43px;margin-top:12px;background:var(--bali-mobile-neon);color:#051006;border:0;border-radius:12px;font:800 13px Manrope,sans-serif;cursor:pointer}
 }
-@media(max-width:767px) and (max-height:690px){
+@media(max-width:1179px) and (max-height:690px){
   body.bali-guest-theme .header .header-content{height:55px!important}
   body.bali-guest-theme #homeSection .bali-home-inner{
     grid-template-rows:minmax(0,1.2fr) minmax(0,1.08fr) minmax(0,.8fr) auto!important;
@@ -723,11 +723,11 @@
 
 /* The reference has Information instead of the duplicate lower Profile shortcut.
    Keep the old Profile shortcut for tablet; the header opens it on phones. */
-@media(max-width:767px){
+@media(max-width:1179px){
   body.bali-guest-theme .bali-bottom-nav .bali-nav-profile-item{display:none!important}
   body.bali-guest-theme .bali-bottom-nav .bali-nav-info-item{display:flex!important}
 }
-@media(min-width:768px){
+@media(min-width:1180px){
   body.bali-guest-theme .bali-bottom-nav .bali-nav-info-item{display:none!important}
 }
 
@@ -739,7 +739,7 @@ body.bali-guest-theme .bali-mobile-about-dialog:not([open]){display:none!importa
 /* 2026-10-19: compact hero and one consistent vertical rhythm, based on
    the real mobile screenshot. The map/social buttons receive the saved space.
    This adjusts geometry only; keep the site's existing background and data. */
-@media(max-width:767px){
+@media(max-width:1179px){
   body.bali-guest-theme #homeSection{
     --bali-reference-block-gap:clamp(8px,1.25dvh,12px);
   }
@@ -797,7 +797,7 @@ body.bali-guest-theme .bali-mobile-about-dialog:not([open]){display:none!importa
     height:100%!important;
   }
 }
-@media(max-width:767px) and (max-height:690px){
+@media(max-width:1179px) and (max-height:690px){
   body.bali-guest-theme #homeSection{
     --bali-reference-block-gap:7px;
   }
@@ -833,7 +833,7 @@ body.bali-guest-theme .bali-mobile-about-dialog:not([open]){display:none!importa
 
 /* Floating "Корзина" shortcut on mobile: a shorter centered pill, lifted
    above the existing four-item bottom navigation. Keep the real cart logic. */
-@media(max-width:767px){
+@media(max-width:1179px){
   body.bali-guest-theme .bali-cart-dock:not([hidden]){
     position:fixed!important;
     z-index:1003!important;
@@ -850,7 +850,7 @@ body.bali-guest-theme .bali-mobile-about-dialog:not([open]){display:none!importa
     bottom:calc(env(safe-area-inset-bottom) + clamp(67px,9.2dvh,84px) + 19px)!important;
   }
 }
-@media(max-width:767px) and (max-height:690px){
+@media(max-width:1179px) and (max-height:690px){
   body.bali-guest-theme .bali-cart-dock:not([hidden]){
     bottom:calc(env(safe-area-inset-bottom) + 61px + 18px)!important;
     min-height:40px!important;
