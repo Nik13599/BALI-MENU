@@ -690,9 +690,17 @@ async function save(publish=false){
 async function restore(){
  if(!canEdit())return;
  if(!confirm("Заменить текущие правки последней опубликованной версией?"))return;
- remember();model=core.cleanModel(published);selection=null;mark();refreshCanvas();renderInspector();
- msg("В редактор загружена последняя опубликованная версия. Для сохранения нажмите «Сохранить черновик».");
+ const epoch=authEpoch;loading=true;setControls();msg("Получаем опубликованную версию…");
+ try{
+  const snap=await getDoc(publishedRef);
+  if(epoch!==authEpoch)return;
+  published=core.cleanModel(snap.exists()?snap.data():core.emptyModel());
+  remember();model=clone(published);selection=null;mark();refreshCanvas();renderInspector();
+  msg("Опубликованная версия загружена в редактор. Сохраните черновик, чтобы заменить прежние правки.");
+ }catch(error){if(epoch===authEpoch)msg("Не удалось получить опубликованную версию. Ваши правки сохранены в редакторе. "+(error.code||""));}
+ finally{if(epoch===authEpoch){loading=false;setControls();}}
 }
+
 function copyDevice(){
  if(!canEdit())return;
  const dialog=$("baliBuilderCopyDialog"),target=$("baliBuilderCopyTarget");

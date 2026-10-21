@@ -147,3 +147,20 @@ test('information and club pages stay usable when external data is unavailable',
  expect(await page.locator('#contactblock .bali-ui-icon').first().evaluate(n=>n.getBoundingClientRect().width)).toBeLessThanOrEqual(24);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
+
+
+test('restore reads the current publication and undo recovers the unsaved draft',async({page})=>{
+ await open(page);await design(page);await edit(page,'Мои правки');
+ await page.evaluate(()=>{
+  const model=window.BaliBuilderCore.emptyModel();
+  model.desktop.rules['#baliPcAboutTitle']={text:'Новая публикация другого сотрудника',props:{}};
+  window.__builderStore['settings/siteBuilderPublished']=model;
+ });
+ page.once('dialog',d=>d.accept());
+ await page.locator('#baliBuilderRestore').click();
+ await expect(page.locator('#baliBuilderStatus')).toContainText('Опубликованная версия загружена');
+ await expect(page.frameLocator('#baliDesignLiveFrame').locator('#baliPcAboutTitle')).toContainText('Новая публикация другого сотрудника');
+ await page.locator('#baliBuilderUndo').click();
+ await expect(page.frameLocator('#baliDesignLiveFrame').locator('#baliPcAboutTitle')).toContainText('Мои правки');
+ expect(await page.evaluate(()=>window.__builderWrites)).toEqual([]);
+});
