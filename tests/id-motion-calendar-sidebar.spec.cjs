@@ -173,9 +173,10 @@ test('original homepage and desktop sidebar are untouched by isolated ID/calenda
   await expect(page.locator('.bali-pc-sidebar .bali-pc-brand')).toHaveCount(1);
 });
 
-test('BALI ID floats without a grey panel, shows title only, and the click uses real depth and moving shadow',async({page})=>{
+test('BALI ID has no redundant heading or grey panel, and the flip keeps real depth',async({page})=>{
   await showId(page);
-  await expect(page.locator('#baliIdPageHeading')).toHaveText('BALI ID — цифровая карта гостя');
+  await expect(page.locator('#baliIdPageHeading')).toHaveCount(0);
+  await expect(page.locator('#baliIdSection')).toHaveAttribute('aria-label','BALI ID');
   await expect(page.locator('#baliIdSection .bali-id-heading')).toHaveCount(0);
   const backing=await page.locator('#baliIdSection .bali-profile-card').evaluate(n=>{
     const s=getComputedStyle(n);return {color:s.backgroundColor,image:s.backgroundImage,border:s.borderWidth,shadow:s.boxShadow};
@@ -258,4 +259,35 @@ test('desktop About card uses its full height while preserving original hero and
   expect(p.scrollHeight).toBeLessThanOrEqual(p.clientHeight+4);
   await expect(page.locator('.bali-pc-sidebar .bali-pc-navigation [data-bali-nav="home"]')).toHaveCount(1);
   await expect(page.locator('#baliMobileAboutBtn')).toHaveText('ПОДРОБНЕЕ О КЛУБЕ');
+});
+
+test('BALI ID card is centered, enlarged and top tools are QR then history',async({page})=>{
+  await showId(page);
+  const data=await page.evaluate(()=>{
+    const section=document.getElementById('baliIdSection').getBoundingClientRect();
+    const scene=document.getElementById('baliIdFlipScene').getBoundingClientRect();
+    const tools=[...document.querySelectorAll('#baliIdSection .bali-id-page-tools button')].map(n=>n.id);
+    const actions=document.querySelector('#baliIdSection .bali-bank-actions').getBoundingClientRect();
+    const card=document.getElementById('baliIdFront').getBoundingClientRect();
+    const actionLabels=[...document.querySelectorAll('#baliIdSection .bali-bank-actions>button')].map(n=>n.textContent.trim());
+    return {section:{left:section.left,right:section.right,top:section.top,bottom:section.bottom,
+      centerY:(section.top+section.bottom)/2},
+      card:{left:card.left,right:card.right,top:card.top,bottom:card.bottom,width:card.width,height:card.height,
+      centerX:(card.left+card.right)/2,centerY:(card.top+card.bottom)/2},
+      actions:{top:actions.top,bottom:actions.bottom},tools,actionLabels,viewport:innerWidth};
+  });
+  expect(data.tools).toEqual(['baliShowQr','baliIdHistoryOpen']);
+  expect(data.actionLabels).toEqual(['Оплатить','Пополнить','Перевести']);
+  expect(data.card.width/data.card.height).toBeCloseTo(1.68,1);
+  expect(data.card.left).toBeGreaterThanOrEqual(2);
+  expect(data.card.right).toBeLessThanOrEqual(data.viewport-2);
+  expect(data.actions.top).toBeGreaterThan(data.card.bottom+14);
+  expect(data.card.centerY).toBeCloseTo(data.section.centerY,0);
+  expect(data.actions.bottom).toBeLessThanOrEqual(data.section.bottom+1);
+  if(data.viewport<=767){
+    expect(data.card.width).toBeGreaterThan(data.viewport*.90);
+  }else if(data.viewport>=1180){
+    expect(data.card.width).toBeGreaterThan(640);
+    expect(data.card.centerX).toBeCloseTo((data.section.left+data.section.right)/2,0);
+  }
 });
