@@ -24,7 +24,7 @@
     min-height:0!important;
     max-width:100%!important;
     max-height:none!important;
-    aspect-ratio:11 / 5!important;
+    aspect-ratio:1024 / 353!important;
     margin:0!important;
   }
 }
@@ -46,7 +46,7 @@
     min-height:0!important;
     max-width:100%!important;
     max-height:100%!important;
-    aspect-ratio:11 / 5!important;
+    aspect-ratio:1024 / 353!important;
     margin:0 auto!important;
   }
 }
@@ -61,3 +61,10 @@
 
 /* Match the exact uploaded campaign reference image: 2048 x 706 (1024:353). */
 :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal{aspect-ratio:1024 / 353!important;}
+
+/* Keep the full supplied campaign in view on every device, including phones. */
+:root[data-bali-theme] body.bali-guest-theme #homeSection
+  .bali-pc-hero.is-seasonal .bali-pc-hero-visual img{
+  object-fit:contain!important;
+  object-position:center center!important;
+}
