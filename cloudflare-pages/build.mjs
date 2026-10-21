@@ -11,7 +11,7 @@
  * scripts, tests, Firestore rules and configuration outside the public site.
  * No backend or DNS changes are performed by this script.
  */
-import { existsSync, mkdirSync, readdirSync, copyFileSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, copyFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -75,4 +75,13 @@ const missing = requiredFiles.filter(file => !existsSync(join(outDir, file)));
 if (missing.length) {
   throw new Error("Cloudflare Pages build is missing required public files: " + missing.join(", "));
 }
+// Cloudflare Pages reads _headers at deploy time. Keep camera availability for BALI QR scanning.
+writeFileSync(join(outDir, "_headers"), [
+  "/*",
+  "  X-Content-Type-Options: nosniff",
+  "  Referrer-Policy: strict-origin-when-cross-origin",
+  "  X-Frame-Options: SAMEORIGIN",
+  ""
+].join("\n"));
+
 console.log("BALI Cloudflare Pages static build ready: " + copied + " public files.");
