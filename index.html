@@ -33,6 +33,43 @@
   </style>
 
   <style>
+    /* Center every BALI sign-in overlay against the viewport, not an
+       underlying profile, scroll container or device-specific navigation. */
+    body.bali-guest-theme #authModal.modal {
+      position:fixed!important;
+      inset:0!important;
+      width:100vw!important;
+      height:100dvh!important;
+      margin:0!important;
+      padding:clamp(12px,3vw,20px)!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      transform:none!important;
+      box-sizing:border-box!important;
+      overflow:hidden!important;
+    }
+    body.bali-guest-theme #authModal.modal .modal-content{
+      margin:0 auto!important;
+      max-height:calc(100dvh - 32px)!important;
+      max-width:min(600px,calc(100vw - 24px))!important;
+      overflow-y:auto!important;
+    }
+    body.bali-guest-theme #baliPrivacyDialog.bali-privacy-dialog[open]{
+      position:fixed!important;
+      inset:50% auto auto 50%!important;
+      top:50%!important;
+      left:50%!important;
+      right:auto!important;
+      bottom:auto!important;
+      transform:translate(-50%,-50%)!important;
+      margin:0!important;
+      width:min(620px,calc(100vw - 24px))!important;
+      max-width:calc(100vw - 24px)!important;
+      max-height:calc(100dvh - 32px)!important;
+      overflow-y:auto!important;
+      box-sizing:border-box!important;
+    }
     /* The only post-Google first-time step: a compact name/phone form. */
     body.bali-guest-theme #authModal[data-auth-step="complete"] .modal-content{
       box-sizing:border-box;width:min(420px,calc(100vw - 24px))!important;
@@ -1111,7 +1148,7 @@
     <script src="bali-calendar-coverflow.js?v=20261021-ui1"></script>
     <script src="bali-pc-reference.js?v=20261021-anchored-home1"></script>
     <script src="bali-privacy.js?v=20261021-google-popup1"></script>
-    <script type="module" src="auth.js?v=20261021-required-contact1"></script>
+    <script type="module" src="auth.js?v=20261021-returning-home2"></script>
     <script type="module" async src="menu-firestore.js?v=20261021-fast1"></script>
     <script type="module" async src="bali-bar-menu.js?v=20261021-fast1"></script>
     <script type="module" async src="bali-extra-menus.js?v=20261021-fast1"></script>
