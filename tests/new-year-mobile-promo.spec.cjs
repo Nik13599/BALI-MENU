@@ -218,7 +218,7 @@ test("Simple inline promo editor uploads real image and saves styling to the exi
  // A genuine browser image import, not a manually pasted URL.
  await page.locator("[data-promo-file]").setInputFiles({
   name:"banner.png",mimeType:"image/png",
-  buffer:Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9YvKp6kAAAAASUVORK5CYII=","base64")
+  buffer:Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAgAAAAECAIAAAA8r+mnAAAAFElEQVR4nGM8kWLEgA0wYRUlSwIAiIYBZhhhozkAAAAASUVORK5CYII=","base64")
  });
  await expect(page.locator("[data-promo-status]")).toContainText("Картинка загружена");
  await page.locator("[data-promo-save]").click();
