@@ -21,7 +21,7 @@ const mobile=()=>matchMedia("(max-width:1179px)").matches;
 const cards=()=>[...grid.querySelectorAll(".event-card[data-event-date]")];
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 let activeIndex=0,position=0,animation=null,raf=0,gesture=null;
-let wheelAt=-Infinity,ignoreTapUntil=0,slideWidth=180,firstSync=true,lastCardDate="";
+let wheelAt=-Infinity,ignoreTapUntil=0,slideWidth=180,firstSync=true,lastCardId="";
 const ease=t=>t*t*(3-2*t);
 // Keep the two mobile action buttons down during a poster change and raise
 // them only when the stage has completed its actual travel (not a fixed timer).
@@ -119,7 +119,7 @@ function animateTo(next,smooth=true){
   if(last<0)return;
   next=clamp(next,0,last);
   activeIndex=next;
-  lastCardDate=cards()[next]?.dataset.eventDate||"";
+  lastCardId=cards()[next]?.dataset.eventId||cards()[next]?.dataset.eventDate||"";
   notify();
   if(!smooth||reduce.matches||Math.abs(position-next)<.001){
     position=next;render();raiseActions();return;
@@ -146,18 +146,19 @@ function focusIndex(index,smooth=true){animateTo(index,smooth)}
 function move(delta){focusIndex(activeIndex+delta,true)}
 function syncCards(){
   const entries=cards();
-  // Preserve the active event by DATE when Firebase replaces the HTML cards.
+  // Several parties can share a date; preserve the exact event ID.
+  // The first ongoing/future poster starts in the centre, archival on left.
   if(entries.length){
-    const same=lastCardDate?entries.findIndex(c=>c.dataset.eventDate===lastCardDate):-1;
+    const same=lastCardId?entries.findIndex(c=>(c.dataset.eventId||c.dataset.eventDate)===lastCardId):-1;
+    const firstCurrent=entries.findIndex(c=>c.dataset.eventStatus!=="past");
+    const fallback=firstCurrent>=0?firstCurrent:entries.length-1;
     if(firstSync){
-      // Start on the very first upcoming event: no nonexistent previous
-      // poster on the left, however many events are queued on the right.
-      activeIndex=0;position=0;firstSync=false;
+      activeIndex=fallback;position=fallback;firstSync=false;
     }
     else if(same>=0){activeIndex=same;position=same;}
-    else{activeIndex=clamp(activeIndex,0,entries.length-1);position=activeIndex;}
-    lastCardDate=entries[activeIndex].dataset.eventDate||"";
-  }else{activeIndex=0;position=0;lastCardDate="";}
+    else{activeIndex=fallback;position=fallback;}
+    lastCardId=entries[activeIndex].dataset.eventId||entries[activeIndex].dataset.eventDate||"";
+  }else{activeIndex=0;position=0;lastCardId="";}
   if(animation){cancelAnimationFrame(animation.raf);animation=null;}
   raiseActions();
   measure();render();
