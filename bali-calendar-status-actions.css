@@ -36,18 +36,37 @@
 :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card[data-event-status="past"] .bali-event-actions{
  justify-content:stretch!important;
 }
-/* Each sector is one event. Mixed-day status is never collapsed to a single color. */
+/* Each date uses full-strength status colors, as visible as a green plan.
+   Separate events preserve their individual sector (red / yellow / lime).
+   Later rules override old selected, planned, today's emerald and hover tints. */
 :root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-lifecycle="true"][data-event="true"]{
- background-image:var(--bali-day-segments)!important;
- background-color:rgba(10,16,12,.6)!important;
+ background:var(--bali-day-segments)!important;
+ background-color:#172018!important;
  border-color:var(--bali-day-accent)!important;
+ color:#151910!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-lifecycle="true"][data-event="true"] .bali-calendar-day-number{
+ color:#151910!important;
+ font-weight:850!important;
+ text-shadow:0 1px 0 rgba(255,255,255,.10)!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-lifecycle="true"][data-event="true"]:not(.is-outside):hover{
+ background:var(--bali-day-segments)!important;
+ border-color:var(--bali-day-accent)!important;
+ filter:brightness(1.08);
 }
 :root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-lifecycle="true"][data-event="true"][data-selected="true"]{
- box-shadow:inset 0 0 0 1px var(--bali-day-accent),0 0 9px rgba(225,196,120,.18)!important;
+ background:var(--bali-day-segments)!important;
+ border-color:var(--bali-day-accent)!important;
+ box-shadow:inset 0 0 0 1px rgba(18,20,17,.85),0 0 0 1px var(--bali-day-accent),0 0 9px rgba(225,196,120,.24)!important;
 }
 :root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-lifecycle="true"] .bali-calendar-event-dots .bali-calendar-event-dot{
+ width:clamp(5px,.55vw,7px)!important;
+ height:clamp(5px,.55vw,7px)!important;
+ border-radius:50%!important;
  background:var(--bali-event-dot-color)!important;
- box-shadow:0 0 5px var(--bali-event-dot-color)!important;
+ outline:1px solid rgba(15,18,14,.92)!important;
+ box-shadow:0 0 0 1px rgba(255,255,255,.5),0 0 5px var(--bali-event-dot-color)!important;
 }
 @media(max-width:767px){
  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-action-icon{
