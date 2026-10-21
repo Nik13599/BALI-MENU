@@ -5,8 +5,8 @@ import {getFirestore,collection,doc,getDoc,onSnapshot,setDoc,deleteDoc,serverTim
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {prepareImage as compressImage} from "./image-compressor.js?v=20261020-2";
 import {makeImageVariants} from "./bali-design-variants.js?v=20261018-107";
-import {PROMO_POSITION_PRESETS,promoEditorMode,promoEditorXY,promoStorePlacement}
-  from "./bali-promo-placement.js?v=20261021-2";
+import {PROMO_POSITION_PRESETS,promoEditorMode,promoEditorXY,promoStorePlacement,promoPositionStyle}
+  from "./bali-promo-placement.js?v=20261021-3";
 
 const el=id=>document.getElementById(id);
 const form=el("baliPromoForm"),list=el("baliPromoList"),status=el("baliPromoStatus");
@@ -69,8 +69,13 @@ if(form&&list&&status){
     placementHandle.textContent=el("baliPromoButton").value.trim()||"Подробнее";
     const point=promoEditorXY(mode,placementX.value,placementY.value);
     if(mode!=="manual"){placementX.value=point.x;placementY.value=point.y;}
-    placementHandle.style.left=point.x+"%";
-    placementHandle.style.top=point.y+"%";
+    const aligned=promoPositionStyle({mode:"manual",x:point.x,y:point.y});
+    if(aligned){
+      for(const [key,value] of Object.entries(aligned)){
+        if(key!=="lowerRight")placementHandle.style.setProperty(
+          key==="maxWidth"?"max-width":key,value);
+      }
+    }
     const source=selectedImage||urlInput.value.trim()||(el("baliPromoId").value===holidayId?holidayArt:"");
     placementImage.src=validImage(source)&&source?source:(el("baliPromoId").value===holidayId?holidayArt:"");
   }
