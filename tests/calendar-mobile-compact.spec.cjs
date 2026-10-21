@@ -77,6 +77,13 @@ test("larger phone posters leave the existing action buttons at stage bottom",as
   await expect(page.locator("#eventsGrid .event-card")).toHaveCount(3);
   await expect.poll(()=>page.evaluate(()=>getComputedStyle(document.getElementById("eventsGrid"))
     .getPropertyValue("--bali-event-slide-width").trim())).not.toBe("");
+  // Card insertion and font metrics settle through ResizeObserver. Verify
+  // the final control placement rather than a transient pre-measure frame.
+  await expect.poll(()=>page.evaluate(()=>{
+    const grid=document.getElementById("eventsGrid").getBoundingClientRect();
+    const actions=document.querySelector("#eventsGrid .event-card.is-active .bali-event-actions").getBoundingClientRect();
+    return (grid.bottom-actions.bottom)/grid.height;
+  })).toBeLessThan(.25);
   const positions=await page.evaluate(()=>{
     const grid=document.getElementById("eventsGrid").getBoundingClientRect();
     const card=document.querySelector("#eventsGrid .event-card.is-active");
