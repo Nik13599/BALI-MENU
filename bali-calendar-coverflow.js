@@ -51,17 +51,17 @@ function render(){
   if(!count){prev.disabled=true;next.disabled=true;raiseActions();return;}
   const stageWidth=grid.clientWidth||500;
   const angle=reduce.matches?0:64; // Mirror-turned sides sit behind the centered poster
-  // Keep the first side poster distinct from the centre, with a small gap,
-  // while letting its far edge leave the stage naturally (reference crop).
-  // Retain the previous spacing allowance while turning the sides farther away.
+  // The two neighbours use the same +/- offset to stay equidistant.
+  // On desktop, halve the previous edge-to-edge gap, preserving the centre
+  // size and both side angles. Phone/tablet geometry remains unchanged.
   const projectedHalf=slideWidth*Math.cos(Math.max(0,angle-6)*Math.PI/180)*.9*.5;
   const gap=mobile()?6:Math.max(10,stageWidth*.012);
-  // Leave a real visible gap between the side planes and the centered
-  // square. Perspective makes their bounding boxes wider than the naive
-  // cosine projection; compensate without shrinking the hero image.
   const safety=mobile()?Math.max(7,slideWidth*.035):Math.max(50,slideWidth*.11);
-  const slot=Math.max(stageWidth*(mobile()?.35:.395),
+  const originalSlot=Math.max(stageWidth*(mobile()?.35:.395),
     slideWidth*.5+projectedHalf+gap)+safety;
+  const projectedEdges=slideWidth*.5+projectedHalf;
+  const slot=mobile()?originalSlot:
+    projectedEdges+Math.max(gap,(originalSlot-projectedEdges)*.5);
   // Hard cap on visible poster count: one central + at most one each side.
   // All other events remain mounted in the queue but are invisible.
   const center=Math.round(position);
