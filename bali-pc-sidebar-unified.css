@@ -179,7 +179,9 @@
    between words. Preserve centering rather than justifying the line. */
 @media(min-width:1180px){
   body.bali-guest-theme>.bali-pc-sidebar
-  .bali-pc-sidebar-contacts>.bali-pc-contacts-heading,
+  .bali-pc-sidebar-contacts>.bali-pc-contacts-heading:first-child,
+  body.bali-guest-theme>.bali-pc-sidebar
+  .bali-pc-sidebar-contacts>.bali-pc-contacts-heading.bali-pc-social-heading,
   body.bali-guest-theme>.bali-pc-sidebar
   .bali-pc-contact-location>.bali-pc-contacts-heading{
     white-space:pre!important;
