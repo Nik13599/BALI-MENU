@@ -1,112 +1,112 @@
-/* Unified BALI PC sidebar. Applies on every guest page where the rail is visible.
-   The *visible* sidebar is exactly 1.3 times its previously published width:
-   former visible width = base side - left inset - gutter.
-   Reserve the wider width in --bali-pc-side so content shifts right automatically.
-   The original cross-column gutters are preserved. Tablet/phone remain unchanged. */
+/* Unified BALI desktop sidebar, identical wherever the persistent rail is shown.
+   Latest request: reduce the preceding 1.30x visible panel and all its controls
+   by 25%. Thus their size relative to the earlier baseline is 1.30 * .75 = .975.
+   Preserve left and inter-column gutters; reduce the allocated sidebar track too.
+   Tablet and phone styles are not affected. */
 @media (min-width:1180px) {
   :root {
+    --bali-pc-sidebar-scale:.975;
     --bali-pc-sidebar-base-side:clamp(215px,16.5vw,700px);
     --bali-pc-sidebar-base-visible:calc(var(--bali-pc-sidebar-base-side) - var(--bali-pc-sidebar-left) - var(--bali-pc-gap));
-    --bali-pc-side:calc(var(--bali-pc-sidebar-left) + var(--bali-pc-sidebar-base-visible) * 1.3 + var(--bali-pc-gap));
+    --bali-pc-side:calc(var(--bali-pc-sidebar-left) + var(--bali-pc-sidebar-base-visible) * var(--bali-pc-sidebar-scale) + var(--bali-pc-gap));
     --bali-pc-right:clamp(270px,20.3vw,882px);
   }
 
-  /* Navigation buttons grow in BOTH dimensions, as do icon, label and padding.
+  /* Nav buttons scale in both dimensions, as do icon, label and padding.
      Their rows and active indicators keep their original geometric proportions. */
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation {
-    gap:calc(clamp(4px,.65dvh,9px) * 1.3)!important;
+    gap:calc(clamp(4px,.65dvh,9px) * var(--bali-pc-sidebar-scale))!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button {
     box-sizing:border-box!important;
-    height:calc(clamp(37px,5.6dvh,120px) * 1.3)!important;
-    min-height:calc(clamp(37px,5.6dvh,120px) * 1.3)!important;
-    padding:calc(6px * 1.3) calc(9px * 1.3)!important;
-    gap:calc(12px * 1.3)!important;
-    font-size:calc(clamp(11px,.98vw,13px) * 1.3)!important;
-    border-radius:13px!important;
+    height:calc(clamp(37px,5.6dvh,120px) * var(--bali-pc-sidebar-scale))!important;
+    min-height:calc(clamp(37px,5.6dvh,120px) * var(--bali-pc-sidebar-scale))!important;
+    padding:calc(6px * var(--bali-pc-sidebar-scale)) calc(9px * var(--bali-pc-sidebar-scale))!important;
+    gap:calc(12px * var(--bali-pc-sidebar-scale))!important;
+    font-size:calc(clamp(11px,.98vw,13px) * var(--bali-pc-sidebar-scale))!important;
+    border-radius:calc(10px * var(--bali-pc-sidebar-scale))!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation .bali-pc-nav-icon,
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation .bali-pc-nav-icon:not(.has-custom-icon) {
-    width:calc(clamp(25px,1.85vw,31px) * 1.3)!important;
-    height:calc(clamp(25px,1.85vw,31px) * 1.3)!important;
-    flex:0 0 calc(clamp(25px,1.85vw,31px) * 1.3)!important;
+    width:calc(clamp(25px,1.85vw,31px) * var(--bali-pc-sidebar-scale))!important;
+    height:calc(clamp(25px,1.85vw,31px) * var(--bali-pc-sidebar-scale))!important;
+    flex:0 0 calc(clamp(25px,1.85vw,31px) * var(--bali-pc-sidebar-scale))!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation .bali-pc-nav-icon svg {
-    width:calc(24px * 1.3)!important;
-    height:calc(24px * 1.3)!important;
+    width:calc(24px * var(--bali-pc-sidebar-scale))!important;
+    height:calc(24px * var(--bali-pc-sidebar-scale))!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-navigation button.active::before {
-    width:calc(4px * 1.3)!important;
+    width:calc(4px * var(--bali-pc-sidebar-scale))!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar #baliPcCartCount {
-    font-size:calc(11px * 1.3)!important;
-    padding:calc(2px * 1.3) calc(6px * 1.3)!important;
+    font-size:calc(11px * var(--bali-pc-sidebar-scale))!important;
+    padding:calc(2px * var(--bali-pc-sidebar-scale)) calc(6px * var(--bali-pc-sidebar-scale))!important;
   }
 
-  /* The BALI brand button also uses the space provided by the wider rail. */
+  /* Brand image keeps its proportions as the visible rail becomes narrower. */
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-brand .bali-brand-logo {
-    width:min(100%,clamp(188.5px,16.25vw,689px))!important;
+    width:min(100%,calc(clamp(145px,12.5vw,530px) * var(--bali-pc-sidebar-scale)))!important;
   }
 
-  /* Contact actions get proportional height, type, icons, and padding. */
+  /* Contact actions receive proportional height, type, icons, and padding. */
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-phone {
-    min-height:calc(37px * 1.3)!important;
-    padding:calc(clamp(6px,.95dvh,10px) * 1.3) calc(6px * 1.3)!important;
-    gap:calc(8px * 1.3)!important;
-    font-size:calc(clamp(10px,.9vw,12px) * 1.3)!important;
-    border-radius:13px!important;
+    min-height:calc(37px * var(--bali-pc-sidebar-scale))!important;
+    padding:calc(clamp(6px,.95dvh,10px) * var(--bali-pc-sidebar-scale)) calc(6px * var(--bali-pc-sidebar-scale))!important;
+    gap:calc(8px * var(--bali-pc-sidebar-scale))!important;
+    font-size:calc(clamp(10px,.9vw,12px) * var(--bali-pc-sidebar-scale))!important;
+    border-radius:calc(10px * var(--bali-pc-sidebar-scale))!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-write a,
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials a,
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-social-pending {
-    min-height:calc(clamp(40px,5.3dvh,54px) * 1.3)!important;
-    padding:calc(clamp(4px,.55dvh,8px) * 1.3) calc(2px * 1.3)!important;
-    gap:calc(clamp(2px,.3dvh,5px) * 1.3)!important;
-    font-size:calc(clamp(8px,.61vw,11px) * 1.3)!important;
-    border-radius:calc(9px * 1.3)!important;
+    min-height:calc(clamp(40px,5.3dvh,54px) * var(--bali-pc-sidebar-scale))!important;
+    padding:calc(clamp(4px,.55dvh,8px) * var(--bali-pc-sidebar-scale)) calc(2px * var(--bali-pc-sidebar-scale))!important;
+    gap:calc(clamp(2px,.3dvh,5px) * var(--bali-pc-sidebar-scale))!important;
+    font-size:calc(clamp(8px,.61vw,11px) * var(--bali-pc-sidebar-scale))!important;
+    border-radius:calc(9px * var(--bali-pc-sidebar-scale))!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-write svg,
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials svg,
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-social-pending svg {
-    width:calc(clamp(15px,1.18vw,20px) * 1.3)!important;
-    height:calc(clamp(15px,1.18vw,20px) * 1.3)!important;
+    width:calc(clamp(15px,1.18vw,20px) * var(--bali-pc-sidebar-scale))!important;
+    height:calc(clamp(15px,1.18vw,20px) * var(--bali-pc-sidebar-scale))!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location>a {
-    min-height:calc(37px * 1.3)!important;
-    padding:calc(clamp(6px,.95dvh,10px) * 1.3) calc(7px * 1.3)!important;
-    gap:calc(6px * 1.3)!important;
-    border-radius:13px!important;
-    font-size:calc(11px * 1.3)!important;
+    min-height:calc(37px * var(--bali-pc-sidebar-scale))!important;
+    padding:calc(clamp(6px,.95dvh,10px) * var(--bali-pc-sidebar-scale)) calc(7px * var(--bali-pc-sidebar-scale))!important;
+    gap:calc(6px * var(--bali-pc-sidebar-scale))!important;
+    border-radius:calc(10px * var(--bali-pc-sidebar-scale))!important;
+    font-size:calc(11px * var(--bali-pc-sidebar-scale))!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-phone svg {
-    width:calc(19px * 1.3)!important;
-    height:calc(19px * 1.3)!important;
-    flex:0 0 calc(19px * 1.3)!important;
+    width:calc(19px * var(--bali-pc-sidebar-scale))!important;
+    height:calc(19px * var(--bali-pc-sidebar-scale))!important;
+    flex:0 0 calc(19px * var(--bali-pc-sidebar-scale))!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location>a svg {
-    width:calc(19px * 1.3)!important;
-    height:calc(25px * 1.3)!important;
-    flex:0 0 calc(19px * 1.3)!important;
+    width:calc(19px * var(--bali-pc-sidebar-scale))!important;
+    height:calc(25px * var(--bali-pc-sidebar-scale))!important;
+    flex:0 0 calc(19px * var(--bali-pc-sidebar-scale))!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location>a small {
-    font-size:calc(10px * 1.3)!important;
-    margin-top:calc(4px * 1.3)!important;
+    font-size:calc(10px * var(--bali-pc-sidebar-scale))!important;
+    margin-top:calc(4px * var(--bali-pc-sidebar-scale))!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contacts-heading,
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location>.bali-pc-contacts-heading {
-    font-size:calc(clamp(9px,.68vw,12px) * 1.3)!important;
+    font-size:calc(clamp(9px,.68vw,12px) * var(--bali-pc-sidebar-scale))!important;
   }
 
   /* Spacing rhythm: retain a single consistent gap scale inside the rail. */
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-write,
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials {
-    gap:calc(clamp(4px,.4vw,8px) * 1.3)!important;
+    gap:calc(clamp(4px,.4vw,8px) * var(--bali-pc-sidebar-scale))!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-sidebar-contacts {
-    gap:calc(clamp(4px,.65dvh,8px) * 1.3)!important;
+    gap:calc(clamp(4px,.65dvh,8px) * var(--bali-pc-sidebar-scale))!important;
   }
-  /* On short desktop windows allow the *sidebar itself* to scroll rather
-     than clipping enlarged controls or adding document/page scrolling. */
+  /* On short desktop windows scroll only within the sidebar when necessary. */
   body.bali-guest-theme>.bali-pc-sidebar {
     overflow-x:hidden!important;
     overflow-y:auto!important;
@@ -118,8 +118,8 @@
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-write a,
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-socials a,
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-social-pending {
-    min-height:calc(37px * 1.3)!important;
-    padding:calc(3px * 1.3) calc(2px * 1.3)!important;
-    gap:calc(2px * 1.3)!important;
+    min-height:calc(37px * var(--bali-pc-sidebar-scale))!important;
+    padding:calc(3px * var(--bali-pc-sidebar-scale)) calc(2px * var(--bali-pc-sidebar-scale))!important;
+    gap:calc(2px * var(--bali-pc-sidebar-scale))!important;
   }
 }
