@@ -201,3 +201,15 @@ test('Firebase unauthorized-domain error gives a useful recovery message',async(
  await expect(page.locator('#authMessage')).toContainText('Authorized domains');
  await expect(page.locator('#authGoogleBtn')).toBeEnabled();
 });
+
+test('returning Google member reaches My BALI instead of staying behind login',async({page})=>{
+ await fixture(page,{returning:true,anonymous:true});
+ await page.evaluate(()=>window.BaliAuth.open());
+ await page.locator('#authGoogleBtn').click();
+ await page.locator('#baliPrivacyProcessing').check();
+ await page.locator('#baliPrivacyInternational').check();
+ await page.locator('#baliPrivacyAccept').click();
+ await expect.poll(()=>page.evaluate(()=>window.BaliAuth.isRegistered())).toBe(true);
+ await expect(page.locator('#authModal')).not.toHaveClass(/active/);
+ await expect(page.locator('#overlay')).not.toHaveClass(/active/);
+});
