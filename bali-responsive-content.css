@@ -79,3 +79,15 @@ body.bali-guest-theme #contactsSection .bali-info-block .bali-info-schedule-hour
  .bali-embedded .facts>.fact:last-child{grid-column:1/-1;min-height:88px}
  .bali-embedded .vaction{flex:1 1 120px}
 }
+
+/* Local SVG controls on information pages; no icon font or external request. */
+.bali-ui-icon{display:block;width:22px;height:22px;flex:none}
+#contactsSection .bali-info-block-icon .bali-ui-icon{width:24px;height:24px}
+#contactsSection .bali-info-btn-arrow .bali-ui-icon{width:18px;height:18px}
+.bali-embedded :is(.contact .ic,.message-symbol){display:grid;place-items:center;width:36px;height:36px;flex:none;border:1px solid #415037;border-radius:9px;background:#b9ff510a}
+.bali-embedded .bali-about-message-links a>span:last-child .bali-ui-icon{width:18px;height:18px}
+.bali-embedded :is(.contact,.bali-about-message-links a):focus-visible{outline:2px solid #b9ff51;outline-offset:3px}
+#contactsSection .bali-info-block{padding:16px;gap:12px}
+#contactsSection .bali-info-block h2{font-size:clamp(16px,1.5vw,20px)}
+#contactsSection .bali-info-block p{line-height:1.55}
+@media(max-width:600px){#contactsSection .bali-info-block{padding:13px;gap:10px}.bali-embedded .bali-about-message-links a{padding:11px;gap:9px}}

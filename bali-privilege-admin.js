@@ -43,6 +43,7 @@ renderRules();
 window.addEventListener("bali:admin:select-privilege",async({detail})=>{
   if(!authorized||!detail?.uid)return;
   selected=detail.uid;
+  const tools=$("baliGuestPrivilegeTools");if(tools)tools.open=true;
   $("baliPrivilegeGuestUid").value=detail.uid;
   $("baliPrivilegeGuest").value=detail.name+" · "+detail.email;
   $("baliPrivilegePersonal").value="";

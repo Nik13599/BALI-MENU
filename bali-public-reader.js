@@ -99,7 +99,7 @@ export function onSnapshot(ref,...args){
   const [notify,onError]=args;
   const deliver=result=>{
     notify(result);
-    // Cached snapshots can be obsolete; only verified data can unlock the UI.
+    // Notify other views only after a verified public snapshot.
     if(result.metadata?.fromCache!==true)
       queueMicrotask(()=>window.dispatchEvent(new CustomEvent("bali:public-snapshot",{detail:{path:ref.path}})));
   };
@@ -107,12 +107,10 @@ export function onSnapshot(ref,...args){
   const fail=error=>{if(active&&!hasData&&restFailed&&sdkFailed)onError?.(error);};
   const initial=cached(ref);
   if(initial){hasData=true;queueMicrotask(()=>{if(active&&!serverLive)deliver(initial);});}
-  let sdkStarted=false,subscribeTimer;
+  let sdkStarted=false;
   const startLive=()=>{
     if(!active||sdkStarted)return;
     sdkStarted=true;
-    clearTimeout(subscribeTimer);
-    window.removeEventListener('bali:startup-ready',startLive);
     sdk().then(([apps,store])=>{
       if(!active)return;
       const app=apps.getApps().length?apps.getApp():apps.initializeApp(config());
@@ -136,15 +134,9 @@ export function onSnapshot(ref,...args){
     // If REST cannot fetch current data, start the SDK fallback immediately.
     startLive();
   });
-  if(window.BaliStartupGate&&!window.BaliStartupReady){
-    // Do not compete with the first banner and events download.
-    // A bounded fallback prevents a broken startup gate from disabling live updates.
-    window.addEventListener('bali:startup-ready',startLive,{once:true});
-    subscribeTimer=setTimeout(startLive,4500);
-  }else startLive();
+  startLive();
   return ()=>{
-    active=false;clearTimeout(subscribeTimer);
-    window.removeEventListener('bali:startup-ready',startLive);
+    active=false;
     stop?.();
   };
 }
