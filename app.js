@@ -431,6 +431,20 @@ function renderGuestPage(page,{scroll=true}={}) {
     const dock=document.getElementById("baliCartDock");
     if(dock)dock.hidden=selected!=="menu"||baliActiveMenuMode!=="kitchen";
     document.body.dataset.baliPage=selected;
+    // BALI ID dialogs live at document root to avoid clipping.
+    // Close them on any navigation away, just as the page canvas is hidden.
+    if(selected!=="id"){
+        for(const selector of [
+            "#baliTransferDialog",
+            "#baliHistoryDialog",
+            "#baliQrDialog",
+            "dialog.bali-qr-dialog"
+        ]){
+            for(const dialog of document.querySelectorAll(selector)){
+                if(dialog.open)dialog.close();
+            }
+        }
+    }
     document.title = ({home:'BALI NIGHTCLUB · Минск',menu:'Меню · BALI',events:'Календарь · BALI',
         profile:'Личный кабинет · BALI',id:'BALI ID',contacts:'Информация · BALI',about:'О клубе · BALI'})[selected];
     // Корзина не остаётся открытой при переходе из меню.
