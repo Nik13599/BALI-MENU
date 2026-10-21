@@ -102,6 +102,30 @@ try{
     assert.equal((await getDoc(ref)).data().description,undefined);
    }
   });
+  await t.test('published seasonal image removal and styled CTA survive actual Firestore admin write',async()=>{
+   const ref=doc(staff,'promotions','bali-new-year-2026');
+   const base={
+    title:'НОВАЯ АФИША',description:'',
+    imageUrl:'',imageTabletUrl:'',imageMobileUrl:'',imageRemoved:true,
+    destination:'contact-modal',buttonText:'Забронировать',
+    contactTitle:'Свяжитесь с нами',
+    contactLinks:{phone:'',telegram:'',instagram:'',whatsapp:'',viber:''},
+    contactEnabled:{phone:true,telegram:true,instagram:true,whatsapp:true,viber:true},
+    contactHotspot:{enabled:true,left:4,top:69,width:30,height:17},
+    overlay:{enabled:true,fontSize:42,textColor:'#ffffff',
+     buttonBackground:'#b9ff51',buttonColor:'#101810',buttonRadius:16,align:'center'},
+    sort:0,published:true,updatedAt:serverTimestamp()
+   };
+   await assertSucceeds(setDoc(ref,base));
+   const published=await assertSucceeds(getDoc(doc(env.unauthenticatedContext().firestore(),'promotions','bali-new-year-2026')));
+   assert.equal(published.data().imageRemoved,true);
+   assert.equal(published.data().overlay.buttonRadius,16);
+   const newArtwork='data:image/webp;base64,AAAA';
+   await assertSucceeds(setDoc(ref,{...base,imageUrl:newArtwork,imageRemoved:false,updatedAt:serverTimestamp()}));
+   assert.equal((await getDoc(ref)).data().imageUrl,newArtwork);
+   await assertFails(setDoc(doc(stranger,'promotions','bali-new-year-2026'),base));
+   await assertFails(setDoc(ref,{...base,overlay:{...base.overlay,buttonRadius:100},updatedAt:serverTimestamp()}));
+  });
   await t.test('pending edits, admin confirmation and post-confirmation denial',async()=>{
    await window.BaliOrders.save({...payload,table_number:'14',items:[{id:1,quantity:3}]},orderId);
    assert.equal((await window.BaliOrders.getOrderWithItems(orderId)).tableNumber,'14');
