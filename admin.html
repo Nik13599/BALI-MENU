@@ -496,10 +496,11 @@
               </div>
               <div class="actions"><button type="button" data-bali-time-preset="23:00,06:00">Ночь · 23:00–06:00</button><button type="button" data-bali-time-preset="19:00,22:30">Вечер · 19:00–22:30</button></div>
               <p class="hint">Время события отображается под афишей, например 20:00–23:00. Время закрытия предзаказов настраивается отдельно.</p>
-              <label>Принимать предзаказы до (по Минску, дата мероприятия)
+              <label>Принимать предзаказы до (по Минску)
                 <input id="eventCutoff" type="time" step="60" required>
-                <small class="hint">Установите время вручную для каждого мероприятия отдельно, например 17:00 или 22:30. По достижении этого времени новые предзаказы закрываются автоматически.</small>
+                <small class="hint">Для каждого мероприятия вручную: например 17:00 или 22:30. По наступлении этого времени новые заявки автоматически закрываются.</small>
               </label>
+              <label class="check"><input id="eventCutoffNextDay" type="checkbox"> Время окончания предзаказов — на следующий календарный день (после полуночи)</label>
               <div class="image-upload-area">
                 <label for="eventPosterFile">Афиша мероприятия (загрузить JPG/PNG/WebP)</label>
                 <input type="file" id="eventPosterFile" accept="image/*">
