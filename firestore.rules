@@ -457,7 +457,15 @@ service cloud.firestore {
     }
     function validPromotion(data) {
       return data.keys().hasAll(['title','description','imageUrl','imageTabletUrl','imageMobileUrl','destination','buttonText','sort','published','updatedAt'])
-        && data.keys().hasOnly(['title','description','imageUrl','imageTabletUrl','imageMobileUrl','destination','buttonText','contactTitle','contactLinks','contactEnabled','contactHotspot','overlay','imageRemoved','sort','published','updatedAt'])
+        && data.keys().hasOnly(['title','description','imageUrl','imageTabletUrl','imageMobileUrl','destination','buttonText','contactTitle','contactLinks','contactEnabled','contactHotspot','buttonPlacement','overlay','imageRemoved','sort','published','updatedAt'])
+        && (!('buttonPlacement' in data) || (
+          data.buttonPlacement is map
+          && data.buttonPlacement.keys().hasAll(['mode','x','y'])
+          && data.buttonPlacement.keys().hasOnly(['mode','x','y'])
+          && data.buttonPlacement.mode in ['none','left','center','right','manual']
+          && data.buttonPlacement.x is int && data.buttonPlacement.x >= 5 && data.buttonPlacement.x <= 95
+          && data.buttonPlacement.y is int && data.buttonPlacement.y >= 5 && data.buttonPlacement.y <= 95
+        ))
         && (!('contactTitle' in data) || (data.contactTitle is string && data.contactTitle.size() <= 70))
         && (!('contactLinks' in data) || validPromoContactLinks(data.contactLinks))
         && (!('contactEnabled' in data) || validPromoContactEnabled(data.contactEnabled))
