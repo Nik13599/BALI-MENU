@@ -112,7 +112,7 @@ test('no rectangular footer or event name below square poster: only two buttons'
   expect(state.labels[0]).toMatch(/Хочу пойти/);
   expect(state.labels[1]).toMatch(/Поделиться/);
 });
-test('desktop spends the left column on three non-overlapping 58° cards',async({page})=>{
+test('desktop uses mirrored side posters without covering the center',async({page})=>{
   await prepare(page,10);
   if(page.viewportSize().width<1180)return;
   await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(1,false));
@@ -201,7 +201,7 @@ test('poster edges dissolve while the desktop page heading is absent',async({pag
   expect(fades.crisp).toBe('none');
 });
 
-test('center poster has no decorative backing or glow on any screen',async({page})=>{
+test('center poster retains perimeter glow but no decorative backing on any screen',async({page})=>{
   await prepare(page,3);
   const style=await page.locator('#eventsGrid .event-card.is-active>.bali-event-poster-wrap').evaluate(el=>{
     const computed=getComputedStyle(el);
@@ -220,10 +220,35 @@ test('center poster has no decorative backing or glow on any screen',async({page
   });
   expect(style.background).toBe('rgba(0, 0, 0, 0)');
   expect(style.image).toBe('none');
-  expect(style.shadow).toBe('none');
-  expect(style.border).toBe('0px');
+  expect(style.shadow).not.toBe('none');
+  expect(style.border).toBe('1px');
   expect(style.overlay).toBe('none');
   expect(style.cardBackground).toBe('rgba(0, 0, 0, 0)');
   expect(style.cardShadow).toBe('none');
   expect(style.photoVisible).not.toBe('none');
+});
+
+test('centered poster stays above both mirrored side posters',async({page})=>{
+  await prepare(page,5);
+  await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(2,false));
+  const layers=await page.locator('#eventsGrid>.event-card').evaluateAll(cards=>
+    cards.filter(card=>getComputedStyle(card).visibility==='visible')
+      .map(card=>({
+        active:card.classList.contains('is-active'),
+        z:Number(getComputedStyle(card).zIndex),
+        turn:parseFloat(card.style.getPropertyValue('--bali-stage-angle')),
+        side:card.dataset.stageSide
+      }))
+  );
+  const center=layers.find(x=>x.active);
+  const left=layers.find(x=>x.side==='left');
+  const right=layers.find(x=>x.side==='right');
+  expect(center).toBeTruthy();
+  expect(left).toBeTruthy();
+  expect(right).toBeTruthy();
+  expect(center.z).toBeGreaterThan(left.z);
+  expect(center.z).toBeGreaterThan(right.z);
+  expect(center.turn).toBe(0);
+  expect(left.turn).toBeGreaterThanOrEqual(60);
+  expect(right.turn).toBeLessThanOrEqual(-60);
 });
