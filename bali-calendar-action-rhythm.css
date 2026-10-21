@@ -91,7 +91,7 @@
   transform:none!important;
   opacity:1!important;
   visibility:visible!important;
-  transition:opacity .24s ease-out!important;
+  transition:opacity .18s ease-out!important;
   will-change:auto!important;
 }
 
@@ -102,7 +102,8 @@
 :root[data-bali-theme] body.bali-guest-theme #eventsSection
 #eventsGrid.is-actions-lowered>.event-card.is-active .bali-event-actions {
   opacity:0!important;
-  visibility:hidden!important;
+  /* Keep visibility visible so opacity can interpolate instead of popping. */
+  visibility:visible!important;
   transform:none!important;
   pointer-events:none!important;
   transition:none!important;
