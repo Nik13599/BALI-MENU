@@ -199,6 +199,57 @@ try{
     await assertSucceeds(batch.commit());
     assert.equal((await getDoc(staffOrder)).exists(),false);
    });
+  await t.test('preorder-only login role: access to orders, never full administration',async()=>{
+   const scopedUid='orderstaff-101';
+   await env.withSecurityRulesDisabled(async context=>{
+     await setDoc(doc(context.firestore(),'preorderStaff',scopedUid),{
+       active:true,role:'preorders',name:'Сотрудник',login:'staff101'
+     });
+   });
+   const scoped=env.authenticatedContext(scopedUid,{
+     email:'staff+staff101@staff.baliminsk.by',email_verified:true
+   }).firestore();
+   const other=env.authenticatedContext('random-emulator',{
+     email:'someone@example.test',email_verified:true
+   }).firestore();
+   await assertSucceeds(getDoc(doc(scoped,'preorderStaff',scopedUid)));
+   await assertFails(updateDoc(doc(scoped,'preorderStaff',scopedUid),{active:true}));
+   await assertFails(getDoc(doc(other,'preorderStaff',scopedUid)));
+   await assertSucceeds(getDoc(doc(scoped,'orders',orderId)));
+   await assertSucceeds(getDocs(collection(scoped,'orders')));
+   await assertSucceeds(getDocs(collection(scoped,'orders',orderId,'items')));
+   await assertFails(getDoc(doc(scoped,'users',uid)));
+   await assertFails(getDoc(doc(scoped,'admins','admin-emulator')));
+   await assertFails(getDoc(doc(scoped,'guestWallets',uid)));
+   await assertFails(setDoc(doc(scoped,'menu','444'),{name:'Подмена'}));
+   await assertFails(updateDoc(doc(scoped,'events',eventDate),{title:'Подмена'}));
+   await assertFails(setDoc(doc(scoped,'settings','homeDesign'),{value:'Подмена'}));
+   await assertSucceeds(updateDoc(doc(scoped,'orders',orderId),
+     {notes:'Примечание сотрудника',updatedAt:serverTimestamp()}));
+   const staffOrder=doc(collection(scoped,'orders')),target=eventDate+'__2';
+   await assertSucceeds(runTransaction(scoped,async tx=>{
+     const counter=doc(scoped,'orderCounters',target),old=await tx.get(counter);
+     const next=(old.exists()?old.data().count:0)+1;
+     tx.set(counter,{date:eventDate,count:next,lastOrderId:staffOrder.id,updatedAt:serverTimestamp()});
+     tx.set(staffOrder,{
+       ownerUid:'',email:'',source:'staff',createdByUid:scopedUid,
+       customerName:'Гость со входа',customerPhone:'+375291112233',
+       eventDate,eventId:target,eventTitle:'Вторая вечеринка',orderNumber:next,
+       tableNumber:'12',bookingId:'',notes:'',status:'pending',archived:false,
+       createdAt:serverTimestamp(),updatedAt:serverTimestamp()
+     });
+     tx.set(doc(staffOrder,'items','1'),{
+       id:1,name:'Тестовое блюдо',unitPrice:25,quantity:2
+     });
+   }));
+   assert.equal((await getDoc(staffOrder)).data().source,'staff');
+   await assertFails(updateDoc(staffOrder,{status:'completed',updatedAt:serverTimestamp()}));
+   await env.withSecurityRulesDisabled(async context=>{
+     await updateDoc(doc(context.firestore(),'preorderStaff',scopedUid),{active:false});
+   });
+   await assertFails(getDoc(doc(scoped,'orders',orderId)));
+   await assertFails(updateDoc(staffOrder,{status:'confirmed',updatedAt:serverTimestamp()}));
+  });
   await t.test('Storage accepts bounded admin WebP uploads and denies guest/oversized writes',async()=>{
    const adminStorage=env.authenticatedContext('admin-emulator',{email:'admin@example.test',email_verified:true}).storage('gs://demo-bali-menu.appspot.com');
    const guestStorage=env.authenticatedContext(uid,{email:'guest@example.test',email_verified:true}).storage('gs://demo-bali-menu.appspot.com');
