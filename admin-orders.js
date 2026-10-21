@@ -39,7 +39,7 @@ function printOrder(o){
   const area=$("orderPrintSheet");
   area.replaceChildren();
   for(const [tag,line] of [
-    ["h1","BALI — ПРЕДЗАКАЗ"],["h2","№ "+orderLabel(o)],
+    ["h1","BALI — ПРЕДЗАКАЗ"],["h2",orderLabel(o)],
     ["p","Дата: "+o.eventDate+" · Мероприятие: "+eventTitle(o)],
     ["p","Статус: "+(statuses[o.status]||o.status)],
     ["p","Столик: "+(o.tableNumber||"—")+" · Бронь: "+(o.bookingId||"—")],
@@ -63,7 +63,7 @@ function printOrder(o){
 window.addEventListener("afterprint",()=>{$("orderPrintSheet").hidden=true;});
 async function setOrderStatus(o,status) {
   ensureAdmin();
-  if(!confirm("Изменить статус заказа № "+orderLabel(o)+" на «"+statuses[status]+"»?"))return;
+  if(!confirm("Изменить статус заказа "+orderLabel(o)+" на «"+statuses[status]+"»?"))return;
   setStatus("Сохраняем статус...");
   try {
     await updateDoc(doc(db,"orders",o.id),{status,updatedAt:serverTimestamp()});
@@ -73,8 +73,8 @@ async function setOrderStatus(o,status) {
 async function archiveOrder(o,archive=true) {
   ensureAdmin();
   if(!confirm(archive
-    ?"Убрать заказ № "+orderLabel(o)+" в архив? Заказ отменится, но история гостя сохранится."
-    :"Вернуть заказ № "+orderLabel(o)+" из архива? Его статус останется «Отменён»."))return;
+    ?"Убрать заказ "+orderLabel(o)+" в архив? Заказ отменится, но история гостя сохранится."
+    :"Вернуть заказ "+orderLabel(o)+" из архива? Его статус останется «Отменён»."))return;
   try {
     await updateDoc(doc(db,"orders",o.id),
       archive?{archived:true,status:"cancelled",updatedAt:serverTimestamp()}
@@ -87,6 +87,9 @@ function renderOrders(){
   const selectedEvent=$("ordersEventFilter").value;
   const showArchive=$("showArchivedOrders")?.checked===true;
   container.replaceChildren();
+  const summary=$("ordersDishSummary");
+  summary.replaceChildren();
+  summary.hidden=!(date&&selectedEvent);
   if(date&&loadedDate!==date){
     container.append(node("p","Загружаем все предзаказы выбранной даты..."));return;
   }
@@ -97,6 +100,21 @@ function renderOrders(){
       b.eventDate.localeCompare(a.eventDate)||
       eventTitle(a).localeCompare(eventTitle(b),"ru")||
       (Number(a.orderNumber)||0)-(Number(b.orderNumber)||0));
+  if(date&&selectedEvent){
+    const live=shown.filter(o=>!o.archived&&o.status!=="cancelled");
+    const tally=new Map();
+    for(const o of live)for(const item of o.items){
+      const key=String(item.id)+"|"+item.name;
+      const record=tally.get(key)||{name:item.name,quantity:0};
+      record.quantity+=Number(item.quantity)||0;
+      tally.set(key,record);
+    }
+    const count=[...tally.values()].reduce((sum,item)=>sum+item.quantity,0);
+    summary.append(node("h3","Для кухни · "+live.length+" активных заказов · "+count+" порций"));
+    for(const item of [...tally.values()].sort((a,b)=>a.name.localeCompare(b.name,"ru")))
+      summary.append(node("p",item.name+" × "+item.quantity,"admin-line-item"));
+    if(!tally.size)summary.append(node("p","Активных блюд пока нет."));
+  }
   if(!shown.length){
     container.append(node("p","По этим условиям заказов пока нет."));return;
   }
@@ -147,6 +165,7 @@ function renderEventFilter(){
   for(const [id,title] of [...found].sort((a,b)=>a[1].localeCompare(b[1],"ru")))
     select.add(new Option(title,id));
   if([...select.options].some(x=>x.value===old))select.value=old;
+  select.disabled=!date;
   const canExport=Boolean(date&&select.value);
   $("exportEventOrders").disabled=!canExport;
   $("exportEventDishes").disabled=!canExport;
@@ -252,7 +271,7 @@ async function openEditor(id){
     editOrder=o;
     editLines=o.items.map(x=>({...x}));
     originalIds=new Set(o.items.map(x=>String(x.id)));
-    $("orderEditTitle").textContent="Заказ № "+orderLabel(o);
+    $("orderEditTitle").textContent="Заказ "+orderLabel(o);
     $("editOrderDate").value=o.eventDate;
     fillOrderEventOptions(o.eventId||o.eventDate);
     $("editOrderStatus").value=o.status;
@@ -355,7 +374,7 @@ $("orderEditForm").addEventListener("submit",async event=>{
       await batch.commit();
     }
     $("orderEditDialog").close();
-    setStatus("Изменения заказа № "+orderLabel(editOrder)+" сохранены. Итого: "+fmt(total(editLines)));
+    setStatus("Изменения заказа "+orderLabel(editOrder)+" сохранены. Итого: "+fmt(total(editLines)));
   }catch(e){
     $("orderEditStatus").textContent=e.code==="permission-denied"
       ?"Firebase запретил изменение. Опубликуйте последние правила Firestore."
