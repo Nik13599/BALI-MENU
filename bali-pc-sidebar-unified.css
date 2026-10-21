@@ -123,3 +123,51 @@
     gap:calc(2px * var(--bali-pc-sidebar-scale))!important;
   }
 }
+
+
+/* 21 Oct | Desktop contact typography follows a single scale.
+   The longest title stretches visually from the left edge to the right
+   edge of its matching sidebar buttons, without changing editable text. */
+@media(min-width:1180px){
+  body.bali-guest-theme>.bali-pc-sidebar{
+    --bali-pc-contact-heading-size:clamp(12px,.95vw,16px);
+    --bali-pc-contact-section-gap:clamp(7px,.85dvh,12px);
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-sidebar-contacts{
+    gap:var(--bali-pc-contact-section-gap)!important;
+    margin-top:auto!important;
+    /* Additional headings take their room upwards, while the address
+       remains anchored to the original bottom edge of the sidebar. */
+    flex-shrink:0!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-sidebar-contacts>.bali-pc-contacts-heading,
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location>.bali-pc-contacts-heading{
+    display:block!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    font-family:Manrope,Inter,Arial,sans-serif!important;
+    font-size:var(--bali-pc-contact-heading-size)!important;
+    font-weight:800!important;
+    line-height:1.22!important;
+    letter-spacing:-.035em!important;
+    color:#f6f6f3!important;
+    text-transform:uppercase!important;
+    text-align:center!important;
+    white-space:nowrap!important;
+    overflow-wrap:normal!important;
+    word-break:normal!important;
+  }
+  /* A two-word, single-line title whose first and last glyph sit at
+     the same left/right guides as the phone, social and map controls. */
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-sidebar-contacts>.bali-pc-contacts-heading:first-child{
+    text-align:justify!important;
+    text-align-last:justify!important;
+  }
+  body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location{
+    gap:var(--bali-pc-contact-section-gap)!important;
+    margin-top:0!important;
+  }
+}
