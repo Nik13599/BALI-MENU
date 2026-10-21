@@ -77,7 +77,9 @@ if(form&&list&&status){
       }
     }
     const source=selectedImage||urlInput.value.trim()||(el("baliPromoId").value===holidayId?holidayArt:"");
-    placementImage.src=validImage(source)&&source?source:(el("baliPromoId").value===holidayId?holidayArt:"");
+    const imageSource=validImage(source)&&source?source:(el("baliPromoId").value===holidayId?holidayArt:"");
+    if(imageSource&&placementImage.getAttribute("src")!==imageSource)placementImage.src=imageSource;
+    if(!imageSource&&placementImage.hasAttribute("src"))placementImage.removeAttribute("src");
   }
   placement.addEventListener("change",drawPlacement);
   destinationInput.addEventListener("change",drawPlacement);
