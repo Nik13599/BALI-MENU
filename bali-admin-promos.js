@@ -5,6 +5,8 @@ import {getFirestore,collection,doc,getDoc,onSnapshot,setDoc,deleteDoc,serverTim
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {prepareImage as compressImage} from "./image-compressor.js?v=20261020-2";
 import {makeImageVariants} from "./bali-design-variants.js?v=20261018-107";
+import {PROMO_POSITION_PRESETS,promoEditorMode,promoEditorXY,promoStorePlacement}
+  from "./bali-promo-placement.js?v=20261021-1";
 
 const el=id=>document.getElementById(id);
 const form=el("baliPromoForm"),list=el("baliPromoList"),status=el("baliPromoStatus");
@@ -63,16 +65,17 @@ if(form&&list&&status){
   function drawPlacement(){
     const mode=placement.value;
     placementCoords.hidden=mode!=="manual";
-    placementHandle.hidden=mode==="none";
-    placementHandle.textContent=el("baliPromoButton").value.trim()||"Пример кнопки";
-    const x=mode==="left"?17:mode==="right"?83:mode==="center"?50:Number(placementX.value);
-    const y=mode==="manual"?Number(placementY.value):82;
-    placementHandle.style.left=clamp(x,5,95)+"%";
-    placementHandle.style.top=clamp(y,5,95)+"%";
+    placementHandle.hidden=mode==="none"||destinationInput.value==="none";
+    placementHandle.textContent=el("baliPromoButton").value.trim()||"Подробнее";
+    const point=promoEditorXY(mode,placementX.value,placementY.value);
+    if(mode!=="manual"){placementX.value=point.x;placementY.value=point.y;}
+    placementHandle.style.left=point.x+"%";
+    placementHandle.style.top=point.y+"%";
     const source=selectedImage||urlInput.value.trim()||(el("baliPromoId").value===holidayId?holidayArt:"");
     placementImage.src=validImage(source)&&source?source:(el("baliPromoId").value===holidayId?holidayArt:"");
   }
   placement.addEventListener("change",drawPlacement);
+  destinationInput.addEventListener("change",drawPlacement);
   for(const input of [placementX,placementY,el("baliPromoButton")])input.addEventListener("input",drawPlacement);
   let moving=false;
   placementHandle.addEventListener("pointerdown",event=>{
@@ -153,7 +156,7 @@ if(form&&list&&status){
     showPreview("");
     variants.set();
     syncContactSettings();
-    placement.value="center";placementX.value=50;placementY.value=82;drawPlacement();
+    placement.value="bottom-center";placementX.value=50;placementY.value=82;drawPlacement();
   }
   fileInput.addEventListener("change",async()=>{
     const file=fileInput.files?.[0];
@@ -202,7 +205,7 @@ if(form&&list&&status){
       if(Number.isInteger(value))control.value=value;
     }
     syncContactSettings();
-    placement.value=item.buttonPlacement?.mode||"center";
+    placement.value=promoEditorMode(item.buttonPlacement);
     placementX.value=item.buttonPlacement?.x??50;
     placementY.value=item.buttonPlacement?.y??82;
     drawPlacement();
@@ -274,12 +277,13 @@ if(form&&list&&status){
     const destination=el("baliPromoDestination").value;
     const buttonText=el("baliPromoButton").value.trim();
     const {contactLinks,contactEnabled,contactTitle,contactHotspot}=readContacts();
-    const buttonPlacement={mode:placement.value,x:Number(placementX.value),y:Number(placementY.value)};
+    const buttonPlacement=promoStorePlacement(placement.value,placementX.value,placementY.value);
     const sort=Number(el("baliPromoSort").value);
     const published=el("baliPromoPublished").checked;
     if((title.length!==0&&title.length<2)||title.length>100||description.length>260
        ||!validImage(imageUrl)||!variants.valid()||!["none","events","menu","contacts","contact-modal"].includes(destination)
-       ||buttonText.length>65||!["none","left","center","right","manual"].includes(buttonPlacement.mode)
+       ||buttonText.length>65||!(placement.value==="none"||placement.value==="manual"||
+         Object.hasOwn(PROMO_POSITION_PRESETS,placement.value))
        ||!Number.isInteger(buttonPlacement.x)||!Number.isInteger(buttonPlacement.y)
        ||buttonPlacement.x<5||buttonPlacement.x>95||buttonPlacement.y<5||buttonPlacement.y>95||contactTitle.length>70
        ||contactKinds.some(name=>contactLinks[name].length>300||!validContactLink(name,contactLinks[name]))
