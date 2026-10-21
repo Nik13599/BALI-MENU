@@ -849,7 +849,7 @@ assert(themeCss.includes("/* BALI v58") &&
   !themeClient.includes('setProperty("--bg-'),
   "Theme may change interactive accents only, leaving fixed background color unchanged");
 assert(rules.includes('match /settings/{settingId}') &&
-  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder','siteBuilderPublished']") &&
+  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder','siteBuilderPublished','preorderSecurity']") &&
   rules.includes("(settingId == 'siteBuilderDraft' && isAdmin())") &&
   rules.includes("settingId in ['siteBuilderDraft','siteBuilderPublished'] && validSiteBuilder(request.resource.data)") &&
   rules.includes('allow list: if false') &&
