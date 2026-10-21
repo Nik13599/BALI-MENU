@@ -301,16 +301,41 @@ detailLike?.addEventListener("click",()=>{
 detailShare?.addEventListener("click",()=>{
   if(activeDetailCard)void window.BaliShare?.openForCard?.(activeDetailCard);
 });
+// The original poster opens in a fixed, non-scrollable view. Explicitly
+// pressing "Подробнее" unlocks the same native modal scroll on every device.
 detailComments?.addEventListener("click",()=>{
-  document.getElementById("baliEventDetailCaption")?.scrollIntoView({
-    behavior:reduce.matches?"instant":"smooth",block:"nearest"
+  dialog.dataset.scrollUnlocked="true";
+  detailComments.setAttribute("aria-expanded","true");
+  requestAnimationFrame(()=>{
+    document.getElementById("baliEventDetailCaption")?.scrollIntoView({
+      behavior:reduce.matches?"instant":"smooth",block:"nearest"
+    });
   });
 });
+for(const eventName of ["wheel","touchmove"]){
+  dialog.addEventListener(eventName,event=>{
+    if(dialog.open&&dialog.dataset.scrollUnlocked==="false")event.preventDefault();
+  },{passive:false});
+}
+dialog.addEventListener("keydown",event=>{
+  if(dialog.dataset.scrollUnlocked!=="false")return;
+  if(["PageDown","PageUp","ArrowDown","ArrowUp","Home","End"," "].includes(event.key)
+    &&!event.target.closest("button,a,input,textarea,select")){
+    event.preventDefault();
+  }
+});
+dialog.addEventListener("scroll",()=>{
+  if(dialog.dataset.scrollUnlocked==="false"&&dialog.scrollTop!==0)dialog.scrollTop=0;
+},{passive:true});
 new MutationObserver(changes=>{
   if(dialog.open&&activeDetailCard&&changes.some(change=>
     activeDetailCard.contains(change.target)))syncDetailLike();
 }).observe(grid,{subtree:true,attributes:true,attributeFilter:["aria-pressed","disabled"]});
-dialog.addEventListener("close",()=>{activeDetailCard=null;});
+dialog.addEventListener("close",()=>{
+  activeDetailCard=null;
+  dialog.dataset.scrollUnlocked="false";
+  detailComments?.setAttribute("aria-expanded","false");
+});
 const openDetails=card=>{
   const poster=card.querySelector(".event-poster");
   if(!poster)return;
@@ -325,6 +350,9 @@ const openDetails=card=>{
   document.getElementById("baliEventDetailHours").textContent=card.querySelector(".bali-event-hours")?.textContent||"Время уточняется";
   document.getElementById("baliEventDetailDescription").textContent=
     card.querySelector(".bali-event-description")?.textContent||"Дополнительная информация появится перед мероприятием.";
+  // Reset the scroll permission each time another poster is opened.
+  dialog.dataset.scrollUnlocked="false";
+  detailComments?.setAttribute("aria-expanded","false");
   if(!dialog.open)dialog.showModal();
   dialog.scrollTop=0;
   syncDetailLike();
