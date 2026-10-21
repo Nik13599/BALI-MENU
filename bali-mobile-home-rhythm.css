@@ -1,0 +1,105 @@
+/* BALI / Home / Phone only: one visible edge-to-edge spacing rhythm.
+   The older grid used flexible rows around fixed-size square posters plus a
+   -6px poster translation. This produced unequal visible gaps even when
+   row-gap matched. Keep the 1:1 posters and 1024:353 banner geometry. */
+@media (max-width:767px) {
+  :root[data-bali-theme] body.bali-guest-theme #homeSection {
+    --bali-mobile-home-gap:clamp(7px,1.1dvh,10px);
+    --bali-mobile-home-width:calc(min(100vw,600px) - 2 * var(--bali-mobile-edge));
+    --bali-mobile-home-hero-height:clamp(148px,41vw,176px);
+    --bali-mobile-home-poster-height:min(
+      calc((var(--bali-mobile-home-width) - 2 * var(--bali-mobile-home-gap)) / 3),
+      25dvh
+    );
+    --bali-mobile-home-promo-height:calc(var(--bali-mobile-home-width) * 353 / 1024);
+  }
+
+  /* Sized to actual artwork edges, not leftover flexible grid space.
+     The fourth, contacts row keeps its natural dimensions. */
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-inner,
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-inner:has(.bali-pc-hero.is-seasonal) {
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:
+      minmax(0,var(--bali-mobile-home-hero-height))
+      minmax(0,var(--bali-mobile-home-poster-height))
+      minmax(0,var(--bali-mobile-home-promo-height))
+      auto!important;
+    gap:var(--bali-mobile-home-gap) 0!important;
+    row-gap:var(--bali-mobile-home-gap)!important;
+    column-gap:0!important;
+    align-content:start!important;
+    align-items:stretch!important;
+  }
+
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-mobile-home-hero{
+    grid-row:1!important;
+    box-sizing:border-box!important;
+    min-height:0!important;
+    height:100%!important;
+    margin:0!important;
+  }
+
+  /* Preserve the live horizontal carousel and all of its 1:1 artwork. */
+  :root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel.bali-home-events{
+    --bali-home-square-gap:var(--bali-mobile-home-gap);
+    grid-row:2!important;
+    position:relative!important;
+    top:auto!important;
+    bottom:auto!important;
+    transform:none!important;
+    translate:none!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    height:var(--bali-mobile-home-poster-height)!important;
+    min-height:0!important;
+    max-height:var(--bali-mobile-home-poster-height)!important;
+    padding:0!important;
+    margin:0!important;
+    gap:var(--bali-mobile-home-gap)!important;
+    align-items:center!important;
+  }
+
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-pc-hero{
+    grid-row:3!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    min-height:0!important;
+    max-height:var(--bali-mobile-home-promo-height)!important;
+    align-self:stretch!important;
+    justify-self:stretch!important;
+  }
+  /* The holiday banner is not stretched, cropped or pulled out of its row. */
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal{
+    aspect-ratio:1024 / 353!important;
+    width:100%!important;
+    height:auto!important;
+    max-height:var(--bali-mobile-home-promo-height)!important;
+    align-self:start!important;
+    transform:none!important;
+  }
+
+  /* The address card and the 3 contact buttons belong to the same rhythm. */
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-contacts-card{
+    grid-row:4!important;
+    gap:var(--bali-mobile-home-gap)!important;
+    margin:0!important;
+    padding:0!important;
+    align-self:start!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #homeSection
+  .bali-home-contacts-card :is(.bali-yandex-map,.bali-home-social){
+    margin:0!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-social{
+    gap:var(--bali-mobile-home-gap)!important;
+  }
+}
+
+/* Compact phones: keep the four rows within the existing static home viewport
+   where possible, while retaining exactly the same inter-block distance. */
+@media (max-width:767px) and (max-height:690px) {
+  :root[data-bali-theme] body.bali-guest-theme #homeSection{
+    --bali-mobile-home-gap:7px;
+    --bali-mobile-home-hero-height:clamp(112px,19dvh,137px);
+  }
+}
