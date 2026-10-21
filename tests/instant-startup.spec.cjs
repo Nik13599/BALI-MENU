@@ -150,3 +150,36 @@ test('a healthy SDK reads the catalog once and caches its snapshot without dupli
  await page.evaluate(()=>window.__off());
  expect(await page.evaluate(()=>window.__stopped)).toBe(true);
 });
+
+test('a delayed catalog fallback cannot overwrite the newer live cache',async({page})=>{
+ let releaseSdk,releaseRest,menuRequested=false;
+ const sdkGate=new Promise(resolve=>releaseSdk=resolve),restGate=new Promise(resolve=>releaseRest=resolve);
+ await page.route('**/*',async route=>{
+  const url=new URL(route.request().url());
+  if(url.hostname==='127.0.0.1')return route.continue();
+  if(url.hostname==='firestore.googleapis.com'){
+   const path=route.request().postDataJSON()?.structuredQuery?.from?.[0]?.collectionId;
+   if(path==='menu')menuRequested=true;
+   await restGate;
+   return route.fulfill({contentType:'application/json',body:JSON.stringify(path==='menu'?[{document:document('menu/1',{...menu,name:'Устаревшее меню'})}]:[])});
+  }
+  const modules={
+   'firebase-app.js':'export const getApps=()=>[{}],getApp=()=>({}),initializeApp=()=>({});',
+   'firebase-firestore.js':`export const getFirestore=()=>({}),collection=(_,path)=>path,query=ref=>ref,where=()=>({});
+    export const onSnapshot=(ref,next)=>{if(ref==='menu')next({metadata:{fromCache:false},docs:[{id:'1',data:()=>(${JSON.stringify(menu)})}]});return ()=>{}};`
+  };
+  const body=modules[url.pathname.split('/').at(-1)];
+  if(!body)return route.abort();
+  await sdkGate;return route.fulfill({contentType:'text/javascript',body});
+ });
+ await page.route('**/reader-fixture.html',r=>r.fulfill({contentType:'text/html',body:'<script src="/firebase-config.js"></script><script type="module">import {onSnapshot,collection} from "/bali-public-reader.js";onSnapshot(collection(null,"menu"),snap=>window.__name=snap.docs[0].data().name);</script>'}));
+ try{
+  await page.goto('/reader-fixture.html',{waitUntil:'commit'});
+  await expect.poll(()=>menuRequested).toBe(true);
+  releaseSdk();await expect.poll(()=>page.evaluate(()=>window.__name)).toBe(menu.name);
+  releaseRest();
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  expect(await page.evaluate(()=>window.__name)).toBe(menu.name);
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem(Object.keys(localStorage).find(key=>key.endsWith(':menu')))).rows[0].record.name)).toBe(menu.name);
+ }finally{releaseSdk();releaseRest();}
+});

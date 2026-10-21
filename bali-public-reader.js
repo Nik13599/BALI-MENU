@@ -59,13 +59,6 @@ function cached(ref){
     return {...snapshot(ref,entry.rows),metadata:{fromCache:true,hasPendingWrites:false}};
   }catch{return null;}
 }
-function remember(ref,rows){
-  if(!cachedCollections.has(ref.path))return;
-  try{
-    const text=JSON.stringify({at:Date.now(),rows});
-    if(text.length<=500000)localStorage.setItem(cacheKey(ref),text);
-  }catch{} // Storage restrictions must never prevent opening the menu.
-}
 function rememberLive(ref,result){
   if(!cachedCollections.has(ref.path)||result.metadata?.fromCache)return;
   try{
@@ -97,7 +90,6 @@ function read(ref){
       if(!response.ok)throw Object.assign(Error('Public read failed'),{code:response.status===403?'permission-denied':'unavailable'});
       const result=await response.json();
       const rows=query?result.filter(item=>item.document).map(item=>item.document):[result];
-      remember(ref,rows);
       return snapshot(ref,rows);
     }finally{clearTimeout(timer);}
   })();
@@ -125,7 +117,7 @@ export function onSnapshot(ref,...args){
     if(!active||restStarted)return;
     restStarted=true;restFailed=false;
     read(ref).then(result=>{
-      if(active&&!serverLive){hasData=true;deliver(result);}
+      if(active&&!serverLive){hasData=true;rememberLive(ref,result);deliver(result);}
     }).catch(error=>{restFailed=true;fail(error);});
   };
   const sdkError=error=>{
