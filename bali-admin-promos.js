@@ -6,7 +6,7 @@ import {getFirestore,collection,doc,getDoc,onSnapshot,setDoc,deleteDoc,serverTim
 import {prepareImage as compressImage} from "./image-compressor.js?v=20261020-2";
 import {makeImageVariants} from "./bali-design-variants.js?v=20261018-107";
 import {PROMO_POSITION_PRESETS,promoEditorMode,promoEditorXY,promoStorePlacement}
-  from "./bali-promo-placement.js?v=20261021-1";
+  from "./bali-promo-placement.js?v=20261021-2";
 
 const el=id=>document.getElementById(id);
 const form=el("baliPromoForm"),list=el("baliPromoList"),status=el("baliPromoStatus");
