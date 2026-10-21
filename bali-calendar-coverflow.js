@@ -269,7 +269,7 @@ dialog.addEventListener("close",()=>{
 const formatDate=date=>{
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date||""))return "";
   return new Intl.DateTimeFormat("ru-RU",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"})
-    .format(new Date(date+"T12:00:00Z"));
+    .format(new Date(date+"T12:00:00Z")).replace(/\s*г\.$/," года");
 };
 let activeDetailCard=null;
 const detailLike=document.getElementById("baliEventDetailLike");
@@ -351,8 +351,10 @@ const openDetails=card=>{
   image.src=poster.currentSrc||poster.src;
   image.alt="Афиша "+title;
   document.getElementById("baliEventDetailTitle").textContent=title;
-  document.getElementById("baliEventDetailDate").textContent=formatDate(card.dataset.eventDate);
-  document.getElementById("baliEventDetailHours").textContent=card.querySelector(".bali-event-hours")?.textContent||"Время уточняется";
+  const fullDate=formatDate(card.dataset.eventDate);
+  document.getElementById("baliEventDetailDate").textContent=fullDate?fullDate+",":"";
+  const hours=card.querySelector(".bali-event-hours")?.textContent||"Время уточняется";
+  document.getElementById("baliEventDetailHours").textContent=hours.replace(/\s*[–—]\s*/," — ");
   document.getElementById("baliEventDetailDescription").textContent=
     card.querySelector(".bali-event-description")?.textContent||"Дополнительная информация появится перед мероприятием.";
   // Never carry the previous event's opened description into the next one.
