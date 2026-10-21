@@ -1177,6 +1177,7 @@
                     </div>
                 </div>
 
+                <p id="checkoutOrderError" class="checkout-order-error" role="alert" aria-live="assertive" hidden></p>
                 <button type="submit" class="submit-order-btn">
                     <span>Отправить предзаказ</span>
                     <span class="btn-icon">→</span>
@@ -1184,6 +1185,14 @@
             </form>
         </div>
     </div>
+
+    <style>
+      /* Checkout failures are shown inline: no OS alert and no stuck spinner. */
+      #checkoutOrderError.checkout-order-error{box-sizing:border-box;width:100%;margin:10px 0;padding:12px 14px;
+        background:#321f22;color:#ffe3e4;border:1px solid #a7545b;border-radius:10px;
+        font:500 13px/1.5 system-ui,-apple-system,sans-serif;overflow-wrap:anywhere}
+      #checkoutOrderError[hidden]{display:none!important}
+    </style>
 
     <!-- Личные предзаказы -->
     <div class="modal" id="myOrdersModal" role="dialog" aria-modal="true" aria-labelledby="ordersModalHeading" aria-hidden="true">
@@ -1286,7 +1295,7 @@
     <script src="bali-dialogs.js?v=20261021-privacy-fix2"></script>
     <script type="module" src="bali-age-gate.js?v=20261021-fast1"></script>
     <script src="bali-event-lifecycle.js?v=20261021-home-plus60m"></script>
-    <script src="app.js?v=20261021-home-timeline1"></script>
+    <script src="app.js?v=20261021-quota-inline1"></script>
     <script src="bali-calendar.js?v=20261021-ui1"></script>
     <script src="bali-calendar-coverflow.js?v=20261021-details-toggle1"></script>
     <script src="bali-pc-reference.js?v=20261021-anchored-home1"></script>

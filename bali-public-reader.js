@@ -52,6 +52,10 @@ function cached(ref){
   try{
     const entry=JSON.parse(localStorage.getItem(cacheKey(ref))||'null');
     if(!entry||Date.now()-entry.at>300000||Date.now()<entry.at||!Array.isArray(entry.rows))return null;
+    if(entry.sdkRows){
+      const docs=entry.rows.map(row=>({id:row.id,data:()=>row.record}));
+      return {docs,metadata:{fromCache:true,hasPendingWrites:false}};
+    }
     return {...snapshot(ref,entry.rows),metadata:{fromCache:true,hasPendingWrites:false}};
   }catch{return null;}
 }
@@ -62,6 +66,15 @@ function remember(ref,rows){
     if(text.length<=500000)localStorage.setItem(cacheKey(ref),text);
   }catch{} // Storage restrictions must never prevent opening the menu.
 }
+function rememberLive(ref,result){
+  if(!cachedCollections.has(ref.path)||result.metadata?.fromCache)return;
+  try{
+    const rows=result.docs.map(d=>({id:d.id,record:d.data()}));
+    const text=JSON.stringify({at:Date.now(),sdkRows:true,rows});
+    if(text.length<=500000)localStorage.setItem(cacheKey(ref),text);
+  }catch{} // No storage privilege is needed for a guest to browse.
+}
+
 function read(ref){
   const key=JSON.stringify(ref);
   if(requests.has(key))return requests.get(key);
@@ -123,19 +136,27 @@ export function onSnapshot(ref,...args){
         if(!active)return;
         if(result.metadata?.fromCache!==true||result.metadata?.hasPendingWrites)serverLive=true;
         else if(hasData)return; // A late local cache cannot replace a server result.
-        hasData=true;deliver(result);
+        hasData=true;rememberLive(ref,result);deliver(result);
       };
       const error=error=>{sdkFailed=true;fail(error);};
       stop=options?store.onSnapshot(target,options,next,error):store.onSnapshot(target,next,error);
     }).catch(error=>{sdkFailed=true;fail(error);});
   };
-  read(ref).then(result=>{
-    if(active&&!serverLive){hasData=true;deliver(result);}
-  }).catch(error=>{
-    restFailed=true;fail(error);
-    // If REST cannot fetch current data, start the SDK fallback immediately.
-    startLive();
-  });
+  // The menu collections used to be read twice on every new session:
+  // REST runQuery first, then a native SDK snapshot (charged per document).
+  // Use one SDK listener for the large catalogs, preserving real-time updates.
+  // Event and promotion fast-start requests retain their verified REST path.
+  if(cachedCollections.has(ref.path)){
+    restFailed=true;
+  }else{
+    read(ref).then(result=>{
+      if(active&&!serverLive){hasData=true;deliver(result);}
+    }).catch(error=>{
+      restFailed=true;fail(error);
+      // If REST cannot fetch current data, start the SDK fallback immediately.
+      startLive();
+    });
+  }
   if(window.BaliStartupGate&&!window.BaliStartupReady){
     // Do not compete with the first banner and events download.
     // A bounded fallback prevents a broken startup gate from disabling live updates.
@@ -154,5 +175,5 @@ export function onSnapshot(ref,...args){
 if(config()){
   read(query(collection(null,'promotions'),where('published','==',true)));
   read(collection(null,'events'));
-  if(location.hash==='#menu')read(collection(null,'menu'));
+
 }

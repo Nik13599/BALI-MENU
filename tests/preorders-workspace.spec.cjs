@@ -116,3 +116,11 @@ test("staff order-creation form remains present and shows the save action",async
   await expect(page.locator("#editOrderStatus option")).toHaveCount(3);
   await expect(page.locator("#orderEditForm button[type=submit]")).toHaveCount(1);
 });
+
+test("guest preorder checkout uses inline accessible error instead of native alert",async({page})=>{
+  await page.goto("/");
+  await expect(page.locator("#checkoutOrderError")).toHaveCount(1);
+  await expect(page.locator("#checkoutOrderError")).toHaveAttribute("role","alert");
+  await expect(page.locator("#checkoutOrderError")).toBeHidden();
+  await expect(page.locator("#checkoutForm .submit-order-btn")).toHaveCount(1);
+});
