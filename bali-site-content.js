@@ -53,16 +53,18 @@ function apply(data){
     const node=one("#menuNavBtn .bali-pc-menu-cta");
     if(node)node.textContent=data.menuBannerCta+" →";
   }
-  // Text saved in the admin panel may contain repeated/nbsp spaces. Display
-  // the public contact heading with exactly one ordinary space per word.
-  if(typeof data.contactHeading==="string"){
-    const cleaned=data.contactHeading.replace(/[\s\u200B-\u200D\u2060]+/g," ").trim();
-    const heading=cleaned.toLocaleLowerCase("ru-RU")==="контактная информация"
-      ?"Контактная информация":cleaned;
-    label(".bali-pc-sidebar-contacts>.bali-pc-contacts-heading",heading);
-  }
+  // The desktop contact headings use exactly two normal spaces between
+  // words, even when older Firestore settings contain one or many spaces.
+  const contactWords=value=>{
+    if(typeof value!=="string")return value;
+    const clean=value.replace(/[\s\u200B-\u200D\u2060]+/g," ").trim();
+    if(clean.toLocaleLowerCase("ru-RU")==="контактная информация")
+      return "Контактная  информация";
+    return clean.replace(/ /g,"  ");
+  };
+  label(".bali-pc-sidebar-contacts>.bali-pc-contacts-heading",contactWords(data.contactHeading));
   label(".bali-pc-contact-phone span",data.phoneText);
-  label(".bali-pc-contact-location>.bali-pc-contacts-heading",data.findHeading);
+  label(".bali-pc-contact-location>.bali-pc-contacts-heading",contactWords(data.findHeading));
   const floor=one(".bali-pc-contact-location a>span small");
   if(typeof data.addressFloor==="string"&&data.addressFloor.trim()){
     // The surrounding text needs a separate text node to preserve the small caption.
