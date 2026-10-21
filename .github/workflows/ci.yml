@@ -24,6 +24,8 @@ jobs:
           node --check bali-calendar.js
           node --check bali-calendar-coverflow.js
           node --input-type=module --check < bali-public-reader.js
+          node --input-type=module --check < cloudflare-pages/functions/api/public-data.js
+          node scripts/test-public-cache.mjs
           node --input-type=module --check < auth.js
           node --input-type=module --check < bali-id-flip.js
           node --input-type=module --check < bali-id-onboarding.js
