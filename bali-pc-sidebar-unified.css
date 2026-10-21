@@ -126,8 +126,7 @@
 
 
 /* 21 Oct | Desktop contact typography follows a single scale.
-   The longest title stretches visually from the left edge to the right
-   edge of its matching sidebar buttons, without changing editable text. */
+   Keep all three headings legible and centered without text justification. */
 @media(min-width:1180px){
   body.bali-guest-theme>.bali-pc-sidebar{
     --bali-pc-contact-heading-size:clamp(12px,.95vw,16px);
@@ -160,11 +159,12 @@
     overflow-wrap:normal!important;
     word-break:normal!important;
   }
-  /* A two-word, single-line title whose first and last glyph sit at
-     the same left/right guides as the phone, social and map controls. */
+  /* All three headings share the same centered text alignment.
+     Do not justify: it inserts an oversized gap between Russian words. */
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-sidebar-contacts>.bali-pc-contacts-heading:first-child{
-    text-align:justify!important;
-    text-align-last:justify!important;
+    text-align:center!important;
+    text-align-last:center!important;
+    word-spacing:normal!important;
   }
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-contact-location{
     gap:var(--bali-pc-contact-section-gap)!important;
