@@ -81,6 +81,6 @@ export async function onRequestGet({request,waitUntil}){
       {"Cache-Control":"no-store","Retry-After":"30"});
   }finally{clearTimeout(timeout);}
 }
-export async function onRequest(){
+export async function onRequestPost(){
   return json({error:"Method not allowed"},405,{"Allow":"GET","Cache-Control":"no-store"});
 }

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 const edgeSource=await readFile("cloudflare-pages/functions/api/public-data.js","utf8");
 const source="data:text/javascript;base64,"+Buffer.from(edgeSource).toString("base64");
-const {onRequestGet,onRequest}=await import(source);
+const {onRequestGet,onRequestPost}=await import(source);
 const stored=new Map();
 globalThis.caches={default:{
   async match(key){return stored.get(key.url)?.clone()},
@@ -45,7 +45,7 @@ for(const name of sensitive){
   assert.equal(response.status,400,name);
 }
 assert.equal((await onRequestGet(make("events","&another=evil"))).status,400);
-assert.equal((await onRequest()).status,405);
+assert.equal((await onRequestPost()).status,405);
 const promo=await onRequestGet(make("promotions"));
 assert.equal(promo.status,200);
 await Promise.all(pending.splice(0));
