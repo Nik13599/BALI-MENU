@@ -52,6 +52,27 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time;
     }
 
+    // One-time, immutable acknowledgement of the BALI ID programme.
+    // Stored separately from registration; the ID cannot be created first.
+    function baliIdAgreementPath(uid) {
+      return /databases/$(database)/documents/users/$(uid)/baliIdAgreements/privilege;
+    }
+    function hasBaliIdAgreement(uid) {
+      return exists(baliIdAgreementPath(uid))
+        && get(baliIdAgreementPath(uid)).data.version == 1;
+    }
+    match /users/{uid}/baliIdAgreements/{agreementId} {
+      allow get: if agreementId == 'privilege' && signedInAs(uid);
+      allow list: if false;
+      allow create: if agreementId == 'privilege' && signedInAs(uid)
+        && exists(/databases/$(database)/documents/users/$(uid))
+        && request.resource.data.keys().hasAll(['version','acceptedAt'])
+        && request.resource.data.keys().hasOnly(['version','acceptedAt'])
+        && request.resource.data.version == 1
+        && request.resource.data.acceptedAt == request.time;
+      allow update, delete: if false;
+    }
+
     // BALI ID: a globally sequential six-digit-or-longer guest number.
     // ID and counter MUST be created/updated in the SAME Firestore transaction.
     // The counter's lastUid is a witness to prevent arbitrary increments or gaps.
@@ -78,12 +99,14 @@ service cloud.firestore {
       allow list: if isAdmin() || isDirector();
       allow create: if signedInAs(uid)
         && exists(/databases/$(database)/documents/users/$(uid))
+        && hasBaliIdAgreement(uid)
         && validBaliId(uid);
       allow update, delete: if false;
     }
     function validBaliCounter() {
       return request.auth != null
         && request.auth.token.email_verified == true
+        && hasBaliIdAgreement(request.auth.uid)
         && request.resource.data.keys().hasAll(['count','lastUid','updatedAt'])
         && request.resource.data.keys().hasOnly(['count','lastUid','updatedAt'])
         && request.resource.data.count is int
@@ -120,6 +143,7 @@ service cloud.firestore {
       allow get: if signedInAs(uid) || isAdmin() || isDirector();
       allow list: if isAdmin();
       allow create: if exists(/databases/$(database)/documents/users/$(uid))
+        && hasBaliIdAgreement(uid)
         && validPrivilege(request.resource.data,uid)
         && ((isAdmin() || isDirector()) ||
            (signedInAs(uid)
