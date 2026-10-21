@@ -185,3 +185,58 @@ test("Composed Christmas banner renders uploaded art, foreground title and color
  });
  expect(await page.evaluate(()=>window.__promoClicked)).toBe(1);
 });
+
+test("Simple inline promo editor uploads real image and saves styling to the existing promotion",async({page})=>{
+ await page.route("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js",route=>route.fulfill({
+  status:200,contentType:"application/javascript",
+  headers:{"access-control-allow-origin":"*"},
+  body:`export function doc(){return {id:"bali-new-year-2026"}}
+    export async function getDoc(){return {exists:()=>false}}
+    export async function setDoc(_,payload){window.__promoSaved=payload}
+    export function serverTimestamp(){return "2026-test-stamp"}`
+ }));
+ await page.goto("/index.html");
+ await page.evaluate(async()=>{
+  window.BALI_IMAGE_STORAGE_ENABLED=false;
+  const {createSimplePromoEditor}=await import("/bali-promo-simple-editor.js");
+  const editor=createSimplePromoEditor({db:{},frame:{contentWindow:window,contentDocument:document},
+   canEdit:()=>true,notify:message=>window.__promoNotification=message});
+  document.body.append(editor.root);
+  window.__promoPreviewEvents=[];
+  window.addEventListener("bali:promo-preview",event=>window.__promoPreviewEvents.push(event.detail.offer));
+  await editor.select("bali-new-year-2026");
+ });
+ await expect(page.locator("#baliBuilderManagedPromo")).toBeVisible();
+ await page.locator("[data-promo-title]").fill("НОВОГОДНИЙ КОРПОРАТИВ");
+ await page.locator("[data-promo-font-size]").fill("42");
+ await page.locator("[data-promo-text-color]").fill("#fedcba");
+ await page.locator("[data-promo-button-text]").fill("Забронировать");
+ await page.locator("[data-promo-button-background]").fill("#aaff33");
+ await page.locator("[data-promo-button-color]").fill("#000022");
+ await page.locator("[data-promo-button-radius]").fill("22");
+ await page.locator("[data-promo-align]").selectOption("center");
+ // A genuine browser image import, not a manually pasted URL.
+ await page.locator("[data-promo-file]").setInputFiles({
+  name:"banner.png",mimeType:"image/png",
+  buffer:Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9YvKp6kAAAAASUVORK5CYII=","base64")
+ });
+ await expect(page.locator("[data-promo-status]")).toContainText("Картинка загружена");
+ await page.locator("[data-promo-save]").click();
+ await expect(page.locator("[data-promo-status]")).toContainText("Слайд опубликован");
+ const result=await page.evaluate(()=>({
+  overlay:window.__promoSaved?.overlay,title:window.__promoSaved?.title,
+  button:window.__promoSaved?.buttonText,image:window.__promoSaved?.imageUrl,
+  destination:window.__promoSaved?.destination,
+  published:window.__promoSaved?.published,previewCount:window.__promoPreviewEvents?.length
+ }));
+ expect(result.title).toBe("НОВОГОДНИЙ КОРПОРАТИВ");
+ expect(result.button).toBe("Забронировать");
+ expect(result.image).toMatch(/^data:image\/webp;base64,/);
+ expect(result.destination).toBe("contact-modal");
+ expect(result.published).toBe(true);
+ expect(result.overlay).toEqual({
+  enabled:true,fontSize:42,textColor:"#fedcba",buttonBackground:"#aaff33",
+  buttonColor:"#000022",buttonRadius:22,align:"center"
+ });
+ expect(result.previewCount).toBeGreaterThan(0);
+});
