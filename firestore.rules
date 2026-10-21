@@ -618,6 +618,20 @@ service cloud.firestore {
         );
     }
 
+    // Private, immutable self-reported check-in, distinct from RSVP/plans.
+    match /users/{uid}/eventCheckins/{eventId} {
+      allow get, list: if signedInAs(uid) || isAdmin();
+      allow create: if signedInAs(uid)
+        && exists(/databases/$(database)/documents/users/$(uid))
+        && exists(/databases/$(database)/documents/events/$(eventId))
+        && request.resource.data.keys().hasOnly(['uid','eventDate','createdAt'])
+        && request.resource.data.keys().hasAll(['uid','eventDate','createdAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.eventDate == get(/databases/$(database)/documents/events/$(eventId)).data.date
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
     match /users/{uid}/eventInterests/{eventDate} {
       allow get, list: if signedInAs(uid) || isAdmin();
       allow create: if signedInAs(uid)
