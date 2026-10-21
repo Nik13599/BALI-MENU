@@ -2,7 +2,7 @@ const {test,expect}=require('@playwright/test');
 test.beforeEach(async({page})=>{
   await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
 });
-test('BALI ID: History and QR below heading; Pay, Top up, Transfer stay aligned under unscaled card',async({page})=>{
+test('BALI ID: QR then History at top; Pay, Top up, Transfer stay below enlarged card',async({page})=>{
   await page.goto('/index.html#id');
   await page.evaluate(()=>{
     document.getElementById('baliIdSection').hidden=false;
@@ -16,19 +16,18 @@ test('BALI ID: History and QR below heading; Pay, Top up, Transfer stay aligned 
       return {x:box.x,y:box.y,w:box.width,h:box.height,r:box.right,b:box.bottom};
     };
     const scene=document.getElementById('baliIdFlipScene');
-    return {heading:r('baliIdPageHeading'),history:r('baliIdHistoryOpen'),
+    return {history:r('baliIdHistoryOpen'),
       qr:r('baliShowQr'),card:r('baliIdFlipScene'),pay:r('baliIdPayOpen'),
       topup:r('baliIdTopupOpen'),transfer:r('baliIdTransferOpen'),
       ratio:getComputedStyle(scene).aspectRatio,viewport:window.innerWidth};
   });
-  const {heading,history,qr,card,pay,topup,transfer}=rects;
-  expect(history.y).toBeGreaterThanOrEqual(heading.b+1);
-  expect(qr.y).toBeGreaterThanOrEqual(heading.b+1);
+  const {history,qr,card,pay,topup,transfer}=rects;
+  await expect(page.locator('#baliIdPageHeading')).toHaveCount(0);
   expect(Math.abs(history.y-qr.y)).toBeLessThan(3);
-  expect(history.r).toBeLessThan(qr.x+2);
-  expect(qr.r).toBeLessThanOrEqual(rects.viewport+1);
-  expect(qr.b).toBeLessThan(card.y+4);
-  expect(pay.y).toBeGreaterThanOrEqual(card.b-4);
+  expect(qr.r).toBeLessThan(history.x+2);
+  expect(history.r).toBeLessThanOrEqual(rects.viewport+1);
+  expect(history.b).toBeLessThan(card.y+4);
+  expect(pay.y).toBeGreaterThanOrEqual(card.b+14);
   expect(Math.abs(pay.y-topup.y)).toBeLessThan(3);
   expect(Math.abs(topup.y-transfer.y)).toBeLessThan(3);
   expect(pay.r).toBeLessThan(topup.x+2);
