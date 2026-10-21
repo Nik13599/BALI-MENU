@@ -71,12 +71,12 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
    preview.hidden=!url;
    if(url)preview.src=url;else preview.removeAttribute("src");
  };
- const collect=()=>{
+ const collect=(forceEnable=true)=>{
    if(!record)return;
    record.title=escapeText($("title").value).slice(0,100);
    record.buttonText=escapeText($("button-text").value).slice(0,65);
    record.overlay={
-     enabled:true,
+     enabled:forceEnable||record.overlay?.enabled===true,
      fontSize:bounded($("font-size").value,12,80,38),
      textColor:$("text-color").value,
      buttonBackground:$("button-background").value,
@@ -178,7 +178,7 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
  });
  $("save").addEventListener("click",async()=>{
   if(!record||busy||!canEdit())return;
-  collect();
+  collect(false);
   const id=activeId;
   if(record.title.length!==0&&record.title.length<2){say("Текст должен состоять минимум из 2 символов или быть пустым.");return;}
   if(!safeImage(record.imageUrl)&&record.imageUrl!==""){say("Загрузите картинку или укажите HTTPS-ссылку.");return;}
