@@ -77,3 +77,9 @@
     display:none!important;
   }
 }
+
+
+/* Keep the sign-in action hidden for registered members, on all screens. */
+body.bali-guest-theme #profileSection #profileSignInBtn[hidden]{
+  display:none!important;
+}
