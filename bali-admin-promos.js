@@ -53,6 +53,40 @@ if(form&&list&&status){
   }
   destinationInput.addEventListener("change",syncContactSettings);
   hotspotEnabled.addEventListener("change",syncContactSettings);
+  const placement=el("baliPromoButtonPlacement");
+  const placementPreview=el("baliPromoButtonPlacementPreview");
+  const placementImage=el("baliPromoButtonPlacementImage");
+  const placementHandle=el("baliPromoButtonPlacementHandle");
+  const placementX=el("baliPromoButtonX"),placementY=el("baliPromoButtonY");
+  const placementCoords=el("baliPromoButtonPlacementCoordinates");
+  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+  function drawPlacement(){
+    const mode=placement.value;
+    placementCoords.hidden=mode!=="manual";
+    placementHandle.hidden=mode==="none";
+    placementHandle.textContent=el("baliPromoButton").value.trim()||"Пример кнопки";
+    const x=mode==="left"?17:mode==="right"?83:mode==="center"?50:Number(placementX.value);
+    const y=mode==="manual"?Number(placementY.value):82;
+    placementHandle.style.left=clamp(x,5,95)+"%";
+    placementHandle.style.top=clamp(y,5,95)+"%";
+    const source=selectedImage||urlInput.value.trim()||(el("baliPromoId").value===holidayId?holidayArt:"");
+    placementImage.src=validImage(source)&&source?source:(el("baliPromoId").value===holidayId?holidayArt:"");
+  }
+  placement.addEventListener("change",drawPlacement);
+  for(const input of [placementX,placementY,el("baliPromoButton")])input.addEventListener("input",drawPlacement);
+  let moving=false;
+  placementHandle.addEventListener("pointerdown",event=>{
+    if(placement.value!=="manual")return;
+    moving=true;placementHandle.setPointerCapture(event.pointerId);event.preventDefault();
+  });
+  placementHandle.addEventListener("pointermove",event=>{
+    if(!moving||placement.value!=="manual")return;
+    const rect=placementPreview.getBoundingClientRect();
+    placementX.value=Math.round(clamp((event.clientX-rect.left)/rect.width*100,5,95));
+    placementY.value=Math.round(clamp((event.clientY-rect.top)/rect.height*100,5,95));
+    drawPlacement();
+  });
+  for(const kind of ["pointerup","pointercancel","lostpointercapture"])placementHandle.addEventListener(kind,()=>moving=false);
   function readContacts(){
     const contactLinks={},contactEnabled={};
     for(const name of contactKinds){
@@ -119,6 +153,7 @@ if(form&&list&&status){
     showPreview("");
     variants.set();
     syncContactSettings();
+    placement.value="center";placementX.value=50;placementY.value=82;drawPlacement();
   }
   fileInput.addEventListener("change",async()=>{
     const file=fileInput.files?.[0];
@@ -128,7 +163,7 @@ if(form&&list&&status){
     try{
       const result=await compressImage(file,"design-hero");
       if(serial!==imageSerial)return;
-      selectedImage=result;urlInput.value="";showPreview(result);
+      selectedImage=result;urlInput.value="";showPreview(result);drawPlacement();
       say("Баннер обработан без обрезки текста. Сохраните форму.");
     }catch(error){
       if(serial===imageSerial)say(error.message||"Не удалось обработать баннер.");
@@ -137,7 +172,7 @@ if(form&&list&&status){
     }
   });
   urlInput.addEventListener("input",()=>{
-    imageSerial++;selectedImage="";fileInput.value="";showPreview(urlInput.value.trim());
+    imageSerial++;selectedImage="";fileInput.value="";showPreview(urlInput.value.trim());drawPlacement();
   });
   el("baliPromoRemoveImage").addEventListener("click",()=>{
     imageSerial++;selectedImage="";urlInput.value="";fileInput.value="";showPreview("");
@@ -167,6 +202,10 @@ if(form&&list&&status){
       if(Number.isInteger(value))control.value=value;
     }
     syncContactSettings();
+    placement.value=item.buttonPlacement?.mode||"center";
+    placementX.value=item.buttonPlacement?.x??50;
+    placementY.value=item.buttonPlacement?.y??82;
+    drawPlacement();
     el("baliPromoSort").value=item.sort;
     el("baliPromoPublished").checked=item.published;
     save.textContent="Сохранить изменения";
@@ -235,11 +274,14 @@ if(form&&list&&status){
     const destination=el("baliPromoDestination").value;
     const buttonText=el("baliPromoButton").value.trim();
     const {contactLinks,contactEnabled,contactTitle,contactHotspot}=readContacts();
+    const buttonPlacement={mode:placement.value,x:Number(placementX.value),y:Number(placementY.value)};
     const sort=Number(el("baliPromoSort").value);
     const published=el("baliPromoPublished").checked;
     if((title.length!==0&&title.length<2)||title.length>100||description.length>260
        ||!validImage(imageUrl)||!variants.valid()||!["none","events","menu","contacts","contact-modal"].includes(destination)
-       ||buttonText.length>(destination==="contact-modal"?65:35)||contactTitle.length>70
+       ||buttonText.length>65||!["none","left","center","right","manual"].includes(buttonPlacement.mode)
+       ||!Number.isInteger(buttonPlacement.x)||!Number.isInteger(buttonPlacement.y)
+       ||buttonPlacement.x<5||buttonPlacement.x>95||buttonPlacement.y<5||buttonPlacement.y>95||contactTitle.length>70
        ||contactKinds.some(name=>contactLinks[name].length>300||!validContactLink(name,contactLinks[name]))
        ||(destination==="contact-modal"&&!contactKinds.some(name=>contactEnabled[name]))
        ||["left","top","width","height"].some(side=>!Number.isInteger(contactHotspot[side]))
@@ -257,7 +299,7 @@ if(form&&list&&status){
       // Old, ordinary slides keep their original Firestore shape so editing them
       // remains possible before production rules for contact-modal are deployed.
       const payload={title,description,imageUrl,imageTabletUrl:versions.tablet,
-        imageMobileUrl:versions.mobile,destination,buttonText,sort,published,updatedAt:serverTimestamp()};
+        imageMobileUrl:versions.mobile,destination,buttonText,buttonPlacement,sort,published,updatedAt:serverTimestamp()};
       // Keep text/button styling created in the simple banner composer.
       const existing=records.get(id);
       if(existing?.overlay)payload.overlay=existing.overlay;
