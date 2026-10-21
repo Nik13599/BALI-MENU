@@ -148,7 +148,7 @@ test('phone scene and calendar use all viewport width, square posters and swipe-
   await expect(page.locator('#baliPosterNext')).toHaveCSS('display','none');
 });
 
-test('planned future date has a green outline and three solid dots until selected',async({page})=>{
+test('planned future date stays green with three dark dots until unplanned',async({page})=>{
   await prepare(page,4);
   await page.evaluate(()=>{
     const events=[
@@ -172,24 +172,25 @@ test('planned future date has a green outline and three solid dots until selecte
   }
   const day=page.locator('#baliCalendarDays [data-date="2026-12-25"]');
   await expect(day).toBeVisible();
-  // The first loaded poster now selects its date automatically. Pick an empty
-  // day to verify that RSVP alone does not fill other event dates.
+  // Move away from the automatically selected poster: a saved plan must
+  // remain highlighted independently of the currently selected date.
   await page.evaluate(()=>document.querySelector('#baliCalendarDays [data-date="2026-12-26"]').click());
   await expect(day).toHaveAttribute('data-planned','true');
   await expect(day).toHaveAttribute('data-event-count','3');
   await expect(day.locator('.bali-calendar-event-dot')).toHaveCount(3);
   await expect(day).toHaveAttribute('data-lifecycle-status','upcoming');
   await expect(day).toHaveCSS('background-image','none');
-  await expect(day).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
+  await expect(day).toHaveCSS('background-color','rgb(185, 255, 81)');
   await expect(day).toHaveCSS('border-color','rgb(185, 255, 81)');
   expect(await day.locator('.bali-calendar-day-number').evaluate(n=>getComputedStyle(n).color))
-    .toBe('rgb(237, 244, 234)');
+    .toBe('rgb(21, 25, 16)');
   for(const dot of await day.locator('.bali-calendar-event-dot').all())
-    expect(await dot.evaluate(n=>getComputedStyle(n).backgroundColor)).toBe('rgb(185, 255, 81)');
+    expect(await dot.evaluate(n=>getComputedStyle(n).backgroundColor)).toBe('rgb(21, 25, 16)');
   await page.evaluate(()=>window.dispatchEvent(new CustomEvent('bali:interests',{detail:{dates:[]}})));
   await expect(day).toHaveAttribute('data-planned','false');
+  await expect(day).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
   const colors=await day.locator('.bali-calendar-event-dot').evaluateAll(nodes=>nodes.map(n=>getComputedStyle(n).backgroundColor));
-  expect(colors).toEqual(['rgb(185, 255, 81)','rgb(185, 255, 81)','rgb(185, 255, 81)']);
+  expect(colors).toEqual(['rgb(18, 52, 86)','rgb(238, 136, 85)','rgb(119, 68, 204)']);
 });
 test('poster edges dissolve while the desktop page heading is absent',async({page})=>{
   await prepare(page,6);
