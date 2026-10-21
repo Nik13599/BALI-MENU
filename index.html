@@ -448,14 +448,31 @@
           </div>
         </div>
         </div><!-- /.bali-event-calendar-layout -->
-        <dialog class="bali-event-detail-dialog" id="baliEventDetailDialog" aria-labelledby="baliEventDetailTitle">
-          <button type="button" class="bali-event-detail-close" id="baliEventDetailClose" aria-label="Закрыть подробности">×</button>
+        <dialog class="bali-event-detail-dialog bali-event-post" id="baliEventDetailDialog" aria-labelledby="baliEventDetailTitle">
+          <div class="bali-event-post-header">
+            <img class="bali-event-post-avatar" src="assets/bali-nightclub-logo.png" alt="" width="54" height="54">
+            <div class="bali-event-post-account"><strong>BALI NIGHT CLUB</strong><span>Минск · Кирова, 13</span></div>
+            <button type="button" class="bali-event-detail-close" id="baliEventDetailClose" aria-label="Закрыть публикацию">×</button>
+          </div>
           <img id="baliEventDetailImage" class="bali-event-detail-image" alt="">
+          <div class="bali-event-post-actions" role="group" aria-label="Действия с мероприятием">
+            <button type="button" id="baliEventDetailLike" aria-pressed="false" aria-label="Хочу пойти на мероприятие">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.3 5.3 0 0 0-7.5 0L12 5.9l-1.3-1.3a5.3 5.3 0 0 0-7.5 7.5L12 21l8.8-8.9a5.3 5.3 0 0 0 0-7.5Z"/></svg><span>Хочу пойти</span>
+            </button>
+            <button type="button" id="baliEventDetailShare" aria-label="Поделиться афишей">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3 3.7 10.4a1 1 0 0 0 .08 1.86l6.6 2.3 2.3 6.6a1 1 0 0 0 1.86.08L21 3ZM10.4 14.6 21 3"/></svg><span>Поделиться</span>
+            </button>
+            <button type="button" id="baliEventDetailComments" aria-label="Читать подробности мероприятия">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.4a8.5 8.5 0 0 1-8.5 8.5 9.2 9.2 0 0 1-3.5-.7L3 21l1.7-5a8.5 8.5 0 1 1 15.8-4.6Z"/></svg><span>Подробнее</span>
+            </button>
+          </div>
           <div class="bali-event-detail-copy">
-            <p id="baliEventDetailDate" class="bali-event-detail-date"></p>
             <h2 id="baliEventDetailTitle"></h2>
-            <p id="baliEventDetailHours"></p>
-            <p id="baliEventDetailDescription"></p>
+            <div class="bali-event-post-meta"><span id="baliEventDetailDate" class="bali-event-detail-date"></span><span id="baliEventDetailHours"></span></div>
+            <section class="bali-event-post-caption" id="baliEventDetailCaption" aria-label="Подробная информация о вечеринке">
+              <strong>BALI NIGHT CLUB</strong>
+              <p id="baliEventDetailDescription"></p>
+            </section>
           </div>
         </dialog>
         <aside class="events-info-panel" aria-label="О мероприятиях BALI">
