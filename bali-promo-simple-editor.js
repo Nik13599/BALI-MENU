@@ -1,6 +1,7 @@
 /* BALI simple banner composer — directly in the visual site builder. */
 import {doc,getDoc,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {prepareImage} from "./image-compressor.js?v=20261020-2";
+import {PROMO_POSITION_OPTIONS,promoEditorMode,promoEditorXY,promoStorePlacement} from "./bali-promo-placement.js?v=20261021-1";
 
 const holidayId="bali-new-year-2026";
 const holidayPoster="assets/BALI_banner_badge_rectangular_only.png";
@@ -51,12 +52,27 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
     <label class="bali-builder-field">Размер текста, px<input data-promo-font-size type="number" min="12" max="80" value="38"></label>
     <label class="bali-builder-field">Цвет текста<input data-promo-text-color type="color" value="#ffffff"></label>
   </div>
-  <label class="bali-builder-field">Расположение текста и кнопки
+  <label class="bali-builder-field bali-promo-simple-overlay-toggle"><input data-promo-overlay-enabled type="checkbox"> Показать дополнительный текст поверх изображения
+   <small>Не включайте, если надпись уже есть на загруженной картинке.</small>
+  </label>
+  <label class="bali-builder-field">Выравнивание текста
    <select data-promo-align><option value="left">Слева</option><option value="center">По центру</option><option value="right">Справа</option></select>
   </label>
   <label class="bali-builder-field">3. Надпись на кнопке
    <input data-promo-button-text type="text" maxlength="65" placeholder="Забронировать заранее">
   </label>
+  <label class="bali-builder-field">Положение кнопки для выбранного баннера
+   <select data-promo-position aria-label="Выбор положения кнопки на баннере"></select>
+  </label>
+  <div data-promo-position-stage class="bali-promo-simple-position-stage" aria-label="Просмотр положения кнопки">
+   <img data-promo-position-image alt="">
+   <span data-promo-position-handle>Подробнее</span>
+  </div>
+  <div data-promo-position-coordinates class="bali-promo-simple-position-coordinates" hidden>
+   <label class="bali-builder-field">Слева, %<input data-promo-x type="number" min="5" max="95" step="1" value="50"></label>
+   <label class="bali-builder-field">Сверху, %<input data-promo-y type="number" min="5" max="95" step="1" value="82"></label>
+  </div>
+  <small class="bali-promo-simple-note">Девять готовых позиций, скрытие и ручное перетаскивание. Если кнопка напечатана прямо на изображении, для её полного визуального удаления замените изображение.</small>
   <div class="bali-promo-simple-grid">
     <label class="bali-builder-field">Цвет кнопки<input data-promo-button-background type="color" value="#c3f36d"></label>
     <label class="bali-builder-field">Цвет текста кнопки<input data-promo-button-color type="color" value="#111810"></label>
@@ -68,19 +84,36 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
  `;
  const $=key=>root.querySelector("[data-promo-"+key+"]");
  const status=$("status"),preview=root.querySelector(".bali-promo-simple-preview img");
- let activeId=null,record=null,busy=false,serial=0,updating=false;
+ const pos=$("position"),posStage=$("position-stage"),posHandle=$("position-handle");
+ const posImage=$("position-image"),posCoords=$("position-coordinates");
+ for(const [value,label] of PROMO_POSITION_OPTIONS)pos.add(new Option(label,value));
+ let activeId=null,record=null,busy=false,serial=0,updating=false,dragging=false;
+ const setPlacementUI=()=>{
+   const mode=pos.value,point=promoEditorXY(mode,$("x").value,$("y").value);
+   posCoords.hidden=mode!=="manual";
+   posHandle.hidden=mode==="none"||record?.destination==="none";
+   posHandle.textContent=$("button-text").value.trim()||"Подробнее";
+   posHandle.style.left=point.x+"%";posHandle.style.top=point.y+"%";
+   if(mode!=="manual"){$("x").value=point.x;$("y").value=point.y;}
+   const src=record?.imageRemoved?"":record?.imageUrl||(activeId===holidayId?holidayPoster:"");
+   posImage.hidden=!src;
+   if(src&&posImage.getAttribute("src")!==src)posImage.src=src;
+   if(!src)posImage.removeAttribute("src");
+ };
  const say=text=>{status.textContent=text;};
  const showPreview=()=>{
    const url=record?.imageRemoved?"":record?.imageUrl||(activeId===holidayId?holidayPoster:"");
    preview.hidden=!url;
    if(url)preview.src=url;else preview.removeAttribute("src");
+   setPlacementUI();
  };
- const collect=(forceEnable=true)=>{
+ const collect=()=>{
    if(!record)return;
    record.title=escapeText($("title").value).slice(0,100);
    record.buttonText=escapeText($("button-text").value).slice(0,65);
+   record.buttonPlacement=promoStorePlacement(pos.value,$("x").value,$("y").value);
    record.overlay={
-     enabled:forceEnable||record.overlay?.enabled===true,
+     enabled:$("overlay-enabled").checked,
      fontSize:bounded($("font-size").value,12,80,38),
      textColor:$("text-color").value,
      buttonBackground:$("button-background").value,
@@ -112,6 +145,10 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
   $("button-color").value=layer.buttonColor;
   $("button-radius").value=layer.buttonRadius;
   $("align").value=layer.align;
+  $("overlay-enabled").checked=layer.enabled===true;
+  pos.value=promoEditorMode(record.buttonPlacement);
+  $("x").value=record.buttonPlacement?.x??50;
+  $("y").value=record.buttonPlacement?.y??82;
   showPreview();
   updating=false;
  };
@@ -151,14 +188,33 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
   if(updating||busy||!record)return;
   collect();publishPreview();say("Предпросмотр обновлён. Для публикации нажмите кнопку ниже.");
  };
- for(const key of ["title","button-text","font-size","text-color","button-background","button-color","button-radius","align"]){
+ for(const key of ["title","button-text","font-size","text-color","button-background","button-color",
+   "button-radius","align","overlay-enabled","position","x","y"]){
   $(key).addEventListener("input",refresh);
+  if(key==="position")$(key).addEventListener("change",refresh);
  }
+ posStage.addEventListener("pointerdown",event=>{
+   if(pos.value!=="manual"||!record||!canEdit())return;
+   dragging=true;posStage.setPointerCapture(event.pointerId);event.preventDefault();
+   const rect=posStage.getBoundingClientRect();
+   $("x").value=Math.round(Math.max(5,Math.min(95,(event.clientX-rect.left)/rect.width*100)));
+   $("y").value=Math.round(Math.max(5,Math.min(95,(event.clientY-rect.top)/rect.height*100)));
+   refresh();
+ });
+ posStage.addEventListener("pointermove",event=>{
+   if(!dragging||pos.value!=="manual")return;
+   const rect=posStage.getBoundingClientRect();
+   $("x").value=Math.round(Math.max(5,Math.min(95,(event.clientX-rect.left)/rect.width*100)));
+   $("y").value=Math.round(Math.max(5,Math.min(95,(event.clientY-rect.top)/rect.height*100)));
+   refresh();
+ });
+ for(const type of ["pointerup","pointercancel","lostpointercapture"])
+  posStage.addEventListener(type,()=>{dragging=false;});
  $("remove-image").addEventListener("click",()=>{
   if(!record||!canEdit())return;
   record.imageUrl="";record.imageTabletUrl="";record.imageMobileUrl="";
   record.imageRemoved=true;
-  record.overlay={...initialOverlay(),...record.overlay,enabled:true};
+  record.overlay={...initialOverlay(),...record.overlay,enabled:$("overlay-enabled").checked};
   $("image-url").value="";
   publishPreview();
   say("Картинка удалена в предпросмотре. Чтобы удалить её на сайте, нажмите «Сохранить и опубликовать слайд».");
@@ -182,7 +238,7 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
   const value=$("image-url").value.trim();
   if(value&&!safeImage(value)){say("Используйте изображение по HTTPS.");return;}
   record.imageUrl=value;
-  if(value){record.imageRemoved=false;record.imageTabletUrl="";record.imageMobileUrl="";record.overlay.enabled=true;}
+  if(value){record.imageRemoved=false;record.imageTabletUrl="";record.imageMobileUrl="";}
   refresh();
  });
  $("file").addEventListener("change",async event=>{
@@ -193,7 +249,7 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
    if(id!==activeId||revision!==serial)return;
    if(!safeImage(image))throw Error("Слишком большой файл после сжатия");
    record.imageUrl=image;record.imageMobileUrl="";record.imageTabletUrl="";record.imageRemoved=false;
-   record.overlay={...initialOverlay(),...record.overlay,enabled:true};
+   record.overlay={...initialOverlay(),...record.overlay,enabled:$("overlay-enabled").checked};
    $("image-url").value=image.startsWith("https://")?image:"";
    collect();publishPreview();
    say("Картинка загружена в предпросмотр. Теперь настройте текст и кнопку.");
@@ -204,7 +260,7 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
   if(!canEdit()){say("Публикация недоступна: войдите под активным администратором.");return;}
   if(busy){say("Загрузка или сохранение ещё выполняется. Проверьте статус операции.");return;}
   if(!record){say("Не удалось загрузить слайд. Нажмите «Перезагрузить данные из Firebase» и повторите.");return;}
-  collect(false);
+  collect();
   const id=activeId;
   if(record.title.length!==0&&record.title.length<2){say("Текст должен состоять минимум из 2 символов или быть пустым.");return;}
   if(!safeImage(record.imageUrl)&&record.imageUrl!==""){say("Загрузите картинку или укажите HTTPS-ссылку.");return;}
@@ -222,6 +278,9 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
    const saved=check.data();
    if(saved.title!==payload.title||saved.imageUrl!==payload.imageUrl||
       saved.imageRemoved!==payload.imageRemoved||
+      saved.buttonPlacement?.mode!==payload.buttonPlacement?.mode||
+      saved.buttonPlacement?.x!==payload.buttonPlacement?.x||
+      saved.buttonPlacement?.y!==payload.buttonPlacement?.y||
       saved.overlay?.buttonRadius!==payload.overlay?.buttonRadius){
       throw Error("Сохранённые данные отличаются от опубликованных. Обновите редактор и повторите.");
    }
