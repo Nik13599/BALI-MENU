@@ -30,4 +30,5 @@ jobs:
             node -e 'const d=require("/tmp/preorder-switch.json");const x=d.fields?.backendRequired?.booleanValue;console.log("GUEST_PREORDER_MODE="+(x===true?"BACKEND_REQUIRED":"LEGACY_DIRECT_FIRESTORE"));'
           else
             echo "GUEST_PREORDER_MODE=UNKNOWN (metadata read HTTP $code)"
+            node -e 'const fs=require("fs");try{const e=JSON.parse(fs.readFileSync("/tmp/preorder-switch.json","utf8")).error||{};const clean=x=>String(x||"").replace(/[^a-zA-Z0-9. _:-]/g,"").slice(0,240);console.log("FIRESTORE_METADATA_STATUS="+clean(e.status));console.log("FIRESTORE_METADATA_REASON="+clean(e.details?.[0]?.reason||e.message));}catch{}'
           fi
