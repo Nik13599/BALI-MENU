@@ -46,7 +46,9 @@ function measure(){
   if(narrow){
     const panel=document.getElementById("baliCalendarPanel");
     const calendarBottom=panel?.getBoundingClientRect().bottom??area.top;
-    const topEdge=Math.max(calendarBottom,area.top);
+    // Measure from the calendar's actual bottom, including the layout gap
+    // before the stage; all THREE visible spaces then use the same value.
+    const topEdge=calendarBottom;
     // Also honour the stage clipping boundary, not just the floating dock.
     const bottomEdge=Math.min(visibleDockTop()-8,area.bottom-3);
     const available=Math.max(0,bottomEdge-topEdge);
@@ -348,6 +350,8 @@ const decorate=()=>{
 };
 new MutationObserver(decorate).observe(grid,{childList:true});
 window.addEventListener("resize",measure,{passive:true});
+window.visualViewport?.addEventListener("resize",measure,{passive:true});
+document.fonts?.ready.then(()=>measure());
 if(typeof ResizeObserver==="function"){
   const observer=new ResizeObserver(()=>measure());
   observer.observe(grid);
