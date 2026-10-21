@@ -371,3 +371,71 @@ body.bali-guest-theme #baliIdSection .bali-bank-actions #baliIdTransferOpen{
     width:17px!important;height:17px!important;
   }
 }
+
+/* BALI ID layout hardening: actual border-box grid cells (no fused button
+   borders), with the upper tools anchored to the right edge of the card. */
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-bank-actions{
+  box-sizing:border-box!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-flow:row!important;
+  column-gap:clamp(8px,1.4vw,15px)!important;
+  row-gap:0!important;
+  justify-content:stretch!important;
+  justify-items:stretch!important;
+  align-items:stretch!important;
+  width:min(var(--bali-id-large-width),680px)!important;
+  padding:0!important;
+  margin:0!important;
+  overflow:visible!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-bank-actions>button{
+  box-sizing:border-box!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  display:flex!important;
+  flex:0 1 auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:8px clamp(5px,.9vw,12px)!important;
+  height:var(--bali-id-action-height)!important;
+  min-height:var(--bali-id-action-height)!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+  border-radius:12px!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-bank-actions>button svg{
+  flex:0 0 auto!important;
+}
+/* Calculate the tools' left edge from the real card centre and their
+   own width; right edge is 4 px beyond the card, not the window. */
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-page-tools{
+  box-sizing:border-box!important;
+  position:absolute!important;
+  left:calc(50% + var(--bali-id-large-width)/2)!important;
+  right:auto!important;
+  transform:translateX(calc(-100% + 4px))!important;
+  width:max-content!important;
+  margin:0!important;
+  max-width:calc(100% - 8px)!important;
+}
+@media(max-width:767px){
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-bank-actions{
+    width:min(var(--bali-id-large-width),440px)!important;
+    column-gap:clamp(7px,2vw,10px)!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-bank-actions>button{
+    padding:6px 4px!important;
+    min-height:var(--bali-id-action-height)!important;
+    height:var(--bali-id-action-height)!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-page-tools{
+    transform:translateX(calc(-100% + 6px))!important;
+  }
+}
