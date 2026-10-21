@@ -64,12 +64,16 @@ test('dragging updates the calendar before finger release and neighbours sit clo
  });
  expect(result).toBe('2026-10-22');
  await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(2,false));
- const layout=await page.locator('#eventsGrid').evaluate(grid=>{
+ const readLayout=()=>page.locator('#eventsGrid').evaluate(grid=>{
   const box=selector=>grid.querySelector(selector).querySelector('.bali-event-poster-wrap').getBoundingClientRect();
   const left=box('[data-stage-side="left"]'),center=box('.is-active'),right=box('[data-stage-side="right"]');
   return {leftGap:center.left-left.right,rightGap:right.left-center.right,width:center.width,
    centerZ:+getComputedStyle(grid.querySelector('.is-active')).zIndex,sideZ:+getComputedStyle(grid.querySelector('.is-neighbor')).zIndex};
  });
+ // Gesture release can schedule a final responsive stage measurement.
+ // The date assertion above is immediate; final artwork geometry is polled.
+ await expect.poll(async()=>{const value=await readLayout();return Math.max(value.leftGap,value.rightGap)}).toBeLessThanOrEqual(8);
+ const layout=await readLayout();
  expect(layout.leftGap).toBeLessThanOrEqual(8);
  expect(layout.rightGap).toBeLessThanOrEqual(8);
  expect(layout.leftGap).toBeGreaterThan(-layout.width*.25);
