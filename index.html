@@ -58,6 +58,7 @@
   <link rel="stylesheet" href="bali-mobile-home-rhythm.css?v=20261021-gap1">
   <link rel="stylesheet" href="bali-mobile-vertical-balance.css?v=20261021-vertical2">
   <script src="bali-mobile-vertical-balance.js?v=20261021-vertical2" defer></script>
+  <link rel="stylesheet" href="bali-info-page.css?v=20261021-profile-info-redesign1">
 </head>
 
 <body class="bali-guest-theme">
@@ -77,7 +78,7 @@
             <button type="button" role="menuitem" data-bali-profile-action="orders"><span aria-hidden="true">▤</span>Мои заказы</button>
             <button type="button" role="menuitem" data-bali-profile-action="plans"><span aria-hidden="true">♡</span>Мои планы</button>
             <button type="button" role="menuitem" data-bali-profile-action="details"><span aria-hidden="true">♙</span>Мои данные</button>
-            <button type="button" role="menuitem" data-bali-profile-action="info"><span aria-hidden="true">ⓘ</span>Инфо</button>
+            <button type="button" role="menuitem" data-bali-profile-action="info"><span aria-hidden="true">ⓘ</span>Информация</button>
             <div class="bali-pc-profile-separator" role="separator"></div>
             <button type="button" role="menuitem" data-bali-profile-action="logout"><span aria-hidden="true">⇥</span>Выйти из аккаунта</button>
           </div>
@@ -492,66 +493,83 @@
       </div>
     </section>
 
-    <!-- Mobile Info: the same actual contact settings and social links as PC sidebar. -->
+    <!-- BALI INFORMATION: profile companion page, same routes on phone and PC. -->
     <section class="bali-contacts bali-info-page" id="contactsSection" aria-labelledby="contactsHeading" hidden>
+      <button type="button" id="baliInfoCloseBtn" class="bali-info-floating-close" data-bali-nav="profile" aria-label="Закрыть информацию и вернуться в Мой BALI" title="Вернуться в Мой BALI">
+        <svg viewBox="0 0 24 24" width="23" height="23" aria-hidden="true" focusable="false"><path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
       <div class="container bali-info-inner">
         <header class="bali-info-heading">
-          <p class="bali-info-eyebrow">BALI NIGHTCLUB · MINSK</p>
-          <h1 id="contactsHeading">ИНФОРМАЦИЯ</h1>
-          <p>Всё, что нужно знать о клубе, связи с нами и посещении.</p>
+          <p class="bali-info-eyebrow">МОЙ BALI <span aria-hidden="true">/</span> СПРАВОЧНЫЙ ЦЕНТР</p>
+          <h1 id="contactsHeading">Информация</h1>
+          <p>Контакты клуба, расписание, BALI ID и сведения об организации — всё в одном месте.</p>
         </header>
 
-        <div class="bali-info-contact-panel" aria-labelledby="baliInfoContactHeading">
-          <h2 id="baliInfoContactHeading" class="bali-info-section-title">Контакты и социальные сети</h2>
+        <section class="bali-info-contact-panel" aria-labelledby="baliInfoContactHeading">
+          <div class="bali-info-heading-row">
+            <div>
+              <p class="bali-info-eyebrow">МЫ НА СВЯЗИ</p>
+              <h2 id="baliInfoContactHeading" class="bali-info-section-title">Контакты и социальные сети</h2>
+            </div>
+          </div>
           <div id="baliInfoContactMirror" class="bali-info-contact-mirror" aria-live="off">
             <p class="bali-info-loading">Контактная информация загружается…</p>
           </div>
-        </div>
+        </section>
 
         <div class="bali-info-blocks">
-          <section class="bali-info-block" aria-labelledby="baliInfoScheduleHeading">
+          <section class="bali-info-block bali-info-block--schedule" aria-labelledby="baliInfoScheduleHeading">
             <div class="bali-info-block-icon" aria-hidden="true">◷</div>
-            <div>
+            <div class="bali-info-block-content">
               <h2 id="baliInfoScheduleHeading">Режим работы</h2>
-              <p class="bali-info-main">Каждую пятницу и субботу <strong>23:00–06:00</strong></p>
-              <p>В остальные даты мероприятия и изменения расписания смотрите в календаре.</p>
-              <button type="button" data-bali-nav="events" class="bali-info-inline-nav">Календарь мероприятий <span aria-hidden="true">↗</span></button>
+              <p class="bali-info-schedule-days">ПЯТНИЦА <span>И</span> СУББОТА</p>
+              <p class="bali-info-schedule-hours"><time>23:00</time><span aria-hidden="true">—</span><time>06:00</time></p>
+              <p>Время специальных мероприятий может отличаться. Актуальные даты и афиши — в календаре BALI.</p>
+              <button type="button" data-bali-nav="events" class="bali-info-inline-nav bali-info-cta--primary"><span class="bali-info-btn-label">Календарь мероприятий</span><span class="bali-info-btn-arrow" aria-hidden="true">↗</span></button>
             </div>
           </section>
 
           <section class="bali-info-block" aria-labelledby="baliInfoVisitHeading">
             <div class="bali-info-block-icon" aria-hidden="true">18+</div>
-            <div>
+            <div class="bali-info-block-content">
               <h2 id="baliInfoVisitHeading">Посещение клуба</h2>
-              <p>Условия входа, стоимость билетов и ограничения могут отличаться в зависимости от мероприятия. Перед посещением проверьте афишу или свяжитесь с администрацией.</p>
-              <p>Барная и кальянная карты предназначены для посетителей от 18 лет. При подтверждении возраста может потребоваться документ.</p>
+              <p>Условия входа, билеты, возрастные ограничения и время начала зависят от конкретной вечеринки. Перед визитом проверьте афишу или уточните детали у администрации.</p>
+              <p>Барная и кальянная карты предназначены для совершеннолетних посетителей. Для подтверждения возраста может потребоваться документ.</p>
             </div>
           </section>
 
           <section class="bali-info-block" aria-labelledby="baliInfoOrdersHeading">
             <div class="bali-info-block-icon" aria-hidden="true">▤</div>
-            <div>
+            <div class="bali-info-block-content">
               <h2 id="baliInfoOrdersHeading">Меню и предзаказы</h2>
-              <p>Предзаказ блюд кухни оформляется через меню и поступает на подтверждение администрации. Отправка предзаказа сама по себе не означает его принятия.</p>
-              <p>Онлайн-оплата сейчас недоступна. Алкогольные напитки и кальяны доступны для ознакомления в соответствующих картах без онлайн-предзаказа.</p>
-              <button type="button" data-bali-nav="menu" class="bali-info-inline-nav">Посмотреть меню <span aria-hidden="true">↗</span></button>
+              <p>Выберите блюда кухни, дату и мероприятие, затем отправьте предзаказ. Заказ считается принятым только после подтверждения администрацией.</p>
+              <p>Онлайн-оплата сейчас недоступна. Барная, кальянная и чайная карты представлены для ознакомления; возможность заказа уточняйте у персонала клуба.</p>
+              <button type="button" data-bali-nav="menu" class="bali-info-inline-nav"><span class="bali-info-btn-label">Посмотреть меню</span><span class="bali-info-btn-arrow" aria-hidden="true">↗</span></button>
             </div>
           </section>
 
-          <section class="bali-info-block" aria-labelledby="baliInfoPrivilegeHeading">
+          <section class="bali-info-block bali-info-block--privilege" aria-labelledby="baliInfoPrivilegeHeading">
             <div class="bali-info-block-icon" aria-hidden="true">ID</div>
-            <div>
+            <div class="bali-info-block-content">
+              <p class="bali-info-eyebrow">ЦИФРОВАЯ КАРТА ГОСТЯ</p>
               <h2 id="baliInfoPrivilegeHeading">BALI ID · Privilege</h2>
-              <p>После регистрации и ознакомления с программой гость подтверждает участие и получает персональный BALI ID со статусом Member. Без подтверждения карта не создаётся. BALI ID — внутренняя клубная карта для скидок и бонусов, не банковская и не платёжная. Другие категории и индивидуальные привилегии назначает администрация клуба.</p>
-              <p>BALI ID не предназначена для оплаты деньгами, хранения средств либо денежных переводов в любой валюте. Наличие цифровой карты не означает автоматического предоставления скидки или бесплатного входа.</p>
-              <button type="button" data-bali-nav="id" class="bali-info-inline-nav">Моя BALI ID <span aria-hidden="true">↗</span></button>
+              <p>BALI ID — персональная электронная карта участника клубной программы. При первом открытии зарегистрированный гость знакомится с условиями программы и подтверждает ознакомление. После этого ему присваивается уникальный шестизначный ID и начальный статус <strong>MEMBER</strong>.</p>
+              <p>Статус определяет доступные привилегии. В зависимости от индивидуальных условий это могут быть скидки, бесплатные шоты, коктейли или кальяны, а также специальные условия входа. У каждой привилегии могут быть срок действия, лимит использования и дополнительные ограничения.</p>
+              <div class="bali-info-tier-list" aria-label="Уровни программы BALI ID">
+                <span>01 MEMBER</span><span>02 SILVER</span><span>03 GOLD</span><span>04 PLATINUM</span><span>05 BLACK</span><span>06 PRIVATE</span>
+              </div>
+              <p>Статусы и доступные бонусы определяет администрация; уровень <strong>PRIVATE</strong> присваивается исключительно по приглашению. Повышение уровня не происходит автоматически только из-за наличия карты.</p>
+              <p>В разделе карты можно показать персональный QR-код для проверки сотрудником клуба, посмотреть историю операций и действующие привилегии. Списание бонусов фиксируется в истории; доступность их передачи другому участнику зависит от включения соответствующей функции.</p>
+              <p class="bali-info-important">BALI ID не является банковской или платёжной картой, не хранит реальные денежные средства и не используется для оплаты или денежных переводов. Наличие статуса само по себе не гарантирует бесплатный вход и какие-либо бонусы без действующих условий.</p>
+              <button type="button" data-bali-nav="id" class="bali-info-inline-nav"><span class="bali-info-btn-label">Открыть мою BALI ID</span><span class="bali-info-btn-arrow" aria-hidden="true">↗</span></button>
             </div>
           </section>
         </div>
 
         <section class="bali-info-disclosure" aria-labelledby="baliInfoLegalHeading">
-          <p class="bali-info-eyebrow">ДОКУМЕНТЫ И УСЛОВИЯ</p>
+          <p class="bali-info-eyebrow">ОФИЦИАЛЬНЫЕ СВЕДЕНИЯ</p>
           <h2 id="baliInfoLegalHeading">Правовая информация</h2>
+          <p class="bali-info-legal-intro">Основные сведения об организации и информационные условия использования цифровых сервисов клуба.</p>
           <details open>
             <summary>Сведения об организации <span aria-hidden="true">⌄</span></summary>
             <div class="bali-info-details-body">
@@ -559,35 +577,30 @@
               <dl class="bali-info-legal-grid">
                 <div><dt>Юридический адрес</dt><dd>220030, г. Минск, ул. Кирова, 13, пом. 3</dd></div>
                 <div><dt>УНП</dt><dd>193849140</dd></div>
-                <div><dt>ОКПО</dt><dd>50981204500</dd></div>
-                <div><dt>Расчётный счёт (BYN)</dt><dd class="bali-info-account-number">BY26ALFA30122G57320010270000</dd></div>
-                <div><dt>Банк</dt><dd>ЗАО «Альфа-Банк»</dd></div>
-                <div><dt>БИК</dt><dd>ALFABY2X</dd></div>
-                <div><dt>Email организации</dt><dd><a href="mailto:Kolyaselekh@gmail.com">Kolyaselekh@gmail.com</a></dd></div>
-                <div><dt>Телефон организации</dt><dd><a href="tel:+375333786884">+375 (33) 378-68-84</a></dd></div>
-                <div><dt>Директор</dt><dd>Селех Николай Иванович</dd></div>
               </dl>
-              <p class="bali-info-legal-venue">Место оказания услуг: <strong>BALI NIGHTCLUB, Минск, ул. Кирова, 13, 3-й этаж.</strong></p>
+              <p class="bali-info-legal-venue">Место оказания услуг: <strong>BALI NIGHT CLUB, Минск, ул. Кирова, 13, 3-й этаж.</strong></p>
+              <p>По вопросам посещения и услуг используйте официальный телефон клуба и каналы связи в разделе «Контакты и социальные сети» выше.</p>
             </div>
           </details>
           <details>
             <summary>Персональные данные <span aria-hidden="true">⌄</span></summary>
             <div class="bali-info-details-body">
-              <p>При регистрации BALI ID сайт использует Google/Firebase для входа и хранит сведения профиля (имя, телефон, email и идентификатор пользователя). При оформлении предзаказа дополнительно обрабатываются выбранные блюда и сведения о заказе.</p>
-              <p>Данные используются для работы личного кабинета, предзаказов и персональных привилегий. По вопросам обработки, уточнения и удаления данных можно связаться с ООО «МАГИШТЫК» по адресу <a href="mailto:Kolyaselekh@gmail.com">Kolyaselekh@gmail.com</a>.</p>
-              <p class="bali-info-important">Полная утверждённая политика обработки персональных данных ещё должна быть опубликована отдельно после согласования с организацией. Этот раздел не заменяет такую политику.</p>
+              <p>Для работы личного кабинета и BALI ID используются данные учётной записи и профиля. В зависимости от способа регистрации это могут быть имя, телефон, адрес электронной почты и технический идентификатор пользователя.</p>
+              <p>При оформлении предзаказов также обрабатываются выбранные позиции, дата, мероприятие и сведения о заказе. Для авторизации и хранения данных используются сервисы Google/Firebase.</p>
+              <p>По вопросам обработки, уточнения или удаления данных обратитесь через официальные контакты клуба, указанные выше.</p>
+              <p class="bali-info-important">Этот информационный раздел не заменяет утверждённую политику обработки персональных данных. Политика должна быть подготовлена и опубликована отдельно.</p>
             </div>
           </details>
           <details>
-            <summary>Условия предзаказов и обращений <span aria-hidden="true">⌄</span></summary>
+            <summary>Предзаказы, оплата и обращения <span aria-hidden="true">⌄</span></summary>
             <div class="bali-info-details-body">
-              <p>Меню показывает актуальные предложения на момент просмотра; возможность приготовления и окончательное подтверждение предзаказа определяются администрацией заведения.</p>
-              <p>В личном кабинете можно отслеживать статус предзаказа и вносить изменения до его подтверждения, если эта функция доступна для заказа.</p>
-              <p>Вопросы по заказам, качеству услуг и обращениям посетителей принимаются по телефону и через официальные каналы связи, указанные выше. Условия оплаты и возможного возврата согласовываются до оформления платежа.</p>
+              <p>Отправка предзаказа означает передачу заявки администрации, но не автоматическое подтверждение приготовления или обслуживания. Наличие блюд и возможность выполнения заказа уточняются при подтверждении.</p>
+              <p>Предзаказ привязывается к выбранной дате и мероприятию. Возможность изменения или отмены зависит от текущего статуса и условий конкретного заказа.</p>
+              <p>Онлайн-оплата на сайте недоступна. По вопросам заказов, качества услуг и обращений гостей используйте официальный телефон и другие каналы связи клуба.</p>
             </div>
           </details>
         </section>
-        <p class="bali-info-footer">BALI NIGHTCLUB · ООО «МАГИШТЫК» · УНП 193849140</p>
+        <p class="bali-info-footer">BALI NIGHT CLUB · ООО «МАГИШТЫК» · УНП 193849140</p>
       </div>
     </section>
 
@@ -617,7 +630,7 @@
           <button type="button" id="profileMyOrdersBtn" class="bali-profile-action"><span>▤</span> Мои заказы <b>›</b></button>
           <button type="button" id="profileMyPlansBtn" class="bali-profile-action"><span>▦</span> Мои планы <b>›</b></button>
           <button type="button" id="profileDataBtn" class="bali-profile-action"><span>♙</span> Мои данные <b>›</b></button>
-          <button type="button" id="profileInfoBtn" data-bali-nav="contacts" class="bali-profile-action"><span aria-hidden="true">ⓘ</span> Инфо <b>›</b></button>
+          <button type="button" id="profileInfoBtn" data-bali-nav="contacts" class="bali-profile-action"><span aria-hidden="true">ⓘ</span> Информация <b>›</b></button>
           <button type="button" id="profileLogoutBtn" class="bali-profile-action bali-logout"><span>⇥</span> Выйти из аккаунта <b>›</b></button>
         </div>
       </div>
