@@ -55,6 +55,11 @@
  border-color:var(--bali-day-accent)!important;
  filter:brightness(1.08);
 }
+/* The visible calendar grid includes adjacent-month dates, e.g. Sep 28–Oct 1.
+   Their published parties must remain fully visible, not faded like empty cells. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day.is-outside[data-lifecycle="true"][data-event="true"]{
+ opacity:1!important;
+}
 :root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-lifecycle="true"][data-event="true"][data-selected="true"]{
  background:var(--bali-day-segments)!important;
  border-color:var(--bali-day-accent)!important;
