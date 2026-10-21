@@ -65,7 +65,7 @@ if(form&&list&&status){
   function drawPlacement(){
     const mode=placement.value;
     placementCoords.hidden=mode!=="manual";
-    placementHandle.hidden=mode==="none"||destinationInput.value==="none";
+    placementHandle.hidden=mode==="none"||mode==="original"||destinationInput.value==="none";
     placementHandle.textContent=el("baliPromoButton").value.trim()||"Подробнее";
     const point=promoEditorXY(mode,placementX.value,placementY.value);
     if(mode!=="manual"){placementX.value=point.x;placementY.value=point.y;}
@@ -156,7 +156,7 @@ if(form&&list&&status){
     showPreview("");
     variants.set();
     syncContactSettings();
-    placement.value="bottom-center";placementX.value=50;placementY.value=82;drawPlacement();
+    placement.value="original";placementX.value=50;placementY.value=82;drawPlacement();
   }
   fileInput.addEventListener("change",async()=>{
     const file=fileInput.files?.[0];
@@ -282,10 +282,10 @@ if(form&&list&&status){
     const published=el("baliPromoPublished").checked;
     if((title.length!==0&&title.length<2)||title.length>100||description.length>260
        ||!validImage(imageUrl)||!variants.valid()||!["none","events","menu","contacts","contact-modal"].includes(destination)
-       ||buttonText.length>65||!(placement.value==="none"||placement.value==="manual"||
+       ||buttonText.length>65||!(placement.value==="original"||placement.value==="none"||placement.value==="manual"||
          Object.hasOwn(PROMO_POSITION_PRESETS,placement.value))
-       ||!Number.isInteger(buttonPlacement.x)||!Number.isInteger(buttonPlacement.y)
-       ||buttonPlacement.x<5||buttonPlacement.x>95||buttonPlacement.y<5||buttonPlacement.y>95||contactTitle.length>70
+       ||(buttonPlacement&&(!Number.isInteger(buttonPlacement.x)||!Number.isInteger(buttonPlacement.y)
+       ||buttonPlacement.x<5||buttonPlacement.x>95||buttonPlacement.y<5||buttonPlacement.y>95))||contactTitle.length>70
        ||contactKinds.some(name=>contactLinks[name].length>300||!validContactLink(name,contactLinks[name]))
        ||(destination==="contact-modal"&&!contactKinds.some(name=>contactEnabled[name]))
        ||["left","top","width","height"].some(side=>!Number.isInteger(contactHotspot[side]))
@@ -303,7 +303,8 @@ if(form&&list&&status){
       // Old, ordinary slides keep their original Firestore shape so editing them
       // remains possible before production rules for contact-modal are deployed.
       const payload={title,description,imageUrl,imageTabletUrl:versions.tablet,
-        imageMobileUrl:versions.mobile,destination,buttonText,buttonPlacement,sort,published,updatedAt:serverTimestamp()};
+        imageMobileUrl:versions.mobile,destination,buttonText,
+        ...(buttonPlacement?{buttonPlacement}:{}),sort,published,updatedAt:serverTimestamp()};
       // Keep text/button styling created in the simple banner composer.
       const existing=records.get(id);
       if(existing?.overlay)payload.overlay=existing.overlay;
