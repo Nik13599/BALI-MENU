@@ -439,3 +439,23 @@ body.bali-guest-theme #baliIdSection .bali-bank-actions #baliIdTransferOpen{
     transform:translateX(calc(-100% + 6px))!important;
   }
 }
+
+/* CRITICAL ROOT FIX: the page's old implicit CSS grid gives its ONLY track
+   zero intrinsic width (all children are absolute). The entire .container
+   consequently computes to 0px, collapsing the 3-button grid to 0px too.
+   Use a regular fixed-page canvas of predictable nonzero width instead. */
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection{
+  display:block!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection>.container{
+  display:block!important;
+  position:relative!important;
+  box-sizing:border-box!important;
+  width:min(100%,1100px)!important;
+  max-width:1100px!important;
+  min-width:0!important;
+  height:100%!important;
+  min-height:0!important;
+  margin:0 auto!important;
+  padding:0!important;
+}
