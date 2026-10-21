@@ -244,3 +244,57 @@ test("Simple inline promo editor uploads real image and saves styling to the exi
  });
  expect(result.previewCount).toBeGreaterThan(0);
 });
+
+test("Deleting the baked Christmas picture stays deleted while text and booking remain functional",async({page})=>{
+ await page.goto("/index.html");
+ const source=fs.readFileSync(path.join(__dirname,"..","bali-pc-offers.js"),"utf8")
+   .replace(/^import\s+.*?;\s*$/gm,"");
+ await page.addScriptTag({content:`(()=>{
+  const initializeApp=()=>({}),getApps=()=>[],getApp=()=>({});
+  const getFirestore=()=>({}),collection=()=>({}),query=()=>({}),where=()=>({});
+  const onSnapshot=(_,notify)=>{notify({docs:[{id:"bali-new-year-2026",data:()=>({
+    title:"НОВАЯ АФИША",description:"",imageUrl:"",imageTabletUrl:"",imageMobileUrl:"",
+    imageRemoved:true,destination:"contact-modal",buttonText:"Забронировать",
+    sort:0,published:true,
+    overlay:{enabled:true,fontSize:30,textColor:"#ffffff",
+      buttonBackground:"#c3f36d",buttonColor:"#111810",buttonRadius:12,align:"left"}
+  })}]});return ()=>{}};
+ `+source+"\n})();"});
+ const hero=page.locator(".bali-pc-hero");
+ await expect(hero).toHaveClass(/has-removed-artwork/);
+ expect(await page.locator("#baliPcHeroPoster").evaluate(img=>img.hasAttribute("src"))).toBe(false);
+ expect(await page.locator("#baliPcHeroPoster").evaluate(img=>getComputedStyle(img).display)).toBe("none");
+ await expect(page.locator("#baliPcOfferTitle")).toHaveText("НОВАЯ АФИША");
+ await expect(page.locator("#baliPcOfferAction")).toContainText("Забронировать");
+});
+
+test("Administrator can delete original holiday image and confirm Firestore saved its removal",async({page})=>{
+ await page.route("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js",route=>route.fulfill({
+  status:200,contentType:"application/javascript",
+  headers:{"access-control-allow-origin":"*"},
+  body:`export function doc(){return {id:"bali-new-year-2026"}}
+    export async function getDoc(){return window.__promoSaved?{exists:()=>true,data:()=>window.__promoSaved}:{exists:()=>false}}
+    export async function setDoc(_,payload){window.__promoSaved=payload}
+    export function serverTimestamp(){return "2026-test-stamp"}`
+ }));
+ await page.goto("/index.html");
+ await page.evaluate(async()=>{
+  const {createSimplePromoEditor}=await import("/bali-promo-simple-editor.js");
+  const editor=createSimplePromoEditor({db:{},frame:{contentWindow:window,contentDocument:document},
+   canEdit:()=>true});
+  document.body.append(editor.root);
+  window.__seenPromoPreviews=[];
+  window.addEventListener("bali:promo-preview",event=>window.__seenPromoPreviews.push(event.detail.offer));
+  await editor.select("bali-new-year-2026");
+ });
+ await page.locator("[data-promo-remove-image]").evaluate(el=>el.click());
+ await expect(page.locator("[data-promo-status]")).toContainText("Картинка удалена");
+ await page.locator("[data-promo-save]").evaluate(el=>el.click());
+ await expect(page.locator("[data-promo-status]")).toContainText("подтверждена Firebase");
+ const saved=await page.evaluate(()=>({
+  removed:window.__promoSaved?.imageRemoved,artwork:window.__promoSaved?.imageUrl,
+  lastPreview:window.__seenPromoPreviews?.at(-1)?.imageRemoved,
+  published:window.__promoSaved?.published
+ }));
+ expect(saved).toEqual({removed:true,artwork:"",lastPreview:true,published:true});
+});
