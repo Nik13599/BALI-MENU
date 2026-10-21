@@ -536,3 +536,29 @@ body.bali-guest-theme #baliIdSection .bali-bank-actions #baliIdTransferOpen{
     --bali-id-card-lift:12px;
   }
 }
+
+/* 21 Oct · BALI ID: centre the card on the physical desktop viewport,
+   rather than the area to the right of the desktop sidebar. */
+@media(min-width:1180px){
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection>.container{
+    --bali-id-centre-x:calc(50% - var(--bali-pc-side,240px)/2);
+  }
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-flip-scene{
+    left:var(--bali-id-centre-x)!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-bank-actions,
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-bank-wallet,
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-status{
+    left:var(--bali-id-centre-x)!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-page-tools{
+    left:calc(var(--bali-id-centre-x) + var(--bali-id-large-width)/2)!important;
+  }
+}
+/* Mobile: centre the card more evenly between the upper controls and
+   the bottom action row; preserve its physical size and bottom button position. */
+@media(max-width:767px){
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection>.container{
+    --bali-id-card-lift:clamp(26px,4.2dvh,42px);
+  }
+}
