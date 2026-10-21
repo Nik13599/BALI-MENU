@@ -170,8 +170,10 @@ function animateTo(next,smooth=true){
     const progress=clamp((now-started)/duration,0,1);
     position=initial+delta*ease(progress);
     render();
-    // Keep the buttons hidden for the whole stage travel; reveal them ONCE
-    // after the new central card has settled. No mid-animation style resets.
+    // Once the selected poster is nearly centred (88% of travel), let the
+    // controls fade in ONCE. The active poster has been stable since 50%.
+    // Repeated render() frames cannot toggle this flag back.
+    if(progress>=.88&&grid.classList.contains("is-actions-lowered"))raiseActions();
     if(progress<1)running.raf=requestAnimationFrame(tick);
     else{position=next;animation=null;render();raiseActions();}
   };
