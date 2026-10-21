@@ -981,6 +981,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCart();
     initializeApp();
     attachEventListeners();
+    // The auth module may emit its first state before the DOMContentLoaded
+    // listeners run. Restore the guest login action after Firebase is ready.
+    Promise.resolve(window.BaliAuth?.ready).then(()=>{
+        const signIn=document.getElementById("profileSignInBtn");
+        if(signIn)signIn.hidden=Boolean(window.BaliAuth?.isRegistered?.());
+    });
     initStickyCategories();
     initEventCarousel();
     renderGuestPage(routeFromLocation());
