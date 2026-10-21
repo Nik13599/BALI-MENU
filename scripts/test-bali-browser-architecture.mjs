@@ -1,0 +1,38 @@
+import assert from "node:assert/strict";
+import {readFile} from "node:fs/promises";
+const load=path=>readFile(path,"utf8");
+const [guest,admin,staff,app,workflows,reader,publisher,api,stage,schema]=await Promise.all([
+  load("index.html"),load("admin.html"),load("preorders.html"),load("app.js"),
+  load("cloudflare-pages/build.mjs"),load("bali-public-reader.js"),
+  load("cloudflare-pages/functions/api/publish-public.js"),
+  load("cloudflare-pages/functions/api/staff-preorders.js"),
+  load("cloudflare-pages/functions/api/admin/migrate-preorders.js"),
+  load("cloudflare-pages/d1/migrations/0001_preorders.sql")
+]);
+// BALI is a browser web application. Never prompt to install as a PWA.
+for(const [name,page] of [["guest",guest],["admin",admin],["staff",staff]]){
+  assert(!/<link[^>]+rel=["']manifest["']/i.test(page),name+" installs a PWA");
+  assert(!/beforeinstallprompt|navigator\.serviceWorker\.register/i.test(page),name+" registers an installable worker");
+}
+assert(!/manifest\.webmanifest|service-worker\.js/i.test(workflows));
+assert(app.includes("history.pushState("),"Guest SPA navigation must preserve the page");
+assert(app.includes("history.replaceState("),"Browser Back and shared links must remain supported");
+assert(guest.includes('id="homeSection"')&&guest.includes('id="eventsSection"')&&
+  guest.includes('id="menuPage"'),"Guest sections must stay in a single browser app");
+assert(admin.includes('id="adminView"')&&staff.includes('id="adminView"'),
+  "Staff and administrator must retain independent workspaces");
+assert(!staff.includes('href="admin.html"'),"Staff has no navigation to private admin");
+assert(admin.includes("baliPublicPublishAll"),"Public content manual publication missing");
+assert(admin.includes("bali-public-publisher.js"),"Public content publish bridge missing");
+assert(reader.includes("/api/public-data?path="),"Public data must use the Cloudflare reader");
+assert(publisher.includes("administrator")&&publisher.includes("BALI_PUBLIC_CONTENT"));
+assert(!publisher.includes("guestWallets")&&!publisher.includes("preorder_orders"));
+assert(api.includes('migration?.status!=="complete"'),"Do not show empty D1 as active queue");
+assert(stage.includes("authorizeStaff(request,{adminOnly:true})"),
+  "Only the owner can stage private Firestore orders");
+assert(stage.includes("cutover:false"),"Data staging must not switch active orders");
+assert(schema.includes("UNIQUE(event_id,order_number)"),
+  "Event-specific order numbering must remain unique");
+assert(schema.includes("REFERENCES preorder_orders(id) ON DELETE CASCADE"),
+  "Order/item integrity missing");
+console.log("BALI browser-app contract, standalone workspaces and staged D1 migration PASS.");
