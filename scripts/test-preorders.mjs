@@ -23,7 +23,7 @@ records.set("menu/2",{id:2,name:"Салат",price:18.5,available:true});
 const snapshot=path=>({exists:records.has(path),id:path.split("/").at(-1),path,ref:reference(path),data:()=>clone(records.get(path))});
 const reference=path=>({path,id:path.split("/").at(-1),collection:name=>collection(path+"/"+name)});
 const collection=path=>({
-  path,doc:(id)=>reference(path+"/"+(id||"auto_"+(++created))),
+  path,doc:(id)=>reference(path+"/"+(id||"auto_doc_"+String(++created).padStart(8,"0"))),
   kind:"query"
 });
 let created=0;
