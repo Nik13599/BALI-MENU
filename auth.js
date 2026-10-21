@@ -75,8 +75,8 @@ function render() {
   const accountLabel = !user ? "Войти в личный кабинет" :
     profile ? profile.name : "Профиль";
   els.button.textContent = accountLabel;
-  els.button.title = !user ? "Войти или зарегистрироваться" : accountLabel;
-  els.button.setAttribute("aria-label", !user ? "Кабинет: войти или зарегистрироваться" : "Личный кабинет: " + accountLabel);
+  els.button.title = !user ? "Мой BALI" : accountLabel;
+  els.button.setAttribute("aria-label", !user ? "Открыть Мой BALI" : "Личный кабинет: " + accountLabel);
   els.google.hidden = !isConfigured || !!user;
   els.form.hidden = !isConfigured || !user;
   els.signOut.hidden = !user;
@@ -150,15 +150,9 @@ function friendlyError(error) {
 }
 
 els.button.addEventListener("click", () => {
-  // The user icon opens profile. BALI ID lives on its own page.
-  // Unregistered guests open the sign-in/profile-completion form.
-  if(user&&profile){
-    const link=document.querySelector('[data-bali-nav="profile"]');
-    if(link)link.click();
-    else window.location.hash="profile";
-    return;
-  }
-  show();
+  // My BALI and its Info entry are public on every device.
+  // Guests can sign in separately from the profile page.
+  window.location.hash="profile";
 });
 els.close.addEventListener("click", hide);
 els.signOut.addEventListener("click", async () => {
