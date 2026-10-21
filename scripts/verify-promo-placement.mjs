@@ -7,8 +7,8 @@ const imported=await import("data:text/javascript;base64,"+Buffer.from(helper).t
 const {PROMO_POSITION_PRESETS,PROMO_POSITION_OPTIONS,promoEditorMode,promoEditorXY,promoStorePlacement}=imported;
 const presets=Object.entries(PROMO_POSITION_PRESETS);
 assert.equal(presets.length,9,"Nine preset locations required");
-assert.equal(PROMO_POSITION_OPTIONS.length,11,"Nine locations + hidden + free movement");
-assert.equal(new Set(PROMO_POSITION_OPTIONS.map(([name])=>name)).size,11,"Dropdown entries must be distinct");
+assert.equal(PROMO_POSITION_OPTIONS.length,12,"Nine locations + original + hidden + free movement");
+assert.equal(new Set(PROMO_POSITION_OPTIONS.map(([name])=>name)).size,12,"Dropdown entries must be distinct");
 
 for(const [key,coords] of presets){
   assert.deepEqual(promoEditorXY(key),coords,key+" should be correctly aligned");
@@ -18,6 +18,8 @@ for(const [key,coords] of presets){
   assert.equal(promoEditorMode(stored),key,"Position must round-trip "+key);
 }
 assert.deepEqual(promoStorePlacement("none"),{mode:"none",x:50,y:82},"Hiding CTA must persist");
+assert.equal(promoStorePlacement("original"),null,"Original artwork must not create a new CTA");
+assert.equal(promoEditorMode(undefined),"original","Existing holiday hotspots must remain available");
 assert.equal(promoEditorMode({mode:"none",x:50,y:82}),"none","Hidden state must round-trip");
 assert.deepEqual(promoStorePlacement("manual",-20,140),{mode:"manual",x:5,y:95},
   "Manual drag coordinates must stay within the existing security limits");
