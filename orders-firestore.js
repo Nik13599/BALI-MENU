@@ -42,11 +42,23 @@ async function submitViaServer(user,{eventDate,eventId,tableNumber,bookingId,not
   // Loading Functions only at actual checkout keeps the public menu fast.
   const {getFunctions,httpsCallable}=await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-functions.js");
   const send=httpsCallable(getFunctions(app,"europe-west1"),"submitBaliPreorder");
-  const reply=await send({
-    requestId:previous.requestId,event_date:eventDate,event_id:eventId,
-    table_number:tableNumber,booking_id:bookingId,notes,items:lines,
-    ...(editId?{edit_id:editId}:{})
-  });
+  let reply;
+  try{
+    reply=await send({
+      requestId:previous.requestId,event_date:eventDate,event_id:eventId,
+      table_number:tableNumber,booking_id:bookingId,notes,items:lines,
+      ...(editId?{edit_id:editId}:{})
+    });
+  }catch(error){
+    // The server-only flag may not be bypassed. Never silently retry via
+    // client writes when Cloud Functions is missing or credentials are denied.
+    if(error?.code==="functions/not-found"||error?.code==="functions/unimplemented"){
+      const unavailable=new Error("Сервер предзаказов ещё не активирован. Сообщите администрации клуба.");
+      unavailable.code="preorders/backend-not-deployed";
+      throw unavailable;
+    }
+    throw error;
+  }
   if(pendingPreorder?.requestId===previous.requestId)pendingPreorder=null;
   try{
     const stored=JSON.parse(sessionStorage.getItem(sessionKey(user.uid))||"null");
@@ -94,11 +106,30 @@ async function menuSnapshot(lines) {
   });
 }
 function errorText(error) {
-  if (error?.code === "permission-denied") {
-    return "Не удалось отправить предзаказ. Проверьте дату мероприятия и обновите корзину.";
-  }
-  if (error?.code === "unavailable") return "Не удалось связаться с клубом. Повторите попытку.";
-  return error?.code ? "Не удалось выполнить действие с предзаказом. Повторите попытку позже." : error?.message || "Не удалось выполнить действие с предзаказом.";
+  const code=String(error?.code||"");
+  // Preserve user-friendly validation messages and distinguish recoverable
+  // outages from security, expired-event or incomplete-registration errors.
+  if(code==="preorders/backend-not-deployed")
+    return "Предзаказы временно недоступны: сервер оформления ещё не активирован. Корзина сохранена. Сообщите администрации клуба. (SERVER-NOT-READY)";
+  if(code==="resource-exhausted"||code==="firestore/resource-exhausted"||
+     code==="functions/resource-exhausted")
+    return "Firebase временно отклонил запрос из-за лимита обращений. Корзина сохранена; повторите позже. (RESOURCE-EXHAUSTED)";
+  if(code==="permission-denied"||code==="firestore/permission-denied"||
+     code==="functions/permission-denied")
+    return "Не удалось сохранить предзаказ: Firebase отклонил доступ. Проверьте, что вы вошли, заполнили профиль и выбрали открытое мероприятие. (PERMISSION-DENIED)";
+  if(code==="unauthenticated"||code==="functions/unauthenticated")
+    return "Сеанс входа истёк. Войдите через Google ещё раз, корзина сохранена. (UNAUTHENTICATED)";
+  if(code==="failed-precondition"||code==="functions/failed-precondition")
+    return "Нельзя оформить предзаказ: проверьте профиль, дату, мероприятие и состав корзины. (FAILED-PRECONDITION)";
+  if(code==="unavailable"||code==="firestore/unavailable"||code==="functions/unavailable"||
+     code==="deadline-exceeded"||code==="functions/deadline-exceeded")
+    return "Сервис заказов сейчас недоступен. Корзина не удалена; проверьте соединение и повторите попытку. (SERVICE-UNAVAILABLE)";
+  if(code==="aborted"||code==="firestore/aborted")
+    return "Данные заказа изменились одновременно с другим действием. Повторите сохранение. (ORDER-CONFLICT)";
+  if(error?.message&&(!code||code==="invalid-argument"))return error.message;
+  return "Не удалось оформить предзаказ. Корзина сохранена. Код ошибки: "+
+    (code.replace(/[^a-z0-9/\-]/gi,"").slice(0,56)||"UNKNOWN")+
+    ". Сообщите этот код администрации клуба.";
 }
 async function save(payload, editId = null) {
   const user = signedUser();

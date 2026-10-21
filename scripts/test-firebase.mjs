@@ -51,6 +51,15 @@ try{
    assert.equal(order.eventTitle,'Тестовое событие');
    assert.equal(order.eventId,eventDate);
   });
+  await t.test('guest checkout reports real outage and permission codes without generic GitHub text',async()=>{
+    const describe=window.BaliOrders.errorText;
+    assert.match(describe({code:'resource-exhausted'}),/RESOURCE-EXHAUSTED/);
+    assert.match(describe({code:'permission-denied'}),/PERMISSION-DENIED/);
+    assert.match(describe({code:'preorders\/backend-not-deployed'}),/SERVER-NOT-READY/);
+    assert.match(describe({code:'functions\/unavailable'}),/SERVICE-UNAVAILABLE/);
+    assert.match(describe({code:'functions\/unauthenticated'}),/UNAUTHENTICATED/);
+    assert.match(describe({message:'Приём предзаказов на это мероприятие закрыт.'}),/закрыт/);
+  });
   await t.test('two parties on one date retain distinct IDs and verified titles',async()=>{
    const second=await window.BaliOrders.save({...payload,event_id:eventDate+'__2'});
    const order=await window.BaliOrders.getOrderWithItems(second.order_id);
