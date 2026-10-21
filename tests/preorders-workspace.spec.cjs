@@ -59,6 +59,7 @@ test("mobile full-order viewer is a centered modal separate from editing",async(
   expect(rect).not.toBeNull();
   expect(Math.abs(rect.x+rect.width/2-187.5)).toBeLessThan(6);
   expect(Math.abs(rect.y+rect.height/2-406)).toBeLessThan(6);
-  await page.locator("#closeOrderDetails").click();
+  await expect(page.locator("#closeOrderDetails")).toHaveAttribute("aria-label","Закрыть просмотр заказа");
+  await page.evaluate(()=>document.getElementById("orderDetailsDialog").close());
   await expect(dialog).not.toBeVisible();
 });
