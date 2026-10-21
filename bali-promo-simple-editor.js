@@ -1,7 +1,7 @@
 /* BALI simple banner composer — directly in the visual site builder. */
 import {doc,getDoc,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {prepareImage} from "./image-compressor.js?v=20261020-2";
-import {PROMO_POSITION_OPTIONS,promoEditorMode,promoEditorXY,promoStorePlacement} from "./bali-promo-placement.js?v=20261021-1";
+import {PROMO_POSITION_OPTIONS,promoEditorMode,promoEditorXY,promoStorePlacement} from "./bali-promo-placement.js?v=20261021-2";
 
 const holidayId="bali-new-year-2026";
 const holidayPoster="assets/BALI_banner_badge_rectangular_only.png";
@@ -91,7 +91,7 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
  const setPlacementUI=()=>{
    const mode=pos.value,point=promoEditorXY(mode,$("x").value,$("y").value);
    posCoords.hidden=mode!=="manual";
-   posHandle.hidden=mode==="none"||record?.destination==="none";
+   posHandle.hidden=mode==="none"||mode==="original"||record?.destination==="none";
    posHandle.textContent=$("button-text").value.trim()||"Подробнее";
    posHandle.style.left=point.x+"%";posHandle.style.top=point.y+"%";
    if(mode!=="manual"){$("x").value=point.x;$("y").value=point.y;}
@@ -111,7 +111,9 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
    if(!record)return;
    record.title=escapeText($("title").value).slice(0,100);
    record.buttonText=escapeText($("button-text").value).slice(0,65);
-   record.buttonPlacement=promoStorePlacement(pos.value,$("x").value,$("y").value);
+   const placement=promoStorePlacement(pos.value,$("x").value,$("y").value);
+   if(placement)record.buttonPlacement=placement;
+   else delete record.buttonPlacement;
    record.overlay={
      enabled:$("overlay-enabled").checked,
      fontSize:bounded($("font-size").value,12,80,38),
