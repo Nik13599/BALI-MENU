@@ -199,14 +199,15 @@ function syncInterestVisuals(){
         const button=card.querySelector(".event-want-to-go");
         if(!button)continue;
         const date=card.dataset.eventId||card.dataset.eventDate;
-        const selected=guestInterestDates.has(date);
-        const waiting=pendingInterestDates.has(date);
-        button.classList.toggle("selected",selected);
+        const live=card.dataset.eventStatus==="live";
+        const selected=live?window.BaliEventCheckins?.has(date)===true:guestInterestDates.has(date);
+        const waiting=live?window.BaliEventCheckins?.isBusy(date)===true:pendingInterestDates.has(date);
         button.setAttribute("aria-pressed",String(selected));
         button.setAttribute("aria-busy",String(waiting));
         setBaliHeartButton(button,selected,card.dataset.eventStatus||"upcoming");
-        button.title=selected?"Нажмите, чтобы убрать мероприятие из планов":"Добавить мероприятие в планы";
-        button.disabled=waiting;
+        button.title=live?(selected?"Вы отметились на вечеринке":"Я уже здесь — отметить присутствие"):
+          selected?"Нажмите, чтобы убрать мероприятие из планов":"Добавить мероприятие в планы";
+        button.disabled=waiting||(live&&selected);
     }
     window.dispatchEvent(new CustomEvent("bali:calendar:plans-changed",{
         detail:{dates:[...new Set([...guestInterestDates].map(id=>id.slice(0,10)))]}
@@ -250,6 +251,17 @@ async function toggleGuestInterest(date,message){
         syncInterestVisuals();
         if(showOnlyPlannedEvents)renderUpcomingEvents();
     }
+}
+window.addEventListener("bali:checkins",()=>syncInterestVisuals());
+async function markGuestAttendance(eventId,message){
+ if(!window.BaliEventCheckins){if(message)message.textContent="Модуль отметок загружается. Попробуйте снова.";return;}
+ const button=document.querySelector('#eventsGrid .event-card[data-event-id="'+eventId+'"] .event-want-to-go');
+ if(button)button.disabled=true;
+ try{
+  const response=await window.BaliEventCheckins.mark(eventId);
+  if(message)message.textContent=response?.loginRequired?"Войдите в кабинет, чтобы отметить присутствие.":response?.selected?"Отмечено: вы на вечеринке!":"";
+ }catch(error){if(message)message.textContent=error?.message||"Не удалось сохранить отметку.";}
+ finally{syncInterestVisuals();}
 }
 window.addEventListener('bali:interests',({detail})=>{
     const incoming=new Set(detail?.ids||detail?.dates||[]);
@@ -796,16 +808,19 @@ function renderUpcomingEvents() {
         interested.textContent="Хочет пойти: "+count;
         const planBtn=document.createElement("button");
         planBtn.type="button";
-        planBtn.className="event-want-to-go"+(guestInterestDates.has(event.id||event.date)?" selected":"");
-        planBtn.setAttribute("aria-pressed",String(guestInterestDates.has(event.id||event.date)));
-        setBaliHeartButton(planBtn,guestInterestDates.has(event.id||event.date),status);
+        const buttonSelected=status==="live"
+            ?window.BaliEventCheckins?.has(event.id||event.date)===true
+            :guestInterestDates.has(event.id||event.date);
+        planBtn.className="event-want-to-go"+(buttonSelected?" selected":"");
+        planBtn.setAttribute("aria-pressed",String(buttonSelected));
+        setBaliHeartButton(planBtn,buttonSelected,status);
         planBtn.title=status==="live"?"Отметить присутствие на вечеринке":guestInterestDates.has(event.id||event.date)
             ?"Нажмите, чтобы убрать мероприятие из планов":"Добавить мероприятие в планы";
-        planBtn.disabled=pendingInterestDates.has(event.id||event.date);
+        planBtn.disabled=(status==="live"&&buttonSelected)||pendingInterestDates.has(event.id||event.date);
         const message=document.createElement("p");
         message.className="event-interest-message";
         message.setAttribute("role","status");
-        planBtn.addEventListener("click",()=>void toggleGuestInterest(event.id||event.date,message));
+        planBtn.addEventListener("click",()=>void (status==="live"?markGuestAttendance(event.id||event.date,message):toggleGuestInterest(event.id||event.date,message)));
         // Date appears once, in the badge over the square poster.
         // The information can scroll independently when long; actions stay
         // at the absolute bottom of the visible event card.
