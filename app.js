@@ -29,6 +29,13 @@ let lastRenderedEventsView=false;
 let baliVisibleEventRange=window.BaliEventLifecycle.visibleToday();
 const eventStatus=event=>window.BaliEventLifecycle.state(event);
 const withinCalendar=event=>event?.date>=baliVisibleEventRange.start&&event?.date<=baliVisibleEventRange.end;
+// An overnight party can have yesterday's date while it is still live.
+// Use the real event end, in Minsk time, everywhere on the homepage.
+const homeUpcomingEvents=()=>availableEvents
+    .filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date||"")&&eventStatus(e)!=="past")
+    .sort((a,b)=>a.date.localeCompare(b.date)||
+        (a.startTime||"").localeCompare(b.startTime||"")||
+        (a.id||a.date).localeCompare(b.id||b.date));
 const baliHeartIcon='<svg class="bali-event-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.8a5.5 5.5 0 0 0-7.8 0L12 5.9l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
 function setBaliHeartButton(button,selected,status="upcoming"){
  if(!button.querySelector(".bali-event-action-icon"))button.insertAdjacentHTML("afterbegin",baliHeartIcon);
@@ -530,9 +537,7 @@ function showGuestSection(section) {
 function updateHomeNextEvent() {
     const text=document.getElementById("homeNextEvent");
     if(!text)return;
-    const next=availableEvents
-      .filter(e=>typeof e?.date==="string"&&e.date>=minskDateToday())
-      .sort((a,b)=>a.date.localeCompare(b.date))[0];
+    const next=homeUpcomingEvents()[0];
     text.textContent=next
         ? new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"long",timeZone:"Europe/Minsk"})
             .format(new Date(next.date+"T12:00:00+03:00"))+" · "+next.title
@@ -545,15 +550,10 @@ function renderHomeEvents() {
     const previousScroll=track.scrollLeft;
     const preserveScroll=track.dataset.homeView==="all";
     track.dataset.homeView="all";
-    const today=minskDateToday();
-    // SECRET slots are part of the homepage at every device width.
-    // Past events must never prevent the upcoming-only row from displaying SECRET.
+    // Completed events stay in the calendar archive, not the homepage.
     const homeSlots=window.matchMedia("(min-width:1180px)").matches?5:3;
-    const upcoming=availableEvents
-        .filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date||"")&&e.date>=today&&eventStatus(e)!=="past")
-        .sort((a,b)=>a.date.localeCompare(b.date))
-        // The FULL events calendar remains unlimited; only the homepage is capped.
-        .slice(0,homeSlots);
+    // The FULL events calendar remains unlimited; only the homepage is capped.
+    const upcoming=homeUpcomingEvents().slice(0,homeSlots);
     track.replaceChildren();
     for(const event of upcoming){
         // The homepage visually matches the square-poster event cards, without
@@ -727,12 +727,24 @@ window.addEventListener("bali:calendar:range",({detail})=>{
  baliVisibleEventRange=detail;renderUpcomingEvents();
 });
 window.addEventListener("bali:calendar:tick",()=>{
- const grid=document.getElementById("eventsGrid");
- if(!grid)return;
- if([...grid.querySelectorAll(".event-card[data-event-id]")].some(card=>{
-   const event=availableEvents.find(e=>(e.id||e.date)===(card.dataset.eventId||card.dataset.eventDate));
-   return event&&eventStatus(event)!==card.dataset.eventStatus;
- }))renderUpcomingEvents();
+  // Keep Home in sync as a party ends, even if the user never reloads.
+  // Rebuild only when the visible list changes to preserve scrolling.
+  const homeTrack=document.getElementById("homeEventCarousel");
+  if(homeTrack&&receivedEventSnapshot){
+    const slots=window.matchMedia("(min-width:1180px)").matches?5:3;
+    const expected=homeUpcomingEvents().slice(0,slots).map(e=>e.id||e.date);
+    const visible=[...homeTrack.querySelectorAll(".bali-home-event-card[data-event-id]")]
+        .map(card=>card.dataset.eventId);
+    if(expected.length!==visible.length||expected.some((id,i)=>id!==visible[i]))
+      renderHomeEvents();
+    updateHomeNextEvent();
+  }
+  const grid=document.getElementById("eventsGrid");
+  if(!grid)return;
+  if([...grid.querySelectorAll(".event-card[data-event-id]")].some(card=>{
+    const event=availableEvents.find(e=>(e.id||e.date)===(card.dataset.eventId||card.dataset.eventDate));
+    return event&&eventStatus(event)!==card.dataset.eventStatus;
+  }))renderUpcomingEvents();
 });
 function renderUpcomingEvents() {
     const grid=document.getElementById("eventsGrid");
@@ -856,7 +868,12 @@ function renderUpcomingEvents() {
         grid.append(card);
     }
     syncInterestVisuals();
-    const restoreIndex=changedView?0:Math.max(0,upcoming.findIndex(e=>(e.id||e.date)===previousDate));
+    // Historical posters are to the left of current/future events.
+    // If this range is archive-only, the latest old poster stays accessible.
+    const firstCurrent=upcoming.findIndex(e=>eventStatus(e)!=="past");
+    const fallback=firstCurrent>=0?firstCurrent:upcoming.length-1;
+    const matchingPrevious=upcoming.findIndex(e=>(e.id||e.date)===previousDate);
+    const restoreIndex=!changedView&&matchingPrevious>=0?matchingPrevious:fallback;
     const restore=()=>{
         const cards=carouselEventCards(grid);
         if(!cards.length)return;
