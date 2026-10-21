@@ -3,15 +3,53 @@
 (()=>{
   "use strict";
   const WIDTH=1080,HEIGHT=1920;
+  // The preset controls adjust real PNG pixels, not just the HTML preview.
+  const themes={
+    lime:{name:"LIME",background:"#050505",frame:"#b9ff51",title:"#ffffff",date:"#d7ff9f",time:"#ffffff",phrase:"#f1f1f1"},
+    silver:{name:"SILVER",background:"#0d1014",frame:"#cbd6e2",title:"#ffffff",date:"#b9d1e8",time:"#f3f6fa",phrase:"#dde6ed"},
+    gold:{name:"GOLD",background:"#0d0a06",frame:"#dab46e",title:"#fff7e6",date:"#dab46e",time:"#ffeed3",phrase:"#f2dab5"},
+    violet:{name:"VIOLET",background:"#0b0613",frame:"#b28aff",title:"#ffffff",date:"#d2baff",time:"#f7edff",phrase:"#edddff"},
+    cobalt:{name:"COBALT",background:"#070c17",frame:"#548eff",title:"#ffffff",date:"#92b9ff",time:"#f4f7ff",phrase:"#cbdfff"}
+  };
+  let selectedTheme="lime",customColors={},renderNumber=0,previewUrl=null;
   let target=null,lastBlob=null,lastName="bali-story.png";
   const modal=document.createElement("dialog");modal.className="bali-share-dialog";modal.id="baliShareDialog";
-  modal.innerHTML='<div class="bali-share-window"><div class="bali-share-title"><strong>BALI SHARE · STORIES</strong><button type="button" data-share-close aria-label="Закрыть">✕</button></div><p class="bali-share-status" aria-live="polite">Готовим вашу сторис…</p><img class="bali-share-preview" alt="Готовая сторис с афишей BALI" hidden><div class="bali-share-actions"><button type="button" data-share-native>Поделиться</button><button type="button" data-share-download>Скачать PNG</button></div></div>';
+  const themeOptions=Object.entries(themes).map(([id,item])=>
+    `<button type="button" data-share-theme="${id}" aria-pressed="${id==="lime"}" style="--share-swatch:${item.frame};--share-background:${item.background}">${item.name}</button>`
+  ).join("");
+  modal.innerHTML=`<div class="bali-share-window"><div class="bali-share-title"><strong>BALI SHARE · STORIES</strong><button type="button" data-share-close aria-label="Закрыть">✕</button></div><fieldset class="bali-share-theme-picker"><legend>Тема рамки и текста</legend><div class="bali-share-theme-options" role="group" aria-label="Выбрать цветовую тему">${themeOptions}</div><div class="bali-share-color-controls"><label>Рамка <input type="color" data-share-color="frame" aria-label="Цвет рамки"></label><label>Название <input type="color" data-share-color="title" aria-label="Цвет названия"></label><label>Детали <input type="color" data-share-color="date" aria-label="Цвет даты и деталей"></label></div></fieldset><p class="bali-share-status" aria-live="polite">Готовим вашу сторис…</p><img class="bali-share-preview" alt="Готовая сторис с афишей BALI" hidden><div class="bali-share-actions"><button type="button" data-share-native>Поделиться</button><button type="button" data-share-download>Скачать PNG</button></div></div>`;
   document.body.append(modal);
   const $=selector=>modal.querySelector(selector);
   const status=$(".bali-share-status"),preview=$(".bali-share-preview");
+  const palette=()=>({...themes[selectedTheme],...customColors,
+    time:customColors.date||themes[selectedTheme].time,
+    phrase:customColors.date||themes[selectedTheme].phrase});
+  const colorInputs=[...modal.querySelectorAll("[data-share-color]")];
+  const syncThemeControls=()=>{
+    modal.querySelectorAll("[data-share-theme]").forEach(button=>
+      button.setAttribute("aria-pressed",String(button.dataset.shareTheme===selectedTheme)));
+    for(const input of colorInputs)input.value=customColors[input.dataset.shareColor]||themes[selectedTheme][input.dataset.shareColor];
+  };
+  modal.querySelectorAll("[data-share-theme]").forEach(button=>
+    button.addEventListener("click",()=>{
+      if(!themes[button.dataset.shareTheme])return;
+      selectedTheme=button.dataset.shareTheme;
+      customColors={};
+      syncThemeControls();
+      if(target)void refreshPreview();
+    }));
+  for(const input of colorInputs)input.addEventListener("input",()=>{
+    customColors[input.dataset.shareColor]=input.value;
+    if(target)void refreshPreview();
+  });
+  syncThemeControls();
   const close=()=>{if(modal.open)modal.close();};
   $("[data-share-close]").addEventListener("click",close);
   modal.addEventListener("click",e=>{if(e.target===modal)close();});
+  modal.addEventListener("close",()=>{
+    renderNumber++;target=null;lastBlob=null;
+    if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}
+  });
   function getData(card){
     const date=card.dataset.eventDate||"";
     const img=card.querySelector(".event-poster,.bali-home-poster-wrap img");
@@ -72,8 +110,9 @@
     const canvas=document.createElement("canvas");canvas.width=WIDTH;canvas.height=HEIGHT;
     const ctx=canvas.getContext("2d",{alpha:false});
     if(!ctx)throw Error("Ваш браузер не поддерживает экспорт сторис.");
-    // Instagram Stories, 9:16. No decorative text, URLs or dummy comments.
-    ctx.fillStyle="#050505";ctx.fillRect(0,0,WIDTH,HEIGHT);
+    // Instagram Stories, 9:16. Preserve the original 1:1 event artwork.
+    const theme=palette();
+    ctx.fillStyle=theme.background;ctx.fillRect(0,0,WIDTH,HEIGHT);
     const poster=await load(data.src);
     if(!poster)throw Error("Не удалось загрузить афишу для сторис.");
     const logo=await load("assets/bali-nightclub-logo.png");
@@ -82,39 +121,56 @@
       ctx.fillStyle="#fff";ctx.font="900 128px Arial";
       ctx.textAlign="center";ctx.fillText("BALI",WIDTH/2,260);
     }
-    ctx.fillStyle="#101010";ctx.fillRect(92,408,896,896);
+    ctx.fillStyle=theme.frame;ctx.fillRect(92,408,896,896);
     cover(ctx,poster,100,416,880,880); // exact 1:1 square
     ctx.textAlign="center";
-    ctx.fillStyle="#fff";
+    ctx.fillStyle=theme.title;
     ctx.font="800 65px Arial";
-    let titleLines=lines(ctx,String(data.title||"BALI NIGHT CLUB").toUpperCase(),930,3);
-    let yy=1410;
-    for(const line of titleLines){ctx.fillText(line,WIDTH/2,yy,920);yy+=76;}
+    const titleLines=lines(ctx,String(data.title||"BALI NIGHT CLUB").toUpperCase(),930,3);
+    let yy=1407;
+    for(const line of titleLines){ctx.fillText(line,WIDTH/2,yy,920);yy+=74;}
+    // Keep all metadata immediately beneath the last title line: no empty
+    // middle section as in the original story template.
     let formatted="";
     if(/^\d{4}-\d{2}-\d{2}$/.test(data.date||"")){
       formatted=new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(data.date+"T12:00:00Z"));
     }
-    ctx.fillStyle="#d7ff9f";ctx.font="700 41px Arial";
-    ctx.fillText(formatted.toUpperCase(),WIDTH/2,1682,930);
-    ctx.fillStyle="#fff";ctx.font="650 43px Arial";
-    ctx.fillText(data.startTime?("НАЧАЛО · "+data.startTime):"ВРЕМЯ УТОЧНЯЕТСЯ",WIDTH/2,1758,930);
-    ctx.fillStyle="#f1f1f1";ctx.font="600 39px Arial";
-    ctx.fillText("Я хочу пойти в Бали",WIDTH/2,1860,950);
+    const dateY=yy+10, timeY=dateY+67, phraseY=timeY+78;
+    ctx.fillStyle=theme.date;ctx.font="700 41px Arial";
+    ctx.fillText(formatted.toUpperCase(),WIDTH/2,dateY,930);
+    ctx.fillStyle=theme.time;ctx.font="650 43px Arial";
+    ctx.fillText(data.startTime?("НАЧАЛО · "+data.startTime):"ВРЕМЯ УТОЧНЯЕТСЯ",WIDTH/2,timeY,930);
+    ctx.fillStyle=theme.phrase;ctx.font="600 39px Arial";
+    ctx.fillText("Я иду в Бали",WIDTH/2,phraseY,950);
     return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(Error("Ошибка создания PNG")),"image/png"));
   }
-  async function start(data){
-    target=data;lastBlob=null;preview.hidden=true;status.textContent="Создаём вертикальную афишу 1080 × 1920…";
+  async function refreshPreview(){
+    if(!target)return;
+    const sequence=++renderNumber;
+    lastBlob=null;
+    status.textContent="Создаём сторис с выбранной темой…";
     $("[data-share-native]").disabled=true;$("[data-share-download]").disabled=true;
-    if(!modal.open)modal.showModal();
     try{
-      lastBlob=await generate(data);
-      lastName="BALI-"+data.date+"-story.png";
-      preview.src=URL.createObjectURL(lastBlob);preview.hidden=false;
+      const blob=await generate(target);
+      if(sequence!==renderNumber||!modal.open)return;
+      lastBlob=blob;
+      const url=URL.createObjectURL(blob);
+      preview.src=url;preview.hidden=false;
+      if(previewUrl)URL.revokeObjectURL(previewUrl);
+      previewUrl=url;
       status.textContent="Сторис готова · 1080 × 1920 px";
       $("[data-share-native]").disabled=false;$("[data-share-download]").disabled=false;
     }catch(err){
-      status.textContent="Не удалось обработать исходную афишу. "+(err.message||"Попробуйте снова.");
+      if(sequence!==renderNumber)return;
+      status.textContent="Не удалось обработать афишу. "+(err.message||"Попробуйте снова.");
     }
+  }
+  function start(data){
+    target=data;lastBlob=null;preview.hidden=true;
+    lastName="BALI-"+(data.date||"event")+"-story.png";
+    if(!modal.open)modal.showModal();
+    syncThemeControls();
+    return refreshPreview();
   }
   const download=()=>{
     if(!lastBlob)return;
