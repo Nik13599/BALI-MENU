@@ -40,6 +40,7 @@
     if(action==="orders")document.getElementById("profileMyOrdersBtn")?.click();
     if(action==="plans")document.getElementById("profileMyPlansBtn")?.click();
     if(action==="details")document.getElementById("profileDataBtn")?.click();
+    if(action==="info")document.getElementById("profileInfoBtn")?.click();
     if(action==="logout")document.getElementById("profileLogoutBtn")?.click();
   });
   document.addEventListener("pointerdown",event=>{
