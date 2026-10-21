@@ -235,20 +235,62 @@ const formatDate=date=>{
   return new Intl.DateTimeFormat("ru-RU",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"})
     .format(new Date(date+"T12:00:00Z"));
 };
+let activeDetailCard=null;
+const detailLike=document.getElementById("baliEventDetailLike");
+const detailShare=document.getElementById("baliEventDetailShare");
+const detailComments=document.getElementById("baliEventDetailComments");
+function syncDetailLike(){
+  if(!activeDetailCard||!detailLike)return;
+  const button=activeDetailCard.querySelector(".event-want-to-go");
+  const past=activeDetailCard.dataset.eventStatus==="past";
+  const live=activeDetailCard.dataset.eventStatus==="live";
+  const selected=button?.getAttribute("aria-pressed")==="true";
+  detailLike.disabled=past||!button||button.disabled;
+  detailLike.hidden=past;
+  detailLike.classList.toggle("is-selected",selected);
+  detailLike.setAttribute("aria-pressed",String(selected));
+  detailLike.setAttribute("aria-label",selected
+    ?(live?"Я уже здесь":"Убрать мероприятие из моих планов")
+    :(live?"Я здесь":"Хочу пойти на мероприятие"));
+  const label=detailLike.querySelector("span");
+  if(label)label.textContent=selected?(live?"Я здесь ✓":"В моих планах"):(live?"Я здесь":"Хочу пойти");
+}
+detailLike?.addEventListener("click",()=>{
+  if(!activeDetailCard)return;
+  const underlying=activeDetailCard.querySelector(".event-want-to-go");
+  if(underlying&&!underlying.disabled)underlying.click();
+  syncDetailLike();
+});
+detailShare?.addEventListener("click",()=>{
+  if(activeDetailCard)void window.BaliShare?.openForCard?.(activeDetailCard);
+});
+detailComments?.addEventListener("click",()=>{
+  document.getElementById("baliEventDetailCaption")?.scrollIntoView({
+    behavior:reduce.matches?"instant":"smooth",block:"nearest"
+  });
+});
+new MutationObserver(changes=>{
+  if(dialog.open&&activeDetailCard&&changes.some(change=>
+    activeDetailCard.contains(change.target)))syncDetailLike();
+}).observe(grid,{subtree:true,attributes:true,attributeFilter:["aria-pressed","disabled"]});
+dialog.addEventListener("close",()=>{activeDetailCard=null;});
 const openDetails=card=>{
   const poster=card.querySelector(".event-poster");
   if(!poster)return;
   const title=card.querySelector(".bali-event-info h3")?.textContent||"Мероприятие BALI";
   previousFocus=document.activeElement;
+  activeDetailCard=card;
   const image=document.getElementById("baliEventDetailImage");
   image.src=poster.currentSrc||poster.src;
   image.alt="Афиша "+title;
   document.getElementById("baliEventDetailTitle").textContent=title;
   document.getElementById("baliEventDetailDate").textContent=formatDate(card.dataset.eventDate);
-  document.getElementById("baliEventDetailHours").textContent=card.querySelector(".bali-event-hours")?.textContent||"";
+  document.getElementById("baliEventDetailHours").textContent=card.querySelector(".bali-event-hours")?.textContent||"Время уточняется";
   document.getElementById("baliEventDetailDescription").textContent=
     card.querySelector(".bali-event-description")?.textContent||"Дополнительная информация появится перед мероприятием.";
   if(!dialog.open)dialog.showModal();
+  dialog.scrollTop=0;
+  syncDetailLike();
 };
 const decorate=()=>{
   for(const card of cards()){
