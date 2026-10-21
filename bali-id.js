@@ -9,7 +9,7 @@ const TIERS=["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ"]
 // Default copy mirrors the six approved BALI ID category references.
 // These descriptions do not issue free products or discounts.
 const DEFAULTS={
-  Member:{description:"Ваш первый уровень BALI PRIVILEGE.",criteria:"Автоматически после регистрации.",benefits:["Персональная цифровая карта гостя"]},
+  Member:{description:"Ваш первый уровень BALI PRIVILEGE.",criteria:"После ознакомления с условиями BALI ID.",benefits:["Персональная цифровая карта гостя"]},
   Silver:{description:"Ваш уровень с первыми дополнительными привилегиями.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Дополнительные клубные преимущества"]},
   Gold:{description:"Ваш уровень с расширенными преимуществами.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Расширенные клубные привилегии"]},
   Platinum:{description:"Ваш премиальный уровень BALI PRIVILEGE.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Премиальные преимущества"]},
@@ -89,8 +89,7 @@ async function allocate(uid,run){
 window.addEventListener("bali:auth-state",({detail})=>{
   profile=detail?.registered?{name:detail.name}:null;
   render();
-  // A guest may complete the profile after the first Google sign-in event.
-  // Allocate immediately after successful registration, without a reload.
+  // Profile registration alone never creates a card; onboarding is mandatory.
   const user=auth.currentUser;
   if(detail?.registered&&user?.emailVerified&&activeUid!==user.uid)
     void initializeForUser(user);
@@ -108,6 +107,10 @@ async function initializeForUser(user){
     if(run!==session||auth.currentUser?.uid!==user.uid)return;
     const profileData=window.BaliAuth?.getProfile?.();
     if(!profileData){render();return;}
+    // Check persisted acknowledgement before ANY writes (Member or ID counter).
+    const consent=await getDoc(doc(db,"users",user.uid,"baliIdAgreements","privilege"));
+    if(run!==session||auth.currentUser?.uid!==user.uid)return;
+    if(!consent.exists()||consent.data()?.version!==1){render();return;}
     activeUid=user.uid;profile=profileData;render();
     setText("baliIdStatus","Загружаем вашу карту...");
     // Register once: the counter and guest number form one atomic transaction.
@@ -147,4 +150,7 @@ async function initializeForUser(user){
     if(run===session)setText("baliIdStatus","Не удалось загрузить привилегии: "+(e.code||"ошибка сети"));
   }
 }
+window.addEventListener("bali:id-accepted",event=>{
+  if(event.detail?.uid===auth.currentUser?.uid)void initializeForUser(auth.currentUser);
+});
 onAuthStateChanged(auth,initializeForUser);
