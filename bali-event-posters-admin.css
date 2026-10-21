@@ -1,0 +1,63 @@
+/* Administrator artwork previews match actual 1:1 public poster cards. */
+#eventForm .image-upload-area{
+ display:grid;justify-items:start;gap:8px;
+}
+#eventForm #eventPosterPreview.poster-preview:not([hidden]){
+ display:block!important;
+ box-sizing:border-box!important;
+ width:min(100%,320px)!important;
+ height:auto!important;
+ aspect-ratio:1/1!important;
+ max-height:none!important;
+ object-fit:contain!important;
+ object-position:center!important;
+ border-radius:11px!important;
+ border:1px solid rgba(185,255,81,.4)!important;
+ background:#050806!important;
+}
+#baliEventPlaceholderEditor .bali-placeholder-preview-card{
+ display:block!important;
+ position:relative!important;
+ box-sizing:border-box!important;
+ width:min(100%,245px)!important;
+ height:auto!important;
+ max-height:none!important;
+ aspect-ratio:1/1!important;
+ border-radius:10px!important;
+ overflow:hidden!important;
+ background:#000!important;
+}
+#baliEventPlaceholderEditor .bali-placeholder-preview-art{
+ display:block!important;
+ position:absolute!important;
+ inset:0!important;
+ width:100%!important;height:100%!important;
+ min-height:0!important;
+ aspect-ratio:1/1!important;
+ background:#000!important;
+}
+#baliEventPlaceholderEditor .bali-placeholder-preview-art>img{
+ position:absolute!important;inset:0!important;
+ display:block!important;width:100%!important;height:100%!important;
+ object-fit:cover!important;
+}
+#baliEventPlaceholderEditor .bali-placeholder-preview-art>img[hidden]{display:none!important}
+#baliEventPlaceholderEditor .bali-placeholder-preview-overlay{
+ position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;
+ display:grid!important;place-items:center!important;
+ padding:0!important;margin:0!important;
+ text-align:center!important;background:transparent!important;
+}
+#baliEventPlaceholderEditor .bali-placeholder-preview-overlay>strong{
+ position:static!important;
+ display:block!important;transform:none!important;
+ max-width:calc(100% - 16px)!important;
+ font:850 32px/1.05 Manrope,Inter,sans-serif!important;
+ text-align:center!important;color:#eaffd4!important;
+}
+#baliEventPlaceholderEditor .bali-placeholder-preview-footer,
+#baliEventPlaceholderEditor .bali-placeholder-legacy-fields{
+ display:none!important;
+}
+#baliEventPlaceholderEditor .bali-placeholder-preview-footer[hidden]{display:none!important}
