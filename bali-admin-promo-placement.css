@@ -1,0 +1,56 @@
+/* BALI admin design: same placement workflow in quick and full banner editors.
+   All rules are admin-only. */
+.bali-simple-banner-editor .bali-promo-simple-overlay-toggle{
+  display:flex;flex-wrap:wrap;align-items:center;gap:9px;
+  padding:12px 14px;border:1px solid rgba(185,255,81,.25);
+  border-radius:12px;background:rgba(185,255,81,.045);
+}
+.bali-simple-banner-editor .bali-promo-simple-overlay-toggle input{width:17px;height:17px;accent-color:#b9ff51}
+.bali-simple-banner-editor .bali-promo-simple-overlay-toggle small{display:block;flex:0 0 100%;font-size:11px;opacity:.78}
+.bali-simple-banner-editor .bali-promo-simple-position-stage{
+  position:relative;display:block;isolation:isolate;
+  width:100%;aspect-ratio:1024 / 353;overflow:hidden;
+  background:linear-gradient(120deg,#101714,#1a241a);
+  border:1px solid rgba(185,255,81,.35);border-radius:12px;
+  touch-action:none;user-select:none;
+}
+.bali-simple-banner-editor .bali-promo-simple-position-stage>img{
+  display:block;position:absolute;inset:0;width:100%;height:100%;
+  object-fit:contain;pointer-events:none;
+}
+.bali-simple-banner-editor .bali-promo-simple-position-stage>span{
+  position:absolute;z-index:2;left:50%;top:82%;transform:translate(-50%,-50%);
+  display:flex;align-items:center;justify-content:center;
+  max-width:70%;min-height:30px;padding:7px 12px;box-sizing:border-box;
+  border:1px solid rgba(223,255,169,.65);border-radius:8px;
+  background:#b9ff51;color:#101810;
+  font:750 clamp(9px,1vw,13px)/1.1 Manrope,Inter,sans-serif;
+  overflow-wrap:anywhere;text-align:center;pointer-events:none;
+  box-shadow:0 4px 18px rgba(0,0,0,.4);
+}
+.bali-simple-banner-editor .bali-promo-simple-position-stage>span[hidden]{
+  display:none!important;
+}
+.bali-simple-banner-editor .bali-promo-simple-position-coordinates,
+.bali-simple-banner-editor .bali-promo-simple-position-coordinates{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;
+}
+.bali-simple-banner-editor .bali-promo-simple-position-coordinates[hidden]{display:none!important}
+.bali-simple-banner-editor .bali-promo-simple-note{
+  display:block;color:#becbb9;font-size:11px;line-height:1.45;
+}
+.bali-promo-editor .bali-promo-button-placement{
+  border:1px solid rgba(185,255,81,.17);padding:12px;
+  border-radius:14px;background:rgba(185,255,81,.025);
+}
+.bali-promo-editor #baliPromoButtonPlacementHandle[hidden]{display:none!important}
+.bali-promo-editor #baliPromoButtonPlacementHandle{
+  box-sizing:border-box;max-width:68%!important;
+  padding:8px 12px;border-radius:9px;border:1px solid rgba(255,255,255,.4);
+  background:#b9ff51;color:#111810;
+  font:750 clamp(10px,1vw,14px)/1.15 Manrope,Inter,sans-serif;
+  text-align:center;overflow-wrap:anywhere;
+}
+@media(max-width:600px){
+  .bali-simple-banner-editor .bali-promo-simple-position-stage{aspect-ratio:16 / 8}
+}
