@@ -185,15 +185,27 @@
           <div>
             <div class="eyebrow">РАБОТА С ГОСТЯМИ</div>
             <h2 id="ordersHeading">Очередь предзаказов</h2>
-            <p>Подтверждайте заявки, меняйте статусы и отправляйте на печать.</p>
+            <p>Предзаказы разделены по дате и мероприятию. Печатайте заявки и выгружайте отчёты кухни.</p>
           </div>
           <div class="filter-stack">
             <label class="check admin-archive-toggle"><input id="showArchivedOrders" type="checkbox"> Показать архив</label>
-            <label for="ordersDateFilter">Дата мероприятия</label>
+            <label for="ordersDateFilter">1. Дата мероприятия</label>
             <select id="ordersDateFilter"><option value="">Все даты</option></select>
+            <label for="ordersEventFilter">2. Мероприятие в эту дату</label>
+            <select id="ordersEventFilter"><option value="">Все мероприятия</option></select>
           </div>
         </div>
-        <div class="notice notice-info">Заявки начнут поступать после подключения правил Firestore для заказов. Онлайн-оплата не включена.</div>
+        <section class="card" aria-label="Выгрузка предзаказов">
+          <div class="card-heading"><h3>Выгрузка для кухни и администратора</h3><span class="tag">CSV / Excel</span></div>
+          <p class="hint">Выберите дату и конкретное мероприятие. Выгрузка получает <strong>всю историю</strong> выбранного мероприятия из базы, а не только последние 100 заявок.</p>
+          <div class="actions">
+            <button id="exportEventOrders" type="button" class="primary" disabled>Скачать все заказы по блюдам</button>
+            <button id="exportEventDishes" type="button" disabled>Скачать общую сводку блюд</button>
+          </div>
+          <label class="check"><input id="exportIncludeCancelled" type="checkbox"> Включить отменённые и архивные предзаказы в отчёт</label>
+          <p class="hint">По умолчанию отменённые/архивные не учитываются в потребности кухни. Формат CSV с разделителем «;» и кодировкой UTF-8 открывается в Excel.</p>
+        </section>
+        <div class="notice notice-info">Нумерация ведётся отдельно для каждого мероприятия. При смене мероприятия номер предзаказа назначается заново; онлайн-оплата не включена.</div>
         <p id="ordersAdminStatus" class="status" role="status" aria-live="polite"></p>
         <div class="order-queue" id="ordersAdminList">Ожидаем входа администратора...</div>
       </section>
@@ -483,7 +495,10 @@
               </div>
               <div class="actions"><button type="button" data-bali-time-preset="23:00,06:00">Ночь · 23:00–06:00</button><button type="button" data-bali-time-preset="19:00,22:30">Вечер · 19:00–22:30</button></div>
               <p class="hint">Время события отображается под афишей, например 20:00–23:00. Время закрытия предзаказов настраивается отдельно.</p>
-              <label>Закрыть предзаказы в (по Минску) <input id="eventCutoff" type="time"></label>
+              <label>Принимать предзаказы до (по Минску, дата мероприятия)
+                <input id="eventCutoff" type="time" step="60" required>
+                <small class="hint">Установите время вручную для каждого мероприятия отдельно, например 17:00 или 22:30. По достижении этого времени новые предзаказы закрываются автоматически.</small>
+              </label>
               <div class="image-upload-area">
                 <label for="eventPosterFile">Афиша мероприятия (загрузить JPG/PNG/WebP)</label>
                 <input type="file" id="eventPosterFile" accept="image/*">
@@ -1145,7 +1160,7 @@
 <script type="module" src="bali-admin-promos.js?v=20261021-removal5"></script>
 <script type="module" src="bali-home-design-admin.js?v=20261020-2"></script>
 <script type="module" src="bali-home-placeholder-admin.js?v=20261021-square1"></script>
-<script type="module" src="admin-orders.js?v=20261020-event1"></script>
+<script type="module" src="admin-orders.js?v=20261021-event-reports1"></script>
 <script type="module" src="admin-clients.js?v=20261019-1"></script>
 <script type="module" src="bali-privilege-admin.js?v=20261021-5priv"></script>
 <script type="module" src="bali-qr-admin.js?v=20261021-1"></script>
