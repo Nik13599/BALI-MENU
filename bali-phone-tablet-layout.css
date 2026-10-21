@@ -633,6 +633,11 @@
     mask-image:url("assets/nav-icons/menu.svg")!important;
     -webkit-mask-image:url("assets/nav-icons/menu.svg")!important;
   }
+  /* BALI ID uses the same hand-drawn outline icon as the header shortcut. */
+  body.bali-guest-theme .bali-bottom-nav [data-bali-nav="id"] .bali-nav-glyph{
+    mask-image:url("assets/nav-icons/id-card.svg")!important;
+    -webkit-mask-image:url("assets/nav-icons/id-card.svg")!important;
+  }
   body.bali-guest-theme .bali-bottom-nav [data-bali-nav="contacts"] .bali-nav-glyph{
     mask-image:url("assets/nav-icons/info.svg")!important;
     -webkit-mask-image:url("assets/nav-icons/info.svg")!important;
