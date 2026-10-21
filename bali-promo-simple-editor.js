@@ -87,7 +87,7 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
  const pos=$("position"),posStage=$("position-stage"),posHandle=$("position-handle");
  const posImage=$("position-image"),posCoords=$("position-coordinates");
  for(const [value,label] of PROMO_POSITION_OPTIONS)pos.add(new Option(label,value));
- let activeId=null,record=null,busy=false,serial=0,updating=false,dragging=false;
+ let activeId=null,record=null,busy=false,serial=0,updating=false,dragging=false,previewScheduled=false;
  const setPlacementUI=()=>{
    const mode=pos.value,point=promoEditorXY(mode,$("x").value,$("y").value);
    posCoords.hidden=mode!=="manual";
@@ -107,7 +107,8 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
  const showPreview=()=>{
    const url=record?.imageRemoved?"":record?.imageUrl||(activeId===holidayId?holidayPoster:"");
    preview.hidden=!url;
-   if(url)preview.src=url;else preview.removeAttribute("src");
+   if(url&&preview.getAttribute("src")!==url)preview.src=url;
+   if(!url&&preview.hasAttribute("src"))preview.removeAttribute("src");
    setPlacementUI();
  };
  const collect=()=>{
@@ -191,7 +192,16 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
  }
  const refresh=()=>{
   if(updating||busy||!record)return;
-  collect();publishPreview();say("Предпросмотр обновлён. Для публикации нажмите кнопку ниже.");
+  collect();
+  // Avoid repainting iframe and decoding the same banner for each pixel of drag.
+  if(!previewScheduled){
+   previewScheduled=true;
+   requestAnimationFrame(()=>{
+    previewScheduled=false;
+    if(record&&!busy)publishPreview();
+   });
+  }
+  say("Предпросмотр обновлён. Для публикации нажмите кнопку ниже.");
  };
  for(const key of ["title","button-text","font-size","text-color","button-background","button-color",
    "button-radius","align","overlay-enabled","position","x","y"]){
