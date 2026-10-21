@@ -11,6 +11,16 @@ const state=(event,at=Date.now())=>{
  const finish=Date.parse(d+"T"+e+":00+03:00")+(e<=s?DAY:0);
  return at<begin?"upcoming":at<finish?"live":"past";
 };
+// Home keeps an event visible for one full hour AFTER its actual end.
+// Calendar statuses still switch to "past" at the precise end time.
+const homeVisible=(event,at=Date.now())=>{
+ const d=event?.date||"",s=event?.startTime||"",e=event?.endTime||"";
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return false;
+ const validTime=/^([01]\d|2[0-3]):[0-5]\d$/;
+ if(!validTime.test(s)||!validTime.test(e))return state(event,at)!=="past";
+ const finish=Date.parse(d+"T"+e+":00+03:00")+(e<=s?DAY:0);
+ return Number.isFinite(finish)&&at<finish+3600000;
+};
 const monthRange=(year,month)=>{
  const date=n=>new Date(Date.UTC(year,month-1,n)).toISOString().slice(0,10);
  const offset=(new Date(Date.UTC(year,month-1,1)).getUTCDay()+6)%7;
@@ -19,5 +29,5 @@ const monthRange=(year,month)=>{
 };
 const visibleToday=()=>{const d=nowDate();return monthRange(+d.slice(0,4),+d.slice(5,7))};
 const colors=Object.freeze({upcoming:"#b9ff51",live:"#f4c84b",past:"#fa6070"});
-window.BaliEventLifecycle=Object.freeze({state,monthRange,visibleToday,nowDate,colors});
+window.BaliEventLifecycle=Object.freeze({state,homeVisible,monthRange,visibleToday,nowDate,colors});
 })();
