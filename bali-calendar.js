@@ -32,6 +32,8 @@
  let hasInteracted=false,lockUntil=0,opened=0;
  let lastEventDate=null,expanded=false;
  let plannedDates=new Set(),eventSnapshot=[];
+ const lifecycle=window.BaliEventLifecycle;
+ let lastRange="";
  const validHexColor=c=>typeof c==="string"&&/^#[0-9a-fA-F]{6}$/.test(c);
  const calendarEvents=()=>{
    // Live server snapshots include past and future dates; local poster cards
@@ -39,13 +41,13 @@
    // if/when publishing on the same date is enabled.
    const items=eventSnapshot.map(event=>({
      date:event.date,color:validHexColor(event.dotColor)?event.dotColor:"#b9ff51",
-     id:event.id||event.date
+     id:event.id||event.date,status:lifecycle.state(event),title:event.title||"Мероприятие"
    })).filter(event=>valid(event.date));
    const existing=new Set(items.map(event=>event.id));
    for(const card of eventCards()){
      const date=card.dataset.eventDate,id=card.dataset.eventId||date;
      if(!valid(date)||existing.has(id))continue;
-     items.push({date,id,color:validHexColor(card.dataset.dotColor)?card.dataset.dotColor:"#b9ff51"});
+     items.push({date,id,color:validHexColor(card.dataset.dotColor)?card.dataset.dotColor:"#b9ff51",status:card.dataset.eventStatus||"upcoming",title:card.querySelector("h3")?.textContent||"Мероприятие"});
      existing.add(id);
    }
    return items;
@@ -79,7 +81,8 @@
    const planned=plannedDates.has(s);
    const liveDate=getNow().date;
    const today=s===liveDate;
-   const past=published&&s<liveDate;
+   const past=published&&items.every(e=>e.status==="past");
+   const live=items.some(e=>e.status==="live");
    const btn=document.createElement("button");
    btn.type="button";btn.className="bali-calendar-day";
    btn.dataset.date=s;
@@ -87,12 +90,25 @@
    btn.dataset.today=String(today);
    btn.dataset.event=String(published);
    btn.dataset.past=String(past);
+   btn.dataset.live=String(live);
+   if(published){
+     // The n independent sectors represent the n published events on this date.
+     // One live + one upcoming makes a half-yellow, half-lime day.
+     const total=items.length;
+     const sectors=items.map((event,i)=>{
+       const color={past:"rgba(250,96,112,.24)",live:"rgba(244,200,75,.30)",upcoming:"rgba(185,255,81,.13)"}[event.status];
+       return color+" "+(i*100/total).toFixed(3)+"% "+((i+1)*100/total).toFixed(3)+"%";
+     });
+     btn.dataset.lifecycle="true";
+     btn.style.setProperty("--bali-day-segments","linear-gradient(90deg,"+sectors.join(",")+")");
+     btn.style.setProperty("--bali-day-accent",live?"#f4c84b":past?"#fa6070":"#b9ff51");
+   }
    btn.dataset.planned=String(planned);
    btn.dataset.eventCount=String(items.length);
    btn.setAttribute("aria-pressed",String(s===selected));
    btn.setAttribute("aria-label",describe(s,{weekday:"long",day:"numeric",month:"long",year:"numeric"})+
      (published?". Мероприятий: "+items.length+".":"")+
-     (past?" Мероприятия прошли.":"")+
+     (items.length?items.map(e=>e.title+": "+({live:"идёт",past:"прошло",upcoming:"скоро"}[e.status])).join(". ")+".":"")+
      (planned?" В моих планах.":""));
    const number=document.createElement("span");number.className="bali-calendar-day-number";
    number.textContent=String(Number(s.slice(-2)));
@@ -109,7 +125,8 @@
      for(const item of items){
        const dot=document.createElement("span");
        dot.className="bali-calendar-event-dot";
-       dot.style.setProperty("--bali-event-dot-color",item.color);
+       dot.style.setProperty("--bali-event-dot-color",lifecycle.colors[item.status]||item.color);
+       dot.dataset.status=item.status;
        dots.append(dot);
      }
      btn.append(dots);
@@ -117,6 +134,12 @@
    return btn;
  }
  function render(){
+   const range=lifecycle.monthRange(year,month);
+   const key=range.start+"/"+range.end;
+   if(key!==lastRange){
+     lastRange=key;
+     window.dispatchEvent(new CustomEvent("bali:calendar:range",{detail:range}));
+   }
    const monthStart=iso(year,month,1);
    monthName.textContent=describe(monthStart,{month:"long"})+" "+year;
    days.replaceChildren();weekstrip.replaceChildren();
@@ -205,7 +228,9 @@
    if(!hasInteracted&&!event.detail?.forced)return;
    if(date===lastEventDate&&date===selected)return;
    lastEventDate=date;selected=date;
-   [year,month]=stamp(date);render();
+   const visible=lifecycle.monthRange(year,month);
+   if(date<visible.start||date>visible.end)[year,month]=stamp(date);
+   render();
  });
  // Repaint immediately after optimistic RSVP (and after the authoritative
  // Firebase snapshot), without resetting selected month or carousels.
@@ -230,5 +255,13 @@
    expanded=false;render();setLabel();
  });
  setLabel();render();
- window.setInterval(setLabel,30000);
+ let lastMinute="";
+ window.setInterval(()=>{
+   setLabel();
+   const now=getNow(),minute=now.date+"T"+now.time;
+   if(minute===lastMinute)return;
+   lastMinute=minute;
+   render();
+   window.dispatchEvent(new CustomEvent("bali:calendar:tick"));
+ },10000);
 })();
