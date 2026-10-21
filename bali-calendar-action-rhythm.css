@@ -56,3 +56,61 @@
     will-change:auto!important;
   }
 }
+
+
+/* PHONE CALENDAR / 2026-10-21
+   The coverflow computes one shared --bali-phone-even-gap for
+   calendar -> poster -> actions -> dock. Do not stretch the event card
+   to the stage floor: that was hiding controls under the bottom panel. */
+@media (max-width:767px) {
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection
+  #eventsGrid>.event-card {
+    top:var(--bali-phone-poster-top,0px)!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    justify-content:flex-start!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection
+  #eventsGrid>.event-card.is-active>.event-card-body {
+    display:block!important;
+    flex:0 0 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection
+  #eventsGrid>.event-card .bali-event-actions {
+    display:flex!important;
+    flex:0 0 auto!important;
+    box-sizing:border-box!important;
+    height:auto!important;
+    max-height:none!important;
+    align-items:stretch!important;
+    width:100%!important;
+    margin:var(--bali-phone-even-gap,14px) 0 0!important;
+    padding:0!important;
+    transform:translate3d(0,0,0)!important;
+    opacity:1!important;
+    transition:opacity .25s ease-out,transform .25s cubic-bezier(.2,.7,.2,1)!important;
+    will-change:opacity,transform;
+  }
+  /* One gentle fade + 10px lift once the poster has finished moving;
+     never drop the row 48-76px or reveal it at the halfway frame. */
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection
+  #eventsGrid.is-actions-lowered>.event-card.is-active .bali-event-actions {
+    transform:translate3d(0,10px,0)!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    transition:opacity .12s ease-in,transform .12s ease-in!important;
+  }
+}
+@media (max-width:767px) and (prefers-reduced-motion:reduce) {
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection
+  #eventsGrid>.event-card.is-active .bali-event-actions {
+    transition:none!important;
+    will-change:auto!important;
+  }
+}
