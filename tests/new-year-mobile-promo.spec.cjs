@@ -21,6 +21,8 @@ test.beforeEach(async({page})=>{
 });
 
 async function loadHoliday(page){
+  // This fixture injects the renderer below; prevent a second live instance.
+  await page.route('**/bali-pc-offers.js*',route=>route.fulfill({contentType:'text/javascript',body:'export {};'}));
   await page.goto("/index.html");
   const source=fs.readFileSync(path.join(__dirname,"..","bali-pc-offers.js"),"utf8");
   const isolated=source.replace(/^import\s+.*?;\s*$/gm,"");

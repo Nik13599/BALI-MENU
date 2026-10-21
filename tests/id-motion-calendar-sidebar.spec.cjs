@@ -168,9 +168,9 @@ test('original homepage and desktop sidebar are untouched by isolated ID/calenda
   expect(stylesheet).not.toContain('.bali-pc-navigation');
   expect(html).not.toContain('bali-pc-nav-heading');
   expect(html).not.toContain('bali-next-interactions.css');
-  expect(html).toContain('Контактная информация');
   expect(html).toContain('ПОДРОБНЕЕ О КЛУБЕ');
   await page.goto('/index.html');
+  await expect(page.locator('.bali-pc-sidebar .bali-pc-contacts-heading').first()).toHaveText('Контактная информация');
   await expect(page.locator('#homeSection')).toBeVisible();
   await expect(page.locator('.bali-pc-sidebar .bali-pc-brand')).toHaveCount(1);
 });

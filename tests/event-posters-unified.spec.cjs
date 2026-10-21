@@ -67,6 +67,9 @@ test("Actual home event shows just a square poster and a small bare corner heart
 });
 
 test("Calendar image is square, surrounding metadata hidden, action buttons and detail dialog preserved",async({page})=>{
+ await page.clock.setFixedTime(new Date('2099-10-30T12:00:00+03:00'));
+ // This layout fixture supplies its own card, independently of backend errors.
+ await page.route('**/menu-firestore.js*',route=>route.fulfill({contentType:'text/javascript',body:'export {};'}));
  await page.goto("/index.html");
  await page.evaluate(()=>{
   document.getElementById("eventsSection").hidden=false;
