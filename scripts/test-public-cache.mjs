@@ -25,6 +25,7 @@ globalThis.fetch=async(url,opts)=>{
   return new Response(JSON.stringify({name:"settings/homeDesign",fields:{aboutTitle:{stringValue:"BALI"}}}),{
     status:200,headers:{"Content-Type":"application/json"}});
 };
+const workingFetch=globalThis.fetch;
 const make=(path,extra="")=>({
   request:new Request("https://baliminsk.by/api/public-data?path="+encodeURIComponent(path)+extra),
   waitUntil
@@ -65,6 +66,8 @@ assert(publicReader.includes('if(error.code==="edge-missing")await fallbackSdk()
 assert(publicReader.includes('["settings/homeDesign"'));
 console.log("BALI public edge cache: approved reads, CDN hit, filtered promotions, 403/429 safety, private data isolation PASS.");
 
+// Restore successful mocked upstream after the intentional quota failure.
+globalThis.fetch=workingFetch;
 // Bound persistent snapshots: they must not stay stale after later admin edits.
 stored.clear();pending.length=0;
 const kvMap=new Map();
