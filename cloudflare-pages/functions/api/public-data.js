@@ -13,7 +13,7 @@ const COLLECTIONS=new Set([
 ]);
 const DOCUMENTS=new Set([
   "settings/homeDesign","settings/homeInterface",
-  "settings/homeEventPlaceholder","settings/siteBuilderPublished"
+  "settings/homeEventPlaceholder","settings/siteBuilderPublished","settings/menuVisibility"
 ]);
 const PUBLISHED_ONLY=new Set(["promotions","mobileAboutBackgrounds"]);
 const TTL=path=>path==="events"||path==="promotions"?20:
@@ -23,7 +23,7 @@ const json=(body,status,headers={})=>new Response(JSON.stringify(body),{
     "X-Content-Type-Options":"nosniff",...headers}
 });
 
-export async function onRequestGet({request,waitUntil}){
+export async function onRequestGet({request,waitUntil,env}){
   const input=new URL(request.url);
   const path=input.searchParams.get("path");
   if(typeof path!=="string"||path.length>100||
@@ -38,6 +38,23 @@ export async function onRequestGet({request,waitUntil}){
     const headers=new Headers(cached.headers);
     headers.set("X-BALI-Cache","HIT");
     return new Response(cached.body,{status:cached.status,headers});
+  }
+  // Strong separation: guests read published snapshots from Cloudflare KV.
+  // Only a cold cache/migration miss may read Firestore; no private path exists
+  // in this allowlist. Admin updates explicitly publish new snapshots.
+  const kvKey="bali:public:v1:"+path;
+  if(env?.BALI_PUBLIC_CONTENT){
+    try{
+      const mirror=await env.BALI_PUBLIC_CONTENT.get(kvKey,"json");
+      if(mirror&&Array.isArray(mirror.documents)){
+        const answer=json({documents:mirror.documents},200,{
+          "Cache-Control":"public, max-age=0, s-maxage="+ttl,
+          "X-BALI-Cache":"KV"
+        });
+        waitUntil(cache.put(key,answer.clone()));
+        return answer;
+      }
+    }catch(_error){ /* Fall through safely when KV is unavailable. */ }
   }
   const base="https://firestore.googleapis.com/v1/projects/"+PROJECT+
     "/databases/(default)/documents";
@@ -75,6 +92,10 @@ export async function onRequestGet({request,waitUntil}){
       "X-BALI-Cache":"MISS"
     });
     waitUntil(cache.put(key,response.clone()));
+    if(env?.BALI_PUBLIC_CONTENT)waitUntil(
+      env.BALI_PUBLIC_CONTENT.put(kvKey,JSON.stringify(payload))
+        .catch(()=>{}) // A cache-write failure must not hide approved content.
+    );
     return response;
   }catch(_error){
     return json({error:"Public content is temporarily unavailable",code:"unavailable"},503,
