@@ -84,7 +84,7 @@ if(image&&title&&description&&counter&&action&&hero){
      (value.startsWith("data:image/webp;base64,")&&value.length<=155000));
   function setPoster(offer){
     // Keep the approved PNG as fallback; let a published holiday offer replace it.
-    const primary=validImage(offer?.imageUrl)?offer.imageUrl:(offer?.id===holidayId?holidayArt:"");
+    const primary=offer?.imageRemoved===true?"":validImage(offer?.imageUrl)?offer.imageUrl:(offer?.id===holidayId?holidayArt:"");
     const tablet=validImage(offer?.imageTabletUrl)?offer.imageTabletUrl:primary;
     const mobile=validImage(offer?.imageMobileUrl)?offer.imageMobileUrl:primary;
     image.hidden=!primary;
@@ -115,7 +115,7 @@ if(image&&title&&description&&counter&&action&&hero){
     hero.dataset.baliCarouselCount=String(offers.length);
     hero.dataset.baliCarouselInterval=String(slideIntervalMs);
     if(!offer){
-      hero.classList.remove("is-seasonal","is-composed");
+      hero.classList.remove("is-seasonal","is-composed","has-removed-artwork");
       hero.removeAttribute("aria-label");
       setPoster(null);
       title.textContent="BALI PRIVILEGE";
@@ -129,6 +129,7 @@ if(image&&title&&description&&counter&&action&&hero){
     }else{
       const seasonal=offer.id===holidayId;
       const layer=offer.overlay&&offer.overlay.enabled===true;
+      hero.classList.toggle("has-removed-artwork",offer.imageRemoved===true);
       hero.classList.toggle("is-seasonal",seasonal);
       hero.classList.toggle("is-composed",layer);
       const safeColor=x=>typeof x==="string"&&/^#[0-9a-fA-F]{6}$/.test(x)?x:null;
@@ -143,7 +144,7 @@ if(image&&title&&description&&counter&&action&&hero){
       const kicker=hero.querySelector(".bali-pc-kicker");
       if(kicker)kicker.textContent=seasonal?"НОВЫЙ ГОД · BALI":"BALI NIGHT CLUB";
       setPoster(offer);
-      const hasArtwork=seasonal||validImage(offer.imageUrl);
+      const hasArtwork=offer.imageRemoved!==true&&(seasonal||validImage(offer.imageUrl));
       title.textContent=offer.title;
       title.hidden=(!layer&&seasonal)||!offer.title.trim();
       description.textContent=offer.description;
@@ -157,8 +158,8 @@ if(image&&title&&description&&counter&&action&&hero){
         &&["left","top","width","height"].every(k=>Number.isInteger(spot[k]))
         &&spot.left>=0&&spot.top>=0&&spot.width>=1&&spot.height>=1
         &&spot.left+spot.width<=100&&spot.top+spot.height<=100?spot:null;
-      activeSecondarySpot=seasonal&&!layer?holidayExtraSpot:null;
-      activeThirdSpot=seasonal&&!layer?holidayThirdSpot:null;
+      activeSecondarySpot=seasonal&&!layer&&hasArtwork?holidayExtraSpot:null;
+      activeThirdSpot=seasonal&&!layer&&hasArtwork?holidayThirdSpot:null;
       artHotspot.hidden=!activeHotspot;
       secondaryHotspot.hidden=!activeSecondarySpot;
       thirdHotspot.hidden=!activeThirdSpot;
@@ -186,10 +187,11 @@ if(image&&title&&description&&counter&&action&&hero){
     button.addEventListener("click",()=>advance(Number(button.dataset.baliHeroStep)||1,true));
   });
   action.addEventListener("click",()=>{
-    const page=offers[index]?.destination;
+    const selected=previewOffer?.id===offers[index]?.id?previewOffer:offers[index];
+    const page=selected?.destination;
     if(!page||page==="none")return;
     if(page==="contact-modal"){
-      window.dispatchEvent(new CustomEvent("bali:promo-contacts",{detail:{offer:offers[index]}}));
+      window.dispatchEvent(new CustomEvent("bali:promo-contacts",{detail:{offer:selected}}));
       return;
     }
     document.querySelector('.bali-pc-navigation [data-bali-nav="'+page+'"]')?.click();
