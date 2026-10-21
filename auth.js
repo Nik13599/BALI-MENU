@@ -258,6 +258,7 @@ els.form.addEventListener("submit", async (event) => {
   }
 
   const submit = els.form.querySelector('button[type="submit"]');
+  const completingRegistration = !profile;
   const savingUser = user;
   const savingGeneration = authGeneration;
   submit.disabled = true;
@@ -284,17 +285,10 @@ els.form.addEventListener("submit", async (event) => {
     render();
     message("Профиль успешно сохранён.");
     hide();
-    // Only the successful initial profile save sends the guest home.
-    // Editing a completed profile must not change the current page.
-    if (!existing.exists()) {
-      window.location.hash = "home";
-    } else if (document.body.dataset.baliPage !== "home" &&
-               !window.location.hash.includes("profile")) {
-      // An incomplete existing document has just been completed.
-      window.location.hash = "home";
-    } else {
-      window.location.hash = "home";
-    }
+    // The first completed registration goes directly to the homepage.
+    // Editing "Мои данные" later keeps the user on their current page.
+    if (completingRegistration) window.location.hash = "home";
+    else els.button.focus();
   } catch (error) {
     if (savingGeneration !== authGeneration) return;
     const info = friendlyError(error);
