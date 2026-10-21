@@ -203,6 +203,72 @@
     }
   </style>
 
+  <style id="bali-home-coverflow-style">
+    /* Three square artworks: centered main poster and angled side posters. */
+    :root[data-bali-theme] body.bali-guest-theme #homeSection
+    #homeEventCarousel.bali-home-events[data-bali-coverflow="on"]{
+      position:relative!important;display:block!important;
+      overflow:hidden!important;isolation:isolate!important;
+      perspective:950px!important;transform:none!important;
+      touch-action:pan-y!important;scroll-snap-type:none!important;
+    }
+    :root[data-bali-theme] body.bali-guest-theme #homeSection
+    #homeEventCarousel.bali-home-events[data-bali-coverflow="on"]>.bali-home-event-card{
+      box-sizing:border-box!important;position:absolute!important;
+      top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;
+      width:var(--bali-home-coverflow-size,140px)!important;
+      height:var(--bali-home-coverflow-size,140px)!important;
+      min-width:0!important;min-height:0!important;
+      max-width:none!important;max-height:none!important;
+      margin:0!important;padding:0!important;flex:none!important;
+      grid-column:auto!important;grid-row:auto!important;
+      opacity:var(--bali-home-fade,0)!important;
+      z-index:var(--bali-home-layer,0)!important;
+      transform:translate(-50%,-50%) translateX(var(--bali-home-x,0px))
+        rotateY(var(--bali-home-turn,0deg)) scale(var(--bali-home-scale,1))!important;
+      transform-origin:center!important;
+      transition:transform .46s ease,opacity .46s ease!important;
+      backface-visibility:hidden!important;
+      box-shadow:none!important;
+      pointer-events:none!important;
+    }
+    :root[data-bali-theme] body.bali-guest-theme #homeSection
+    #homeEventCarousel.bali-home-events[data-bali-coverflow="on"]>.bali-home-event-card.is-home-active{
+      pointer-events:auto!important;border:1px solid #b9ff51!important;
+    }
+    :root[data-bali-theme] body.bali-guest-theme #homeSection
+    #homeEventCarousel.bali-home-events[data-bali-coverflow="on"]>.bali-home-event-card.is-home-neighbor{
+      filter:brightness(.8)!important;
+    }
+    :root[data-bali-theme] body.bali-guest-theme #homeSection
+    #homeEventCarousel.bali-home-events[data-bali-coverflow="on"]>.bali-home-coverflow-arrow{
+      position:absolute!important;top:50%!important;z-index:50!important;
+      transform:translateY(-50%)!important;
+      width:30px!important;height:40px!important;
+      border:1px solid rgba(220,250,200,.38)!important;
+      border-radius:9px!important;background:rgba(10,15,12,.78)!important;
+      color:#f4f8ed!important;font:700 27px/1 Arial,sans-serif!important;
+      display:grid!important;place-items:center!important;cursor:pointer!important;
+    }
+    :root[data-bali-theme] body.bali-guest-theme #homeSection
+    #homeEventCarousel .bali-home-coverflow-prev{left:3px!important}
+    :root[data-bali-theme] body.bali-guest-theme #homeSection
+    #homeEventCarousel .bali-home-coverflow-next{right:3px!important}
+    #homeEventCarousel .bali-home-coverflow-arrow:disabled{opacity:.28!important;cursor:default!important}
+    #homeEventCarousel .bali-home-coverflow-arrow:focus-visible{outline:2px solid #fff!important}
+    @media(max-width:1179px){
+      :root[data-bali-theme] body.bali-guest-theme #homeSection
+      #homeEventCarousel.bali-home-events[data-bali-coverflow="on"]>.bali-home-coverflow-arrow{
+        display:none!important;
+      }
+    }
+    @media(prefers-reduced-motion:reduce){
+      :root[data-bali-theme] body.bali-guest-theme #homeSection
+      #homeEventCarousel.bali-home-events[data-bali-coverflow="on"]>.bali-home-event-card{
+        transition:none!important;
+      }
+    }
+  </style>
 </head>
 
 <body class="bali-guest-theme">
@@ -1217,6 +1283,7 @@
     <script src="bali-event-lifecycle.js?v=20261021-1"></script>
     <script src="app.js?v=20261021-performance1"></script>
     <script src="bali-calendar.js?v=20261021-ui1"></script>
+    <script src="bali-home-coverflow.js?v=20261021-carousel1"></script>
     <script src="bali-calendar-coverflow.js?v=20261021-details-toggle1"></script>
     <script src="bali-pc-reference.js?v=20261021-anchored-home1"></script>
     <script src="bali-privacy.js?v=20261021-google-popup1"></script>
