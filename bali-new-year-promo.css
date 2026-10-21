@@ -209,3 +209,11 @@ body.bali-guest-theme #homeSection .bali-pc-hero.is-composed[data-bali-promo-ali
    padding:9px 13px!important;min-height:34px!important;font-size:12px!important
  }
 }
+
+/* A deliberate image deletion must override even the original baked-in
+   New Year artwork and all mobile/desktop legacy picture rules. */
+body.bali-guest-theme #homeSection .bali-pc-hero.has-removed-artwork .bali-pc-hero-visual,
+body.bali-guest-theme #homeSection .bali-pc-hero.has-removed-artwork .bali-pc-hero-visual picture,
+body.bali-guest-theme #homeSection .bali-pc-hero.has-removed-artwork .bali-pc-hero-visual img{
+ display:none!important;
+}
