@@ -1,6 +1,6 @@
 // BALI MENU: администратор через Google Auth + вручную назначенный admins/{uid}.
 import { BALI_MENU_SEED } from "./menu-seed.js?v=20261017-9";
-import { prepareImage as compressImage } from "./image-compressor.js?v=20261020-2";
+import { prepareImage as compressImage } from "./image-compressor.js?v=20261021-square1";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
