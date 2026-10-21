@@ -1,0 +1,35 @@
+name: BALI ID — геометрия карты и кнопок
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'bali-id-actions-positions.css'
+      - 'tests/bali-id-control-layout.spec.cjs'
+      - 'tests/id-motion-calendar-sidebar.spec.cjs'
+      - '.github/workflows/bali-id-layout-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  id-layout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Actual button rectangles on 320px/390px/tablet/desktop
+        run: npx playwright test tests/bali-id-control-layout.spec.cjs --workers=2
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: bali-id-layout-traces
+          path: test-results/
+          retention-days: 7
