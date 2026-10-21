@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="bali-id-resident.css?v=20261021-2">
   <link rel="stylesheet" href="bali-id-card-unified.css?v=20261021-3">
   <link rel="stylesheet" href="bali-qr-scanner.css?v=20261021-1">
-  <link rel="stylesheet" href="bali-id-actions-positions.css?v=20261021-1">
+  <link rel="stylesheet" href="bali-id-actions-positions.css?v=20261021-large-center2">
   <link rel="stylesheet" href="bali-calendar-mobile-compact.css?v=20261021-compact2">
   <link rel="stylesheet" href="bali-calendar-no-poster-backdrop.css?v=20261021-planar-layer3">
   <link rel="stylesheet" href="bali-id-onboarding.css?v=20261021-2">
@@ -606,17 +606,14 @@
     </dialog>
 
     <!-- Отдельная страница BALI ID -->
-    <section id="baliIdSection" class="bali-profile-page bali-id-page" aria-labelledby="baliIdPageHeading" hidden>
+    <section id="baliIdSection" class="bali-profile-page bali-id-page" aria-label="BALI ID" hidden>
       <div class="container">
-        <div class="bali-id-topbar">
-          <h1 id="baliIdPageHeading" class="bali-id-page-title">BALI ID <span class="bali-id-page-descriptor">— цифровая карта гостя</span></h1>
-        </div>
-        <div class="bali-id-page-tools" aria-label="История и QR-код карты">
-          <button type="button" id="baliIdHistoryOpen" aria-label="История операций" title="История операций">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5M12 7v5l4 2"/></svg><span>История</span>
-          </button>
+        <div class="bali-id-page-tools" aria-label="QR-код и история операций">
           <button type="button" class="bali-id-show-qr bali-id-page-qr" id="baliShowQr" aria-label="QR-код карты" title="QR-код карты">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM19 15v3M14 20h7M20 20v-2"/></svg><span>QR-код</span>
+          </button>
+          <button type="button" id="baliIdHistoryOpen" aria-label="История операций" title="История операций">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5M12 7v5l4 2"/></svg><span>История</span>
           </button>
         </div>
         <div class="bali-profile-card bali-id-profile">
