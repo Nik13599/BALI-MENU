@@ -147,3 +147,65 @@ body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal .bali-pc-hero-contr
     grid-template-rows:minmax(0,.95fr) minmax(0,1.12fr) minmax(0,1.04fr) auto!important;
   }
 }
+
+/* BALI SIMPLE PROMO COMPOSER — original carousel dimensions stay untouched.
+   A poster without overlay.enabled continues to display its legacy campaign. */
+body.bali-guest-theme #homeSection .bali-pc-hero.is-composed .bali-pc-hero-visual img{
+  object-fit:cover!important;object-position:center center!important
+}
+body.bali-guest-theme #homeSection .bali-pc-hero.is-composed .bali-pc-hero-content{
+  display:flex!important;position:absolute!important;inset:0!important;z-index:7!important;
+  flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;
+  box-sizing:border-box!important;gap:clamp(10px,2vw,20px)!important;
+  padding:clamp(17px,5%,46px)!important;margin:0!important;
+  width:100%!important;height:100%!important;
+  background:linear-gradient(90deg,rgba(0,0,0,.64) 0%,rgba(0,0,0,.25) 65%,transparent 100%)!important;
+  pointer-events:none!important;overflow:hidden!important;text-align:left!important
+}
+body.bali-guest-theme #homeSection .bali-pc-hero.is-composed .bali-pc-kicker,
+body.bali-guest-theme #homeSection .bali-pc-hero.is-composed #baliPcOfferDescription{display:none!important}
+body.bali-guest-theme #homeSection .bali-pc-hero.is-composed #baliPcOfferTitle:not([hidden]){
+  display:block!important;margin:0!important;padding:0!important;
+  font-family:Manrope,Inter,Arial,sans-serif!important;
+  font-size:clamp(15px,var(--bali-promo-title-size,38px),80px)!important;
+  font-weight:850!important;line-height:1.13!important;letter-spacing:-.025em!important;
+  color:var(--bali-promo-title-color,#fff)!important;
+  overflow-wrap:anywhere!important;max-width:min(95%,780px)!important;
+  text-shadow:0 2px 18px rgba(0,0,0,.6)!important
+}
+body.bali-guest-theme #homeSection .bali-pc-hero.is-composed #baliPcOfferAction:not([hidden]){
+  display:inline-flex!important;position:static!important;align-items:center!important;
+  justify-content:center!important;flex:none!important;
+  width:auto!important;max-width:100%!important;min-width:0!important;min-height:38px!important;
+  margin:0!important;padding:12px 21px!important;
+  border:0!important;border-radius:var(--bali-promo-button-radius,10px)!important;
+  background:var(--bali-promo-button-bg,#c3f36d)!important;
+  color:var(--bali-promo-button-color,#111810)!important;
+  box-shadow:0 7px 25px rgba(0,0,0,.3)!important;
+  font:800 clamp(11px,1.1vw,15px)/1.3 Manrope,Inter,Arial,sans-serif!important;
+  white-space:normal!important;text-align:center!important;
+  cursor:pointer!important;pointer-events:auto!important
+}
+body.bali-guest-theme #homeSection .bali-pc-hero.is-composed #baliPcOfferAction>span{display:none!important}
+body.bali-guest-theme #homeSection .bali-pc-hero.is-composed .bali-pc-artwork-hotspot{display:none!important}
+body.bali-guest-theme #homeSection .bali-pc-hero.is-composed .bali-pc-hero-controls{z-index:9!important}
+body.bali-guest-theme #homeSection .bali-pc-hero.is-composed[data-bali-promo-align="center"] .bali-pc-hero-content{
+  align-items:center!important;text-align:center!important;
+  background:rgba(0,0,0,.37)!important
+}
+body.bali-guest-theme #homeSection .bali-pc-hero.is-composed[data-bali-promo-align="right"] .bali-pc-hero-content{
+  align-items:flex-end!important;text-align:right!important;
+  background:linear-gradient(270deg,rgba(0,0,0,.64),rgba(0,0,0,.08))!important
+}
+@media(max-width:767px){
+ body.bali-guest-theme #homeSection .bali-pc-hero.is-composed .bali-pc-hero-content{
+   padding:clamp(12px,4vw,22px)!important;gap:10px!important
+ }
+ body.bali-guest-theme #homeSection .bali-pc-hero.is-composed #baliPcOfferTitle:not([hidden]){
+   font-size:clamp(14px,5.3vw,var(--bali-promo-title-size,38px))!important;
+   max-width:100%!important
+ }
+ body.bali-guest-theme #homeSection .bali-pc-hero.is-composed #baliPcOfferAction:not([hidden]){
+   padding:9px 13px!important;min-height:34px!important;font-size:12px!important
+ }
+}
