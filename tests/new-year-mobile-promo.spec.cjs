@@ -193,7 +193,7 @@ test("Simple inline promo editor uploads real image and saves styling to the exi
   status:200,contentType:"application/javascript",
   headers:{"access-control-allow-origin":"*"},
   body:`export function doc(){return {id:"bali-new-year-2026"}}
-    export async function getDoc(){return {exists:()=>false}}
+    export async function getDoc(){return window.__promoSaved?{exists:()=>true,data:()=>window.__promoSaved}:{exists:()=>false}}
     export async function setDoc(_,payload){window.__promoSaved=payload}
     export function serverTimestamp(){return "2026-test-stamp"}`
  }));
