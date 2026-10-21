@@ -20,13 +20,27 @@ test('all calendar states use contours, bold dots and only the active future dat
  await calendar(page);
  await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(1,false));
  for(const today of await page.locator('.bali-calendar-day[data-date="2026-10-21"]').all()){
-  await expect(today).toHaveCSS('outline-color','rgb(255, 255, 255)');
-  await expect(today).toHaveCSS('outline-style','solid');
+  await expect(today).toHaveCSS('border-color','rgb(255, 255, 255)');
+  await expect(today).toHaveCSS('border-top-width','1px');
+  await expect(today).toHaveCSS('border-radius','5px');
+  await expect(today).toHaveCSS('outline-style','none');
   await expect(today).toHaveCSS('background-color','rgb(185, 255, 81)');
  }
  const future=day(page,'2026-10-22'),past=day(page,'2026-10-20');
  await expect(future).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
  await expect(future).toHaveCSS('border-color','rgb(185, 255, 81)');
+ await expect(future).toHaveCSS('border-top-width','1px');
+ await expect(future).toHaveCSS('border-radius','5px');
+ // Today and the neighbouring green date use exactly the same border geometry.
+ const todayEdge=await day(page,'2026-10-21').evaluate(el=>{
+   const s=getComputedStyle(el);return {width:s.borderTopWidth,radius:s.borderTopLeftRadius,box:el.getBoundingClientRect().toJSON()};
+ });
+ const greenEdge=await future.evaluate(el=>{
+   const s=getComputedStyle(el);return {width:s.borderTopWidth,radius:s.borderTopLeftRadius,box:el.getBoundingClientRect().toJSON()};
+ });
+ expect({width:todayEdge.width,radius:todayEdge.radius}).toEqual({width:greenEdge.width,radius:greenEdge.radius});
+ expect(todayEdge.box.width).toBeCloseTo(greenEdge.box.width,1);
+ expect(todayEdge.box.height).toBeCloseTo(greenEdge.box.height,1);
  await expect(future.locator('.bali-calendar-event-dot')).toHaveCount(2);
  for(const dot of await future.locator('.bali-calendar-event-dot').all()){
   await expect(dot).toHaveCSS('width','5px');

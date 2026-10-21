@@ -274,7 +274,10 @@ test('completed parties retain an unfilled red outline; today has a white contou
   await expect(today).toHaveAttribute('data-today','true');
   await expect(today).toHaveAttribute('data-planned','true');
   await expect(today).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
-  await expect(today).toHaveCSS('outline-color','rgb(255, 255, 255)');
+  await expect(today).toHaveCSS('border-color','rgb(255, 255, 255)');
+  await expect(today).toHaveCSS('border-top-width','1px');
+  await expect(today).toHaveCSS('border-radius','5px');
+  await expect(today).toHaveCSS('outline-style','none');
   await expect(today.locator('.bali-calendar-day-number')).toHaveCSS('color','rgb(237, 244, 234)');
   const past=await locate(dates.past);
   await expect(past).toHaveAttribute('data-past','true');
