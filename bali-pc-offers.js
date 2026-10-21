@@ -32,6 +32,7 @@ if(image&&title&&description&&counter&&action&&hero){
     sort:-1,published:true
   };
   let offers=[holidayOffer],index=0,pause=false,activeHotspot=null,activeSecondarySpot=null,activeThirdSpot=null;
+  let previewOffer=null;
   const slideIntervalMs=15000;
   let lastInteraction=Date.now(),gesture=null,suppressGestureClick=false;
   const artHotspot=document.createElement("button");
@@ -106,14 +107,15 @@ if(image&&title&&description&&counter&&action&&hero){
       typeof v.buttonText==="string"&&Number.isInteger(v.sort)&&v.published===true;
   }
   function show(){
-    const offer=offers[index];
+    const stored=offers[index];
+    const offer=previewOffer?.id===stored?.id?previewOffer:stored;
     // Identifies the active slide to the administrator’s live visual editor.
     hero.dataset.baliOfferId=offer?.id||"";
     hero.dataset.baliManagedPromo="true";
     hero.dataset.baliCarouselCount=String(offers.length);
     hero.dataset.baliCarouselInterval=String(slideIntervalMs);
     if(!offer){
-      hero.classList.remove("is-seasonal");
+      hero.classList.remove("is-seasonal","is-composed");
       hero.removeAttribute("aria-label");
       setPoster(null);
       title.textContent="BALI PRIVILEGE";
@@ -126,34 +128,44 @@ if(image&&title&&description&&counter&&action&&hero){
       artHotspot.hidden=true;secondaryHotspot.hidden=true;thirdHotspot.hidden=true;activeHotspot=null;activeSecondarySpot=null;activeThirdSpot=null;
     }else{
       const seasonal=offer.id===holidayId;
+      const layer=offer.overlay&&offer.overlay.enabled===true;
       hero.classList.toggle("is-seasonal",seasonal);
+      hero.classList.toggle("is-composed",layer);
+      const safeColor=x=>typeof x==="string"&&/^#[0-9a-fA-F]{6}$/.test(x)?x:null;
+      const safeSize=(x,min,max,fallback)=>Number.isInteger(x)&&x>=min&&x<=max?x:fallback;
+      hero.style.setProperty("--bali-promo-title-size",safeSize(offer.overlay?.fontSize,12,80,38)+"px");
+      hero.style.setProperty("--bali-promo-title-color",safeColor(offer.overlay?.textColor)||"#ffffff");
+      hero.style.setProperty("--bali-promo-button-bg",safeColor(offer.overlay?.buttonBackground)||"#c3f36d");
+      hero.style.setProperty("--bali-promo-button-color",safeColor(offer.overlay?.buttonColor)||"#111810");
+      hero.style.setProperty("--bali-promo-button-radius",safeSize(offer.overlay?.buttonRadius,0,48,10)+"px");
+      hero.dataset.baliPromoAlign=["left","center","right"].includes(offer.overlay?.align)?offer.overlay.align:"left";
       hero.setAttribute("aria-label",seasonal?"Бронирование новогодних корпоративов BALI":"Специальное предложение BALI");
       const kicker=hero.querySelector(".bali-pc-kicker");
       if(kicker)kicker.textContent=seasonal?"НОВЫЙ ГОД · BALI":"BALI NIGHT CLUB";
       setPoster(offer);
       const hasArtwork=seasonal||validImage(offer.imageUrl);
       title.textContent=offer.title;
-      title.hidden=seasonal||!offer.title.trim();
+      title.hidden=(!layer&&seasonal)||!offer.title.trim();
       description.textContent=offer.description;
-      description.hidden=seasonal||!offer.description.trim();
+      description.hidden=layer||seasonal||!offer.description.trim();
       hero.classList.toggle("has-artwork",hasArtwork);
       hero.classList.toggle("is-image-only",hasArtwork&&!offer.title.trim()&&!offer.description.trim());
       hero.classList.toggle("has-no-action",offer.destination==="none");
       counter.textContent=String(index+1).padStart(2,"0")+" / "+String(offers.length).padStart(2,"0");
       const spot=offer.contactHotspot;
-      activeHotspot=hasArtwork&&offer.destination==="contact-modal"&&spot?.enabled===true
+      activeHotspot=!layer&&hasArtwork&&offer.destination==="contact-modal"&&spot?.enabled===true
         &&["left","top","width","height"].every(k=>Number.isInteger(spot[k]))
         &&spot.left>=0&&spot.top>=0&&spot.width>=1&&spot.height>=1
         &&spot.left+spot.width<=100&&spot.top+spot.height<=100?spot:null;
-      activeSecondarySpot=seasonal?holidayExtraSpot:null;
-      activeThirdSpot=seasonal?holidayThirdSpot:null;
+      activeSecondarySpot=seasonal&&!layer?holidayExtraSpot:null;
+      activeThirdSpot=seasonal&&!layer?holidayThirdSpot:null;
       artHotspot.hidden=!activeHotspot;
       secondaryHotspot.hidden=!activeSecondarySpot;
       thirdHotspot.hidden=!activeThirdSpot;
       artHotspot.setAttribute("aria-label",offer.buttonText||"Связаться с менеджером BALI");
       // Keep a readable real CTA on mobile seasonal artwork; desktop uses the
       // invisible clickable regions drawn over the original three tile areas.
-      action.hidden=offer.destination==="none"||(!seasonal&&!!activeHotspot);
+      action.hidden=offer.destination==="none"||(!layer&&!seasonal&&!!activeHotspot);
       if(!action.hidden)action.firstChild.textContent=offer.buttonText||"Подробнее ";
       if(activeHotspot)positionHotspot();
     }
@@ -222,6 +234,13 @@ if(image&&title&&description&&counter&&action&&hero){
         &&Date.now()-lastInteraction>=slideIntervalMs
         &&!window.matchMedia("(prefers-reduced-motion:reduce)").matches)advance(1);
   },slideIntervalMs);
+  // Preview is confined to the administrator iframe and never writes guest data.
+  window.addEventListener("bali:promo-preview",event=>{
+    if(!new URLSearchParams(window.location.search).has("bali-admin-design-preview"))return;
+    const candidate=event.detail?.offer;
+    previewOffer=candidate&&candidate.id===offers[index]?.id?candidate:null;
+    show();
+  });
   const source=query(collection(db,"promotions"),where("published","==",true));
   onSnapshot(source,snapshot=>{
     const currentId=offers[index]?.id;
