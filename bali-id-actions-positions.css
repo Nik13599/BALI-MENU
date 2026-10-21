@@ -459,3 +459,13 @@ body.bali-guest-theme #baliIdSection .bali-bank-actions #baliIdTransferOpen{
   margin:0 auto!important;
   padding:0!important;
 }
+
+/* ROUTE ISOLATION — more specific than the late display:block!important rule.
+   The full-viewport BALI ID canvas must NEVER render on another SPA page.
+   Keep its dimensions unchanged while the user is actually on #id. */
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection[hidden],
+:root[data-bali-theme] body.bali-guest-theme:not([data-bali-page="id"]) #baliIdSection{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
