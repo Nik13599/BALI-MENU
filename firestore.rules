@@ -657,7 +657,7 @@ service cloud.firestore {
 
     function validEvent(data, eventId) {
       return data.keys().hasAll(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
-        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','poster_url','interestCount','updatedAt','description','startTime','endTime','dotColor'])
+        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','poster_url','interestCount','updatedAt','description','startTime','endTime','dotColor','cutoffNextDay'])
         && (!('interestCount' in data) || (
           data.interestCount is int
           && data.interestCount >= 0 && data.interestCount <= 1000000
@@ -683,6 +683,7 @@ service cloud.firestore {
         && (!('startTime' in data) || (data.startTime == '' && data.endTime == '') ||
             (data.startTime != '' && data.endTime != ''))
         && data.preorderEnabled is bool
+        && (!('cutoffNextDay' in data) || data.cutoffNextDay is bool)
         && data.closesAt is timestamp
         && data.cutoff is string
         && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
