@@ -23,6 +23,22 @@ test('BALI ID: QR then History at top; Use, Receive, Transfer are separated belo
   });
   const {history,qr,card,pay,topup,transfer}=rects;
   console.log('BALI-ID-GEOMETRY',JSON.stringify({viewport:rects.viewport,card,pay,topup,transfer,qr,history}));
+
+  const styleInfo=await page.evaluate(()=>{
+    const ids=['baliIdSection','baliIdFlipScene','baliIdPayOpen','baliIdTopupOpen','baliIdTransferOpen'];
+    const selector=['#baliIdSection>.container','#baliIdSection .bali-profile-card.bali-id-profile','#baliIdSection .bali-bank-actions','#baliIdSection .bali-id-page-tools'];
+    const nodes=[...ids.map(x=>document.getElementById(x)),...selector.map(x=>document.querySelector(x))];
+    return nodes.map(n=>{
+      const z=getComputedStyle(n),rect=n.getBoundingClientRect();
+      return {node:n.id||n.className.toString().slice(0,65),rect:{x:rect.x,w:rect.width,r:rect.right},
+       width:z.width,maxWidth:z.maxWidth,minWidth:z.minWidth,left:z.left,right:z.right,
+       boxSizing:z.boxSizing,position:z.position,display:z.display,transform:z.transform,
+       grid:z.gridTemplateColumns,padding:z.padding,margin:z.margin,
+       variable:z.getPropertyValue('--bali-id-large-width')};
+    });
+  });
+  console.log('BALI-ID-CSS-DIAGNOSTIC',JSON.stringify(styleInfo));
+
   await expect(page.locator('#baliIdPageHeading')).toHaveCount(0);
   expect(Math.abs(history.y-qr.y)).toBeLessThan(3);
   expect(qr.r).toBeLessThan(history.x+2);
