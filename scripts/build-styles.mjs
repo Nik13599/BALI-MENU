@@ -26,6 +26,9 @@ for(const [page,files] of Object.entries(entries)){
   const name=page.split('.')[0],output=`generated/${name}.css`;
   const hash=createHash('sha256').update(result.css).digest('hex').slice(0,12);
   const html=await readFile(page,'utf8');
+  const links=html.match(/<link\b[^>]*rel="stylesheet"[^>]*>/g)||[];
+  if(links.length!==1||!links[0].includes(`data-bali-bundle="${name}"`))
+    throw Error(`${page}: put all styles in styles/entries.json to preserve one stylesheet request`);
   const next=html.replace(new RegExp(`href="generated/${name}\\.css(?:\\?v=[a-f0-9]+)?"`),`href="generated/${name}.css?v=${hash}"`);
   if(check){
     if(await readFile(output,'utf8')!==result.css||html!==next)throw Error('Stale styles: run npm run build:styles');

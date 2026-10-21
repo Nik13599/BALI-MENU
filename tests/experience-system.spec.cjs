@@ -14,7 +14,7 @@ test('homepage keeps two distinct guest journeys and a clear mobile hero', async
   await expect(page.locator('.bali-pc-about-links [data-bali-nav="about"]')).toHaveCount(1);
   await expect(page.locator('.bali-pc-about-links [data-bali-nav="events"]')).toHaveCount(1);
   await expect(page.locator('#baliMobileAboutBtn')).toHaveText('ПОДРОБНЕЕ О КЛУБЕ');
-  await expect(page.locator('link[href^="bali-experience-system.css"]')).toHaveCount(1);
+  await expect(page.locator('html')).toHaveCSS('--bali-x-radius','14px');
 });
 
 test('all menu modes explain their purpose without adding purchase controls', async ({page}) => {

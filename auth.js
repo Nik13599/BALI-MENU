@@ -39,6 +39,7 @@ let database = null;
 let user = null;
 let profile = null;
 let resolved = false;
+let authGeneration = 0;
 let finishInitialization;
 const ready = new Promise((resolve) => {
   finishInitialization = () => {
@@ -157,11 +158,12 @@ els.button.addEventListener("click", () => {
 els.close.addEventListener("click", hide);
 els.signOut.addEventListener("click", async () => {
   if (!auth) return;
-  await signOut(auth);
-  profile = null;
-  user = null;
-  message("Вы вышли из аккаунта.");
-  render();
+  try {
+    await signOut(auth);
+    message("Вы вышли из аккаунта.");
+  } catch (error) {
+    message(friendlyError(error), true);
+  }
 });
 
 els.google.addEventListener("click", async () => {
@@ -209,31 +211,35 @@ els.form.addEventListener("submit", async (event) => {
   }
 
   const submit = els.form.querySelector('button[type="submit"]');
+  const savingUser = user;
+  const savingGeneration = authGeneration;
   submit.disabled = true;
   submit.textContent = "Сохраняем...";
   saveMessage("Сохраняем профиль...");
   try {
-    const ref = doc(database, "users", user.uid);
+    const ref = doc(database, "users", savingUser.uid);
     const existing = await getDoc(ref);
+    if (savingGeneration !== authGeneration || auth.currentUser?.uid !== savingUser.uid) return;
     if (existing.exists()) {
       await updateDoc(ref, { name, phone, updatedAt: serverTimestamp() });
     } else {
       await setDoc(ref, {
-        uid: user.uid,
-        email: user.email,
+        uid: savingUser.uid,
+        email: savingUser.email,
         name, phone,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
     }
     // Закрываем форму только после подтверждённой Firestore записи.
-    if (auth.currentUser?.uid !== user.uid) return;
-    profile = { uid: user.uid, email: user.email, name, phone };
+    if (savingGeneration !== authGeneration || auth.currentUser?.uid !== savingUser.uid) return;
+    profile = { uid: savingUser.uid, email: savingUser.email, name, phone };
     render();
     message("Профиль успешно сохранён.");
     hide();
     els.button.focus();
   } catch (error) {
+    if (savingGeneration !== authGeneration) return;
     const info = friendlyError(error);
     message(info, true);
     saveMessage(info, true);
@@ -262,24 +268,33 @@ window.BaliAuth = {
 };
 
 async function handleUser(authUser) {
+  const current = ++authGeneration;
+  const stillCurrent = () => current === authGeneration && auth.currentUser?.uid === authUser?.uid;
   user = authUser;
   profile = null;
+  render();
   if (user && (!user.email || !user.emailVerified)) {
-    await signOut(auth);
-    user = null;
-    message("Вход возможен только с подтверждённым email.", true);
+    try {
+      await signOut(auth);
+      if (current === authGeneration) { user = null; render(); }
+      message("Вход возможен только с подтверждённым email.", true);
+    } catch (error) {
+      if (current === authGeneration) message(friendlyError(error), true);
+    }
   } else if (user) {
     try {
-      const snapshot = await getDoc(doc(database, "users", user.uid));
-      if (auth.currentUser?.uid !== user.uid) return;
+      const snapshot = await getDoc(doc(database, "users", authUser.uid));
+      if (!stillCurrent()) return;
       const candidate = snapshot.exists() ? snapshot.data() : null;
-      profile = validProfile(candidate, user) ? candidate : null;
+      profile = validProfile(candidate, authUser) ? candidate : null;
       if (!profile) show();
     } catch (error) {
+      if (!stillCurrent()) return;
       show();
       message(friendlyError(error), true);
     }
   }
+  if (current !== authGeneration) return;
   render();
   finishInitialization();
 }

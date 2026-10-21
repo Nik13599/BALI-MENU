@@ -11,6 +11,8 @@ import {
   updateDoc, onSnapshot, query, where, limit, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
+import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1";
+
 const app = getApps().length ? getApp() : initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -167,23 +169,25 @@ async function cancel(id) {
 function watchUserOrders(user) {
   if(orderListener){orderListener();orderListener=null;}
   const current=++generation;
-  if(!user) {emit("bali:orders",{orders:[],ownerUid:null}); return;}
+  let revision=0;
+  const readOrders=createOrderSnapshotReader(async row=>{
+    const lines=await getDocs(collection(row.ref,"items"));
+    return lines.docs.map(line=>line.data());
+  });
+  emit("bali:orders",{orders:[],ownerUid:user?.uid||null,loading:!!user});
+  if(!user) return;
   orderListener=onSnapshot(
     query(collection(db,"orders"),where("ownerUid","==",user.uid),limit(40)),
     async snapshots=>{
+      const run=++revision;
       try{
-        const orders=await Promise.all(snapshots.docs.map(async snap=>{
-          const lines=await getDocs(collection(snap.ref,"items"));
-          const items=lines.docs.map(doc=>doc.data());
-          return {id:snap.id,...snap.data(),items,
-            total:items.reduce((a,b)=>a+b.unitPrice*b.quantity,0)};
-        }));
-        if(current!==generation) return;
+        const orders=await readOrders(snapshots);
+        if(current!==generation||run!==revision) return;
         orders.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
         emit("bali:orders",{orders,ownerUid:user.uid});
-      }catch(error){if(current===generation)emit("bali:orders-error",{message:errorText(error)});}
+      }catch(error){if(current===generation&&run===revision)emit("bali:orders-error",{message:errorText(error)});}
     },
-    error=>{if(current===generation)emit("bali:orders-error",{message:errorText(error)});}
+    error=>{if(current===generation){revision++;emit("bali:orders-error",{message:errorText(error)});}}
   );
 }
 onAuthStateChanged(auth,watchUserOrders);

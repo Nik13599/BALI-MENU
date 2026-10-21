@@ -13,11 +13,12 @@
  const isoPattern=/^\d{4}-\d{2}-\d{2}$/;
  const iso=(y,m,d)=>String(y).padStart(4,"0")+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0");
  const utcDay=s=>new Date(s+"T12:00:00Z");
- const getNow=()=>{
-   const parts=new Intl.DateTimeFormat("en-GB",{
+ const clockFormatter=new Intl.DateTimeFormat("en-GB",{
      timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit",
      hour:"2-digit",minute:"2-digit",hourCycle:"h23"
-   }).formatToParts(new Date());
+   });
+ const getNow=()=>{
+   const parts=clockFormatter.formatToParts(new Date());
    const p=Object.fromEntries(parts.map(x=>[x.type,x.value]));
    return {date:iso(p.year,p.month,p.day),time:p.hour+":"+p.minute};
  };
@@ -64,7 +65,6 @@
    }
    return map;
  };
- const publishedDates=()=>new Set(calendarEvents().map(event=>event.date));
  const stamp=(s)=>s.split("-").map(Number);
  const setLabel=()=>{
    const live=getNow();
@@ -79,11 +79,10 @@
      render();
    }
  };
- function makeDay(s,compact=false){
-   const items=eventsByDate().get(s)||[];
+ function makeDay(s,compact,byDate,liveDate){
+   const items=byDate.get(s)||[];
    const published=items.length>0;
    const planned=plannedDates.has(s);
-   const liveDate=getNow().date;
    const today=s===liveDate;
    const past=published&&items.every(e=>e.status==="past");
    const live=items.some(e=>e.status==="live");
@@ -140,6 +139,7 @@
    return btn;
  }
  function render(){
+   const byDate=eventsByDate(),liveDate=getNow().date;
    const range=lifecycle.monthRange(year,month);
    const key=range.start+"/"+range.end;
    if(key!==lastRange){
@@ -156,7 +156,7 @@
    for(let i=0;i<cells;i++){
      const date=new Date(Date.UTC(year,month-1,i-offset+1));
      const s=iso(date.getUTCFullYear(),date.getUTCMonth()+1,date.getUTCDate());
-     const cell=makeDay(s);
+     const cell=makeDay(s,false,byDate,liveDate);
      if(date.getUTCMonth()+1!==month)cell.classList.add("is-outside");
      days.append(cell);
    }
@@ -168,9 +168,9 @@
    for(let i=0;i<7;i++){
      const d=new Date(base);d.setUTCDate(d.getUTCDate()+i);
      const s=iso(d.getUTCFullYear(),d.getUTCMonth()+1,d.getUTCDate());
-     weekstrip.append(makeDay(s,true));
+     weekstrip.append(makeDay(s,true,byDate,liveDate));
    }
-   const exact=publishedDates().has(selected);
+   const exact=byDate.has(selected);
    selection.textContent=exact
      ?"На "+describe(selected,{day:"numeric",month:"long"})+" опубликовано мероприятие."
      :"На "+describe(selected,{day:"numeric",month:"long"})+" афиша не опубликована.";
