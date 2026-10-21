@@ -352,6 +352,7 @@ async function handleUser(authUser) {
       const candidate = snapshot.exists() ? snapshot.data() : null;
       profile = validProfile(candidate, authUser) ? candidate : null;
       if (!profile) show();
+      else if (els.dialog.classList.contains("active")) hide();
     } catch (error) {
       if (!stillCurrent()) return;
       show();
