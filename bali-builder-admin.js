@@ -3,7 +3,7 @@ import {getApp,getApps,initializeApp} from "https://www.gstatic.com/firebasejs/1
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,onSnapshot,setDoc,writeBatch,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {prepareImage} from "./image-compressor.js?v=20261020-2";
-import {createSimplePromoEditor} from "./bali-promo-simple-editor.js?v=20261021-1";
+import {createSimplePromoEditor} from "./bali-promo-simple-editor.js?v=20261021-removal4";
 const $=id=>document.getElementById(id),core=window.BaliBuilderCore,frame=$("baliDesignLiveFrame");
 const panel=$("adminDesignPanel"),inspector=$("baliBuilderInspector");
 if(!panel||!frame||!inspector||!core)throw new Error("BALI Builder: initialization elements missing");
