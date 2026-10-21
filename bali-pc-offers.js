@@ -1,6 +1,6 @@
 /* BALI PRIVILEGE: published offers rotate independently of event posters. */
-import {initializeApp,getApps,getApp} from "./bali-public-reader.js?v=20261021-fast1";
-import {getFirestore,collection,query,where,onSnapshot} from "./bali-public-reader.js?v=20261021-fast1";
+import {initializeApp,getApps,getApp} from "./bali-public-reader.js?v=20261021-live-content1";
+import {getFirestore,collection,query,where,onSnapshot} from "./bali-public-reader.js?v=20261021-live-content1";
 import {promoPositionStyle} from "./bali-promo-placement.js?v=20261021-3";
 
 const image=document.getElementById("baliPcHeroPoster");

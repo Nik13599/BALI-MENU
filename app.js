@@ -479,6 +479,8 @@ function updateHomeNextEvent() {
 }
 
 function renderHomeEvents() {
+    // SECRET placeholders must not appear before authoritative event data.
+    if(!receivedEventSnapshot)return;
     const track=document.getElementById("homeEventCarousel");
     if(!track)return;
     const previousScroll=track.scrollLeft;
@@ -501,7 +503,8 @@ function renderHomeEvents() {
         const img=document.createElement("img");
         img.src=safeImageUrl(event.poster_url);
         img.alt="Афиша "+event.title;
-        img.loading="lazy";
+        img.loading="eager";
+        img.fetchPriority="high";
         posterWrap.append(img);
         const dateBadge=document.createElement("time");
         dateBadge.className="bali-home-date-badge";

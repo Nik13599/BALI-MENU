@@ -97,12 +97,18 @@ function read(ref){
 export function onSnapshot(ref,...args){
   const options=typeof args[0]==='function'?null:args.shift();
   const [notify,onError]=args;
+  const deliver=result=>{
+    notify(result);
+    // Cached snapshots can be obsolete; only verified data can unlock the UI.
+    if(result.metadata?.fromCache!==true)
+      queueMicrotask(()=>window.dispatchEvent(new CustomEvent("bali:public-snapshot",{detail:{path:ref.path}})));
+  };
   let active=true,serverLive=false,hasData=false,restFailed=false,sdkFailed=false,stop;
   const fail=error=>{if(active&&!hasData&&restFailed&&sdkFailed)onError?.(error);};
   const initial=cached(ref);
-  if(initial){hasData=true;queueMicrotask(()=>{if(active&&!serverLive)notify(initial);});}
+  if(initial){hasData=true;queueMicrotask(()=>{if(active&&!serverLive)deliver(initial);});}
   read(ref).then(result=>{
-    if(active&&!serverLive){hasData=true;notify(result);}
+    if(active&&!serverLive){hasData=true;deliver(result);}
   }).catch(error=>{restFailed=true;fail(error);});
   sdk().then(([apps,store])=>{
     if(!active)return;
@@ -114,7 +120,7 @@ export function onSnapshot(ref,...args){
       if(!active)return;
       if(result.metadata?.fromCache!==true||result.metadata?.hasPendingWrites)serverLive=true;
       else if(hasData)return; // A late local cache cannot replace a server result.
-      hasData=true;notify(result);
+      hasData=true;deliver(result);
     };
     const error=error=>{sdkFailed=true;fail(error);};
     stop=options?store.onSnapshot(target,options,next,error):store.onSnapshot(target,next,error);
