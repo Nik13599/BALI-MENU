@@ -143,7 +143,7 @@ assert(admin.includes('id="adminOverviewPanel"') &&
   ["kitchen","bar","hookah","tea"].every(mode=>
     admin.includes('data-admin-menu="'+mode+'"')) &&
   admin.includes('bali-admin-clarity.css?v=20261018-') &&
-  admin.includes('admin-dashboard.js?v=20261018-') &&
+  admin.includes('admin-dashboard.js?v=20261021-workspace1') &&
   adminOverview.includes('activate("overview",false)') &&
   adminOverview.includes('[data-admin-go]') &&
   adminClarity.includes('.admin-quick-grid'),
