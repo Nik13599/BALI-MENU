@@ -80,15 +80,14 @@ test('declining consent performs no profile/consent writes and leaves the visito
  expect(await page.evaluate(()=>window.BaliAuth.isRegistered())).toBe(false);
  await expect(page.locator('#baliPrivacyDialog')).toBeHidden();
 });
-test('registration stores consent before profile data; first Google request also waits for consent',async({page})=>{
+test('registration signs in via Google first but stores consent before profile data',async({page})=>{
  await fixture(page,{anonymous:true,newProfile:true});
  await page.evaluate(()=>window.BaliAuth.open());
  await page.locator('#authGoogleBtn').click();
+ await expect.poll(()=>page.evaluate(()=>window.__googleCalls)).toBe(1);
  await expect(page.locator('#baliPrivacyDialog')).toBeVisible();
- expect(await page.evaluate(()=>window.__googleCalls)).toBe(0);
  await accept(page);
  await expect(page.locator('#authProfileForm')).toBeVisible();
- expect(await page.evaluate(()=>window.__googleCalls)).toBe(1);
  await page.locator('#authName').fill('Гость BALI');
  await page.locator('#authPhone').fill('+375291234567');
  await page.locator('#authSaveBtn').click();
@@ -147,7 +146,7 @@ test('privacy controls remain clickable when the sign-in modal is open',async({p
  await page.locator('#baliPrivacyAccept').click();
  await expect(dialog).toBeHidden();
  await expect.poll(()=>page.evaluate(()=>window.__googleCalls)).toBe(1);
- // The popup must start within the trusted "Согласен" click gesture.
+ // Google opens directly from the login click, without a pre-login consent dialog.
  expect(await page.evaluate(()=>window.__popupUserActivation)).toBe(true);
  await expect(page.locator('#authProfileForm')).toBeVisible();
 });
@@ -160,7 +159,7 @@ test('continue without account closes the privacy dialog and sign-in overlay',as
  await expect(page.locator('#baliPrivacyDialog')).toBeHidden();
  await expect(page.locator('#authModal')).not.toHaveClass(/active/);
  await expect(page.locator('#overlay')).not.toHaveClass(/active/);
- expect(await page.evaluate(()=>window.__googleCalls)).toBe(0);
+ expect(await page.evaluate(()=>window.__googleCalls)).toBe(1);
  expect(await page.evaluate(()=>window.__privacyWrites)).toEqual([]);
  await expect(page.locator('#baliPrivacyProcessing')).not.toBeChecked();
 });
@@ -172,7 +171,7 @@ test('keyboard Escape from privacy leaves sign-in closed for a guest',async({pag
  await page.keyboard.press('Escape');
  await expect(page.locator('#baliPrivacyDialog')).toBeHidden();
  await expect(page.locator('#authModal')).not.toHaveClass(/active/);
- expect(await page.evaluate(()=>window.__googleCalls)).toBe(0);
+ expect(await page.evaluate(()=>window.__googleCalls)).toBe(1);
 });
 
 test('Google popup starts in the direct sign-in gesture after prior consent',async({page})=>{
@@ -202,16 +201,17 @@ test('Firebase unauthorized-domain error gives a useful recovery message',async(
  await expect(page.locator('#authGoogleBtn')).toBeEnabled();
 });
 
-test('returning Google member reaches My BALI instead of staying behind login',async({page})=>{
+test('returning Google member skips consent and profile screens and reaches homepage',async({page})=>{
  await fixture(page,{returning:true,anonymous:true});
- await page.evaluate(()=>window.BaliAuth.open());
+ await page.evaluate(()=>{window.location.hash='profile';window.BaliAuth.open()});
  await page.locator('#authGoogleBtn').click();
- await page.locator('#baliPrivacyProcessing').check();
- await page.locator('#baliPrivacyInternational').check();
- await page.locator('#baliPrivacyAccept').click();
  await expect.poll(()=>page.evaluate(()=>window.BaliAuth.isRegistered())).toBe(true);
+ await expect(page).toHaveURL(/#home$/);
+ await expect(page.locator('#baliPrivacyDialog')).toBeHidden();
+ await expect(page.locator('#authProfileForm')).toBeHidden();
  await expect(page.locator('#authModal')).not.toHaveClass(/active/);
  await expect(page.locator('#overlay')).not.toHaveClass(/active/);
+ expect(await page.evaluate(()=>window.__privacyWrites)).toEqual([]);
 });
 
 test('new Google account sees only two required editable fields then lands on home',async({page})=>{
@@ -269,4 +269,38 @@ test('an existing complete profile never sees the required registration screen a
  await expect(page.locator('#authName')).toHaveValue('Гость BALI');
  await expect(page.locator('#authPhone')).toHaveValue('+375291234567');
  await expect(page.locator('#authSaveBtn')).toHaveText('Сохранить профиль');
+});
+
+async function expectCentered(page,selector,tolerance=3){
+ const offset=await page.locator(selector).evaluate(element=>{
+   const r=element.getBoundingClientRect();
+   const width=window.innerWidth,height=window.innerHeight;
+   return {x:Math.abs(r.left+r.width/2-width/2),
+     y:Math.abs(r.top+r.height/2-height/2),
+     bounds:r.left>=-1&&r.right<=width+1&&r.top>=-1&&r.bottom<=height+1};
+ });
+ expect(offset.x,selector+' horizontal center').toBeLessThanOrEqual(tolerance);
+ expect(offset.y,selector+' vertical center').toBeLessThanOrEqual(tolerance);
+ expect(offset.bounds,selector+' inside viewport').toBe(true);
+}
+
+test('login, first-time consent and mandatory profile stay centered on every screen',async({page})=>{
+ await fixture(page,{anonymous:true,newProfile:true});
+ await page.evaluate(()=>window.BaliAuth.open());
+ await expect(page.locator('#authModal')).toHaveClass(/active/);
+ await expectCentered(page,'#authModal .modal-content');
+ await page.locator('#authGoogleBtn').click();
+ await expect(page.locator('#baliPrivacyDialog')).toBeVisible();
+ await expectCentered(page,'#baliPrivacyDialog');
+ await accept(page);
+ await expect(page.locator('#authProfileForm')).toBeVisible();
+ await expectCentered(page,'#authModal .modal-content');
+});
+
+test('restored registered session stays on current page until explicit login',async({page})=>{
+ await fixture(page,{returning:true});
+ await expect.poll(()=>page.evaluate(()=>window.BaliAuth.isRegistered())).toBe(true);
+ await expect(page.locator('#authModal')).not.toHaveClass(/active/);
+ await expect(page.locator('#baliPrivacyDialog')).toBeHidden();
+ expect(await page.evaluate(()=>window.__googleCalls)).toBe(0);
 });
