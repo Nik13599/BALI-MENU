@@ -26,6 +26,12 @@ jobs:
           node --input-type=module --check < bali-public-reader.js
           node --input-type=module --check < cloudflare-pages/functions/api/public-data.js
           node scripts/test-public-cache.mjs
+          node scripts/test-bali-browser-architecture.mjs
+          node --input-type=module --check < cloudflare-pages/functions/api/admin/migrate-preorders.js
+          node --input-type=module --check < cloudflare-pages/functions/api/staff-preorders.js
+          node --input-type=module --check < cloudflare-pages/functions/api/publish-public.js
+          node --input-type=module --check < cloudflare-pages/functions/_lib/staff-auth.js
+          node --input-type=module --check < bali-public-publisher.js
           node --input-type=module --check < auth.js
           node --input-type=module --check < bali-id-flip.js
           node --input-type=module --check < bali-id-onboarding.js
