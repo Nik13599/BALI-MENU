@@ -56,7 +56,7 @@ function apply(data){
   // Text saved in the admin panel may contain repeated/nbsp spaces. Display
   // the public contact heading with exactly one ordinary space per word.
   if(typeof data.contactHeading==="string"){
-    const cleaned=data.contactHeading.replace(/[\\s\\u200B-\\u200D\\u2060]+/g," ").trim();
+    const cleaned=data.contactHeading.replace(/[\s\u200B-\u200D\u2060]+/g," ").trim();
     const heading=cleaned.toLocaleLowerCase("ru-RU")==="контактная информация"
       ?"Контактная информация":cleaned;
     label(".bali-pc-sidebar-contacts>.bali-pc-contacts-heading",heading);
