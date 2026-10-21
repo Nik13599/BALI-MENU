@@ -1167,8 +1167,9 @@ assert(mobileLayoutCss.includes("/* BALI v38: self-contained viewport layout on 
   mobileLayoutCss.includes("overflow-y:auto!important") &&
   mobileLayoutCss.includes("touch-action:pan-x pan-y!important"),
   "Static mobile screens must keep only menu scrolling vertically and event stories horizontally");
+const eventStageJs=source("bali-calendar-coverflow.js");
 assert(app.includes("menuSection.scrollTop = 0") &&
-  app.includes('if(window.matchMedia("(max-width:767px)").matches)return;'),
+  eventStageJs.includes('if(mobile()||event.ctrlKey||Math.abs(event.deltaY)<4)return;'),
   "Mobile category change must scroll the product list without hijacking gestures");
 const approvedCss=source("bali-redesign.css");
 const squareCss=source("bali-event-square.css");
@@ -1182,8 +1183,8 @@ assert(squareCss.includes("aspect-ratio:1 / 1") &&
   squareCss.includes("margin-top:auto") &&
   squareCss.includes("overflow-y:auto"),
   "Square poster, independently scrollable info and bottom pinned actions required");
-assert(app.includes('track.clientHeight-(mobile?90:105)') &&
-  app.includes('track.clientHeight-(mobile?90:105)'),
+assert(eventStageJs.includes('available-actionsHeight-3*targetGap') &&
+  eventStageJs.includes('area.height-(phone?80:76)'),
   "Carousel must reserve vertical space for square image and event actions");
 
 const premiumCss=source("bali-home-premium.css");
@@ -1306,8 +1307,8 @@ assert(adaptiveCss.includes("/* BALI v44") &&
   adaptiveCss.includes("overflow-y:auto!important") &&
   adaptiveCss.includes(".bali-home .bali-home-inner{"),
   "Phone/tablet/desktop breakpoints need viewport fitting, fixed category/cart and catalog scroll");
-assert(app.includes("const rounded=Math.max(88,Math.floor(width));") &&
-  app.includes("track.clientHeight-(mobile?90:105)"),
+assert(eventStageJs.includes("Math.min(390,area.width*.88,") &&
+  eventStageJs.includes("Math.max(100,area.height-(phone?80:76))"),
   "Event slide sizing must respond to viewport height and never force old 155px minimum");
 
 assert(approvedCss.includes("/* BALI v42") &&
