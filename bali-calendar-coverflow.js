@@ -27,24 +27,52 @@ const ease=t=>t*t*(3-2*t);
 // them only when the stage has completed its actual travel (not a fixed timer).
 function lowerActions(){if(!reduce.matches)grid.classList.add("is-actions-lowered")}
 function raiseActions(){grid.classList.remove("is-actions-lowered")}
+// Protect the buttons against the REAL floating mobile dock, rather than
+// assuming that the entire calendar stage is visible above it.
+function visibleDockTop(){
+  const dock=document.querySelector(".bali-bottom-nav");
+  if(!dock||getComputedStyle(dock).display==="none")return window.innerHeight;
+  return dock.getBoundingClientRect().top;
+}
+function ensurePhoneActionsVisible(){
+  if(!matchMedia("(max-width:767px)").matches||
+     grid.classList.contains("is-actions-lowered"))return;
+  const active=grid.querySelector(".event-card.is-active");
+  const actions=active?.querySelector(".bali-event-actions");
+  if(!actions||!active||section.hidden)return;
+  const excess=Math.ceil(actions.getBoundingClientRect().bottom-(visibleDockTop()-14));
+  if(excess>0&&slideWidth>65){
+    slideWidth=Math.max(65,slideWidth-excess-7);
+    grid.style.setProperty("--bali-event-slide-width",slideWidth+"px");
+    render();
+  }
+}
 function measure(){
   const area=grid.getBoundingClientRect();
   if(area.width<30||area.height<30)return;
   const phone=mobile();
   const narrow=matchMedia("(max-width:767px)").matches;
-  // The compact date grid gives the portrait poster more vertical room.
-  // Make ONLY the phone's central square wider; tablets and desktops retain
-  // their geometry. 80px remain reserved for the existing bottom buttons.
+  // Reserve room for the action row ABOVE the top of the mobile navigation.
+  // The old calculation used area.height-80, ignoring the dock overlay.
+  const action=grid.querySelector(".event-card.is-active .bali-event-actions");
+  const actionsHeight=Math.max(60,Math.ceil(action?.getBoundingClientRect().height||0));
+  const stageVisibleHeight=narrow?
+    Math.max(0,Math.min(area.height,visibleDockTop()-area.top-14)):
+    area.height;
+  const maxPosterHeight=narrow?
+    Math.max(65,Math.min(area.height-80,stageVisibleHeight-actionsHeight-18)):
+    Math.max(100,area.height-(phone?80:76));
   const width=Math.floor(Math.min(
     phone?390:500,
     area.width*(narrow?.88:phone?.76:.60),
-    Math.max(100,area.height-(phone?80:76))
+    maxPosterHeight
   ));
   if(slideWidth!==width){
     slideWidth=width;
     grid.style.setProperty("--bali-event-slide-width",width+"px");
   }
   render();
+  if(narrow)requestAnimationFrame(ensurePhoneActionsVisible);
 }
 function render(){
   const entries=cards(),count=entries.length;
@@ -60,8 +88,9 @@ function render(){
   const originalSlot=Math.max(stageWidth*(mobile()?.35:.395),
     slideWidth*.5+projectedHalf+gap)+safety;
   const projectedEdges=slideWidth*.5+projectedHalf;
+  // A further 50% reduction from the previously published desktop spacing.
   const slot=mobile()?originalSlot:
-    projectedEdges+Math.max(gap,(originalSlot-projectedEdges)*.5);
+    projectedEdges+Math.max(gap*.5,(originalSlot-projectedEdges)*.25);
   // Hard cap on visible poster count: one central + at most one each side.
   // All other events remain mounted in the queue but are invisible.
   const center=Math.round(position);
@@ -138,7 +167,10 @@ function animateTo(next,smooth=true){
     // travel); the fast CSS lift finishes well BEFORE the poster stops.
     if(progress>=.55)raiseActions();
     if(progress<1)running.raf=requestAnimationFrame(tick);
-    else{position=next;animation=null;render();raiseActions();}
+    else{position=next;animation=null;render();raiseActions();
+      if(matchMedia("(max-width:767px)").matches)
+        requestAnimationFrame(ensurePhoneActionsVisible);
+    }
   };
   running.raf=requestAnimationFrame(tick);
 }
