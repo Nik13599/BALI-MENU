@@ -1,7 +1,7 @@
 /* BALI simple banner composer — directly in the visual site builder. */
 import {doc,getDoc,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {prepareImage} from "./image-compressor.js?v=20261020-2";
-import {PROMO_POSITION_OPTIONS,promoEditorMode,promoEditorXY,promoStorePlacement} from "./bali-promo-placement.js?v=20261021-2";
+import {PROMO_POSITION_OPTIONS,promoEditorMode,promoEditorXY,promoStorePlacement,promoPositionStyle} from "./bali-promo-placement.js?v=20261021-3";
 
 const holidayId="bali-new-year-2026";
 const holidayPoster="assets/BALI_banner_badge_rectangular_only.png";
@@ -93,7 +93,10 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
    posCoords.hidden=mode!=="manual";
    posHandle.hidden=mode==="none"||mode==="original"||record?.destination==="none";
    posHandle.textContent=$("button-text").value.trim()||"Подробнее";
-   posHandle.style.left=point.x+"%";posHandle.style.top=point.y+"%";
+   const aligned=promoPositionStyle({mode:"manual",x:point.x,y:point.y});
+   if(aligned)for(const [key,value] of Object.entries(aligned)){
+     if(key!=="lowerRight")posHandle.style.setProperty(key==="maxWidth"?"max-width":key,value);
+   }
    if(mode!=="manual"){$("x").value=point.x;$("y").value=point.y;}
    const src=record?.imageRemoved?"":record?.imageUrl||(activeId===holidayId?holidayPoster:"");
    posImage.hidden=!src;
