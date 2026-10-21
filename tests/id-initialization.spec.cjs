@@ -100,7 +100,7 @@ test('allocation failure remains visible and retry recovers without losing the a
   await expect(page.locator('#baliCardTier')).toBeHidden();
   await expect(page.locator('#baliIdFlipScene')).toHaveAttribute('data-bali-loading','error');
   await expect(page.locator('#baliIdStatus')).toBeVisible();
-  await expect(page.locator('#baliIdStatus')).toContainText('ожидает активации новых правил');
+  await expect(page.locator('#baliIdStatus')).toContainText('Не удалось активировать номер BALI ID');
   await expect(page.getByRole('button',{name:'Повторить загрузку'})).toBeVisible();
   expect(await page.evaluate(()=>window.__idTest.writes)).toEqual([]);
   await page.evaluate(()=>window.__idTest.allocationError=false);
