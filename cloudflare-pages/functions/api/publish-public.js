@@ -67,7 +67,9 @@ export async function onRequestPost({request,env}){
       return reply({error:"Administrator role required"},403);
     // 3. Fetch from trusted Firestore only; the request contains path, NEVER data.
     const snapshot=await loadSource(path);
-    const encoded=JSON.stringify(snapshot);
+    // KV readers check freshness on every cache miss. Publishing must include
+    // the same timestamp as the automatic Firestore cold-cache migration.
+    const encoded=JSON.stringify({...snapshot,cachedAt:Date.now()});
     if(encoded.length>16000000)return reply({error:"Content too large for public KV snapshot"},413);
     await env.BALI_PUBLIC_CONTENT.put("bali:public:v1:"+path,encoded);
     // Do not expose stored content to the admin caller (may contain base64 images).
