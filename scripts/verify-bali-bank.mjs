@@ -18,19 +18,20 @@ const pay=cardActions.indexOf('id="baliIdPayOpen"'),topup=cardActions.indexOf('i
 assert(pay>=0&&pay<topup&&topup<send&&
   topTools.includes('id="baliIdHistoryOpen"')&&
   topTools.includes('id="baliShowQr"')&&
-  topTools.indexOf('id="baliIdHistoryOpen"')<topTools.indexOf('id="baliShowQr"')&&
+  topTools.indexOf('id="baliShowQr"')<topTools.indexOf('id="baliIdHistoryOpen"')&&
   !topTools.includes('id="baliIdPayOpen"')&&
   !cardActions.includes('id="baliShowQr"')&&
   topTools.includes('<span>QR-код</span>')&&
   html.includes('id="baliTransferScanQr"')&&
   html.includes('bali-id-actions-positions.css?v='),
-  "BALI ID: history and QR below page heading; Pay, Top up, Transfer beneath unchanged card");
+  "BALI ID: QR then history at page top; Pay, Top up, Transfer below enlarged card");
 const positionCss=s("bali-id-actions-positions.css");
 assert(positionCss.includes('grid-template-columns:repeat(3,minmax(0,1fr))!important')&&
   positionCss.includes('position:absolute!important')&&
-  !positionCss.includes('aspect-ratio')&&
+  positionCss.includes('aspect-ratio:1.68 / 1!important')&&
+  positionCss.includes('--bali-id-large-width')&&
   !positionCss.includes('--bali-bank-card-width'),
-  "Action placement must not alter ID card aspect ratio or sizing");
+  "BALI ID positioning must enlarge the card without changing its 1.68 aspect ratio");
 assert(html.includes('bali-id-bank.js?v=')&&html.includes('bali-id-bank.css?v='),
   "Banking assets not loaded");
 for(const fn of ["previewBaliRecipient","transferBaliBenefits","listMyBaliHistory"]){
