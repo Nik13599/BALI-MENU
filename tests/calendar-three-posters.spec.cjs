@@ -312,3 +312,35 @@ test('mobile controls rise before the poster travel ends',async({page})=>{
   expect(Math.max(...timing.durations)).toBeLessThanOrEqual(.18);
   expect(timing.delay).not.toContain('0.2s');
 });
+
+test('desktop calendar has one seamless background and vertically centered poster group',async({page})=>{
+  test.skip(page.viewportSize().width<1180,'Desktop-only centering; phone uses equal-gap layout');
+  await prepare(page,4);
+  await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(1,false));
+  const scene=await page.evaluate(()=>{
+    const section=document.getElementById('eventsSection');
+    const grid=document.getElementById('eventsGrid');
+    const card=grid.querySelector('.event-card.is-active');
+    const stageBox=grid.getBoundingClientRect();
+    const cardBox=card.getBoundingClientRect();
+    const sectionStyle=getComputedStyle(section);
+    const gridStyle=getComputedStyle(grid);
+    return {
+      offset:Math.abs((stageBox.top+stageBox.bottom)/2-(cardBox.top+cardBox.bottom)/2),
+      pageBackground:sectionStyle.backgroundColor,
+      pageImage:sectionStyle.backgroundImage,
+      stageBackground:gridStyle.backgroundColor,
+      stageImage:gridStyle.backgroundImage,
+      sideFade:getComputedStyle(grid,'::before').backgroundImage,
+      bounds:{top:cardBox.top,bottom:cardBox.bottom,stageTop:stageBox.top,stageBottom:stageBox.bottom}
+    };
+  });
+  expect(scene.pageBackground).toBe('rgb(8, 11, 17)');
+  expect(scene.pageImage).toBe('none');
+  expect(scene.stageBackground).toBe('rgba(0, 0, 0, 0)');
+  expect(scene.stageImage).toBe('none');
+  expect(scene.sideFade).toContain('linear-gradient');
+  expect(scene.offset).toBeLessThan(3);
+  expect(scene.bounds.top).toBeGreaterThan(scene.bounds.stageTop);
+  expect(scene.bounds.bottom).toBeLessThan(scene.bounds.stageBottom);
+});

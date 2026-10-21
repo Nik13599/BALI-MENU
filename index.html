@@ -164,6 +164,45 @@
 
   <script src="bali-mobile-vertical-balance.js?v=20261021-vertical2" defer></script>
 
+  <!-- Calendar: one seamless canvas; center the desktop 3D poster stage vertically. -->
+  <style id="bali-calendar-unified-canvas">
+    :root[data-bali-theme] body.bali-guest-theme[data-bali-page="events"] #eventsSection {
+      background:#080b11!important;
+      background-color:#080b11!important;
+      background-image:none!important;
+      box-shadow:none!important;
+    }
+    :root[data-bali-theme] body.bali-guest-theme[data-bali-page="events"] #eventsSection>.container,
+    :root[data-bali-theme] body.bali-guest-theme[data-bali-page="events"] #eventsSection .bali-event-calendar-layout,
+    :root[data-bali-theme] body.bali-guest-theme[data-bali-page="events"] #eventsCarouselShell,
+    :root[data-bali-theme] body.bali-guest-theme[data-bali-page="events"] #eventsGrid {
+      background:transparent!important;
+      background-image:none!important;
+      box-shadow:none!important;
+    }
+    /* Preserve the side-poster fading effect, but blend into the exact page color. */
+    :root[data-bali-theme] body.bali-guest-theme[data-bali-page="events"] #eventsGrid::before,
+    :root[data-bali-theme] body.bali-guest-theme[data-bali-page="events"] #eventsGrid::after {
+      background:linear-gradient(90deg,#080b11 0%,rgba(8,11,17,.72) 22%,transparent 100%)!important;
+    }
+    @media (min-width:1180px) {
+      /* Top 50% and translateY(-50%) center the complete poster + action buttons,
+         not merely the square image; the stage still owns every X/3D variable. */
+      :root[data-bali-theme] body.bali-guest-theme[data-bali-page="events"] #eventsGrid>.event-card {
+        top:50%!important;
+        transform:translate3d(
+          calc(-50% + var(--bali-stage-x,0px)),
+          -50%,
+          var(--bali-stage-depth,0px)
+        ) rotateY(var(--bali-stage-angle,0deg)) scale(var(--bali-stage-scale,1))!important;
+      }
+      :root[data-bali-theme] body.bali-guest-theme[data-bali-page="events"] #eventsCarouselShell .bali-poster-nav {
+        top:50%!important;
+        transform:translateY(-50%)!important;
+      }
+    }
+  </style>
+
 </head>
 
 <body class="bali-guest-theme">
