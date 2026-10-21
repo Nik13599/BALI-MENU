@@ -148,3 +148,39 @@ body[data-bali-admin-section="design"] .admin-tab[data-admin-tab="design"]{font-
 .bali-builder-active .bali-studio-page-tabs{display:none!important}
 .bali-builder-active .bali-builder-home-picker select:focus-visible{outline:2px solid #b9ff51;outline-offset:2px}
 .bali-builder-active .bali-builder-home-picker select:disabled{opacity:.55}
+
+/* Focused seasonal banner editor: image + text + button in one panel. */
+#baliBuilderInspector.bali-builder-promo-mode>.bali-builder-group,
+#baliBuilderInspector.bali-builder-promo-mode>.bali-builder-element-actions,
+#baliBuilderInspector.bali-builder-promo-mode>.bali-builder-icon-editor,
+#baliBuilderInspector.bali-builder-promo-mode>.bali-builder-layer-trail{display:none!important}
+#baliBuilderInspector .bali-simple-banner-editor{
+ display:grid;gap:13px;background:#111d17;border:1px solid rgba(185,255,81,.48);padding:16px;
+ border-radius:14px;min-width:0;
+}
+#baliBuilderInspector .bali-simple-banner-editor[hidden]{display:none!important}
+#baliBuilderInspector .bali-simple-banner-editor>strong{
+ font:850 15px/1.25 Manrope,Inter,sans-serif;color:#e7ffce;letter-spacing:.045em
+}
+#baliBuilderInspector .bali-simple-banner-editor>p{
+ margin:0;font:500 11px/1.55 Manrope,Inter,sans-serif;color:#b9cbbd
+}
+#baliBuilderInspector .bali-simple-banner-editor [data-promo-status]{
+ padding:8px 0;border-top:1px solid #355544;color:#cde8d3;font-weight:650
+}
+.bali-promo-simple-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.bali-promo-simple-grid label{min-width:0}
+.bali-promo-simple-preview{aspect-ratio:8/3;display:grid;place-items:center;overflow:hidden;
+ background:#07100b;border:1px solid #446148;border-radius:10px;min-height:76px}
+.bali-promo-simple-preview img{display:block;width:100%;height:100%;object-fit:contain}
+.bali-simple-banner-editor .bali-builder-field{font-size:12px}
+.bali-simple-banner-editor .bali-builder-field>small{font-size:10px;line-height:1.5}
+.bali-simple-banner-editor .bali-builder-field input[type=color]{
+ height:43px;min-height:43px;padding:4px;background:#15281c
+}
+.bali-simple-banner-editor [data-promo-save]{
+ display:block;width:100%;padding:14px 11px;border:0;border-radius:10px;
+ background:#bbf368;color:#0d1b0b;cursor:pointer;
+ font:850 12px/1.35 Manrope,Inter,sans-serif
+}
+.bali-simple-banner-editor [data-promo-save]:disabled{opacity:.48;cursor:wait}
