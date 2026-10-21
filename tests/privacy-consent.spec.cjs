@@ -304,3 +304,30 @@ test('restored registered session stays on current page until explicit login',as
  await expect(page.locator('#baliPrivacyDialog')).toBeHidden();
  expect(await page.evaluate(()=>window.__googleCalls)).toBe(0);
 });
+
+test('first login and subsequent privacy notice stay centered in the viewport',async({page})=>{
+ await fixture(page,{anonymous:true,newProfile:true});
+ await page.evaluate(()=>window.BaliAuth.open());
+ const centered=async locator=>{
+   const box=await locator.boundingBox();
+   const viewport=page.viewportSize();
+   expect(box).not.toBeNull();
+   expect(Math.abs(box.x+box.width/2-viewport.width/2)).toBeLessThanOrEqual(2);
+   expect(Math.abs(box.y+box.height/2-viewport.height/2)).toBeLessThanOrEqual(2);
+   expect(box.x).toBeGreaterThanOrEqual(0);
+   expect(box.y).toBeGreaterThanOrEqual(0);
+   expect(box.x+box.width).toBeLessThanOrEqual(viewport.width+1);
+   expect(box.y+box.height).toBeLessThanOrEqual(viewport.height+1);
+ };
+ await expect(page.locator('#authModal')).toBeVisible();
+ await centered(page.locator('#authModal .modal-content'));
+ await page.locator('#authGoogleBtn').click();
+ await expect(page.locator('#baliPrivacyDialog')).toBeVisible();
+ await centered(page.locator('#baliPrivacyDialog'));
+ await page.locator('#baliPrivacyProcessing').check();
+ await page.locator('#baliPrivacyInternational').check();
+ await page.locator('#baliPrivacyAccept').click();
+ await expect(page.locator('#baliPrivacyDialog')).toBeHidden();
+ await expect(page.locator('#authProfileForm')).toBeVisible();
+ await centered(page.locator('#authModal .modal-content'));
+});
