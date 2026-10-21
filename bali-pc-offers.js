@@ -172,6 +172,23 @@ if(image&&title&&description&&counter&&action&&hero){
         action.style.removeProperty(property);
       }
       const disabled=mode==="none";
+      const explicitPlacement=["none","left","center","right","manual"].includes(mode);
+      const heroContent=action.closest(".bali-pc-hero-content");
+      if(heroContent){
+        if(explicitPlacement&&mode!=="none"&&offer.destination!=="none"){
+          heroContent.style.setProperty("display","block","important");
+          heroContent.style.setProperty("pointer-events","none","important");
+          action.style.setProperty("pointer-events","auto","important");
+        }else{
+          heroContent.style.removeProperty("display");
+          heroContent.style.removeProperty("pointer-events");
+          action.style.removeProperty("pointer-events");
+        }
+      }
+      if(explicitPlacement){
+        activeHotspot=null;activeSecondarySpot=null;activeThirdSpot=null;
+        artHotspot.hidden=true;secondaryHotspot.hidden=true;thirdHotspot.hidden=true;
+      }
       if(["left","center","right","manual"].includes(mode)){
         const x=mode==="left"?17:mode==="right"?83:mode==="center"?50:
           Math.max(5,Math.min(95,Number(placement.x)||50));
