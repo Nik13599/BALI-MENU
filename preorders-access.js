@@ -47,7 +47,7 @@ onAuthStateChanged(auth,async user=>{
     if(current!==seq)return;
     const staff=staffRole?.exists()&&staffRole.data().active===true&&staffRole.data().role==="preorders";
     if(!owner&&!staff){status("Учётная запись не имеет доступа к предзаказам.");return;}
-    $("adminEmail").textContent=staff?staffRole.data().name:("Администратор");
+    $("adminEmail").textContent=staff?staffRole.data().name:(user.displayName||user.email||"Администратор");
     $("adminView").hidden=false;$("loginView").hidden=true;
     $("staffHeaderAccount").hidden=false;status("");
   }catch(error){if(current===seq)status("Ошибка проверки прав: "+(error.code||error.message));}
