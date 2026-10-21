@@ -48,6 +48,7 @@
   <link rel="stylesheet" href="bali-calendar-archive.css?v=20261021-archive1">
   <link rel="stylesheet" href="bali-home-seasonal-aspect.css?v=20261021-reference-fixed2">
   <link rel="stylesheet" href="bali-pc-sidebar-unified.css?v=20261021-sidebar130">
+  <link rel="stylesheet" href="bali-profile-single-entry.css?v=20261021-1">
 </head>
 
 <body class="bali-guest-theme">
@@ -57,23 +58,17 @@
     <!-- BALI: минимальная шапка с профилем -->
     <header class="header">
       <div class="container header-content">
-        <button type="button" id="baliMobileProfileBtn" class="bali-mobile-profile-fab" aria-label="Открыть профиль пользователя" title="Мой профиль">
-          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.7"/><path d="M4.3 20v-1.4c0-3.8 3.5-6.4 7.7-6.4s7.7 2.6 7.7 6.4V20"/></svg>
-        </button>
         <a href="#home" class="logo" id="homeBrandBtn" aria-label="BALI — на главную">
           <img class="bali-brand-logo" src="assets/bali-nightclub-logo.png?v=20261018-original" width="938" height="264" alt="" decoding="async" fetchpriority="high">
         </a>
         <div class="bali-pc-account-wrap">
           <button type="button" class="account-btn" id="accountBtn" aria-label="Войти в личный кабинет" aria-haspopup="menu" aria-expanded="false" aria-controls="baliPcProfileMenu">Войти в личный кабинет</button>
-          <button type="button" class="bali-header-id-trigger" id="baliMobileIdBtn" aria-label="Открыть мою BALI ID карту" title="Моя BALI ID">
-            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><circle cx="8.4" cy="10.7" r="2.1"/><path d="M5.5 16c.5-2.1 5.3-2.1 5.8 0M14 10h4.5M14 14h3.5"/></svg>
-            <span>ID</span>
-          </button>
           <div class="bali-pc-profile-menu" id="baliPcProfileMenu" role="menu" aria-label="Личный кабинет" hidden>
             <button type="button" role="menuitem" data-bali-profile-action="id"><span aria-hidden="true">▣</span>Моя BALI ID</button>
             <button type="button" role="menuitem" data-bali-profile-action="orders"><span aria-hidden="true">▤</span>Мои заказы</button>
             <button type="button" role="menuitem" data-bali-profile-action="plans"><span aria-hidden="true">♡</span>Мои планы</button>
             <button type="button" role="menuitem" data-bali-profile-action="details"><span aria-hidden="true">♙</span>Мои данные</button>
+            <button type="button" role="menuitem" data-bali-profile-action="info"><span aria-hidden="true">ⓘ</span>Инфо</button>
             <div class="bali-pc-profile-separator" role="separator"></div>
             <button type="button" role="menuitem" data-bali-profile-action="logout"><span aria-hidden="true">⇥</span>Выйти из аккаунта</button>
           </div>
@@ -595,6 +590,7 @@
           <button type="button" id="profileMyOrdersBtn" class="bali-profile-action"><span>▤</span> Мои заказы <b>›</b></button>
           <button type="button" id="profileMyPlansBtn" class="bali-profile-action"><span>▦</span> Мои планы <b>›</b></button>
           <button type="button" id="profileDataBtn" class="bali-profile-action"><span>♙</span> Мои данные <b>›</b></button>
+          <button type="button" id="profileInfoBtn" data-bali-nav="contacts" class="bali-profile-action"><span aria-hidden="true">ⓘ</span> Инфо <b>›</b></button>
           <button type="button" id="profileLogoutBtn" class="bali-profile-action bali-logout"><span>⇥</span> Выйти из аккаунта <b>›</b></button>
         </div>
       </div>
@@ -752,8 +748,6 @@
       <button type="button" data-bali-nav="home" class="active" aria-current="page"><span class="bali-nav-glyph" aria-hidden="true">⌂</span><small>Главная</small></button>
       <button type="button" data-bali-nav="events"><span class="bali-nav-glyph" aria-hidden="true">▦</span><small>Календарь</small></button>
       <button type="button" data-bali-nav="menu"><span class="bali-nav-glyph" aria-hidden="true">▥</span><small>Меню</small></button>
-      <button type="button" class="bali-nav-profile-item" data-bali-nav="profile"><span class="bali-nav-glyph" aria-hidden="true">♙</span><small>Профиль</small></button>
-      <button type="button" class="bali-nav-info-item" data-bali-nav="contacts"><span class="bali-nav-glyph" aria-hidden="true">ⓘ</span><small>Инфо</small></button>
     </nav>
 
     <button type="button" class="bali-cart-dock" id="baliCartDock" hidden>
