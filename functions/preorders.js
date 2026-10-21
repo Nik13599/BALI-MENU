@@ -42,6 +42,7 @@ module.exports=({db,admin,verified,fail})=>async req=>{
   const {requestId,eventDate,eventId,tableNumber,bookingId,notes,editId,items}=data;
   const fingerprint=hash(JSON.stringify({eventDate,eventId,tableNumber,bookingId,notes,editId,items}));
   const receiptRef=db.doc("preorderRequests/"+uid+"/requests/"+requestId);
+  const throttleRef=db.doc("preorderRateLimits/"+uid);
   const profileRef=db.doc("users/"+uid),eventRef=db.doc("events/"+eventId);
   const consentRef=db.doc("users/"+uid+"/privacyConsents/2026-10-21");
   const withdrawalRef=db.doc("users/"+uid+"/privacyWithdrawals/2026-10-21");
@@ -50,8 +51,8 @@ module.exports=({db,admin,verified,fail})=>async req=>{
   const menuRefs=items.map(item=>db.doc("menu/"+item.id));
   return db.runTransaction(async tx=>{
     // All reads are before writes, including existing order lines and catalog.
-    const [receipt,profile,consent,withdrawal,event,existing,...menu]=await Promise.all([
-      tx.get(receiptRef),tx.get(profileRef),tx.get(consentRef),tx.get(withdrawalRef),
+    const [receipt,throttle,profile,consent,withdrawal,event,existing,...menu]=await Promise.all([
+      tx.get(receiptRef),tx.get(throttleRef),tx.get(profileRef),tx.get(consentRef),tx.get(withdrawalRef),
       tx.get(eventRef),editId?tx.get(orderRef):Promise.resolve(null),
       ...menuRefs.map(ref=>tx.get(ref))
     ]);
@@ -67,6 +68,14 @@ module.exports=({db,admin,verified,fail})=>async req=>{
       if(previous.fingerprint!==fingerprint)fail("already-exists","Идентификатор отправки использован для другого заказа.");
       return {...previous.result,alreadyProcessed:true};
     }
+    // Prevent authenticated request flooding. Retries using the same receipt
+    // are free; both fresh creation and editing count as mutations.
+    const nowMillis=Date.now();
+    const previousLimit=throttle.exists?throttle.data():{};
+    const startedAt=Number.isFinite(previousLimit.startedAtMillis)?previousLimit.startedAtMillis:0;
+    const freshWindow=nowMillis-startedAt>=60000||nowMillis<startedAt;
+    const usage=freshWindow?1:(Number(previousLimit.count)||0)+1;
+    if(usage>12)fail("resource-exhausted","Слишком много запросов. Повторите через минуту.");
     const eventInfo=event.exists?event.data():null;
     if(!eventInfo||eventInfo.date!==eventDate||eventInfo.preorderEnabled!==true||
        typeof eventInfo.closesAt?.toMillis!=="function"||
@@ -94,6 +103,7 @@ module.exports=({db,admin,verified,fail})=>async req=>{
     if(counter&&(!Number.isSafeInteger(nextNumber)||nextNumber<1||nextNumber>999999))
       fail("resource-exhausted","Лимит номеров предзаказов для мероприятия исчерпан.");
     const at=admin.firestore.Timestamp.now();
+    tx.set(throttleRef,{startedAtMillis:freshWindow?nowMillis:startedAt,count:usage,updatedAt:at});
     const orderData={eventDate,eventId,eventTitle:eventInfo.title,tableNumber,bookingId,notes,updatedAt:at};
     if(counter)tx.set(counterRef,{date:eventDate,count:nextNumber,lastOrderId:orderRef.id,updatedAt:at});
     if(editId){
