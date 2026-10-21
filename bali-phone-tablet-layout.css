@@ -861,3 +861,39 @@ body.bali-guest-theme .bali-mobile-about-dialog:not([open]){display:none!importa
     min-height:40px!important;
   }
 }
+
+/* 2026-10-21 — ABOUT headline stays on exactly one line on phone/tablet.
+   Let the title use the full card width instead of the old 65–68% text column. */
+@media (max-width:1179px) {
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero .bali-mobile-home-hero-copy {
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero h1 {
+    display:block!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    white-space:nowrap!important;
+    text-wrap:nowrap!important;
+    word-break:normal!important;
+    overflow-wrap:normal!important;
+    font-size:clamp(16px,5.6vw,27px)!important;
+    line-height:1.12!important;
+    letter-spacing:-.045em!important;
+    margin-bottom:clamp(5px,1.1dvh,10px)!important;
+  }
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero h1>span,
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero h1>em {
+    display:inline!important;
+    white-space:inherit!important;
+  }
+}
+@media (min-width:768px) and (max-width:1179px) {
+  body.bali-guest-theme #homeSection .bali-mobile-home-hero h1 {
+    font-size:clamp(28px,4vw,44px)!important;
+  }
+}
