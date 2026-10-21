@@ -236,7 +236,7 @@ test('touch swipes directly move the 3D cards left and right without native scro
   expect(result.scrollLeft).toBe(0);
 });
 
-test('past party dates are ruby red, while today stays emerald even in my plans', async ({page}) => {
+test('completed parties show solid ruby red, while today without events remains emerald', async ({page}) => {
   await openCalendar(page);
   const dates=await page.evaluate(()=>{
     const pieces=new Intl.DateTimeFormat('en-GB',{
@@ -278,19 +278,17 @@ test('past party dates are ruby red, while today stays emerald even in my plans'
   await expect(past).toHaveAttribute('data-past','true');
   await expect(past).toHaveAttribute('data-planned','true');
   await expect(past).toHaveAttribute('data-event-count','2');
-  await expect(past).toHaveCSS('background-color','rgba(204, 63, 76, 0.14)');
+  await expect(past).toHaveAttribute('data-lifecycle-status','past');
+  await expect(past).toHaveCSS('background-color','rgb(23, 32, 24)');
+  expect(await past.evaluate(node=>getComputedStyle(node).backgroundImage)).toContain('rgb(250, 96, 112)');
   await expect(past.locator('.bali-calendar-event-dot')).toHaveCount(2);
   for(const dot of await past.locator('.bali-calendar-event-dot').all())
-    await expect(dot).toHaveCSS('background-color','rgb(255, 89, 103)');
+    await expect(dot).toHaveCSS('background-color','rgb(250, 96, 112)');
   await past.click();
   await expect(past).toHaveAttribute('data-selected','true');
-  // Hover transitions animate the ruby alpha; check its semantic range rather
-  // than expecting only the two CSS endpoint values on slow browser workers.
-  const selectedColor=await past.evaluate(el=>getComputedStyle(el).backgroundColor);
-  const tint=selectedColor.match(/^rgba\(210, 65, 77, ([0-9.]+)\)$/);
-  expect(tint).toBeTruthy();
-  expect(Number(tint[1])).toBeGreaterThanOrEqual(0.21);
-  expect(Number(tint[1])).toBeLessThanOrEqual(0.24);
+  // A selected or planned date must preserve its completed (red) event fill.
+  expect(await past.evaluate(node=>getComputedStyle(node).backgroundImage)).toContain('rgb(250, 96, 112)');
+  await expect(past.locator('.bali-calendar-day-number')).toHaveCSS('color','rgb(21, 25, 16)');
   const future=await locate(dates.future);
   await expect(future).toHaveAttribute('data-past','false');
   await expect(future.locator('.bali-calendar-event-dot')).toHaveCSS('background-color','rgb(185, 255, 81)');
