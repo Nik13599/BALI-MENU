@@ -118,6 +118,7 @@ if(form){
     pending=true;access();say("Сохраняем общий шаблон…");
     try{
       await setDoc(ref,{...values,updatedAt:serverTimestamp()});
+      window.BaliPublicPublish?.queue("settings/homeEventPlaceholder");
       dirty=false;
       say("Сохранено! Все незанятые места главной ПК теперь используют этот шаблон.");
     }catch(error){

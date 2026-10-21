@@ -97,6 +97,7 @@ function draw(){
         delBtn.disabled=true;
         try{
           await deleteDoc(doc(db,"bar_menu",item.id));
+          window.BaliPublicPublish?.queue("bar_menu");
           tell("Позиция удалена.");
           if($("baliAdminBarId").value===item.id)resetEditor();
         }catch(e){
@@ -147,6 +148,7 @@ form?.addEventListener("submit",async event=>{
     await setDoc(ref,{
       name,category,volume1,price1,volume2,price2,sort,...details,updatedAt:serverTimestamp()
     });
+    window.BaliPublicPublish?.queue("bar_menu");
     resetEditor();
     tell("Сохранено: «"+name+"». Цены обновятся у гостей автоматически.");
   }catch(e){

@@ -159,6 +159,7 @@ if(host){
       pending=true;lock();report("Сохраняем оформление сайта…");
       try{
         await setDoc(ref,{...payload,updatedAt:serverTimestamp()});
+        window.BaliPublicPublish?.queue("settings/homeInterface");
         report("Сохранено. Живой сайт и его схема обновляются автоматически.");
       }catch(err){
         report(err.code==="permission-denied"

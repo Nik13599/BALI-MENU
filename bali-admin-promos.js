@@ -249,6 +249,7 @@ if(form&&list&&status){
         remove.disabled=true;
         try{
           await deleteDoc(doc(db,"promotions",item.id));
+          window.BaliPublicPublish?.queue("promotions");
           if(el("baliPromoId").value===item.id)clear();
           say("Предложение удалено.");
         }catch(error){say("Не удалось удалить: "+(error.code||"ошибка"));}
@@ -308,6 +309,7 @@ if(form&&list&&status){
         Object.assign(payload,{contactTitle,contactLinks,contactEnabled,contactHotspot});
       }
       await setDoc(ref,payload);
+      window.BaliPublicPublish?.queue("promotions");
       clear();saveFeedback=published?"Предложение опубликовано и сохранено в Firebase.":"Черновик сохранён в Firebase.";
       say(saveFeedback);
     }catch(error){
