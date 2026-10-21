@@ -137,3 +137,20 @@ test("Tablet uses mobile-style Home composition and footer navigation",async({pa
  expect(state.nav).not.toBe("none");
  expect(state.pcSidebar).toBe("none");
 });
+
+test("Home poster opens the event description instead of placing text on the image",async({page})=>{
+ await page.goto("/index.html");
+ await page.evaluate(()=>{
+   availableEvents=[{
+     id:"2026-10-30__2",date:"2026-10-30",title:"BALI POSTER DETAIL",
+     description:"Полное описание отображается только после нажатия на афишу.",
+     startTime:"23:00",endTime:"06:00",poster_url:"assets/bali-id-card-readable.svg"
+   }];
+   renderHomeEvents();
+ });
+ await expect(page.locator("#homeEventCarousel .bali-home-open-event")).toHaveCount(1);
+ await page.locator("#homeEventCarousel .bali-home-open-event").first().evaluate(el=>el.click());
+ await expect(page.locator("#baliEventDetailDialog")).toHaveJSProperty("open",true,{timeout:7000});
+ await expect(page.locator("#baliEventDetailDescription"))
+   .toHaveText("Полное описание отображается только после нажатия на афишу.");
+});
