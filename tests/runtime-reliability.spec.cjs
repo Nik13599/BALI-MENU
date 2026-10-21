@@ -31,12 +31,13 @@ async function fixture(page,script){
         export class GoogleAuthProvider{};
         export const signInWithPopup=async()=>{},signInWithRedirect=async()=>{},getRedirectResult=async()=>{};
         export const signOut=async()=>{if(window.__logoutFails)throw {code:'auth/network-request-failed'};await window.__setUser(null);};`,
+      'firebase-functions.js':'export const getFunctions=()=>({}),httpsCallable=()=>async()=>({data:{kinds:[]}});',
       'firebase-firestore.js':`
         export const getFirestore=()=>({}),doc=(_, ...parts)=>({path:parts.join('/')}),collection=(ref,...parts)=>({path:[ref.path,...parts].filter(Boolean).join('/')});
         export const getDoc=ref=>window.__getDoc(ref),serverTimestamp=()=>1;
         export const setDoc=async(ref,data)=>window.__writes.push({path:ref.path,data}),updateDoc=setDoc;
         export const getDocs=ref=>window.__getDocs(ref);
-        export const onSnapshot=(ref,cb)=>{window.__orderWatch=cb;return ()=>{};};
+        export const onSnapshot=(ref,cb)=>{if(ref.path.startsWith('guestWallets/'))window.__walletWatch=cb;else window.__orderWatch=cb;return ()=>{};};
         export const query=ref=>ref,where=()=>({}),limit=()=>({}),writeBatch=()=>({}),runTransaction=()=>{};`
     };
     const body=modules[url.pathname.split('/').at(-1)];
@@ -123,4 +124,29 @@ test('guest and admin load one stylesheet; calendar avoids scanning all events f
     return dates;
   });
   expect(calls).toBeLessThan(2000);
+});
+
+test('wallet waits for profile consent, displays zero counts and ignores a stale subscription',async({page})=>{
+  await fixture(page,'bali-id-bank.js');
+  expect(await page.evaluate(()=>typeof window.__walletWatch)).toBe('undefined');
+  await page.evaluate(()=>{
+    window.__registered=true;
+    window.BaliAuth={isRegistered:()=>window.__registered,getProfile:()=>window.__profile(window.__auth.currentUser.uid)};
+    window.dispatchEvent(new CustomEvent('bali:auth-state',{detail:{registered:true}}));
+  });
+  await expect.poll(()=>page.evaluate(()=>typeof window.__walletWatch)).toBe('function');
+  await expect(page.locator('#baliIdBonusStrip')).toHaveAttribute('hidden','');
+  await page.evaluate(()=>window.__walletWatch(window.__snap({grants:[]})));
+  await expect(page.locator('#baliIdBonusStrip')).not.toHaveAttribute('hidden','');
+  expect(await page.locator('[data-bali-bonus-count]').allTextContents()).toEqual(['0','0','0','0']);
+  await page.evaluate(()=>{
+    window.__oldWallet=window.__walletWatch;
+    window.__registered=false;
+    window.dispatchEvent(new CustomEvent('bali:auth-state',{detail:{registered:false}}));
+    window.__registered=true;
+    window.dispatchEvent(new CustomEvent('bali:auth-state',{detail:{registered:true}}));
+    window.__walletWatch(window.__snap({grants:[{kind:'entry',remaining:2}]}));
+    window.__oldWallet(window.__snap({grants:[{kind:'entry',remaining:99}]}));
+  });
+  await expect(page.locator('[data-bali-bonus-count="entry"]')).toHaveText('2');
 });

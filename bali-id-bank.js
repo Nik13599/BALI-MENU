@@ -39,7 +39,7 @@ function readable(error){
   return "Не удалось связаться с сервером BALI ID. Перевод не подтверждён.";
 }
 const transferDlg=$("baliTransferDialog"),historyDlg=$("baliHistoryDialog");
-let uid=null,walletStop=null,grants=[],recipient=null,selected=new Map();
+let uid=null,walletStop=null,walletReady=false,grants=[],recipient=null,selected=new Map();
 let choicePage=0,stage="lookup",busy=false,historyBusy=false,history=[],cursor=null;
 let requestId=null,run=0;
 const transferList=()=>grants.filter(sendable);
@@ -53,7 +53,7 @@ function renderBalance(){
   host.replaceChildren();
   const wallet=host.closest(".bali-bank-wallet");
   if(wallet)wallet.hidden=true;
-  if(!logged())return;
+  if(!logged()||!walletReady)return;
   const aggregates=new Map();
   for(const grant of grants){
     if(!current(grant))continue;
@@ -304,7 +304,7 @@ $("baliIdHistoryOpen")?.addEventListener("click",()=>{
 });
 $("baliIdHistoryMore")?.addEventListener("click",()=>void historyLoad());
 function authReset(){
-  walletStop?.();walletStop=null;uid=null;grants=[];recipient=null;selected.clear();
+  walletStop?.();walletStop=null;walletReady=false;uid=null;grants=[];recipient=null;selected.clear();
   ++kindsRound;activeKinds=new Set(builtinKinds);names=Object.assign(Object.create(null),builtinNames);
   ++run;requestId=null;busy=false;historyBusy=false;history=[];cursor=null;
   transferDlg?.close();historyDlg?.close();renderBalance();
@@ -324,25 +324,29 @@ async function loadKinds(user){
     if(historyDlg?.open)historyRender();
   }catch(_){/* Standard kinds stay available if the registry cannot be loaded. */}
 }
-onAuthStateChanged(auth,user=>{
+function startWallet(user){
+  if(!user?.emailVerified||!window.BaliAuth?.isRegistered?.()||window.BaliAuth?.getProfile?.()?.uid!==user.uid){authReset();return;}
+  if(uid===user.uid&&walletStop){renderBalance();return;}
   authReset();
-  if(!user?.emailVerified)return;
   uid=user.uid;
+  const round=kindsRound;
   void loadKinds(user);
   walletStop=onSnapshot(doc(db,"guestWallets",user.uid),snapshot=>{
-    if(uid!==user.uid)return;
+    if(uid!==user.uid||round!==kindsRound)return;
     grants=Array.isArray(snapshot.data()?.grants)?snapshot.data().grants:[];
+    walletReady=true;
     renderBalance();
     if(transferDlg?.open&&stage==="choices")renderChoices();
   },()=>{
-    if(uid===user.uid){
-      grants=[];renderBalance();
+    if(uid===user.uid&&round===kindsRound){
+      walletReady=false;grants=[];renderBalance();
       say("baliIdStatus","Не удалось получить остатки привилегий. Повторите попытку позже.");
     }
   });
-});
+}
+onAuthStateChanged(auth,startWallet);
 window.addEventListener("bali:auth-state",event=>{
   if(!event.detail?.registered)authReset();
-  else if(grants.length)renderBalance();
+  else startWallet(auth.currentUser);
 });
 renderBalance();
