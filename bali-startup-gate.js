@@ -61,10 +61,13 @@
     if(typeof path==="string"){received.add(path);reveal();}
   });
   const ready=()=>{
+    if(domReady)return;
     domReady=true;
     document.getElementById("baliStartupRetry")?.addEventListener("click",()=>location.reload());
     reveal();
   };
+  // The document is parse-complete before remote authentication finishes.
+  window.BaliStartupParsed=ready;
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ready,{once:true});
   else ready();
   window.addEventListener("hashchange",reveal);
