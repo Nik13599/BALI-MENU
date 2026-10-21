@@ -62,7 +62,7 @@ onAuthStateChanged(auth,user=>{
 async function toggle(eventId){
   if(!/^\d{4}-\d{2}-\d{2}(?:__(?:2|3))?$/.test(eventId))throw new Error("Некорректный номер мероприятия.");
   const date=eventId.slice(0,10);
-  if(date<todayInMinsk())throw new Error("Прошедшие мероприятия нельзя добавлять в планы.");
+  // Validate against actual event ending time below; overnight events may remain active after midnight.
   if(!window.BaliAuth || !(await window.BaliAuth.requireProfile()))return {loginRequired:true};
   const user=auth.currentUser;
   if(!user?.emailVerified||!user.email)throw new Error("Войдите через Google.");
@@ -75,6 +75,7 @@ async function toggle(eventId){
       const eventSnap=await transaction.get(eventRef);
       const wishSnap=await transaction.get(selectedRef);
       if(!eventSnap.exists())throw new Error("Мероприятие больше не найдено.");
+      if(!wishSnap.exists()&&window.BaliEventLifecycle?.state(eventSnap.data())==="past")throw new Error("Мероприятие уже закончилось.");
       const current=eventSnap.data()?.interestCount??0;
       if(!Number.isSafeInteger(current)||current<0)throw new Error("Некорректный счётчик мероприятия.");
       const removing=wishSnap.exists();

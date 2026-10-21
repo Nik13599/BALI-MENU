@@ -1586,7 +1586,7 @@ assert(shareClient.includes('const actions=card.querySelector(".bali-event-actio
   shareStyles.includes('grid-template-columns:minmax(0,1.32fr) minmax(0,1fr)') &&
   shareStyles.includes('position:static;') &&
   !shareStyles.includes('#eventsGrid .bali-share-trigger{position:absolute') &&
-  html.includes('bali-share.js?v=20261019-4') &&
+  html.includes('bali-share.js?v=20261021-plane1') &&
   html.includes('bali-new-features.css?v=20261019-2'),
   "Calendar Share must sit beside RSVP in the event footer, never overlay the poster");
 assert(shareClient.includes('canvas.width=WIDTH;canvas.height=HEIGHT') &&

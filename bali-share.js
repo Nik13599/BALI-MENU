@@ -21,11 +21,11 @@
   function attach(){
     for(const card of document.querySelectorAll("#eventsGrid .event-card")){
       const actions=card.querySelector(".bali-event-actions");
-      if(!actions||actions.querySelector(".bali-share-trigger"))continue;
+      if(!actions||["past","live"].includes(card.dataset.eventStatus)||actions.querySelector(".bali-share-trigger"))continue;
       const button=document.createElement("button");
       button.type="button";button.className="bali-share-trigger";
       button.setAttribute("aria-label","Создать сторис с афишей "+(card.querySelector("h3")?.textContent||"BALI"));
-      button.textContent="↥ Поделиться";
+      button.innerHTML='<svg class="bali-event-action-icon bali-share-plane" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3 3.7 10.4a1 1 0 0 0 .08 1.86l6.6 2.3 2.3 6.6a1 1 0 0 0 1.86.08L21 3ZM10.4 14.6 21 3"/></svg><span class="bali-event-action-text">Поделиться</span>';
       button.addEventListener("click",event=>{
         event.preventDefault();event.stopPropagation();void start(getData(card));
       });
