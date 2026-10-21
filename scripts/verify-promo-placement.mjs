@@ -4,7 +4,7 @@ import {readFileSync} from "node:fs";
 
 const helper=readFileSync("bali-promo-placement.js","utf8");
 const imported=await import("data:text/javascript;base64,"+Buffer.from(helper).toString("base64"));
-const {PROMO_POSITION_PRESETS,PROMO_POSITION_OPTIONS,promoEditorMode,promoEditorXY,promoStorePlacement}=imported;
+const {PROMO_POSITION_PRESETS,PROMO_POSITION_OPTIONS,promoEditorMode,promoEditorXY,promoStorePlacement,promoPositionStyle}=imported;
 const presets=Object.entries(PROMO_POSITION_PRESETS);
 assert.equal(presets.length,9,"Nine preset locations required");
 assert.equal(PROMO_POSITION_OPTIONS.length,12,"Nine locations + original + hidden + free movement");
@@ -20,6 +20,9 @@ for(const [key,coords] of presets){
 assert.deepEqual(promoStorePlacement("none"),{mode:"none",x:50,y:82},"Hiding CTA must persist");
 assert.equal(promoStorePlacement("original"),null,"Original artwork must not create a new CTA");
 assert.equal(promoEditorMode(undefined),"original","Existing holiday hotspots must remain available");
+assert.equal(promoPositionStyle(promoStorePlacement("top-left")).left,"4%","Left CTA must stay in frame");
+assert.equal(promoPositionStyle(promoStorePlacement("top-right")).right,"4%","Right CTA must stay in frame");
+assert.equal(promoPositionStyle(promoStorePlacement("bottom-right")).lowerRight,true,"Avoid carousel control collision");
 assert.equal(promoEditorMode({mode:"none",x:50,y:82}),"none","Hidden state must round-trip");
 assert.deepEqual(promoStorePlacement("manual",-20,140),{mode:"manual",x:5,y:95},
   "Manual drag coordinates must stay within the existing security limits");
@@ -42,6 +45,8 @@ assert(visual.includes("promoEditorMode"),"Visual editor must restore saved posi
 assert(visual.includes("data-promo-position-stage"),"Visual preview for all devices missing");
 assert(host.includes('const disabled=mode==="none"'),"Hidden CTA not recognized by public carousel");
 assert(host.includes("action.hidden=offer.destination"),"Public hide logic missing");
+assert(host.includes("image.getAttribute(\"src\")!==primary"),"Public renderer should avoid reloading unchanged images");
+assert(visual.includes("previewScheduled"),"Editor drag-preview updates must be coalesced");
 assert(css.includes(".bali-promo-simple-position-stage"),"Position preview styles missing");
 const rules=readFileSync("firestore.rules","utf8");
 assert(rules.includes("data.buttonPlacement.mode in ['none','left','center','right','manual']"),
