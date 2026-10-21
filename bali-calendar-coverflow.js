@@ -34,45 +34,46 @@ function visibleDockTop(){
   if(!dock||getComputedStyle(dock).display==="none")return window.innerHeight;
   return dock.getBoundingClientRect().top;
 }
-function ensurePhoneActionsVisible(){
-  if(!matchMedia("(max-width:767px)").matches||
-     grid.classList.contains("is-actions-lowered"))return;
-  const active=grid.querySelector(".event-card.is-active");
-  const actions=active?.querySelector(".bali-event-actions");
-  if(!actions||!active||section.hidden)return;
-  const excess=Math.ceil(actions.getBoundingClientRect().bottom-(visibleDockTop()-14));
-  if(excess>0&&slideWidth>65){
-    slideWidth=Math.max(65,slideWidth-excess-7);
-    grid.style.setProperty("--bali-event-slide-width",slideWidth+"px");
-    render();
-  }
-}
+/* Mobile balance: Calendar -> equal gap -> square -> equal gap ->
+   buttons -> equal gap -> upper edge of the fixed bottom navigation.
+   Use layout measurements only on resize/open, NOT on animation frames. */
 function measure(){
   const area=grid.getBoundingClientRect();
   if(area.width<30||area.height<30)return;
   const phone=mobile();
   const narrow=matchMedia("(max-width:767px)").matches;
-  // Reserve room for the action row ABOVE the top of the mobile navigation.
-  // The old calculation used area.height-80, ignoring the dock overlay.
-  const action=grid.querySelector(".event-card.is-active .bali-event-actions");
-  const actionsHeight=Math.max(60,Math.ceil(action?.getBoundingClientRect().height||0));
-  const stageVisibleHeight=narrow?
-    Math.max(0,Math.min(area.height,visibleDockTop()-area.top-14)):
-    area.height;
-  const maxPosterHeight=narrow?
-    Math.max(65,Math.min(area.height-80,stageVisibleHeight-actionsHeight-18)):
-    Math.max(100,area.height-(phone?80:76));
-  const width=Math.floor(Math.min(
-    phone?390:500,
-    area.width*(narrow?.88:phone?.76:.60),
-    maxPosterHeight
-  ));
+  let width;
+  if(narrow){
+    const panel=document.getElementById("baliCalendarPanel");
+    const calendarBottom=panel?.getBoundingClientRect().bottom??area.top;
+    const topEdge=Math.max(calendarBottom,area.top);
+    // Also honour the stage clipping boundary, not just the floating dock.
+    const bottomEdge=Math.min(visibleDockTop()-8,area.bottom-3);
+    const available=Math.max(0,bottomEdge-topEdge);
+    const actions=grid.querySelector(".event-card.is-active .bali-event-actions");
+    // Bounding box excludes CSS margin, so this is the buttons' real height.
+    const actionsHeight=Math.max(39,Math.ceil(actions?.getBoundingClientRect().height||45));
+    const targetGap=clamp(available*.05,10,22);
+    width=Math.floor(Math.max(48,Math.min(390,area.width*.88,
+      available-actionsHeight-3*targetGap)));
+    const evenGap=Math.max(5,(available-width-actionsHeight)/3);
+    const offset=Math.max(0,topEdge+evenGap-area.top);
+    grid.style.setProperty("--bali-phone-poster-top",offset.toFixed(1)+"px");
+    grid.style.setProperty("--bali-phone-even-gap",evenGap.toFixed(1)+"px");
+  }else{
+    width=Math.floor(Math.min(
+      phone?390:500,
+      area.width*(phone?.76:.60),
+      Math.max(100,area.height-(phone?80:76))
+    ));
+    grid.style.removeProperty("--bali-phone-poster-top");
+    grid.style.removeProperty("--bali-phone-even-gap");
+  }
   if(slideWidth!==width){
     slideWidth=width;
     grid.style.setProperty("--bali-event-slide-width",width+"px");
   }
   render();
-  if(narrow)requestAnimationFrame(ensurePhoneActionsVisible);
 }
 function render(){
   const entries=cards(),count=entries.length;
@@ -163,14 +164,10 @@ function animateTo(next,smooth=true){
     const progress=clamp((now-started)/duration,0,1);
     position=initial+delta*ease(progress);
     render();
-    // Begin raising once the new poster becomes the central card (55% of
-    // travel); the fast CSS lift finishes well BEFORE the poster stops.
-    if(progress>=.55)raiseActions();
+    // Keep the buttons hidden for the whole stage travel; reveal them ONCE
+    // after the new central card has settled. No mid-animation style resets.
     if(progress<1)running.raf=requestAnimationFrame(tick);
-    else{position=next;animation=null;render();raiseActions();
-      if(matchMedia("(max-width:767px)").matches)
-        requestAnimationFrame(ensurePhoneActionsVisible);
-    }
+    else{position=next;animation=null;render();raiseActions();}
   };
   running.raf=requestAnimationFrame(tick);
 }
