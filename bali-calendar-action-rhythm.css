@@ -1,0 +1,58 @@
+/* BALI calendar — unified action motion and secure phone/tablet positioning.
+   Loaded after the bundled calendar styles to override bottom-aligned controls.
+   The poster sizes, outlines and stage depth remain unchanged. */
+
+/* Desktop: same fall-and-rise animation as the existing phone swipe. */
+@media (min-width:1180px) {
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection
+  #eventsGrid>.event-card.is-active .bali-event-actions {
+    transform:translate3d(0,0,0)!important;
+    opacity:1!important;
+    transition:transform .085s cubic-bezier(.2,.95,.3,1),opacity .065s linear!important;
+    will-change:transform,opacity;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection
+  #eventsGrid.is-actions-lowered>.event-card.is-active .bali-event-actions {
+    transform:translate3d(0,clamp(34px,6dvh,64px),0)!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    transition:transform .11s ease-in,opacity .09s linear!important;
+  }
+}
+
+/* Touch layouts: do not pin the action row at the stage floor.
+   Attach it directly below the square poster, safely above the fixed dock. */
+@media (max-width:1179px) {
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection
+  #eventsGrid>.event-card.is-active>.event-card-body {
+    display:block!important;
+    flex:0 0 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    align-self:stretch!important;
+    justify-content:flex-start!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection
+  #eventsGrid>.event-card .bali-event-actions {
+    box-sizing:border-box!important;
+    flex:0 0 auto!important;
+    align-self:stretch!important;
+    margin:0!important;
+    margin-top:0!important;
+    margin-bottom:0!important;
+    padding:clamp(3px,.65dvh,7px) 0 0!important;
+  }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection
+  #eventsGrid>.event-card.is-active .bali-event-actions,
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection
+  #eventsGrid.is-actions-lowered>.event-card.is-active .bali-event-actions {
+    transition:none!important;
+    will-change:auto!important;
+  }
+}
