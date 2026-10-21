@@ -425,6 +425,7 @@ function renderInspector(){
  iconBox.querySelector("[data-builder-icon-size]").value=item?.props?.iconSize||24;
  const hero=node?.closest?.(".bali-pc-hero");
  const isManaged=Boolean(hero&&selection?.scope==="main");
+ view.publish.textContent=isManaged?"Опубликовать рекламный слайд":"Опубликовать на сайте";
  const promo=inspector.querySelector("#baliBuilderManagedPromo");
  if(promo){
   inspector.classList.toggle("bali-builder-promo-mode",isManaged);
@@ -734,7 +735,13 @@ function init(){
  });
  view.mode.addEventListener("click",()=>toggle(!enabled));
  view.draft.addEventListener("click",()=>save(false));
- view.publish.addEventListener("click",()=>save(true));
+ view.publish.addEventListener("click",()=>{
+  if(selection?.scope==="main"&&liveNode()?.closest?.(".bali-pc-hero")){
+   promoEditor?.root.querySelector("[data-promo-save]")?.click();
+   return;
+  }
+  save(true);
+ });
  view.restore.addEventListener("click",restore);
  view.undo.addEventListener("click",doUndo);view.redo.addEventListener("click",doRedo);
  view.copy.addEventListener("click",copyDevice);
