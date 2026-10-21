@@ -1,0 +1,204 @@
+/* BALI EVENT ARTWORK 1:1 — guest UI only.
+   Visual rules are shared by Home/Calendar, across desktop/tablet/phone.
+   Event metadata stays in the accessible detail dialog, not over artwork. */
+
+/* HOME — 3 squares for phone/tablet, 5 for desktop. */
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel.bali-home-events{
+ --bali-home-square-gap:clamp(6px,1.15vw,12px);
+ display:flex!important;
+ align-items:center!important;
+ gap:var(--bali-home-square-gap)!important;
+ overflow-x:auto!important;
+ overflow-y:hidden!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel>.bali-home-event-card{
+ box-sizing:border-box!important;
+ position:relative!important;
+ display:block!important;
+ flex:0 0 min(13.3vw,25dvh,215px)!important;
+ width:min(13.3vw,25dvh,215px)!important;
+ height:auto!important;
+ min-height:0!important;
+ max-height:none!important;
+ max-width:none!important;
+ aspect-ratio:1/1!important;
+ align-self:center!important;
+ isolation:isolate!important;
+ padding:0!important;
+ margin:0!important;
+ overflow:hidden!important;
+ border:1px solid rgba(210,237,200,.22)!important;
+ border-radius:clamp(6px,.7vw,11px)!important;
+ background:#070a08!important;
+ box-shadow:0 6px 17px rgba(0,0,0,.22)!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel>.bali-home-event-card>.bali-home-poster-wrap{
+ box-sizing:border-box!important;
+ position:absolute!important;
+ display:block!important;
+ inset:0!important;
+ width:100%!important;height:100%!important;
+ max-height:none!important;
+ flex:none!important;
+ aspect-ratio:1/1!important;
+ overflow:hidden!important;
+ padding:0!important;margin:0!important;
+ border:0!important;
+ border-radius:inherit!important;
+ background:#050807!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel>.bali-home-event-card .bali-home-poster-wrap>img{
+ position:absolute!important;inset:0!important;
+ display:block!important;
+ width:100%!important;height:100%!important;
+ object-fit:cover!important;object-position:center center!important;
+ aspect-ratio:1/1!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-event-info,
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-date-badge,
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-poster-wrap::after{
+ display:none!important;
+ content:none!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-open-event{
+ position:absolute!important;inset:0!important;
+ z-index:3!important;
+ width:100%!important;height:100%!important;
+ border:0!important;background:transparent!important;
+ color:transparent!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-heart{
+ box-sizing:border-box!important;
+ position:absolute!important;
+ top:1px!important;right:1px!important;
+ z-index:5!important;
+ display:grid!important;place-items:center!important;
+ flex:none!important;
+ width:26px!important;height:26px!important;
+ min-width:26px!important;min-height:26px!important;
+ max-width:26px!important;max-height:26px!important;
+ margin:0!important;padding:5px!important;
+ border:0!important;outline:0!important;border-radius:0!important;
+ background:transparent!important;background-color:transparent!important;
+ background-image:none!important;
+ box-shadow:none!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ color:#ffffff!important;
+ cursor:pointer!important;
+ filter:drop-shadow(0 1px 3px rgba(0,0,0,.92));
+}
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-heart>svg{
+ display:block!important;
+ width:16px!important;height:16px!important;
+ stroke-width:2.3px!important;
+ fill:transparent!important;stroke:currentColor!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-heart.is-liked{
+ color:#fa4265!important;background:transparent!important;border:0!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-heart.is-liked>svg{
+ fill:currentColor!important;stroke:currentColor!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-heart:focus-visible{
+ outline:2px solid #b9ff51!important;outline-offset:0!important;border-radius:4px!important;
+}
+/* When no future events exist, identical square SECRET tiles fill the row.
+   SECRET is part of the placeholder artwork, never a card caption. */
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel>.bali-home-event-placeholder .bali-home-placeholder-poster{
+ background:#000!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel>.bali-home-event-placeholder .bali-home-placeholder-overlay{
+ position:absolute!important;inset:0!important;
+ display:flex!important;flex-direction:column!important;
+ align-items:center!important;justify-content:center!important;
+ padding:4px!important;margin:0!important;gap:0!important;
+ background:transparent!important;text-align:center!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel>.bali-home-event-placeholder .bali-home-placeholder-message{
+ position:static!important;display:block!important;
+ font:850 clamp(13px,2.1vw,28px)/1.05 Manrope,Inter,sans-serif!important;
+ letter-spacing:.04em!important;color:#eaffd4!important;
+ text-shadow:0 3px 10px rgba(0,0,0,.7)!important;
+ transform:none!important;
+}
+@media(max-width:1179px){
+ :root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel.bali-home-events{
+  --bali-home-square-gap:clamp(6px,1.7vw,12px);
+  justify-content:flex-start!important;
+  align-items:center!important;
+ }
+ :root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel>.bali-home-event-card{
+  flex:0 0 min(calc((100% - 2*var(--bali-home-square-gap))/3),25dvh)!important;
+  width:min(calc((100% - 2*var(--bali-home-square-gap))/3),25dvh)!important;
+  aspect-ratio:1/1!important;height:auto!important;max-height:none!important;
+  align-self:center!important;
+ }
+ :root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel>.bali-home-event-placeholder .bali-home-placeholder-message{
+  font-size:clamp(13px,3vw,24px)!important;
+ }
+}
+@media(max-width:450px){
+ :root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-heart{
+  width:23px!important;height:23px!important;min-width:23px!important;min-height:23px!important;
+  max-width:23px!important;max-height:23px!important;padding:4px!important;
+ }
+ :root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel .bali-home-heart>svg{
+  width:15px!important;height:15px!important;
+ }
+}
+
+/* CALENDAR — one square artwork + action buttons ONLY. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.bali-event-poster-wrap{
+ box-sizing:border-box!important;
+ position:relative!important;
+ display:block!important;
+ width:100%!important;
+ height:auto!important;
+ flex:0 0 auto!important;
+ aspect-ratio:1/1!important;
+ max-height:none!important;
+ overflow:hidden!important;
+ border-radius:5px!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-poster{
+ position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;
+ aspect-ratio:1/1!important;
+ object-fit:cover!important;object-position:center center!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-info,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-date-badge,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-preorder-badge{
+ display:none!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card>.event-card-body{
+ box-sizing:border-box!important;
+ display:block!important;
+ height:auto!important;min-height:0!important;
+ width:100%!important;
+ background:transparent!important;
+ padding:0!important;margin:0!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-actions{
+ display:flex!important;
+ flex-direction:row!important;
+ align-items:center!important;
+ justify-content:space-between!important;
+ gap:clamp(5px,1.1vw,12px)!important;
+ width:100%!important;
+ margin:0!important;
+ padding:clamp(8px,1.35dvh,13px) 0 0!important;
+ border:0!important;background:transparent!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #baliEventDetailDialog .bali-event-detail-image{
+ aspect-ratio:1/1!important;object-fit:contain!important;
+}
+/* Tablet calendar follows the same stacked/mobile calendar hierarchy. */
+@media(min-width:768px) and (max-width:1179px){
+ :root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-event-calendar-layout{
+  flex-direction:column!important;
+ }
+ :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid{
+  --bali-event-slide-width:min(60vw,45dvh,390px);
+ }
+}
