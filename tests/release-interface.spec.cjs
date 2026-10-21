@@ -55,6 +55,7 @@ test('custom event dot colours and saved plans survive calendar navigation',asyn
  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('bali:events',{detail:{events:[
   {id:'2026-10-22',date:'2026-10-22',title:'BALI PARTY',startTime:'23:00',endTime:'06:00',dotColor:'#ff00aa'}
  ]}})));
+ await day(page,'2026-10-24').click(); // Select a different day to inspect the custom inactive dot.
  const future=day(page,'2026-10-22');
  // Move the selected day away: active dates intentionally use dark dots.
  await page.evaluate(()=>document.querySelector('#baliCalendarDays [data-date="2026-10-24"]').click());
