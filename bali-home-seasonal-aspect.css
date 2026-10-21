@@ -1,12 +1,12 @@
 /* BALI 21.10 | HOME: mobile posters gently higher; seasonal booking art same proportions everywhere.
    Seasonal only: normal admin-configured slides are not re-sized.
-   Reference after the small phone height increase: width : height = 5 : 3. */
+   Reference after the small phone height increase: width : height = 1024 : 353. */
 @media(max-width:767px){
   /* Give the new-year campaign its natural ratio and use the saved vertical
      space to start the poster strip a little earlier. The layout stays fixed. */
   :root[data-bali-theme] body.bali-guest-theme #homeSection
     .bali-home-inner:has(.bali-pc-hero.is-seasonal){
-    grid-template-rows:minmax(0,.8fr) minmax(0,1.08fr) auto auto!important;
+    grid-template-rows:minmax(0,.88fr) minmax(0,1.12fr) auto auto!important;
   }
   :root[data-bali-theme] body.bali-guest-theme #homeSection
     #homeEventCarousel.bali-home-events{
@@ -28,7 +28,7 @@
     margin:0!important;
   }
 }
-/* On tablet and PC, fit the SAME 5:3 rectangle within the allocated
+/* On tablet and PC, fit the SAME 1024:353 rectangle within the allocated
    promotion track instead of distorting it or changing the rest of the grid.
    Container query units make both height and width honor the exact ratio. */
 @media(min-width:768px){
@@ -42,7 +42,7 @@
     align-self:center!important;
     justify-self:center!important;
     width:auto!important;
-    height:min(100%,60cqw)!important;
+    height:min(100%,34.47265625cqw)!important;
     min-height:0!important;
     max-width:100%!important;
     max-height:100%!important;
@@ -59,5 +59,5 @@
   height:100%!important;
 }
 
-/* Restore the taller original promo carousel instead of the recent flattened 11:5 banner. */
-:root[data-bali-theme] body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal{aspect-ratio:5 / 3!important;}
+/* Match the exact uploaded campaign reference image: 2048 x 706 (1024:353). */
+:root[data-bali-theme] body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal{aspect-ratio:1024 / 353!important;}
