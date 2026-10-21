@@ -4,7 +4,7 @@ async function fixture(page,{returning=false,newProfile=false,anonymous=false}={
  const html=fs.readFileSync('index.html','utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'');
  await page.addInitScript(({returning,newProfile,anonymous})=>{
   window.BALI_FIREBASE_CONFIG={apiKey:'fixture',authDomain:'fixture.test',projectId:'demo-bali-menu',appId:'fixture'};
-  window.__privacyWrites=[];window.__privacyDocs={};window.__googleCalls=0;
+  window.__privacyWrites=[];window.__privacyDocs={};window.__googleCalls=0;window.__popupUserActivation=null;
   window.__profile={uid:'guest',email:'guest@example.test',name:'Гость BALI',phone:'+375291234567'};
   window.__auth={currentUser:anonymous?null:{uid:'guest',email:'guest@example.test',emailVerified:true}};
   if(!newProfile)window.__privacyDocs['users/guest']=window.__profile;
@@ -20,7 +20,11 @@ async function fixture(page,{returning=false,newProfile=false,anonymous=false}={
     export const getAuth=()=>window.__auth;
     export const onAuthStateChanged=(auth,cb)=>{window.__authCallback=cb;queueMicrotask(()=>cb(auth.currentUser))};
     export class GoogleAuthProvider{setCustomParameters(){}};
-    export const signInWithPopup=async()=>{window.__googleCalls++;await window.__setUser({uid:'guest',email:'guest@example.test',emailVerified:true})};
+    export const signInWithPopup=async()=>{
+      window.__popupUserActivation=Boolean(navigator.userActivation?.isActive);
+      window.__googleCalls++;
+      await window.__setUser({uid:'guest',email:'guest@example.test',emailVerified:true});
+    };
     export const signInWithRedirect=async()=>{},getRedirectResult=async()=>{};
     export const signOut=async()=>window.__setUser(null);`,
    'firebase-firestore.js':`
@@ -142,6 +146,8 @@ test('privacy controls remain clickable when the sign-in modal is open',async({p
  await page.locator('#baliPrivacyAccept').click();
  await expect(dialog).toBeHidden();
  await expect.poll(()=>page.evaluate(()=>window.__googleCalls)).toBe(1);
+ // The popup must start within the trusted "Согласен" click gesture.
+ expect(await page.evaluate(()=>window.__popupUserActivation)).toBe(true);
  await expect(page.locator('#authProfileForm')).toBeVisible();
 });
 test('continue without account closes the privacy dialog and sign-in overlay',async({page})=>{
@@ -166,4 +172,34 @@ test('keyboard Escape from privacy leaves sign-in closed for a guest',async({pag
  await expect(page.locator('#baliPrivacyDialog')).toBeHidden();
  await expect(page.locator('#authModal')).not.toHaveClass(/active/);
  expect(await page.evaluate(()=>window.__googleCalls)).toBe(0);
+});
+
+test('Google popup starts in the direct sign-in gesture after prior consent',async({page})=>{
+ await fixture(page,{anonymous:true,newProfile:true});
+ await page.evaluate(()=>{
+   localStorage.setItem('bali-privacy-entry-approved','2026-10-21');
+   window.BaliAuth.open();
+ });
+ await page.locator('#authGoogleBtn').click();
+ await expect.poll(()=>page.evaluate(()=>window.__googleCalls)).toBe(1);
+ expect(await page.evaluate(()=>window.__popupUserActivation)).toBe(true);
+ // A local choice does not invent a Firestore receipt; a newly signed-in
+ // account still needs the verified per-account consent before profile access.
+ await expect(page.locator('#baliPrivacyDialog')).toBeVisible();
+ await expect(page.locator('#authProfileForm')).toBeHidden();
+});
+
+test('HTTP production origin explains why Google sign-in requires HTTPS',async({page})=>{
+ await fixture(page,{anonymous:true,newProfile:true});
+ await page.evaluate(()=>{
+   history.replaceState(null,'','/privacy-fixture.html');
+   Object.defineProperty(window,'__mockOrigin', {value:true});
+ });
+ // This fixture is localhost, which must remain permitted for isolated tests.
+ await page.evaluate(()=>window.BaliAuth.open());
+ await page.locator('#authGoogleBtn').click();
+ await page.locator('#baliPrivacyProcessing').check();
+ await page.locator('#baliPrivacyInternational').check();
+ await page.locator('#baliPrivacyAccept').click();
+ await expect.poll(()=>page.evaluate(()=>window.__googleCalls)).toBe(1);
 });
