@@ -546,22 +546,15 @@ function renderHomeEvents() {
     const preserveScroll=track.dataset.homeView==="all";
     track.dataset.homeView="all";
     const today=minskDateToday();
-    // Five event slots are filled ONLY on the PC HOME preview; the complete
-    // calendar below never receives these promotional placeholders.
-    const isPcHome=window.matchMedia("(min-width:1180px)").matches;
+    // SECRET slots are part of the homepage at every device width.
+    // Past events must never prevent the upcoming-only row from displaying SECRET.
+    const homeSlots=window.matchMedia("(min-width:1180px)").matches?5:3;
     const upcoming=availableEvents
-        .filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date||"")&&e.date>=today)
+        .filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date||"")&&e.date>=today&&eventStatus(e)!=="past")
         .sort((a,b)=>a.date.localeCompare(b.date))
         // The FULL events calendar remains unlimited; only the homepage is capped.
-        .slice(0,window.matchMedia("(max-width:767px)").matches?3:5);
+        .slice(0,homeSlots);
     track.replaceChildren();
-    if(!upcoming.length&&!isPcHome){
-        const p=document.createElement("p");
-        p.className="bali-home-event-empty";
-        p.textContent="Афиши ближайших мероприятий пока не опубликованы.";
-        track.append(p);
-        return;
-    }
     for(const event of upcoming){
         // The homepage visually matches the square-poster event cards, without
         // the two CTA buttons. The heart uses the exact existing RSVP transaction.
@@ -623,8 +616,15 @@ function renderHomeEvents() {
             showOnlyPlannedEvents=false;
             navigateGuestPage("events");
             requestAnimationFrame(()=>{
-                const target=document.querySelector('#eventsGrid .event-card[data-event-date="'+event.date+'"]');
-                if(target)centerEventCard(document.getElementById("eventsGrid"),target,true);
+                const eventId=event.id||event.date;
+                const target=[...document.querySelectorAll("#eventsGrid .event-card")]
+                    .find(card=>card.dataset.eventId===eventId);
+                if(target){
+                    centerEventCard(document.getElementById("eventsGrid"),target,true);
+                    // The description lives in the event-detail dialog, not
+                    // in captions on the poster or in the homepage row.
+                    requestAnimationFrame(()=>target.querySelector(".bali-event-poster-wrap")?.click());
+                }
             });
         });
 
@@ -658,15 +658,15 @@ function renderHomeEvents() {
         heart.title=guestInterestDates.has(event.id||event.date)?"Убрать из моих планов":"Хочу пойти";
         heart.disabled=pendingInterestDates.has(event.id||event.date);
     }
-    // Fill only vacant PC HOME slots. These are decorative announcements:
-    // no fake date, RSVP heart, event link, or calendar record is created.
-    if(isPcHome){
+    // Fill unused slots on phone, tablet and desktop with the same
+    // administrator-designed SECRET squares. Never create fake events.
+    {
         const settings=window.BaliHomePlaceholder||{
             posterTitle:"SECRET",kicker:"SECRET",
             footerTitle:"СКОРО В BALI",footerSubtitle:"Совсем скоро узнаете",
             imageUrl:"",accentColor:"#b9ff51",backgroundColor:"#12171c"
         };
-        const missing=Math.max(0,5-upcoming.length);
+        const missing=Math.max(0,homeSlots-upcoming.length);
         for(let i=0;i<missing;i++){
             const card=document.createElement("article");
             card.className="bali-home-event-card bali-home-event-placeholder";
@@ -714,11 +714,7 @@ function renderHomeEvents() {
     }
 }
 
-// Switch between three phone posters and five tablet/desktop posters
-// when the browser crosses the responsive breakpoint.
-window.matchMedia("(max-width:767px)").addEventListener("change",()=>{
-    if(document.body.dataset.baliPage==="home")renderHomeEvents();
-});
+// Switch between three compact slots and five desktop slots.
 window.matchMedia("(min-width:1180px)").addEventListener("change",()=>{
     if(document.body.dataset.baliPage==="home")renderHomeEvents();
 });
