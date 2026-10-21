@@ -1788,9 +1788,11 @@ async function handleCheckout(e) {
 
     if (result.success) {
         // Show success modal
-        elements.displayOrderId.textContent = result.order_number
-            ? String(result.order_number).padStart(2,'0')
-            : result.order_id;
+        elements.displayOrderId.textContent =
+            (result.event_title||selectedEvent.title)+' №'+
+            (result.order_number||result.order_id)+
+            (result.booking_id?' · ID бронирования '+result.booking_id:'')+
+            (result.table_number?' · Столик '+result.table_number:'');
 
         // Store order ID for tracking
         try { localStorage.setItem('last_order_id', result.order_id); } catch (_) {}
@@ -1875,13 +1877,15 @@ function renderMyOrders() {
         const card = document.createElement('article');
         card.className='bali-order-card';
         const head = document.createElement('h4');
-        head.textContent='№ '+(Number.isInteger(order.orderNumber)
-            ? String(order.orderNumber).padStart(2,'0') : order.id)
-            +' · '+(statusText[order.status]||order.status);
-        const meta = document.createElement('p');
         const eventTitle=order.eventTitle ||
             availableEvents.find(e=>(e.id||e.date)===(order.eventId||order.eventDate))?.title ||
             'Название мероприятия не сохранено';
+        head.textContent=eventTitle+' №'+
+            (Number.isInteger(order.orderNumber)?order.orderNumber:order.id)+
+            (order.bookingId?' · ID бронирования '+order.bookingId:'')+
+            (order.tableNumber?' · Столик '+order.tableNumber:'')+
+            ' · '+(statusText[order.status]||order.status);
+        const meta = document.createElement('p');
         meta.textContent=order.eventDate+' · '+eventTitle+' · '+
             (order.tableNumber?'Столик '+order.tableNumber:'ID '+order.bookingId);
         const items = document.createElement('ul');

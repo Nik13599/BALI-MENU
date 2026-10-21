@@ -4,16 +4,20 @@
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBatch,
-  serverTimestamp,runTransaction,query,limit,orderBy} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+  serverTimestamp,runTransaction,query,limit,orderBy,where} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=false,orders=[],catalog=[];
-let events=new Map();
+let events=new Map(),dateOrders=[],loadedDate="",unsubDateOrders=null,dateRevision=0;
 let editOrder=null,editLines=[],originalIds=new Set();
 const statuses={pending:"Ожидает подтверждения",confirmed:"Подтверждён",completed:"Выполнен",cancelled:"Отменён"};
 const fmt=n=>Number(n||0).toFixed(2)+" BYN";
-const orderLabel = o => Number.isInteger(o.orderNumber)
-  ? String(o.orderNumber).padStart(2,"0") : o.id;
+const orderLabel = o => {
+  const number = Number.isInteger(o.orderNumber) ? String(o.orderNumber) : o.id;
+  const reference=[o.bookingId&&"ID бронирования "+o.bookingId,
+    o.tableNumber&&"Столик "+o.tableNumber].filter(Boolean).join(" · ");
+  return eventTitle(o)+" №"+number+(reference?" · "+reference:"");
+};
 const setStatus=text=>{$("ordersAdminStatus").textContent=text;};
 const eventTitle=o=>o.eventTitle||events.get(o.eventId||o.eventDate)?.title||"Название мероприятия не сохранено";
 function node(tag,text="",cls=""){
@@ -35,7 +39,7 @@ function printOrder(o){
   const area=$("orderPrintSheet");
   area.replaceChildren();
   for(const [tag,line] of [
-    ["h1","BALI — ПРЕДЗАКАЗ"],["h2","№ "+orderLabel(o)],
+    ["h1","BALI — ПРЕДЗАКАЗ"],["h2",orderLabel(o)],
     ["p","Дата: "+o.eventDate+" · Мероприятие: "+eventTitle(o)],
     ["p","Статус: "+(statuses[o.status]||o.status)],
     ["p","Столик: "+(o.tableNumber||"—")+" · Бронь: "+(o.bookingId||"—")],
@@ -59,7 +63,7 @@ function printOrder(o){
 window.addEventListener("afterprint",()=>{$("orderPrintSheet").hidden=true;});
 async function setOrderStatus(o,status) {
   ensureAdmin();
-  if(!confirm("Изменить статус заказа № "+orderLabel(o)+" на «"+statuses[status]+"»?"))return;
+  if(!confirm("Изменить статус заказа "+orderLabel(o)+" на «"+statuses[status]+"»?"))return;
   setStatus("Сохраняем статус...");
   try {
     await updateDoc(doc(db,"orders",o.id),{status,updatedAt:serverTimestamp()});
@@ -69,8 +73,8 @@ async function setOrderStatus(o,status) {
 async function archiveOrder(o,archive=true) {
   ensureAdmin();
   if(!confirm(archive
-    ?"Убрать заказ № "+orderLabel(o)+" в архив? Заказ отменится, но история гостя сохранится."
-    :"Вернуть заказ № "+orderLabel(o)+" из архива? Его статус останется «Отменён»."))return;
+    ?"Убрать заказ "+orderLabel(o)+" в архив? Заказ отменится, но история гостя сохранится."
+    :"Вернуть заказ "+orderLabel(o)+" из архива? Его статус останется «Отменён»."))return;
   try {
     await updateDoc(doc(db,"orders",o.id),
       archive?{archived:true,status:"cancelled",updatedAt:serverTimestamp()}
@@ -80,15 +84,43 @@ async function archiveOrder(o,archive=true) {
 }
 function renderOrders(){
   const container=$("ordersAdminList"),date=$("ordersDateFilter").value;
+  const selectedEvent=$("ordersEventFilter").value;
   const showArchive=$("showArchivedOrders")?.checked===true;
   container.replaceChildren();
-  const shown=orders.filter(o=>(!date||o.eventDate===date)&&(showArchive||!o.archived));
+  const summary=$("ordersDishSummary");
+  summary.replaceChildren();
+  summary.hidden=!(date&&selectedEvent);
+  if(date&&loadedDate!==date){
+    container.append(node("p","Загружаем все предзаказы выбранной даты..."));return;
+  }
+  const source=date?dateOrders:orders;
+  const shown=source.filter(o=>(!date||o.eventDate===date)&&
+    (!selectedEvent||(o.eventId||o.eventDate)===selectedEvent)&&
+    (showArchive||!o.archived)).sort((a,b)=>
+      b.eventDate.localeCompare(a.eventDate)||
+      eventTitle(a).localeCompare(eventTitle(b),"ru")||
+      (Number(a.orderNumber)||0)-(Number(b.orderNumber)||0));
+  if(date&&selectedEvent){
+    const live=shown.filter(o=>!o.archived&&o.status!=="cancelled");
+    const tally=new Map();
+    for(const o of live)for(const item of o.items){
+      const key=String(item.id)+"|"+item.name;
+      const record=tally.get(key)||{name:item.name,quantity:0};
+      record.quantity+=Number(item.quantity)||0;
+      tally.set(key,record);
+    }
+    const count=[...tally.values()].reduce((sum,item)=>sum+item.quantity,0);
+    summary.append(node("h3","Для кухни · "+live.length+" активных заказов · "+count+" порций"));
+    for(const item of [...tally.values()].sort((a,b)=>a.name.localeCompare(b.name,"ru")))
+      summary.append(node("p",item.name+" × "+item.quantity,"admin-line-item"));
+    if(!tally.size)summary.append(node("p","Активных блюд пока нет."));
+  }
   if(!shown.length){
     container.append(node("p","По этим условиям заказов пока нет."));return;
   }
   for(const o of shown){
     const card=node("article","","admin-order-card");
-    card.append(node("h3","№ "+orderLabel(o)+" · "+statuses[o.status]+(o.archived?" · Архив":"")));
+    card.append(node("h3",orderLabel(o)+" · "+(statuses[o.status]||o.status)+(o.archived?" · Архив":"")));
     card.append(node("p",o.eventDate+" · "+eventTitle(o)));
     card.append(node("p",o.tableNumber?"Столик "+o.tableNumber:"Бронь "+o.bookingId));
     card.append(node("p",o.customerName+" · "+o.customerPhone+" · "+o.email));
@@ -117,10 +149,49 @@ function renderOrders(){
 function renderDates(){
   const el=$("ordersDateFilter"),old=el.value;
   el.replaceChildren(new Option("Все даты",""));
-  for(const date of [...new Set(orders.map(x=>x.eventDate))].sort())el.add(new Option(date,date));
+  const dates=[...new Set([...orders.map(x=>x.eventDate),
+    ...[...events.values()].map(x=>x.date)])].filter(Boolean).sort().reverse();
+  for(const date of dates)el.add(new Option(date,date));
   if([...el.options].some(x=>x.value===old))el.value=old;
+  renderEventFilter();
 }
-$("ordersDateFilter").addEventListener("change",renderOrders);
+function renderEventFilter(){
+  const select=$("ordersEventFilter"),date=$("ordersDateFilter").value,old=select.value;
+  select.replaceChildren(new Option("Все мероприятия",""));
+  const found=new Map();
+  for(const [id,event] of events)if(!date||event.date===date)found.set(id,event.title);
+  for(const o of [...orders,...dateOrders])
+    if(!date||o.eventDate===date)found.set(o.eventId||o.eventDate,eventTitle(o));
+  for(const [id,title] of [...found].sort((a,b)=>a[1].localeCompare(b[1],"ru")))
+    select.add(new Option(title,id));
+  if([...select.options].some(x=>x.value===old))select.value=old;
+  select.disabled=!date;
+  const canExport=Boolean(date&&select.value);
+  $("exportEventOrders").disabled=!canExport;
+  $("exportEventDishes").disabled=!canExport;
+}
+function watchDateOrders(){
+  unsubDateOrders?.();unsubDateOrders=null;
+  const date=$("ordersDateFilter").value,revision=++dateRevision;
+  dateOrders=[];loadedDate="";
+  if(!date){renderEventFilter();renderOrders();return;}
+  renderOrders();
+  unsubDateOrders=onSnapshot(query(collection(db,"orders"),where("eventDate","==",date)),async snap=>{
+    try{
+      const prepared=await Promise.all(snap.docs.map(async row=>{
+        const lines=await getDocs(collection(row.ref,"items"));
+        const items=lines.docs.map(x=>x.data());
+        return {id:row.id,...row.data(),items,total:total(items)};
+      }));
+      if(revision!==dateRevision)return;
+      dateOrders=prepared;loadedDate=date;
+      renderEventFilter();renderOrders();
+      setStatus("За "+date+" загружены все "+prepared.length+" предзаказов.");
+    }catch(e){if(revision===dateRevision)setStatus("Ошибка загрузки даты: "+(e.code||e.message));}
+  },e=>setStatus("Ошибка списка даты: "+(e.code||e.message)));
+}
+$("ordersDateFilter").addEventListener("change",watchDateOrders);
+$("ordersEventFilter").addEventListener("change",()=>{renderEventFilter();renderOrders();});
 $("showArchivedOrders")?.addEventListener("change",renderOrders);
 function fillOrderEventOptions(preferredId=""){
   const select=$("editOrderEvent"),date=$("editOrderDate").value;
@@ -200,7 +271,7 @@ async function openEditor(id){
     editOrder=o;
     editLines=o.items.map(x=>({...x}));
     originalIds=new Set(o.items.map(x=>String(x.id)));
-    $("orderEditTitle").textContent="Заказ № "+orderLabel(o);
+    $("orderEditTitle").textContent="Заказ "+orderLabel(o);
     $("editOrderDate").value=o.eventDate;
     fillOrderEventOptions(o.eventId||o.eventDate);
     $("editOrderStatus").value=o.status;
@@ -269,16 +340,16 @@ $("orderEditForm").addEventListener("submit",async event=>{
       line.unitPrice=data.price;
     }
     const present=new Set(editLines.map(x=>String(x.id)));
-    const dateChanged=eventDate!==fresh.data().eventDate;
+    const eventChanged=eventId!==(fresh.data().eventId||fresh.data().eventDate);
     let assignedNumber=null;
-    if(dateChanged) {
-      const counterRef=doc(db,"orderCounters",eventDate);
-      // Атомарно: новая дата означает новый порядковый номер этой даты.
+    if(eventChanged) {
+      const counterRef=doc(db,"orderCounters",eventId);
+      // Новый номер выдаётся при смене мероприятия даже внутри той же даты.
       assignedNumber=await runTransaction(db,async tx=>{
         const latest=await tx.get(ref);
         const counter=await tx.get(counterRef);
         if(!latest.exists() || latest.data().archived
-            || latest.data().eventDate===eventDate
+            || (latest.data().eventId||latest.data().eventDate)===eventId
             || (oldTimestamp && latest.data().updatedAt?.toMillis?.()!==oldTimestamp))
           throw new Error("Заказ изменился. Откройте его заново.");
         const next=(counter.exists()?counter.data().count:0)+1;
@@ -303,7 +374,7 @@ $("orderEditForm").addEventListener("submit",async event=>{
       await batch.commit();
     }
     $("orderEditDialog").close();
-    setStatus("Изменения заказа № "+orderLabel(editOrder)+" сохранены. Итого: "+fmt(total(editLines)));
+    setStatus("Изменения заказа "+orderLabel(editOrder)+" сохранены. Итого: "+fmt(total(editLines)));
   }catch(e){
     $("orderEditStatus").textContent=e.code==="permission-denied"
       ?"Firebase запретил изменение. Опубликуйте последние правила Firestore."
@@ -314,6 +385,8 @@ async function subscribe(user) {
   if(unsubOrders){unsubOrders();unsubOrders=null;}
   if(unsubMenu){unsubMenu();unsubMenu=null;}
   if(unsubEvents){unsubEvents();unsubEvents=null;}
+  if(unsubDateOrders){unsubDateOrders();unsubDateOrders=null;}
+  dateRevision++;dateOrders=[];loadedDate="";
   const current=++generation;
   orders=[];catalog=[];events=new Map();authorized=false;
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
@@ -327,7 +400,7 @@ async function subscribe(user) {
     authorized=true;
     unsubEvents=onSnapshot(collection(db,"events"),snap=>{
       events=new Map(snap.docs.map(row=>[row.id,row.data()]));
-      renderOrders();
+      renderDates();renderOrders();
       if($("orderEditDialog").open)fillOrderEventOptions($("editOrderEvent").value);
     },e=>setStatus("Ошибка списка мероприятий: "+(e.code||"unknown")));
     unsubMenu=onSnapshot(collection(db,"menu"),snap=>{
@@ -348,9 +421,86 @@ async function subscribe(user) {
           ownerUid:user.uid,orders:orders.map(({id,status,orderNumber})=>({id,status,orderNumber})),
           count:orders.length,pending:orders.filter(x=>x.status==="pending"&&!x.archived).length
         }}));
-        setStatus("Последние "+orders.length+" заказов. Для полной истории по гостю откройте «Клиенты».");
+        setStatus("Последние "+orders.length+" заказов. Выберите дату, чтобы загрузить всю очередь за день, затем мероприятие для отчёта.");
       }catch(e){if(current===generation)setStatus("Ошибка состава заказов: "+(e.code||e.message));}
     },e=>{if(current===generation)setStatus("Не удалось загрузить заказы: "+(e.code||"unknown"));});
   }catch(e){if(current===generation)setStatus("Ошибка проверки роли: "+(e.code||"unknown"));}
 }
+// Полная выгрузка делается непосредственно из Firestore, а не из очереди
+// последних 100 заявок. Один день/мероприятие — отдельный отчёт.
+function csvCell(value){
+  let text=String(value??"");
+  // Prevent spreadsheet formula execution on imported guest-controlled fields.
+  if(/^[=+@\-\t\r]/.test(text))text="'"+text;
+  return '"'+text.replace(/"/g,'""')+'"';
+}
+function saveCsv(filename,header,rows){
+  const csv="\uFEFF"+[header,...rows].map(row=>row.map(csvCell).join(";")).join("\r\n");
+  const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  const link=document.createElement("a");
+  link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+}
+function exportName(date,title,type){
+  const safe=title.normalize("NFKC").replace(/[^\p{L}\p{N}_-]+/gu,"_").slice(0,50);
+  return "BALI_"+date+"_"+safe+"_"+type+".csv";
+}
+async function exportEventReport(kind){
+  ensureAdmin();
+  const date=$("ordersDateFilter").value;
+  const eventId=$("ordersEventFilter").value;
+  if(!date||!eventId){setStatus("Для выгрузки выберите дату и конкретное мероприятие.");return;}
+  const buttonEl=$(kind==="orders"?"exportEventOrders":"exportEventDishes");
+  buttonEl.disabled=true;
+  setStatus("Загружаем ВСЕ заказы выбранного мероприятия для выгрузки...");
+  try{
+    const snapshot=await getDocs(query(collection(db,"orders"),where("eventDate","==",date)));
+    const matching=snapshot.docs.filter(row=>(row.data().eventId||row.data().eventDate)===eventId);
+    const includeInactive=$("exportIncludeCancelled").checked;
+    const eligible=matching.filter(row=>includeInactive||
+      (!row.data().archived&&row.data().status!=="cancelled"));
+    const completed=await Promise.all(eligible.map(async row=>{
+      const lines=await getDocs(collection(row.ref,"items"));
+      return {id:row.id,...row.data(),items:lines.docs.map(x=>x.data())};
+    }));
+    completed.sort((a,b)=>(a.orderNumber||0)-(b.orderNumber||0)||
+      (a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
+    const title=events.get(eventId)?.title||completed[0]?.eventTitle||eventId;
+    if(kind==="orders"){
+      const header=["Дата","Мероприятие","Номер предзаказа","Статус","Столик","ID бронирования",
+        "Гость","Телефон","Email","Блюдо","Количество","Цена за шт., BYN",
+        "Сумма позиции, BYN","Сумма заказа, BYN","Пожелания","Firestore ID"];
+      const rows=completed.flatMap(o=>{
+        const items=o.items.length?o.items:[{name:"",quantity:"",unitPrice:""}];
+        return items.map(line=>[
+          o.eventDate,eventTitle(o),orderLabel(o),statuses[o.status]||o.status,
+          o.tableNumber,o.bookingId,o.customerName,o.customerPhone,o.email,
+          line.name,line.quantity,line.unitPrice===""?"":Number(line.unitPrice).toFixed(2),
+          line.unitPrice===""?"":(Number(line.unitPrice)*Number(line.quantity)).toFixed(2),
+          total(o.items).toFixed(2),o.notes,o.id
+        ]);
+      });
+      saveCsv(exportName(date,title,"orders"),header,rows);
+    }else{
+      const aggregate=new Map();
+      for(const o of completed)for(const line of o.items){
+        const key=String(line.id)+"|"+line.name;
+        const item=aggregate.get(key)||{id:line.id,name:line.name,quantity:0,amount:0};
+        item.quantity+=Number(line.quantity)||0;
+        item.amount+=(Number(line.unitPrice)||0)*(Number(line.quantity)||0);
+        aggregate.set(key,item);
+      }
+      const dishes=[...aggregate.values()].sort((a,b)=>a.name.localeCompare(b.name,"ru"));
+      saveCsv(exportName(date,title,"dishes"),
+        ["Дата","Мероприятие","Код блюда","Наименование блюда","Всего порций","Сумма, BYN"],
+        dishes.map(x=>[date,title,x.id,x.name,x.quantity,x.amount.toFixed(2)]));
+    }
+    setStatus("Выгрузка: "+completed.length+" заказов из "+matching.length+
+      " по мероприятию «"+title+"». "+(includeInactive?"Отменённые включены.":"Отменённые и архив исключены."));
+  }catch(e){setStatus("Не удалось выгрузить отчёт: "+(e.code||e.message));}
+  finally{renderEventFilter();}
+}
+$("exportEventOrders").addEventListener("click",()=>void exportEventReport("orders"));
+$("exportEventDishes").addEventListener("click",()=>void exportEventReport("dishes"));
+
 onAuthStateChanged(auth,user=>{void subscribe(user);});

@@ -57,9 +57,15 @@ try{
    assert.equal(order.eventId,eventDate+'__2');
    assert.equal(order.eventDate,eventDate);
    assert.equal(order.eventTitle,'Вторая вечеринка');
-   assert.equal(second.order_number,2);
+   assert.equal(second.order_number,1,"Вторая вечеринка должна начинать свою нумерацию с №1");
+   const third=await window.BaliOrders.save({...payload,event_id:eventDate+'__2',table_number:'13'});
+   assert.equal(third.order_number,2,"Номера внутри одного мероприятия должны возрастать");
    await assertFails(updateDoc(doc(db,'orders',second.order_id),
      {eventTitle:'Поддельное название',updatedAt:serverTimestamp()}));
+   await window.BaliOrders.save({...payload,event_id:eventDate,table_number:'15'},second.order_id);
+   const moved=await window.BaliOrders.getOrderWithItems(second.order_id);
+   assert.equal(moved.eventId,eventDate);
+   assert.equal(moved.orderNumber,2,"Смена мероприятия в ту же дату выдаёт новый номер");
   });
   const uid=auth.currentUser.uid;
   const stranger=env.authenticatedContext('stranger',{email:'stranger@example.test',email_verified:true}).firestore();

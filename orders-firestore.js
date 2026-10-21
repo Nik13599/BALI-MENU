@@ -101,15 +101,17 @@ async function save(payload, editId = null) {
     }
     const oldItems=await getDocs(collection(orderRef,"items"));
     const retained=new Set(priced.map(line=>String(line.id)));
-    const dateChanged=old.data().eventDate!==eventDate;
-    if (dateChanged) {
-      // При переносе заказа на другую дату выдаём ему новый номер этой даты.
-      const counterRef=doc(db,"orderCounters",eventDate);
+    const eventChanged=(old.data().eventId||old.data().eventDate)!==eventId;
+    if (eventChanged) {
+      // Любой переход к другому мероприятию, даже в ту же дату, получает
+      // новый порядковый номер внутри конкретного мероприятия.
+      const counterRef=doc(db,"orderCounters",eventId);
       orderNumber=await runTransaction(db,async tx=>{
         const latest=await tx.get(orderRef);
         const counter=await tx.get(counterRef);
         if(!latest.exists() || latest.data().ownerUid!==user.uid ||
-           latest.data().status!=="pending" || latest.data().eventDate===eventDate)
+           latest.data().status!=="pending" ||
+           (latest.data().eventId||latest.data().eventDate)===eventId)
           throw new Error("Данные заказа изменились. Откройте его повторно.");
         const next=(counter.exists()?counter.data().count:0)+1;
         if(!Number.isSafeInteger(next)||next>999999)throw new Error("Счётчик заказов переполнен.");
@@ -129,9 +131,8 @@ async function save(payload, editId = null) {
     }
   } else {
     orderRef=doc(collection(db,"orders"));
-    const counterRef=doc(db,"orderCounters",eventDate);
-    // Транзакция автоматически повторяется при одновременной покупке
-    // и выдаёт единственный порядковый номер для выбранной даты.
+    const counterRef=doc(db,"orderCounters",eventId);
+    // Атомарно выдаём номер в пределах мероприятия, а не всей даты.
     orderNumber=await runTransaction(db,async tx=>{
       const previous=await tx.get(counterRef);
       const next=(previous.exists()?previous.data().count:0)+1;
@@ -148,6 +149,7 @@ async function save(payload, editId = null) {
     });
   }
   return {success:true,order_id:orderRef.id,order_number:orderNumber,
+    event_title:eventTitle,table_number:tableNumber,booking_id:bookingId,
     total:priced.reduce((sum,x)=>sum+x.unitPrice*x.quantity,0)};
 }
 async function getOrderWithItems(id) {

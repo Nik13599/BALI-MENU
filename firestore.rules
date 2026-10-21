@@ -657,7 +657,7 @@ service cloud.firestore {
 
     function validEvent(data, eventId) {
       return data.keys().hasAll(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
-        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','poster_url','interestCount','updatedAt','description','startTime','endTime','dotColor'])
+        && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','poster_url','interestCount','updatedAt','description','startTime','endTime','dotColor','cutoffNextDay'])
         && (!('interestCount' in data) || (
           data.interestCount is int
           && data.interestCount >= 0 && data.interestCount <= 1000000
@@ -683,6 +683,7 @@ service cloud.firestore {
         && (!('startTime' in data) || (data.startTime == '' && data.endTime == '') ||
             (data.startTime != '' && data.endTime != ''))
         && data.preorderEnabled is bool
+        && (!('cutoffNextDay' in data) || data.cutoffNextDay is bool)
         && data.closesAt is timestamp
         && data.cutoff is string
         && (data.cutoff == '' || data.cutoff.matches('^[0-2][0-9]:[0-5][0-9]$'))
@@ -713,20 +714,24 @@ service cloud.firestore {
         && request.time < get(/databases/$(database)/documents/events/$(date)).data.closesAt;
     }
 
-    // Порядковый номер уникален в пределах даты и выдаётся транзакцией.
-    function counterPath(date) {
-      return /databases/$(database)/documents/orderCounters/$(date);
+    // Отдельный атомарный счётчик для каждого eventId (включая __2 и __3).
+    // Старый счётчик YYYY-MM-DD остаётся для первого мероприятия этой даты.
+    function counterPath(eventId) {
+      return /databases/$(database)/documents/orderCounters/$(eventId);
     }
-    function validOrderSequence(date, number, orderId) {
+    function validOrderSequence(eventId, number, orderId) {
       return number is int && number >= 1 && number <= 999999
-        && getAfter(counterPath(date)).data.count == number
-        && getAfter(counterPath(date)).data.lastOrderId == orderId;
+        && getAfter(counterPath(eventId)).data.count == number
+        && getAfter(counterPath(eventId)).data.lastOrderId == orderId;
     }
-    function validCounter(date) {
+    function validCounter(eventId) {
       return request.resource.data.keys().hasAll(['date','count','lastOrderId','updatedAt'])
         && request.resource.data.keys().hasOnly(['date','count','lastOrderId','updatedAt'])
-        && request.resource.data.date == date
-        && date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.date is string
+        && (eventId == request.resource.data.date
+          || eventId == request.resource.data.date + '__2'
+          || eventId == request.resource.data.date + '__3')
+        && request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && request.resource.data.count is int
         && request.resource.data.count >= 1 && request.resource.data.count <= 999999
         && request.resource.data.lastOrderId is string
@@ -734,28 +739,30 @@ service cloud.firestore {
         && request.resource.data.lastOrderId.size() <= 120
         && request.resource.data.updatedAt == request.time;
     }
-    function counterWitness(date) {
+    function counterWitness(eventId) {
       let order = /databases/$(database)/documents/orders/$(request.resource.data.lastOrderId);
-      return getAfter(order).data.eventDate == date
+      return getAfter(order).data.eventDate == request.resource.data.date
+        && getAfter(order).data.get('eventId',getAfter(order).data.eventDate) == eventId
         && getAfter(order).data.orderNumber == request.resource.data.count
         && (getAfter(order).data.ownerUid == request.auth.uid || isAdmin())
         && (
           (!exists(order) && getAfter(order).data.createdAt == request.time)
-          || (exists(order) && get(order).data.eventDate != date
+          || (exists(order)
+              && get(order).data.get('eventId',get(order).data.eventDate) != eventId
               && getAfter(order).data.updatedAt == request.time)
         );
     }
-    match /orderCounters/{date} {
+    match /orderCounters/{eventId} {
       allow get: if request.auth != null && request.auth.token.email_verified == true;
       allow list, delete: if false;
       allow create: if request.auth != null && request.auth.token.email_verified == true
-        && validCounter(date) && request.resource.data.count == 1
-        && counterWitness(date);
+        && validCounter(eventId) && request.resource.data.count == 1
+        && counterWitness(eventId);
       allow update: if request.auth != null && request.auth.token.email_verified == true
-        && validCounter(date)
+        && validCounter(eventId)
         && request.resource.data.count == resource.data.count + 1
         && request.resource.data.lastOrderId != resource.data.lastOrderId
-        && counterWitness(date);
+        && counterWitness(eventId);
     }
 
     function orderShape(data) {
@@ -811,7 +818,8 @@ service cloud.firestore {
         && request.resource.data.customerPhone ==
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone
         && request.resource.data.status == 'pending'
-        && validOrderSequence(request.resource.data.eventDate,request.resource.data.orderNumber,orderId)
+        && validOrderSequence(request.resource.data.get('eventId',request.resource.data.eventDate),
+          request.resource.data.orderNumber,orderId)
         && (!('archived' in request.resource.data) || request.resource.data.archived == false)
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time
@@ -822,10 +830,14 @@ service cloud.firestore {
 
       allow update: if orderShape(request.resource.data)
         && (
-          (request.resource.data.eventDate == resource.data.eventDate
+          (request.resource.data.get('eventId',request.resource.data.eventDate)
+              == resource.data.get('eventId',resource.data.eventDate)
+            && request.resource.data.eventDate == resource.data.eventDate
             && request.resource.data.get('orderNumber',0) == resource.data.get('orderNumber',0))
-          || (request.resource.data.eventDate != resource.data.eventDate
-            && validOrderSequence(request.resource.data.eventDate,request.resource.data.orderNumber,orderId))
+          || (request.resource.data.get('eventId',request.resource.data.eventDate)
+              != resource.data.get('eventId',resource.data.eventDate)
+            && validOrderSequence(request.resource.data.get('eventId',request.resource.data.eventDate),
+              request.resource.data.orderNumber,orderId))
         )
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.ownerUid == resource.data.ownerUid
