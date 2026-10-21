@@ -66,10 +66,13 @@
     outline:2px solid var(--bt-primary,#b9ff51)!important;
     outline-offset:2px!important;
   }
-  /* Only three distinct routes remain in the lower dock:
-     Home / Calendar / Menu. Profile and Info are reached from the header. */
+  /* Keep the bottom dock compact: Home / Calendar / Menu / ID if
+     the separate ID card shortcut exists. Info and Profile live in My BALI. */
   body.bali-guest-theme .bali-bottom-nav{
     display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+  body.bali-guest-theme .bali-bottom-nav:not(:has(>[data-bali-nav="id"])){
     grid-template-columns:repeat(3,minmax(0,1fr))!important;
   }
   body.bali-guest-theme .bali-bottom-nav .bali-nav-profile-item,
