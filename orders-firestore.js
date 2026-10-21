@@ -115,8 +115,13 @@ async function save(payload, editId = null) {
     throw new Error("Выберите мероприятие и укажите столик или ID бронирования.");
   }
   const lines = normalizeItems(payload.items);
-  const switchSnapshot=await getDoc(doc(db,"settings","preorderSecurity"));
-  if(switchSnapshot.exists()&&switchSnapshot.data()?.backendRequired===true){
+  // Old production rules may not yet expose this new settings document.
+  // A denied read in that old configuration must not break legacy checkout;
+  // once the new rules are live, backendRequired is always readable.
+  let switchSnapshot=null;
+  try{switchSnapshot=await getDoc(doc(db,"settings","preorderSecurity"));}
+  catch(error){if(error?.code!=="permission-denied")throw error;}
+  if(switchSnapshot?.exists()&&switchSnapshot.data()?.backendRequired===true){
     // No legacy fallback when the backend is required: bypassing the callable
     // would silently remove the global basket limit and request-id safety.
     return submitViaServer(user,{
