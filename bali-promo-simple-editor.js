@@ -32,10 +32,12 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
   <strong>РЕДАКТОР РЕКЛАМНОГО СЛАЙДА</strong>
   <p>Исходные размеры блока не меняются. Загрузите картинку, напишите заголовок поверх неё и настройте кнопку.</p>
   <div class="bali-promo-simple-preview" aria-label="Предпросмотр исходного изображения"><img alt="Изображение баннера"></div>
+  <small data-promo-size>Размеры блока определяются по текущему предпросмотру.</small>
   <label class="bali-builder-field">1. Фоновая картинка
    <input type="file" data-promo-file accept="image/png,image/jpeg,image/webp,image/heic,image/heif">
-   <small>Лучше загружать изображение в пропорциях самого блока. Картинка применится на ПК, планшете и телефоне.</small>
+   <small>Загрузка не меняет размер блока. Изображение показывается на всех устройствах; при необходимости используйте исходник нужных пропорций.</small>
   </label>
+  <button type="button" class="bali-promo-simple-reset" data-promo-reset-image>Вернуть исходную картинку</button>
   <label class="bali-builder-field">Или HTTPS-ссылка на изображение
    <input type="url" data-promo-image-url placeholder="https://...">
   </label>
@@ -106,9 +108,21 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
   showPreview();
   updating=false;
  };
+ function displaySize(){
+  try{
+   const hero=frame.contentDocument?.querySelector(".bali-pc-hero");
+   const bounds=hero?.getBoundingClientRect();
+   if(!bounds||bounds.width<2||bounds.height<2)return;
+   const w=Math.round(bounds.width),h=Math.round(bounds.height);
+   $("size").textContent="Размер блока на этом устройстве: "+w+" × "+h+
+      " px. Для чёткой картинки рекомендуем "+w*2+" × "+h*2+" px.";
+  }catch{}
+ }
  async function select(id){
   root.hidden=!id;
-  if(!id||id===activeId)return;
+  if(!id)return;
+  displaySize();
+  if(id===activeId)return;
   const request=++serial;
   activeId=id;record=null;busy=true;say("Загружаем настройки слайда…");
   try{
@@ -130,6 +144,15 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
  for(const key of ["title","button-text","font-size","text-color","button-background","button-color","button-radius","align"]){
   $(key).addEventListener("input",refresh);
  }
+ $("reset-image").addEventListener("click",()=>{
+  if(!record)return;
+  record.imageUrl="";
+  record.imageTabletUrl="";record.imageMobileUrl="";
+  record.overlay={...initialOverlay(),enabled:false};
+  $("image-url").value="";
+  draw();publishPreview();
+  say("Исходная картинка восстановлена в предпросмотре. Для применения на сайте нажмите публикацию.");
+ });
  $("image-url").addEventListener("change",()=>{
   if(!record)return;
   const value=$("image-url").value.trim();
