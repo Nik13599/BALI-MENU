@@ -12,6 +12,7 @@
     "calendar-heart":'<rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M7.5 3v4M16.5 3v4M3.5 10h17"/><path d="M12 18.2c-3.2-2-3.8-3.1-2.8-4.2.75-.85 2-.45 2.8.45.8-.9 2.05-1.3 2.8-.45 1 1.1.4 2.2-2.8 4.2Z"/>',
     "book":'<path d="M12 5.5c-2.65-1.85-5.65-2.2-9-1.4v14.75c3.35-.8 6.35-.45 9 1.4 2.65-1.85 5.65-2.2 9-1.4V4.1c-3.35-.8-6.35-.45-9 1.4Z"/><path d="M12 5.5v14.75M5.6 8c1.55-.2 2.75 0 4.1.62M14.3 8.62c1.35-.62 2.55-.82 4.1-.62"/>',
     "user":'<circle cx="12" cy="8.5" r="3.25"/><path d="M5.4 20v-1.1a6.6 6.6 0 0 1 13.2 0V20M4.3 20.5h15.4"/>',
+    "id-card":'<rect x="2.75" y="5" width="18.5" height="14" rx="2.5"/><circle cx="8" cy="10" r="2"/><path d="M4.8 15.4a3.7 3.7 0 0 1 6.4 0M13.5 9h5.2M13.5 12.5h4.2"/>',
     "users":'<circle cx="9.5" cy="8.4" r="2.85"/><path d="M3.6 19.5v-.9a5.9 5.9 0 0 1 11.8 0v.9H3.6Z"/><path d="M16.4 5.9a3 3 0 0 1 0 5.7M17.6 14.1a4.65 4.65 0 0 1 2.8 4.4v1"/>',
     "bag":'<path d="M5 8.5h14l-1 12H6l-1-12Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/><path d="M9.25 14h5.5"/>',
     "receipt":'<path d="M6 3.7h12v16.6l-3-1.5-3 1.5-3-1.5-3 1.5V3.7Z"/><path d="M9 8h6M9 11.5h6M9 15h3"/>',
@@ -78,7 +79,7 @@
     // Guest primary navigation and the home panel.
     replaceAll(".bali-bottom-nav [data-bali-nav] .bali-nav-glyph",el=>{
       const p=el.closest("[data-bali-nav]")?.dataset.baliNav;
-      return {home:"home",events:"calendar",menu:"book",profile:"user"}[p]||"diamond";
+      return {home:"home",events:"calendar",menu:"book",id:"id-card",profile:"user"}[p]||"diamond";
     });
     replaceAll(".bali-home-calendar-btn > span:first-child","calendar");
     replaceAll(".bali-home-calendar-btn > span:last-child","chevron-right");
