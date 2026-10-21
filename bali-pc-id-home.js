@@ -4,10 +4,9 @@
  const button=document.getElementById("baliHomeIdCard");
  if(!button)return;
  button.addEventListener("click",()=>{
-   if(window.BaliAuth?.isRegistered?.()){
-     window.location.hash="id";
-   }else{
-     window.BaliAuth?.open?.();
-   }
+   // The desktop shortcut uses the same login notification as every ID route.
+   void window.BaliIdOnboarding?.open?.().then(allowed=>{
+     if(allowed)window.location.hash="id";
+   });
  });
 })();
