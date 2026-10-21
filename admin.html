@@ -801,6 +801,26 @@
               </label>
               <label>Надпись на кнопке<input id="baliPromoButton" type="text" maxlength="65" placeholder="Забронируйте удобную дату заранее"></label>
             </div>
+            <div class="bali-promo-button-placement" style="margin:16px 0;display:grid;gap:10px">
+              <label>Расположение кнопки на верхнем рекламном блоке
+                <select id="baliPromoButtonPlacement">
+                  <option value="none">Нет — не показывать кнопку</option>
+                  <option value="left">Слева</option>
+                  <option value="center" selected>По центру</option>
+                  <option value="right">Справа</option>
+                  <option value="manual">Ручное расположение — перетащить мышкой</option>
+                </select>
+              </label>
+              <div id="baliPromoButtonPlacementPreview" style="position:relative;width:100%;aspect-ratio:16/7;background:#15191a;overflow:hidden;border:1px solid #737c73;border-radius:12px;touch-action:none;user-select:none" aria-label="Предпросмотр положения кнопки на баннере">
+                <img id="baliPromoButtonPlacementImage" alt="" style="position:absolute;width:100%;height:100%;object-fit:contain;inset:0;pointer-events:none">
+                <button id="baliPromoButtonPlacementHandle" type="button" style="position:absolute;left:50%;top:82%;transform:translate(-50%,-50%);cursor:grab;touch-action:none;max-width:85%">Пример кнопки</button>
+              </div>
+              <p class="hint">В режиме «Ручное расположение» перетащите кнопку по изображению. Положение сохраняется в процентах от размеров рекламного блока и масштабируется для ПК, планшета и телефона. Для каждого слайда настройки независимы.</p>
+              <div id="baliPromoButtonPlacementCoordinates" class="double" hidden>
+                <label>По горизонтали, % <input id="baliPromoButtonX" type="number" min="5" max="95" step="1" value="50"></label>
+                <label>По вертикали, % <input id="baliPromoButtonY" type="number" min="5" max="95" step="1" value="82"></label>
+              </div>
+            </div>
             <fieldset id="baliPromoContactSettings" class="bali-promo-contact-settings" hidden>
               <legend>Кнопка «Способы связи»</legend>
               <p class="hint">Для каждого нового баннера можно выбрать доступные каналы. Пустое поле берёт актуальную ссылку из общих контактов клуба. Укажите свою ссылку, чтобы переопределить её только для этого баннера.</p>
@@ -1159,7 +1179,7 @@
 <script type="module" src="bali-admin-bar.js?v=20261020-1"></script>
 <script type="module" src="bali-admin-cards.js?v=20261020-1"></script>
 <script type="module" src="bali-menu-visibility.js?v=20261017-72"></script>
-<script type="module" src="bali-admin-promos.js?v=20261021-removal5"></script>
+<script type="module" src="bali-admin-promos.js?v=20261021-placement1"></script>
 <script type="module" src="bali-home-design-admin.js?v=20261020-2"></script>
 <script type="module" src="bali-home-placeholder-admin.js?v=20261021-square1"></script>
 <script type="module" src="admin-orders.js?v=20261021-event-reports1"></script>
