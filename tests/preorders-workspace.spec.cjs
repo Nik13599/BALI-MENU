@@ -106,3 +106,13 @@ test("phone and desktop are viewport-locked, with the order list as the only scr
     await expect(page.locator('input[type="checkbox"]#showArchivedOrders')).toHaveCount(0);
   }
 });
+
+test("staff order-creation form remains present and shows the save action",async({page})=>{
+  await page.goto("/preorders.html");
+  const modal=page.locator("#orderEditDialog");
+  await expect(modal).toHaveCount(1);
+  await expect(page.locator("#orderEditForm")).toHaveCount(1);
+  await expect(page.locator("#editOrderAddProduct")).toHaveCount(1);
+  await expect(page.locator("#editOrderStatus option")).toHaveCount(3);
+  await expect(page.locator("#orderEditForm button[type=submit]")).toHaveCount(1);
+});

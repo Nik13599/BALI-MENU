@@ -7,6 +7,7 @@ import {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBat
   serverTimestamp,runTransaction,query,limit,orderBy,where,Timestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1";
 import {withinOrderRetention,ORDER_RETENTION_MS} from "./bali-order-retention.js";
+import {createBaliStaffPreorder} from "./bali-staff-preorder-create.js?v=20261021-1";
 import {composeBaliPreorderReport,downloadBaliPreorderReport,showBaliPreorderTelegram} from "./bali-preorder-reports.js?v=20261021-1";
 const readOrderLines=async row=>{
   const lines=await getDocs(collection(row.ref,"items"));
@@ -539,42 +540,16 @@ $("orderEditForm").addEventListener("submit",async event=>{
         if(linked.size!==1)throw new Error("Не найден единственный аккаунт с этим email. Уберите email или уточните его.");
         ownerUid=linked.docs[0].id;ownerEmail=linked.docs[0].data().email;
       }
-      const ref=doc(collection(db,"orders"));
-      const accountRef=ownerUid?doc(db,"users",ownerUid):null;
-      const counterRef=doc(db,"orderCounters",eventId);
-      const eventRef=doc(db,"events",eventId);
-      const menuRefs=editLines.map(line=>doc(db,"menu",String(line.id)));
-      const assignedNumber=await runTransaction(db,async tx=>{
-        const [latestEvent,counter,...reads]=await Promise.all([
-          tx.get(eventRef),tx.get(counterRef),...menuRefs.map(r=>tx.get(r)),
-          ...(accountRef?[tx.get(accountRef)]:[])
-        ]);
-        if(!latestEvent.exists()||latestEvent.data().date!==eventDate
-          ||latestEvent.data().title!==chosenTitle)
-          throw new Error("Мероприятие изменилось. Обновите форму.");
-        const account=accountRef?reads.at(-1):null;
-        if(accountRef&&(!account?.exists()||account.data().email!==ownerEmail))
-          throw new Error("Аккаунт гостя изменился. Повторите операцию.");
-        const menuRows=reads.slice(0,editLines.length);
-        const rows=editLines.map((line,i)=>{
-          const row=menuRows[i];
-          if(!row.exists()||!row.data().available||
-            !Number.isFinite(row.data().price)||row.data().price<0)
-            throw new Error("Блюдо недоступно: "+line.name);
-          return {id:line.id,name:row.data().name,unitPrice:row.data().price,quantity:line.quantity};
-        });
-        const next=(counter.exists()?counter.data().count:0)+1;
-        if(!Number.isSafeInteger(next)||next>999999)throw new Error("Счётчик заказов переполнен.");
-        tx.set(counterRef,{date:eventDate,count:next,lastOrderId:ref.id,updatedAt:serverTimestamp()});
-        tx.set(ref,{
-          ownerUid,email:ownerEmail,source:"staff",createdByUid:auth.currentUser.uid,
-          customerName,customerPhone,eventDate,eventId,eventTitle:chosenTitle,
-          orderNumber:next,tableNumber,bookingId,notes,status,
-          archived:false,createdAt:serverTimestamp(),updatedAt:serverTimestamp()
-        });
-        for(const line of rows)tx.set(doc(ref,"items",String(line.id)),line);
-        return next;
+      const staffId=auth.currentUser?.uid;
+      if(!staffId)throw new Error("Сеанс сотрудника завершился. Войдите повторно.");
+      const saved=await createBaliStaffPreorder({
+        db,uid:staffId,
+        api:{doc,collection,runTransaction,serverTimestamp},
+        eventDate,eventId,eventTitle:chosenTitle,customerName,customerPhone,
+        tableNumber,bookingId,notes,status,
+        items:editLines.map(line=>({...line})),ownerUid,ownerEmail
       });
+      const assignedNumber=saved.orderNumber;
       creatingOrder=false;
       $("orderEditDialog").close();
       setStatus("Ручной предзаказ «"+chosenTitle+" №"+assignedNumber+"» создан. Сумма: "+fmt(total(editLines)));
@@ -638,8 +613,12 @@ $("orderEditForm").addEventListener("submit",async event=>{
     setStatus("Изменения заказа "+orderLabel(editOrder)+" сохранены. Итого: "+fmt(total(editLines)));
   }catch(e){
     $("orderEditStatus").textContent=e.code==="permission-denied"
-      ?"Firebase запретил изменение. Опубликуйте последние правила Firestore."
+      ?"Firebase не разрешил записать заказ (permission-denied). Проверьте права аккаунта и правила Firestore."
       :"Не удалось сохранить заказ: "+(e.message||e.code||"unknown");
+    if(e.code==="unavailable"||e.code==="deadline-exceeded")
+      $("orderEditStatus").textContent="Нет связи с Firebase. Проверьте интернет и повторите сохранение.";
+    if(e.code==="aborted")
+      $("orderEditStatus").textContent="Другой сотрудник изменил данные заказа. Повторите сохранение.";
   }finally{submit.disabled=false;}
 });
 async function subscribe(user) {

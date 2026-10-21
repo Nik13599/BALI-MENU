@@ -176,7 +176,35 @@ try{
    await window.BaliOrders.cancel(saved.order_id);
    assert.equal((await getDoc(doc(db,'orders',saved.order_id))).data().status,'cancelled');
   });
-   await t.test('staff creates and deletes manual orders; guest may not',async()=>{
+   await t.test('real staff client transaction creates numbered preorder from a menu item',async()=>{
+    const {createBaliStaffPreorder}=await import('data:text/javascript;base64,'+
+      (await readFile('bali-staff-preorder-create.js')).toString('base64'));
+    const input={
+      db,uid:'admin-emulator',api:{doc,collection,runTransaction,serverTimestamp},
+      eventDate,eventId:eventDate+'__2',eventTitle:'Вторая вечеринка',
+      customerName:'Тестовый сотрудник',customerPhone:'+375291234511',
+      tableNumber:'22',bookingId:'',notes:'Создано из рабочего интерфейса',
+      status:'pending',items:[{id:1,name:'Тестовое блюдо',quantity:2}]
+    };
+    // Authenticate against an isolated security-rules staff session to exercise
+    // the SAME exported transaction helper as production admin-orders.js.
+    const scoped=env.authenticatedContext('admin-emulator',{
+      email:'admin@example.test',email_verified:true
+    }).firestore();
+    const testResult=await createBaliStaffPreorder({
+      ...input,db:scoped,
+      api:{doc,collection,runTransaction,serverTimestamp}
+    });
+    assert.equal(testResult.orderNumber>=1,true);
+    const created=await getDoc(doc(scoped,'orders',testResult.id));
+    assert.equal(created.data().createdByUid,'admin-emulator');
+    assert.equal(created.data().customerName,'Тестовый сотрудник');
+    const lines=await getDocs(collection(scoped,'orders',testResult.id,'items'));
+    assert.equal(lines.size,1);
+    assert.equal(lines.docs[0].data().unitPrice,25);
+    assert.equal(lines.docs[0].data().quantity,2);
+  });
+  await t.test('staff creates and deletes manual orders; guest may not',async()=>{
     const staffOrder=doc(collection(staff,'orders'));
     const target=eventDate+'__2';
     await assertSucceeds(runTransaction(staff,async tx=>{
