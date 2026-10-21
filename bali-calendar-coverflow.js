@@ -23,6 +23,10 @@ const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 let activeIndex=0,position=0,animation=null,raf=0,gesture=null;
 let wheelAt=-Infinity,ignoreTapUntil=0,slideWidth=180,firstSync=true,lastCardDate="";
 const ease=t=>t*t*(3-2*t);
+// Keep the two mobile action buttons down during a poster change and raise
+// them only when the stage has completed its actual travel (not a fixed timer).
+function lowerActions(){if(!reduce.matches)grid.classList.add("is-actions-lowered")}
+function raiseActions(){grid.classList.remove("is-actions-lowered")}
 function measure(){
   const area=grid.getBoundingClientRect();
   if(area.width<30||area.height<30)return;
@@ -44,7 +48,7 @@ function measure(){
 }
 function render(){
   const entries=cards(),count=entries.length;
-  if(!count){prev.disabled=true;next.disabled=true;return;}
+  if(!count){prev.disabled=true;next.disabled=true;raiseActions();return;}
   const stageWidth=grid.clientWidth||500;
   const angle=reduce.matches?0:58; // Stronger turn than 45°, as in reference
   // Keep the first side poster distinct from the centre, with a small gap,
@@ -112,8 +116,9 @@ function animateTo(next,smooth=true){
   lastCardDate=cards()[next]?.dataset.eventDate||"";
   notify();
   if(!smooth||reduce.matches||Math.abs(position-next)<.001){
-    position=next;render();return;
+    position=next;render();raiseActions();return;
   }
+  lowerActions();
   const initial=position,delta=next-initial;
   const started=performance.now(),duration=clamp(570+Math.abs(delta)*145,580,1150);
   const running={raf:0};
@@ -124,7 +129,7 @@ function animateTo(next,smooth=true){
     position=initial+delta*ease(progress);
     render();
     if(progress<1)running.raf=requestAnimationFrame(tick);
-    else{position=next;animation=null;render();}
+    else{position=next;animation=null;render();raiseActions();}
   };
   running.raf=requestAnimationFrame(tick);
 }
@@ -145,6 +150,7 @@ function syncCards(){
     lastCardDate=entries[activeIndex].dataset.eventDate||"";
   }else{activeIndex=0;position=0;lastCardDate="";}
   if(animation){cancelAnimationFrame(animation.raf);animation=null;}
+  raiseActions();
   measure();render();
 }
 prev.addEventListener("click",()=>move(-1));
@@ -179,6 +185,7 @@ grid.addEventListener("pointermove",event=>{
   const dx=event.clientX-g.x,dy=event.clientY-g.y;
   if(!g.dragged&&Math.abs(dx)>7&&Math.abs(dx)>Math.abs(dy)*.7){
     g.dragged=true;grid.classList.add("is-swipe-active");
+    lowerActions();
     if(event.pointerType==="mouse"){
       try{grid.setPointerCapture(event.pointerId)}catch{}
     }
