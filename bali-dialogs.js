@@ -16,7 +16,10 @@
     managed.clear();
     if (next) {
       for (const node of document.body.children) {
-        if (node === next || node.id === 'overlay' || node.tagName === 'SCRIPT' || node.inert) continue;
+        // Native <dialog> elements manage their own top-layer focus/inertness.
+        // Keeping them inert made the privacy consent visible but impossible to click.
+        if (node === next || node.id === 'overlay' || node.tagName === 'SCRIPT' ||
+            node.tagName === 'DIALOG' || node.inert) continue;
         node.inert = true;
         managed.add(node);
       }
@@ -28,7 +31,7 @@
       // Focus after the opening styles have been applied (the cart was hidden).
       let frames = 0;
       const focusWhenVisible = () => {
-        if (active !== next) return;
+        if (active !== next || document.querySelector('dialog[open]')) return;
         const target = focusable(next)[0] || next;
         target.focus({preventScroll: true});
         if (!next.contains(document.activeElement) && frames++ < 30) requestAnimationFrame(focusWhenVisible);

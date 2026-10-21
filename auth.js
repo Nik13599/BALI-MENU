@@ -170,7 +170,11 @@ els.google.addEventListener("click", async () => {
   if (!auth) return;
   preLoginConsent=false;
   if(!window.BaliPrivacy?.hasEntryConsent()){
-    if(!await window.BaliPrivacy?.review())return;
+    if(!await window.BaliPrivacy?.review()){
+      // Declining processing must close the underlying sign-in sheet too.
+      hide();
+      return;
+    }
     preLoginConsent=true;
   }
   message("");
@@ -306,7 +310,10 @@ async function handleUser(authUser) {
           if(saved?.version===privacyVersion&&Date.now()-saved.at>=0&&Date.now()-saved.at<600000)entry=true;
         }catch(_e){}
         if(!entry&&!await window.BaliPrivacy?.review()){
-          if(stillCurrent())await signOut(auth);
+          if(stillCurrent()){
+            await signOut(auth);
+            hide();
+          }
           return;
         }
         if(!stillCurrent())return;

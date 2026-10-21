@@ -37,7 +37,7 @@ async function fixture(page,{returning=false,newProfile=false,anonymous=false}={
   const body=modules[url.pathname.split('/').at(-1)];
   return body?route.fulfill({contentType:'text/javascript',body}):route.abort();
  });
- await page.route('**/privacy-fixture.html',route=>route.fulfill({contentType:'text/html',body:html.replace('</body>','<script src="/bali-privacy.js"></script><script type="module" src="/auth.js"></script></body>')}));
+ await page.route('**/privacy-fixture.html',route=>route.fulfill({contentType:'text/html',body:html.replace('</body>','<script src="/bali-dialogs.js"></script><script src="/bali-privacy.js"></script><script type="module" src="/auth.js"></script></body>')}));
  await page.goto('/privacy-fixture.html');
 }
 async function accept(page){
@@ -121,4 +121,49 @@ test('a receipt concurrently accepted in another tab does not block the account'
  await accept(page);
  await expect.poll(()=>page.evaluate(()=>window.BaliAuth.isRegistered())).toBe(true);
  await expect(page.locator('#baliPrivacyDialog')).toBeHidden();
+});
+
+test('privacy controls remain clickable when the sign-in modal is open',async({page})=>{
+ await fixture(page,{anonymous:true,newProfile:true});
+ await page.evaluate(()=>window.BaliAuth.open());
+ await expect(page.locator('#authModal')).toHaveClass(/active/);
+ await page.locator('#authGoogleBtn').click();
+ const dialog=page.locator('#baliPrivacyDialog');
+ await expect(dialog).toBeVisible();
+ // The original regression: dialog was visible but inherited inert from the
+ // generic modal manager; checkbox and both buttons were unreachable.
+ await expect(dialog).not.toHaveAttribute('inert','');
+ await page.locator('#baliPrivacyProcessing').check();
+ await expect(page.locator('#baliPrivacyProcessing')).toBeChecked();
+ await expect(page.locator('#baliPrivacyAccept')).toBeDisabled();
+ await page.locator('#baliPrivacyInternational').check();
+ await expect(page.locator('#baliPrivacyInternational')).toBeChecked();
+ await expect(page.locator('#baliPrivacyAccept')).toBeEnabled();
+ await page.locator('#baliPrivacyAccept').click();
+ await expect(dialog).toBeHidden();
+ await expect.poll(()=>page.evaluate(()=>window.__googleCalls)).toBe(1);
+ await expect(page.locator('#authProfileForm')).toBeVisible();
+});
+test('continue without account closes the privacy dialog and sign-in overlay',async({page})=>{
+ await fixture(page,{anonymous:true,newProfile:true});
+ await page.evaluate(()=>window.BaliAuth.open());
+ await page.locator('#authGoogleBtn').click();
+ await expect(page.locator('#baliPrivacyDialog')).toBeVisible();
+ await page.locator('#baliPrivacyDecline').click();
+ await expect(page.locator('#baliPrivacyDialog')).toBeHidden();
+ await expect(page.locator('#authModal')).not.toHaveClass(/active/);
+ await expect(page.locator('#overlay')).not.toHaveClass(/active/);
+ expect(await page.evaluate(()=>window.__googleCalls)).toBe(0);
+ expect(await page.evaluate(()=>window.__privacyWrites)).toEqual([]);
+ await expect(page.locator('#baliPrivacyProcessing')).not.toBeChecked();
+});
+test('keyboard Escape from privacy leaves sign-in closed for a guest',async({page})=>{
+ await fixture(page,{anonymous:true,newProfile:true});
+ await page.evaluate(()=>window.BaliAuth.open());
+ await page.locator('#authGoogleBtn').click();
+ await expect(page.locator('#baliPrivacyDialog')).toBeVisible();
+ await page.keyboard.press('Escape');
+ await expect(page.locator('#baliPrivacyDialog')).toBeHidden();
+ await expect(page.locator('#authModal')).not.toHaveClass(/active/);
+ expect(await page.evaluate(()=>window.__googleCalls)).toBe(0);
 });
