@@ -1129,7 +1129,7 @@ assert(!html.includes('class="bali-hero-scene"') &&
   html.includes('class="bali-pc-hero"') &&
   html.includes('id="baliPcOfferTitle"') &&
   html.includes('class="bali-pc-events-title"'),
-  "Home should display BALI PRIVILEGE hero above the event carousel");
+  "Home must display BALI PRIVILEGE hero above the static poster lineup");
 assert(!html.includes('class="bali-home-calendar-row"') &&
   !html.includes('data-home-events-view="all"') &&
   !html.includes('data-home-events-view="planned"') &&
@@ -1138,7 +1138,7 @@ assert(!html.includes('class="bali-home-calendar-row"') &&
   "Home must use one full-calendar heading without top filters or redundant More button");
 assert(html.includes('id="homeEventCarousel"') &&
   app.includes('function renderHomeEvents()') &&
-  app.includes('bali-home-event-card'), "Home event story carousel missing");
+  app.includes('bali-home-event-card'), "Static Home event posters are missing");
 assert(!html.includes('id="homeEventPosition"') &&
   !html.includes('class="bali-home-story-note"') &&
   !app.includes('updateHomeEventPosition()'),
@@ -1198,16 +1198,19 @@ assert(homeStoriesCss.includes("aspect-ratio:1/1") &&
   homeStoriesCss.includes(".bali-home-event-info") &&
   homeStoriesCss.includes(".bali-home-heart.is-liked svg") &&
   homeStoriesCss.includes("fill:#f02b50") &&
-  homeStoriesCss.includes("touch-action:pan-x pan-y"),
-  "Home events should show square artwork and a clear-to-red accessible heart while preserving horizontal swipes");
+  html.includes('id="bali-home-static-posters-style"') &&
+  !html.includes('<script src="bali-home-coverflow.js'),
+  "Home events require square artwork and readable hearts, without an independent home carousel");
 assert(app.includes('const card=document.createElement("article");') &&
   app.includes('function toggleGuestInterest(date,message)') &&
   app.includes('window.BaliInterests.toggle(date)') &&
   app.includes('click.stopPropagation()') &&
   app.includes('void toggleGuestInterest(event.id||event.date,document.getElementById("homeInterestFeedback"))') &&
   app.includes('function syncInterestVisuals(){') &&
-  app.includes('requestAnimationFrame(()=>{\n            track.scrollLeft='),
-  "Home RSVP hearts must persist through Firebase and not activate the event overlay or reset carousel scroll");
+  app.includes('const rendered=[];') &&
+  html.includes('grid-template-columns:repeat(3,minmax(0,1fr))') &&
+  html.includes('grid-template-columns:repeat(5,minmax(0,1fr))'),
+  "Home RSVP hearts must persist through Firebase; Home must keep its static 3-mobile/5-desktop grid");
 assert(html.includes('id="homeInterestFeedback"') &&
   app.includes('getElementById("homeInterestFeedback")') &&
   app.includes('result?.loginRequired') &&
@@ -1236,12 +1239,12 @@ assert(premiumCss.includes("/* BALI NIGHT CLUB · premium home zones, v49") &&
   premiumCss.includes(".bali-home-menu-banner") &&
   premiumCss.includes(".bali-home-contacts-card"),
   "Premium home zones must fit the viewport on both small and large devices");
-assert(premiumCss.includes("overflow-x:auto!important") &&
-  premiumCss.includes("overflow-y:hidden!important") &&
-  premiumCss.includes("touch-action:pan-x pan-y") &&
+assert(html.includes('scroll-snap-type:none!important') &&
+  html.includes('overflow:hidden!important') &&
+  html.includes('touch-action:pan-y!important') &&
   html.includes('href="tel:+375296700300"') &&
   html.includes('href="https://t.me/baliclubminsk"'),
-  "Home carousel must preserve native swipe, and existing contact links must remain");
+  "Home must not swipe or overflow; contacts and static responsive poster slots must remain");
 
 assert(approvedCss.includes("/* BALI v47: mobile viewport slots.") &&
   approvedCss.includes("body>.header{") &&
