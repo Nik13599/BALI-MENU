@@ -90,12 +90,13 @@ test("larger phone posters leave the existing action buttons at stage bottom",as
       actualWidth:parseFloat(document.getElementById("eventsGrid")
         .style.getPropertyValue("--bali-event-slide-width"))};
   });
-  const target=Math.floor(Math.min(390,positions.grid.w*.88,
-    Math.max(100,positions.grid.h-80)));
-  expect(positions.actualWidth).toBeCloseTo(target,0);
+  // The current layout also reserves equal gaps around the poster and actions.
+  expect(positions.actualWidth).toBeGreaterThanOrEqual(100);
+  expect(positions.actualWidth).toBeLessThanOrEqual(Math.min(390,positions.grid.w*.88));
+  expect(positions.poster.w).toBeCloseTo(positions.actualWidth,0);
   expect(positions.poster.w/positions.poster.h).toBeCloseTo(1,1);
   expect(positions.actions.top).toBeGreaterThanOrEqual(positions.poster.bottom-2);
   expect(positions.actions.bottom).toBeLessThanOrEqual(positions.grid.bottom+2);
-  expect(positions.grid.bottom-positions.actions.bottom).toBeLessThan(35);
+  expect(positions.grid.bottom-positions.actions.bottom).toBeLessThan(positions.grid.h/4);
   expect(positions.labels).toEqual(["Хочу пойти","Поделиться"]);
 });

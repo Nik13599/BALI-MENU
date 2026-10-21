@@ -6,6 +6,29 @@ import {getFirestore,doc,getDoc,setDoc,collection,query,where,limit,getDocs,serv
 import {getFunctions,httpsCallable} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-functions.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
+const functions=getFunctions(app,"europe-west1");
+const listBonusKinds=httpsCallable(functions,"listBaliBonusKinds");
+const builtinBonusKinds=[["shot","Шоты"],["cocktail","Коктейли"],["hookah","Кальяны"],["entry","Бесплатные проходы"]];
+let bonusKinds=new Map(builtinBonusKinds);
+function renderBonusKinds(){
+  const select=$("directorBonusType"),previous=select.value;
+  select.replaceChildren();
+  for(const [kind,name] of bonusKinds){
+    const option=document.createElement("option");option.value=kind;option.textContent=name;select.append(option);
+  }
+  if(bonusKinds.has(previous))select.value=previous;
+}
+async function loadBonusKinds(user,round){
+  try{
+    const response=(await listBonusKinds({})).data;
+    if(round!==authRound||auth.currentUser?.uid!==user.uid||!authorized)return;
+    if(!Array.isArray(response?.kinds))throw Error("Нет списка видов бонусов");
+    bonusKinds=new Map(response.kinds.filter(x=>x?.id&&x?.name).map(x=>[x.id,x.name]));
+    renderBonusKinds();
+  }catch(error){
+    if(round===authRound)status("directorBonusGrantStatus","Не удалось загрузить дополнительные виды бонусов. Доступны стандартные виды.");
+  }
+}
 const TIERS=["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ"];
 const displayTier=tier=>tier==="ResidentDJ"?"RESIDENT BALI - DJ":tier.toUpperCase();
 let authorized=false,selectedUid=null,selectedGuestName="",selectedId="",isBusy=false,authRound=0;
@@ -27,6 +50,7 @@ async function checkRole(user){
 onAuthStateChanged(auth,async user=>{
   const round=++authRound;
   authorized=false;resetGuest();
+  bonusKinds=new Map(builtinBonusKinds);renderBonusKinds();
   $("directorWorkspace").hidden=true;
   $("directorLogin").hidden=false;
   if(!user){status("directorAuthStatus","Войдите, чтобы продолжить.");return;}
@@ -41,6 +65,7 @@ onAuthStateChanged(auth,async user=>{
     }
     authorized=true;$("directorLogin").hidden=true;$("directorWorkspace").hidden=false;
     status("directorAuthStatus","");
+    void loadBonusKinds(user,round);
   }catch(error){if(authRound===round)status("directorAuthStatus","Не удалось проверить доступ: "+(error.code||"unknown"));}
 });
 $("directorSignIn").addEventListener("click",async()=>{
@@ -115,7 +140,7 @@ $("directorAssignForm").addEventListener("submit",async event=>{
   }finally{isBusy=false;submit.disabled=false;}
 });
 /* Quantitative grants are server-side and entirely independent of cosmetic tiers. */
-const issueQuantity=httpsCallable(getFunctions(app,"europe-west1"),"issueBaliQuantity");
+const issueQuantity=httpsCallable(functions,"issueBaliQuantity");
 $("directorBonusGrantForm")?.addEventListener("submit",async event=>{
   event.preventDefault();
   if(!authorized||!selectedUid||!auth.currentUser?.emailVerified){
@@ -125,7 +150,7 @@ $("directorBonusGrantForm")?.addEventListener("submit",async event=>{
   const quantity=Number($("directorBonusQuantity").value);
   const transferable=$("directorBonusTransferable").checked;
   const reason=$("directorBonusReason").value.trim();
-  if(!["shot","cocktail","hookah","entry"].includes(kind)||!Number.isInteger(quantity)||quantity<1||quantity>999||reason.length<5){
+  if(!bonusKinds.has(kind)||!Number.isInteger(quantity)||quantity<1||quantity>999||reason.length<5){
     status("directorBonusGrantStatus","Укажите вид, количество 1–999 и основание (не менее 5 символов).");return;
   }
   const destination=selectedUid,guestName=selectedGuestName,number=selectedId;

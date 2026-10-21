@@ -1,4 +1,10 @@
 /* BALI CALENDAR: Instagram-like icons and live/mixed-event states. No poster geometry changes. */
+/* Keep month navigation below the fixed desktop account control. */
+@media(min-width:1180px){
+ :root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarPanel{
+  margin-top:calc(var(--bali-header-height,60px) + 12px)!important;
+ }
+}
 :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .bali-event-actions>button{
  display:inline-flex!important;align-items:center!important;justify-content:center!important;
  gap:clamp(5px,1vw,9px)!important;

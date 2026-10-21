@@ -136,4 +136,59 @@ assert.equal((await exports.listMyBaliHistory({...auth(receiver),data:{}})).item
 await assert.rejects(exports.issueBaliQuantity({...auth(sender),data:{
   uid:sender,kind:"shot",quantity:200,transferable:true,reason:"Запрещённое начисление"
 }}),e=>e.code==="permission-denied");
-console.log("BALI ID backend: recipient identity, multiple quantities, atomic ledger, idempotency, overdraft block, roles and history PASS.");
+// Every receiving path must enforce the same per-kind cap as staff/QR credit.
+const finiteGrant=(id,remaining,extra={})=>({id,kind:"shot",remaining,originalCount:remaining,
+  unlimited:false,transferable:true,eventRef:null,expiresAt:null,...extra});
+const prepareCapCase=(incoming,existing)=>{
+  memory.set("guestWallets/"+sender,{uid:sender,grants:incoming});
+  memory.set("guestWallets/"+receiver,{uid:receiver,grants:existing});
+};
+const unchangedOnRejection=async (items,requestId)=>{
+  const before=copy([...memory]);
+  await assert.rejects(make(items,requestId),e=>e.code==="resource-exhausted");
+  assert.deepEqual([...memory],before,"rejection must leave wallets, ledger, transfer and inbox unchanged");
+};
+prepareCapCase([finiteGrant("cap-one",2)],[finiteGrant("full",999)]);
+await unchangedOnRejection([{grantId:"cap-one",quantity:1}],"e".repeat(32));
+prepareCapCase([finiteGrant("split-one",1),finiteGrant("split-two",1)],[finiteGrant("almost-full",998)]);
+await unchangedOnRejection([{grantId:"split-one",quantity:1},{grantId:"split-two",quantity:1}],"f".repeat(32));
+prepareCapCase([finiteGrant("boundary",1)],[finiteGrant("almost-full",998)]);
+assert.equal((await make([{grantId:"boundary",quantity:1}],"1".repeat(32))).ok,true);
+assert.equal(balance(receiver,"shot"),999,"an exact-cap transfer remains valid");
+prepareCapCase([finiteGrant("expiry-control",1)],[
+  finiteGrant("expired",999,{expiresAt:new Stamp(Date.now()-1000)}),
+  finiteGrant("unlimited",999,{unlimited:true}),finiteGrant("usable",998)
+]);
+assert.equal((await make([{grantId:"expiry-control",quantity:1}],"2".repeat(32))).ok,true);
+assert.equal(memory.get("guestWallets/"+receiver).grants.at(-1).remaining,1,
+  "expired and unlimited entitlements do not consume the finite bonus cap");
+// The backend resolves custom kind authorization from its protected registry.
+memory.set("baliBonusKinds/dessert",{name:"Десерты",active:true});
+prepareCapCase([finiteGrant("custom",3,{kind:"dessert"})],[]);
+assert.equal((await make([{grantId:"custom",quantity:1}],"3".repeat(32))).ok,true);
+assert.equal(memory.get("guestWallets/"+receiver).grants[0].kind,"dessert");
+memory.get("baliBonusKinds/dessert").active=false;
+const beforeInactive=copy([...memory]);
+await assert.rejects(make([{grantId:"custom",quantity:1}],"4".repeat(32)),e=>e.code==="failed-precondition");
+assert.deepEqual([...memory],beforeInactive,"inactive custom kinds cannot transfer and leave no partial writes");
+// Lifetime credits must not exhaust the 80 *live* grant capacity permanently.
+const spent=Array.from({length:80},(_,i)=>finiteGrant("spent-"+i,0));
+prepareCapCase([finiteGrant("live",1)],spent);
+const historyKeys=[...memory.keys()].filter(k=>k.startsWith("walletOperations/"));
+assert.equal((await make([{grantId:"live",quantity:1}],"5".repeat(32))).ok,true);
+assert.equal(memory.get("guestWallets/"+receiver).grants.length,1);
+for(const key of historyKeys)assert(memory.has(key),"compaction keeps immutable operation history");
+memory.set("guestWallets/"+receiver,{uid:receiver,grants:spent});
+assert.equal((await exports.issueBaliQuantity({...auth(staff),data:{
+  uid:receiver,kind:"shot",quantity:1,transferable:true,reason:"Новое начисление после списаний"
+}})).ok,true);
+assert.equal(memory.get("guestWallets/"+receiver).grants.length,1);
+// Unknown expiry formats and unlimited rights are retained, never guessed away.
+const retained=[finiteGrant("unlimited-zero",0,{unlimited:true}),
+  finiteGrant("unknown-expiry",2,{expiresAt:{seconds:1}}),
+  finiteGrant("unknown-count","0"),null];
+prepareCapCase([finiteGrant("retention-control",1)],[...retained,finiteGrant("expired",2,{expiresAt:new Stamp(Date.now()-1)})]);
+assert.equal((await make([{grantId:"retention-control",quantity:1}],"6".repeat(32))).ok,true);
+assert.deepEqual(memory.get("guestWallets/"+receiver).grants.slice(0,retained.length),retained);
+assert.equal(memory.get("guestWallets/"+receiver).grants.length,retained.length+1);
+console.log("BALI ID backend: recipient identity, atomic ledger, idempotency, overdraft/receiving caps, roles, custom kinds and grant lifecycle PASS.");

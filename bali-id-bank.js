@@ -12,14 +12,17 @@ const auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-
 const lookupFn=httpsCallable(functions,"previewBaliRecipient");
 const transferFn=httpsCallable(functions,"transferBaliBenefits");
 const historyFn=httpsCallable(functions,"listMyBaliHistory");
-const names={shot:"Шоты",cocktail:"Коктейли",hookah:"Кальяны",entry:"Бесплатные проходы",discount:"Скидка"};
+const kindsFn=httpsCallable(functions,"listBaliBonusKinds");
+const builtinNames={shot:"Шоты",cocktail:"Коктейли",hookah:"Кальяны",entry:"Бесплатные проходы",discount:"Скидка"};
+const builtinKinds=["shot","cocktail","hookah","entry"];
+let names=Object.assign(Object.create(null),builtinNames),activeKinds=new Set(builtinKinds),kindsRound=0;
 const dt=new Intl.DateTimeFormat("ru-RU",{timeZone:"Europe/Minsk",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
 const node=(tag,cls,content)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(content!==undefined)n.textContent=content;return n};
 const say=(id,value)=>{const n=$(id);if(n)n.textContent=value};
 const validateNumber=value=>/^\d{6}$/.test(value)&&Number(value)>0;
 const milliseconds=t=>typeof t?.toMillis==="function"?t.toMillis():typeof t==="number"?t:null;
 const current=g=>{const ms=milliseconds(g.expiresAt);return !g.expiresAt||Boolean(ms&&ms>Date.now())};
-const sendable=g=>g&&["shot","cocktail","hookah","entry"].includes(g.kind)&&
+const sendable=g=>g&&activeKinds.has(g.kind)&&
   g.transferable===true&&!g.unlimited&&!g.eventRef&&
   Number.isInteger(g.remaining)&&g.remaining>0&&current(g)&&typeof g.id==="string"&&g.id.length>0;
 const logged=()=>Boolean(uid&&auth.currentUser?.uid===uid&&auth.currentUser.emailVerified&&window.BaliAuth?.isRegistered?.());
@@ -302,13 +305,30 @@ $("baliIdHistoryOpen")?.addEventListener("click",()=>{
 $("baliIdHistoryMore")?.addEventListener("click",()=>void historyLoad());
 function authReset(){
   walletStop?.();walletStop=null;uid=null;grants=[];recipient=null;selected.clear();
+  ++kindsRound;activeKinds=new Set(builtinKinds);names=Object.assign(Object.create(null),builtinNames);
   ++run;requestId=null;busy=false;historyBusy=false;history=[];cursor=null;
   transferDlg?.close();historyDlg?.close();renderBalance();
+}
+async function loadKinds(user){
+  const round=kindsRound;
+  try{
+    const result=(await kindsFn({})).data;
+    if(round!==kindsRound||uid!==user.uid||auth.currentUser?.uid!==user.uid)return;
+    if(!Array.isArray(result?.kinds))return;
+    for(const kind of result.kinds){
+      if(typeof kind?.id!=="string"||!/^[a-z][a-z0-9_-]{1,24}$/.test(kind.id)||!kind.name)continue;
+      activeKinds.add(kind.id);names[kind.id]=String(kind.name);
+    }
+    renderBalance();
+    if(transferDlg?.open&&stage==="choices")renderChoices();
+    if(historyDlg?.open)historyRender();
+  }catch(_){/* Standard kinds stay available if the registry cannot be loaded. */}
 }
 onAuthStateChanged(auth,user=>{
   authReset();
   if(!user?.emailVerified)return;
   uid=user.uid;
+  void loadKinds(user);
   walletStop=onSnapshot(doc(db,"guestWallets",user.uid),snapshot=>{
     if(uid!==user.uid)return;
     grants=Array.isArray(snapshot.data()?.grants)?snapshot.data().grants:[];

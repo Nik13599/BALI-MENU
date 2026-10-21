@@ -32,6 +32,10 @@
  let hasInteracted=false,lockUntil=0,opened=0;
  let lastEventDate=null,expanded=false;
  let plannedDates=new Set(),eventSnapshot=[];
+ const planDates=values=>new Set((Array.isArray(values)?values:[])
+   .filter(value=>typeof value==="string")
+   .map(value=>value.replace(/__[23]$/,""))
+   .filter(valid));
  const lifecycle=window.BaliEventLifecycle;
  let lastRange="";
  const validHexColor=c=>typeof c==="string"&&/^#[0-9a-fA-F]{6}$/.test(c);
@@ -237,11 +241,11 @@
  // Repaint immediately after optimistic RSVP (and after the authoritative
  // Firebase snapshot), without resetting selected month or carousels.
  window.addEventListener("bali:calendar:plans-changed",event=>{
-   plannedDates=new Set((event.detail?.dates||[]).filter(valid));
+   plannedDates=planDates(event.detail?.dates);
    render();
  });
  window.addEventListener("bali:interests",event=>{
-   plannedDates=new Set((event.detail?.dates||[]).filter(valid));
+   plannedDates=planDates(event.detail?.dates);
    render();
  });
  window.addEventListener("bali:events",event=>{

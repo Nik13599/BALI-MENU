@@ -157,19 +157,18 @@ test('BALI ID keeps its enlarged card on-screen without redundant heading',async
 });
 
 test('3D carousel keeps older posters mounted through several changes',async({page})=>{
-  await openCalendar(page);await insertEvents(page);
+  await openCalendar(page);
   const grid=page.locator('#eventsGrid');
-  // Expand with three more posters to prove history stays on both sides.
+  // Feed the real event store so calendar-range updates retain all six records.
   await page.evaluate(()=>{
-    const grid=document.getElementById('eventsGrid');
-    for(let n=4;n<=6;n++){
-      const clone=grid.querySelector('.event-card');
-      const copy=clone.cloneNode(true);
-      copy.dataset.eventDate='2026-11-0'+n;
-      copy.querySelector('h3').textContent='Событие '+n;
-      copy.querySelector('.bali-event-description').textContent='Описание '+n;
-      grid.append(copy);
-    }
+    const now=new Date(),year=now.getUTCFullYear(),month=String(now.getUTCMonth()+1).padStart(2,'0');
+    const events=Array.from({length:6},(_,i)=>({
+      id:`${year}-${month}-${String(i+10).padStart(2,'0')}`,
+      date:`${year}-${month}-${String(i+10).padStart(2,'0')}`,
+      title:'Событие '+(i+1),description:'Описание '+(i+1),
+      poster_url:'assets/bali-id-card-readable.svg'
+    }));
+    window.dispatchEvent(new CustomEvent('bali:events',{detail:{events}}));
   });
   await expect(grid.locator('.event-card')).toHaveCount(6);
   await expect.poll(()=>page.evaluate(()=>window.BaliCalendarShowcase.getState().cardCount)).toBe(6);
@@ -181,7 +180,7 @@ test('3D carousel keeps older posters mounted through several changes',async({pa
     z:parseInt(n.style.zIndex,10)
   })));
   expect(layout).toHaveLength(6);
-  expect(layout.every(card=>card.display!=='none')).toBe(true);
+  expect(layout.filter(card=>card.display!=='none')).toHaveLength(6);
   expect(layout[0].x).toBeLessThan(layout[3].x);
   expect(layout[2].z).toBeLessThan(layout[3].z);
   expect(layout[3].x).toBeLessThan(0);
@@ -279,15 +278,15 @@ test('completed parties show solid ruby red, while today without events remains 
   await expect(past).toHaveAttribute('data-planned','true');
   await expect(past).toHaveAttribute('data-event-count','2');
   await expect(past).toHaveAttribute('data-lifecycle-status','past');
-  await expect(past).toHaveCSS('background-color','rgb(23, 32, 24)');
-  expect(await past.evaluate(node=>getComputedStyle(node).backgroundImage)).toContain('rgb(250, 96, 112)');
+  await expect(past).toHaveCSS('background-color','rgb(250, 96, 112)');
+  await expect(past).toHaveCSS('background-image','none');
   await expect(past.locator('.bali-calendar-event-dot')).toHaveCount(2);
   for(const dot of await past.locator('.bali-calendar-event-dot').all())
     await expect(dot).toHaveCSS('background-color','rgb(250, 96, 112)');
   await past.click();
   await expect(past).toHaveAttribute('data-selected','true');
   // A selected or planned date must preserve its completed (red) event fill.
-  expect(await past.evaluate(node=>getComputedStyle(node).backgroundImage)).toContain('rgb(250, 96, 112)');
+  expect(await past.evaluate(node=>getComputedStyle(node).background)).toContain('rgb(250, 96, 112)');
   await expect(past.locator('.bali-calendar-day-number')).toHaveCSS('color','rgb(21, 25, 16)');
   const future=await locate(dates.future);
   await expect(future).toHaveAttribute('data-past','false');

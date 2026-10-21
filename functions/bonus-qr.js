@@ -18,7 +18,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,wallet})=>{
   async function kindInfo(kind){
     if(typeof kind!=="string"||!/^[a-z][a-z0-9_-]{1,24}$/.test(kind))
       fail("invalid-argument","Неверный вид бонусов.");
-    if(builtin[kind])return {id:kind,name:builtin[kind],emoji:""};
+    if(Object.hasOwn(builtin,kind))return {id:kind,name:builtin[kind],emoji:""};
     const snap=await db.doc("baliBonusKinds/"+kind).get();
     if(!snap.exists||snap.data().active!==true)fail("not-found","Вид бонусов не найден или отключён.");
     return {id:kind,name:clip(snap.data().name,42),emoji:clip(snap.data().emoji,8)};
@@ -53,7 +53,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,wallet})=>{
       const uid=await staff(req);
       const kind=clip(req.data?.kind,25).toLowerCase(),name=clip(req.data?.name,42);
       const emoji=clip(req.data?.emoji,8);
-      if(!/^[a-z][a-z0-9_-]{1,24}$/.test(kind)||builtin[kind]||
+      if(!/^[a-z][a-z0-9_-]{1,24}$/.test(kind)||Object.hasOwn(builtin,kind)||
         name.length<2||name.length>42||emoji.length>8)
         fail("invalid-argument","Введите новый латинский код и название вида бонусов.");
       await db.doc("baliBonusKinds/"+kind).create({name,emoji,active:true,createdBy:uid,createdAt:TS.now()})
@@ -124,6 +124,8 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,wallet})=>{
           tx.get(opRef),tx.get(qrRef),tx.get(walletRef),tx.get(lockRef)]);
         if(oldOp.exists){
           const prev=oldOp.data();
+          if(prev.type==="redeem"&&req.data?.quantity!==prev.count)
+            fail("already-exists","Идентификатор запроса уже использован для другого количества.");
           return {ok:true,alreadyProcessed:true,receipt:{
             id:opId,type:prev.type,kind:prev.kind,name:prev.name,count:prev.count,
             createdAt:prev.createdAt.toMillis(),expiresAt:prev.receiptExpiresAt.toMillis(),

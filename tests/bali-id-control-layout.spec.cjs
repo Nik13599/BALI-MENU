@@ -118,8 +118,8 @@ test('BALI ID: both top tools equal size and near the header, card gently lifted
   expect(g.qr.right).toBeLessThanOrEqual(g.history.left+2);
   expect(g.history.bottom).toBeLessThan(g.card.top);
   const shift=g.container.centerY-g.card.centerY;
-  expect(shift).toBeGreaterThanOrEqual(10);
-  expect(shift).toBeLessThanOrEqual(26);
+  expect(shift).toBeGreaterThanOrEqual(page.viewportSize().width<=767?26:10);
+  expect(shift).toBeLessThanOrEqual(page.viewportSize().width<=767?43:26);
   expect(g.pay.top).toBeGreaterThanOrEqual(g.card.bottom+12);
   expect(Math.abs(g.pay.top-g.topup.top)).toBeLessThanOrEqual(1);
   expect(Math.abs(g.topup.top-g.transfer.top)).toBeLessThanOrEqual(1);

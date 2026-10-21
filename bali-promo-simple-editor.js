@@ -3,19 +3,6 @@ import {doc,getDoc,setDoc,serverTimestamp} from "https://www.gstatic.com/firebas
 import {prepareImage} from "./image-compressor.js?v=20261020-2";
 import {PROMO_POSITION_OPTIONS,promoEditorMode,promoEditorXY,promoStorePlacement,promoPositionStyle} from "./bali-promo-placement.js?v=20261021-3";
 
-const holidayId="bali-new-year-2026";
-const holidayPoster="assets/BALI_banner_badge_rectangular_only.png";
-const defaults=()=>({
- title:"БРОНИРОВАНИЕ НОВОГОДНИХ КОРПОРАТИВОВ",
- description:"Проведите незабываемый праздник в центре Минска. Выберите дату заранее.",
- imageUrl:"",imageMobileUrl:"",imageTabletUrl:"",imageRemoved:false,
- destination:"contact-modal",buttonText:"Забронировать заранее",
- contactTitle:"Забронировать новогодний корпоратив",
- contactLinks:{phone:"",telegram:"",instagram:"",whatsapp:"",viber:""},
- contactEnabled:{phone:true,telegram:true,instagram:true,whatsapp:true,viber:true},
- contactHotspot:{enabled:true,left:4,top:69,width:30,height:17},
- sort:0,published:true
-});
 const initialOverlay=()=>({enabled:false,fontSize:38,textColor:"#ffffff",
  buttonBackground:"#c3f36d",buttonColor:"#111810",buttonRadius:10,align:"left"});
 const safeImage=x=>typeof x==="string"&&(
@@ -40,7 +27,7 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
   </label>
   <div class="bali-promo-simple-image-actions">
    <button type="button" class="bali-promo-simple-remove" data-promo-remove-image>Удалить изображение</button>
-   <button type="button" class="bali-promo-simple-reset" data-promo-reset-image>Вернуть исходную картинку</button>
+   <button type="button" class="bali-promo-simple-reset" data-promo-reset-image>Сбросить изменения изображения</button>
   </div>
   <label class="bali-builder-field">Или HTTPS-ссылка на изображение
    <input type="url" data-promo-image-url placeholder="https://...">
@@ -88,6 +75,16 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
  const posImage=$("position-image"),posCoords=$("position-coordinates");
  for(const [value,label] of PROMO_POSITION_OPTIONS)pos.add(new Option(label,value));
  let activeId=null,record=null,busy=false,serial=0,updating=false,dragging=false,previewScheduled=false;
+ let savedArtwork=null;
+ let imageRequest=0,uploading=false;
+ const invalidateImage=()=>{
+   imageRequest++;
+   if(uploading){uploading=false;busy=false;}
+ };
+ const rememberArtwork=()=>{savedArtwork={
+   imageUrl:record.imageUrl||"",imageMobileUrl:record.imageMobileUrl||"",
+   imageTabletUrl:record.imageTabletUrl||"",imageRemoved:record.imageRemoved===true
+ };};
  const setPlacementUI=()=>{
    const mode=pos.value,point=promoEditorXY(mode,$("x").value,$("y").value);
    posCoords.hidden=mode!=="manual";
@@ -98,14 +95,14 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
      if(key!=="lowerRight")posHandle.style.setProperty(key==="maxWidth"?"max-width":key,value);
    }
    if(mode!=="manual"){$("x").value=point.x;$("y").value=point.y;}
-   const src=record?.imageRemoved?"":record?.imageUrl||(activeId===holidayId?holidayPoster:"");
+   const src=record?.imageRemoved?"":record?.imageUrl||"";
    posImage.hidden=!src;
    if(src&&posImage.getAttribute("src")!==src)posImage.src=src;
    if(!src)posImage.removeAttribute("src");
  };
  const say=text=>{status.textContent=text;};
  const showPreview=()=>{
-   const url=record?.imageRemoved?"":record?.imageUrl||(activeId===holidayId?holidayPoster:"");
+   const url=record?.imageRemoved?"":record?.imageUrl||"";
    preview.hidden=!url;
    if(url&&preview.getAttribute("src")!==url)preview.src=url;
    if(!url&&preview.hasAttribute("src"))preview.removeAttribute("src");
@@ -171,19 +168,22 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
  async function select(id){
   root.hidden=!id;
   if(!id){
-   serial++;activeId=null;record=null;busy=false;
+   invalidateImage();
+   serial++;activeId=null;record=null;savedArtwork=null;busy=false;
    return;
   }
   displaySize();
   if(id===activeId&&(record||busy))return;
+  invalidateImage();
   const request=++serial;
   activeId=id;record=null;busy=true;say("Загружаем настройки слайда…");
   try{
    if(!canEdit())throw Error("Войдите под учётной записью администратора.");
    const snap=await getDoc(doc(db,"promotions",id));
    if(request!==serial)return;
-   if(!snap.exists()&&id!==holidayId)throw Error("Предложение не найдено в базе данных.");
-   record=snap.exists()?snap.data():defaults();
+   if(!snap.exists())throw Error("Предложение не найдено в базе данных.");
+   record=snap.data();
+   rememberArtwork();
    if(!record.overlay)record.overlay=initialOverlay();
    draw();say("Изменения отображаются в предпросмотре. Нажмите «Сохранить и опубликовать слайд» для гостей.");
   }catch(e){
@@ -227,6 +227,7 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
   posStage.addEventListener(type,()=>{dragging=false;});
  $("remove-image").addEventListener("click",()=>{
   if(!record||!canEdit())return;
+  invalidateImage();
   record.imageUrl="";record.imageTabletUrl="";record.imageMobileUrl="";
   record.imageRemoved=true;
   $("overlay-enabled").checked=true;
@@ -240,37 +241,37 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
   const id=activeId;activeId=null;record=null;busy=false;select(id);
  });
  $("reset-image").addEventListener("click",()=>{
-  if(!record)return;
-  record.imageUrl="";
-  record.imageTabletUrl="";record.imageMobileUrl="";
-  record.imageRemoved=false;
-  record.overlay={...initialOverlay(),enabled:false};
-  $("image-url").value="";
+  if(!record||!savedArtwork)return;
+  invalidateImage();
+  Object.assign(record,savedArtwork);
   draw();publishPreview();
-  say("Исходная картинка восстановлена в предпросмотре. Для применения на сайте нажмите публикацию.");
+  say("Восстановлена последняя сохранённая версия изображения.");
  });
  $("image-url").addEventListener("change",()=>{
   if(!record)return;
   const value=$("image-url").value.trim();
   if(value&&!safeImage(value)){say("Используйте изображение по HTTPS.");return;}
+  invalidateImage();
   record.imageUrl=value;
   if(value){record.imageRemoved=false;record.imageTabletUrl="";record.imageMobileUrl="";}
   refresh();
  });
  $("file").addEventListener("change",async event=>{
   const file=event.target.files?.[0];if(!file||!record||!canEdit())return;
-  const id=activeId,revision=serial;busy=true;say("Обрабатываем и загружаем фотографию…");
+  const id=activeId,revision=serial,request=++imageRequest;
+  const current=()=>id===activeId&&revision===serial&&request===imageRequest;
+  uploading=true;busy=true;say("Обрабатываем и загружаем фотографию…");
   try{
    const image=await prepareImage(file,"design-hero");
-   if(id!==activeId||revision!==serial)return;
+   if(!current())return;
    if(!safeImage(image))throw Error("Слишком большой файл после сжатия");
    record.imageUrl=image;record.imageMobileUrl="";record.imageTabletUrl="";record.imageRemoved=false;
    record.overlay={...initialOverlay(),...record.overlay,enabled:$("overlay-enabled").checked};
    $("image-url").value=image.startsWith("https://")?image:"";
    collect();publishPreview();
    say("Картинка загружена в предпросмотр. Теперь настройте текст и кнопку.");
-  }catch(e){say("Не удалось загрузить картинку: "+(e.code||e.message||"ошибка"));}
-  finally{if(id===activeId)busy=false;event.target.value="";}
+  }catch(e){if(current())say("Не удалось загрузить картинку: "+(e.code||e.message||"ошибка"));}
+  finally{if(current()){uploading=false;busy=false;event.target.value="";}}
  });
  $("save").addEventListener("click",async()=>{
   if(!canEdit()){say("Публикация недоступна: войдите под активным администратором.");return;}
@@ -301,6 +302,8 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
       throw Error("Сохранённые данные отличаются от опубликованных. Обновите редактор и повторите.");
    }
    record={...saved,published:true};
+   rememberArtwork();
+   publishPreview();
    say(record.imageRemoved?"Изображение удалено и публикация подтверждена Firebase.":"Слайд опубликован — сохранение подтверждено повторным чтением Firebase.");
    notify?.("Рекламный слайд опубликован отдельно от черновика оформления.");
   }catch(e){

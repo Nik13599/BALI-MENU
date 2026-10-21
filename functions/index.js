@@ -75,12 +75,20 @@ exports.previewBaliRecipient=api("previewBaliRecipient",async req=>{
   const recipient=await findRecipient(uid,number);
   return {number:recipient.number,name:recipient.name};
 });
-const wallet=(uid,snap)=>{
+const wallet=(uid,snap,now=Date.now())=>{
   const d=snap.exists?snap.data():{};
-  return {uid,grants:Array.isArray(d.grants)?d.grants:[]};
+  // Completed/expired finite grants are already retained in walletOperations.
+  // Keep live and unlimited entitlements, and never silently discard bad state.
+  const grants=(Array.isArray(d.grants)?d.grants:[]).filter(g=>{
+    if(!g||g.unlimited)return true;
+    if(Number.isInteger(g.remaining)&&g.remaining===0)return false;
+    const expiry=typeof g.expiresAt?.toMillis==="function"?g.expiresAt.toMillis():null;
+    return !Number.isFinite(expiry)||expiry>now;
+  });
+  return {uid,grants};
 };
-function isTransferable(g,now){
-  if(!g||!kinds.has(g.kind)||g.transferable!==true||g.unlimited===true||g.eventRef)
+function isTransferable(g,now,transferKinds=kinds){
+  if(!g||!transferKinds.has(g.kind)||g.transferable!==true||g.unlimited===true||g.eventRef)
     return false;
   if(!Number.isInteger(g.remaining)||g.remaining<1)return false;
   if(g.expiresAt!=null){
@@ -138,14 +146,33 @@ exports.transferBaliBenefits=api("transferBaliBenefits",async req=>{
       !fromId.exists||!toId.exists||
       toId.data().number!==toNumber||fromId.data().number===toNumber)
       fail("failed-precondition","Карта отправителя или получателя недоступна.");
-    const source=wallet(uid,fromSnap),target=wallet(recipient.uid,toSnap);
+    const at=TS.now(),millis=at.toMillis();
+    const source=wallet(uid,fromSnap,millis),target=wallet(recipient.uid,toSnap,millis);
+    const transferKinds=new Set(kinds),customKinds=new Set();
+    for(const part of items){
+      const kind=source.grants.find(g=>g?.id===part.grantId)?.kind;
+      if(typeof kind==="string"&&!kinds.has(kind)&&/^[a-z][a-z0-9_-]{1,24}$/.test(kind))customKinds.add(kind);
+    }
+    for(const kind of customKinds){
+      const definition=await tx.get(db.doc("baliBonusKinds/"+kind));
+      if(definition.exists&&definition.data().active===true)transferKinds.add(kind);
+    }
     if(target.grants.length+items.length>80)
       fail("resource-exhausted","У получателя слишком много начислений. Обратитесь к администрации.");
-    const at=TS.now(),millis=at.toMillis(),transferred=[];
+    const transferred=[];
+    const receivingBalances=new Map();
+    for(const grant of target.grants){
+      if(!grant||grant.unlimited||!Number.isInteger(grant.remaining)||grant.remaining<1||
+        (grant.expiresAt&&(typeof grant.expiresAt.toMillis!=="function"||grant.expiresAt.toMillis()<=millis)))continue;
+      receivingBalances.set(grant.kind,(receivingBalances.get(grant.kind)||0)+grant.remaining);
+    }
     for(const [index,part] of items.entries()){
-      const grant=source.grants.find(g=>g.id===part.grantId);
-      if(!isTransferable(grant,millis))fail("failed-precondition","Один из бонусов недоступен для передачи.");
+      const grant=source.grants.find(g=>g?.id===part.grantId);
+      if(!isTransferable(grant,millis,transferKinds))fail("failed-precondition","Один из бонусов недоступен для передачи.");
       if(grant.remaining<part.quantity)fail("failed-precondition","Недостаточно бонусов. Обновите остатки.");
+      const receivingBalance=(receivingBalances.get(grant.kind)||0)+part.quantity;
+      if(receivingBalance>999)fail("resource-exhausted","У получателя лимит — 999 бонусов каждого вида.");
+      receivingBalances.set(grant.kind,receivingBalance);
       grant.remaining-=part.quantity;
       const newId="transfer_"+digest(transferId+":"+index).slice(0,28);
       const received={
@@ -204,7 +231,7 @@ exports.listMyBaliHistory=api("listMyBaliHistory",async req=>{
     const components=Array.isArray(d.items)
       ?d.items.map(v=>({kind:String(v.kind||""),quantity:Number(v.quantity)||0})).slice(0,12):[];
     return {
-      id:s.id,type,kind:textValue(d.kind,25),count:Number.isFinite(d.count)?d.count:null,
+      id:s.id,type,source:textValue(d.source,40),kind:textValue(d.kind,25),count:Number.isFinite(d.count)?d.count:null,
       percent:Number.isFinite(d.percent)?d.percent:null,reason:textValue(d.reason||d.note,200),
       items:components,fromNumber:textValue(d.fromNumber,6),toNumber:textValue(d.toNumber,6),
       fromName:textValue(d.fromName),toName:textValue(d.toName),

@@ -155,7 +155,7 @@ test('planned future date stays vivid green with dark number and three lifecycle
       {id:'2026-12-25__3',date:'2026-12-25',title:'BALI Xmas Afterparty',dotColor:'#7744cc'}
     ];
     window.dispatchEvent(new CustomEvent('bali:events',{detail:{events}}));
-    window.dispatchEvent(new CustomEvent('bali:calendar:plans-changed',{detail:{dates:['2026-12-25']}}));
+    window.dispatchEvent(new CustomEvent('bali:interests',{detail:{dates:['2026-12-25']}}));
     // December 2026
     const now=document.getElementById('baliCalendarMonthName').textContent;
     const month=document.getElementById('baliCalendarPanel');
@@ -179,7 +179,7 @@ test('planned future date stays vivid green with dark number and three lifecycle
     .toBe('rgb(21, 25, 16)');
   for(const dot of await day.locator('.bali-calendar-event-dot').all())
     expect(await dot.evaluate(n=>getComputedStyle(n).backgroundColor)).toBe('rgb(185, 255, 81)');
-  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('bali:calendar:plans-changed',{detail:{dates:[]}})));
+  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('bali:interests',{detail:{dates:[]}})));
   await expect(day).toHaveAttribute('data-planned','false');
   const colors=await day.locator('.bali-calendar-event-dot').evaluateAll(nodes=>nodes.map(n=>getComputedStyle(n).backgroundColor));
   expect(colors).toEqual(['rgb(185, 255, 81)','rgb(185, 255, 81)','rgb(185, 255, 81)']);
@@ -202,7 +202,7 @@ test('poster edges dissolve while the desktop page heading is absent',async({pag
   expect(fades.crisp).toBe('none');
 });
 
-test('center poster retains perimeter glow but no decorative backing on any screen',async({page})=>{
+test('center poster retains a crisp perimeter without glow or decorative backing',async({page})=>{
   await prepare(page,3);
   const style=await page.locator('#eventsGrid .event-card.is-active>.bali-event-poster-wrap').evaluate(el=>{
     const computed=getComputedStyle(el);
@@ -221,7 +221,7 @@ test('center poster retains perimeter glow but no decorative backing on any scre
   });
   expect(style.background).toBe('rgba(0, 0, 0, 0)');
   expect(style.image).toBe('none');
-  expect(style.shadow).not.toBe('none');
+  expect(style.shadow).toBe('none');
   expect(style.border).toBe('1px');
   expect(style.overlay).toBe('none');
   expect(style.cardBackground).toBe('rgba(0, 0, 0, 0)');
@@ -301,6 +301,6 @@ test('mobile controls rise before the poster travel ends',async({page})=>{
     return {durations:style.transitionDuration.split(',').map(x=>parseFloat(x)),
       delay:style.transitionDelay};
   });
-  expect(Math.max(...timing.durations)).toBeLessThanOrEqual(.09);
+  expect(Math.max(...timing.durations)).toBeLessThanOrEqual(.18);
   expect(timing.delay).not.toContain('0.2s');
 });

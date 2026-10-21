@@ -51,6 +51,11 @@
   }
 }
 /* Do not crop the baked-in copy or the booking CTA in the artwork. */
+@media(min-width:768px) and (max-width:1179px){
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal{
+    width:100%!important;height:auto!important;justify-self:stretch!important;
+  }
+}
 :root[data-bali-theme] body.bali-guest-theme #homeSection
   .bali-pc-hero.is-seasonal .bali-pc-hero-visual picture,
 :root[data-bali-theme] body.bali-guest-theme #homeSection

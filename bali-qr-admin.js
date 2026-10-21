@@ -71,7 +71,7 @@ createForm?.addEventListener("submit",async event=>{
  const mode=String(data.get("mode")||"once");
  const params={kind:String(data.get("kind")),action:String(data.get("action")),mode,
    quantity:Number(data.get("quantity")),count:mode==="repeat"?1:Number(data.get("count")),
-   cooldownSeconds:Number(data.get("cooldownSeconds"))};
+   cooldownSeconds:String(data.get("cooldownSeconds")||"").trim()===""?30:Number(data.get("cooldownSeconds"))};
  if(!Number.isInteger(params.quantity)||params.quantity<1||params.quantity>999||
     !Number.isInteger(params.count)||params.count<1||params.count>100){status(form,"Укажите количество 1–999 и пакет 1–100.");return;}
  if(!confirm("Создать "+params.count+" QR-кодов для "+kinds.get(params.kind)+"?"))return;

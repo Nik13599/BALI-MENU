@@ -78,8 +78,8 @@
       </form>
     </section>
     <section class="director-card"><section class="bali-transfer-scaffold" aria-labelledby="baliTransferTitle">
-  <h3 id="baliTransferTitle">Переводы накопленных бонусов <small>СКОРО</small></h3>
-  <p>Зарезервирован будущий перевод поштучных бонусов между BALI ID по номеру карты. Сейчас списание и зачисление отключены.</p>
+  <h3 id="baliTransferTitle">Переводы накопленных бонусов</h3>
+  <p>Гости переводят доступные бонусы из своей BALI ID по кнопке «Перевести». Служебный перевод от имени гостя здесь пока недоступен.</p>
   <form data-bali-transfer-form autocomplete="off">
     <div class="bali-transfer-fields">
       <label>Отправитель — номер BALI ID<input type="text" inputmode="numeric" pattern="[0-9]{1,9}" maxlength="9" placeholder="000001" name="fromCardNumber"></label>
@@ -87,16 +87,16 @@
       <label>Тип накопленного бонуса<select name="kind"><option value="cocktail">Коктейли · шт.</option><option value="shot">Шоты · шт.</option><option value="hookah">Кальяны · шт.</option><option value="entry">Проходки · шт. (если разрешены)</option></select></label>
       <label>Количество, шт.<input name="quantity" type="number" min="1" max="500" step="1" value="1"></label>
     </div>
-    <button type="submit" data-bali-transfer-submit disabled title="Будет доступно после подключения защищённого перевода">Перевести бонусы — скоро</button>
-    <p data-bali-transfer-status role="status" aria-live="polite">Функция подготовлена, но пока не подключена.</p>
+    <button type="submit" data-bali-transfer-submit disabled title="Служебные переводы от имени гостя не подключены">Служебный перевод недоступен</button>
+    <p data-bali-transfer-status role="status" aria-live="polite">Для перевода гость использует собственную BALI ID.</p>
   </form>
-  <p class="bali-transfer-footnote">Позднее здесь появятся проверка доступного остатка и журнал переводов. Статусы карт, скидки и безлимитные привилегии не передаются.</p>
+  <p class="bali-transfer-footnote">Подтверждённые переводы отображаются в истории отправителя и получателя. Статусы карт, скидки и безлимитные привилегии не передаются.</p>
 </section></section>
     <p class="director-note">Изменять правила уровней может администратор в основной админ-панели. Директор назначает категории и персональные привилегии гостям.</p>
   </div>
 </main>
 <script src="firebase-config.js"></script>
-<script type="module" src="bali-director-id.js?v=20261021-grant999"></script>
-  <script type="module" src="bali-bonus-transfer-scaffold.js?v=20261019-1"></script>
+<script type="module" src="bali-director-id.js?v=20261021-custom-kinds"></script>
+  <script type="module" src="bali-bonus-transfer-scaffold.js?v=20261021-staff"></script>
 </body>
 </html>

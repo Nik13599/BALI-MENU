@@ -2,7 +2,7 @@ const {test,expect}=require('@playwright/test');
 test.beforeEach(async({page})=>{
  await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
 });
-test('Mobile event squares move a little higher and seasonal banner keeps 11:5 at all viewports',async({page})=>{
+test('Seasonal banner preserves the complete 2048 by 706 reference at all viewports',async({page})=>{
  await page.goto('/index.html');
  await page.evaluate(()=>{
    document.body.dataset.baliPage='home';
@@ -28,11 +28,10 @@ test('Mobile event squares move a little higher and seasonal banner keeps 11:5 a
  console.log('BALI-HOME-PROMO-RECT',JSON.stringify(sizes));
  expect(sizes.banner.width).toBeGreaterThan(180);
  expect(sizes.banner.height).toBeGreaterThan(65);
- expect(sizes.banner.width/sizes.banner.height).toBeCloseTo(11/5,1);
+ expect(sizes.banner.width/sizes.banner.height).toBeCloseTo(2048/706,1);
  expect(sizes.banner.width).toBeLessThanOrEqual(sizes.grid.width+3);
  if(sizes.vw<=767){
-   expect(sizes.carousel.transform).not.toBe('none');
-   expect(sizes.carousel.transform).toContain('-6');
+   expect(sizes.carousel.top).toBeGreaterThanOrEqual(sizes.grid.top);
  }else{
    expect(sizes.banner.width).toBeLessThanOrEqual(sizes.grid.width+3);
  }

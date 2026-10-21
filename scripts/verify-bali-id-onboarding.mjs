@@ -32,7 +32,10 @@ assert(welcome.includes('new CustomEvent("bali:id-accepted"'),"First card activa
 assert(app.includes("function renderGuestPage")&&app.includes('if(page==="id" && !window.BaliIdOnboarding?.isAccepted?.())'),"Direct URL/history must enforce onboarding");
 assert(app.includes('if(selected==="id" && !window.BaliIdOnboarding?.isAccepted?.())'),"All internal navigation must enforce onboarding");
 assert(card.includes('getDoc(doc(db,"users",user.uid,"baliIdAgreements","privilege"))'),"ID code must read stored acknowledgement");
-assert(card.indexOf('if(!consent.exists()||consent.data()?.version!==1)')<card.indexOf("await allocate(user.uid,run)"),"ID issuance must follow recorded acknowledgement");
+const initialization=card.slice(card.indexOf('async function initializeForUser('));
+const consentGuard=initialization.indexOf('if(!consent.exists()||consent.data()?.version!==1)');
+const issueNumber=initialization.indexOf('allocate(user.uid,run)');
+assert(consentGuard>=0&&issueNumber>consentGuard,"ID issuance must follow recorded acknowledgement");
 assert(rules.includes("match /users/{uid}/baliIdAgreements/{agreementId}"),"Missing immutable per-user agreement rules");
 assert(rules.includes("allow update, delete: if false;"),"Agreement updates must be denied");
 for(const name of ["validBaliCounter","validBaliId","guestPrivileges"]){

@@ -54,10 +54,11 @@ test("ID-related dialogs close automatically when leaving the card page",async({
   await expect(page.locator("#baliIdSection")).toBeHidden();
   await expect(page.locator("#baliHistoryDialog")).not.toHaveAttribute("open",/./);
 });
-test("PC home card and mobile header retain their BALI ID entry points",async({page})=>{
+test("PC home card and unified profile retain their BALI ID entry points",async({page})=>{
   await page.goto("/index.html#home");
   await expect(page.locator("#baliHomeIdCard")).toHaveCount(1);
-  await expect(page.locator("#baliMobileIdBtn")).toHaveCount(1);
-  expect(await page.locator("#baliMobileIdBtn").getAttribute("aria-label")).toContain("BALI ID");
+  await expect(page.locator("#accountBtn")).toHaveCount(1);
+  await expect(page.locator("#profileBaliIdBtn")).toHaveAttribute("data-bali-nav","id");
+  await expect(page.locator('[data-bali-profile-action="id"]')).toHaveCount(1);
   expect(await page.locator("#baliHomeIdCard").getAttribute("aria-label")).toContain("BALI");
 });

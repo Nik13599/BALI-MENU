@@ -1,0 +1,7 @@
+jsQR 1.4.0 — Apache-2.0
+Source: https://github.com/cozmo/jsQR
+NPM: https://registry.npmjs.org/jsqr/-/jsqr-1.4.0.tgz
+NPM package integrity (SHA-512): dxLob7q65Xg2DvstYkRpkYtmKm2sPJ9oFhrhmudT1dZvNFFTlroai3AWSpLey/w5vMcLBXRgOJsbXpdN9HzU/A==
+Unmodified distribution: package/dist/jsQR.js
+License: jsqr-LICENSE.txt
+Loaded locally only when native QR detection is unavailable.

@@ -26,7 +26,7 @@ const ids = [
 for (const id of ids) {
   assert(html.includes('id="' + id + '"'), "HTML missing " + id);
 }
-assert(/type="module"\s+src="auth\.js(?:\?v=[0-9-]+)?"/.test(html), "auth.js must be loaded");
+assert(/type="module"\s+src="auth\.js(?:\?v=[A-Za-z0-9_-]+)?"/.test(html), "auth.js must be loaded");
 assert(auth.includes("GoogleAuthProvider"), "Google sign-in missing");
 assert(auth.includes("emailVerified"), "Email must be verified");
 assert(auth.includes("serverTimestamp()"), "Server timestamps missing");
@@ -161,7 +161,7 @@ assert(admin.includes('bali-design-studio.css?v=') &&
   admin.includes('data-studio-device="tablet"') &&
   admin.includes('data-studio-device="phone"') &&
   admin.includes('data-site-field="menuPageTitle"') &&
-  html.includes('bali-site-content.js?v=20261018-') &&
+  html.includes('bali-site-content.js?v=') &&
   liveStudio.includes('frame.contentDocument') &&
   liveStudio.includes('selectionFrom(target)') &&
   liveStudio.includes('fit()') &&
@@ -301,7 +301,8 @@ assert(homeTeaser.includes('const homeSlots=window.matchMedia("(min-width:1180px
   homeTeaser.includes('posterTitle:"SECRET"') &&
   homeTeaser.includes('Совсем скоро узнаете') &&
   !homeTeaser.includes('if(!upcoming.length&&!isPcHome)') &&
-  homeTeaser.includes('eventStatus(e)!=="past"') &&
+  homeTeaser.includes('homeUpcomingEvents().slice(0,homeSlots)') &&
+  app.includes('eventStatus(e)!=="past"') &&
   source("bali-event-posters-unified.css").includes("aspect-ratio:1/1!important") &&
   !app.slice(app.indexOf('function renderUpcomingEvents()')).includes('bali-home-event-placeholder') &&
   viewportCss.includes('v89 — Desktop home: cards take the former calendar heading') &&
@@ -460,7 +461,8 @@ assert(referenceBottomNav.includes('.bali-bottom-nav button.active::after') &&
   referenceBottomNav.includes('button.active .bali-nav-glyph') &&
   referenceBottomNav.includes('clamp(26px,7.8vw,36px)') &&
   referenceBottomNav.includes('clamp(10px,3vw,14px)') &&
-  html.includes('class="bali-nav-info-item" data-bali-nav="contacts"'),
+  /<button[^>]*data-bali-nav="profile"[^>]*>[\s\S]*?BALI ID[\s\S]*?<\/button>/.test(html) &&
+  html.includes('id="profileInfoBtn" data-bali-nav="contacts"'),
   "Mobile navigation must retain four working actions, selected state and dot.");
 assert(source("bali-mobile-reference.css").includes('Floating "Корзина" shortcut on mobile') &&
   source("bali-mobile-reference.css").includes('translateX(-50%)!important'),
@@ -562,7 +564,7 @@ assert(html.includes('class="bali-pc-sidebar-contacts"') &&
 const infoCss=source("bali-info-page.css");
 const infoClient=source("bali-info-page.js");
 const infoSection=html.slice(html.indexOf('id="contactsSection"'),html.indexOf('id="profileSection"'));
-for(const term of ["Контакты и социальные сети","Режим работы","Посещение клуба","Меню и предзаказы","BALI ID · Privilege","Правовая информация","Сведения об организации","Персональные данные","Условия предзаказов и обращений"]){
+for(const term of ["Контакты и социальные сети","Режим работы","Посещение клуба","Меню и предзаказы","BALI ID · Privilege","Правовая информация","Сведения об организации","Персональные данные","Предзаказы, оплата и обращения"]){
   assert(infoSection.includes(term),"Info is missing required club/site section: "+term);
 }
 assert(html.includes('bali-info-page.css?v=20261019-2') &&
@@ -573,25 +575,21 @@ assert(html.includes('bali-info-page.css?v=20261019-2') &&
   infoClient.includes('window.addEventListener("bali:home-interface",schedule)') &&
   infoCss.includes('overflow-y:auto!important') &&
   infoCss.includes('padding-bottom:calc(105px + env(safe-area-inset-bottom))') &&
-  infoSection.includes('Каждую пятницу и субботу') &&
-  infoSection.includes('23:00–06:00') &&
+  infoSection.includes('ПЯТНИЦА') && infoSection.includes('СУББОТА') &&
+  infoSection.includes('<time>23:00</time>') && infoSection.includes('<time>06:00</time>') &&
   infoSection.includes('data-bali-nav="events"') &&
   infoSection.includes('data-bali-nav="menu"') &&
   infoSection.includes('data-bali-nav="id"') &&
   infoSection.includes('Общество с ограниченной ответственностью «МАГИШТЫК»') &&
   infoSection.includes('220030, г. Минск, ул. Кирова, 13, пом. 3') &&
   infoSection.includes('193849140') &&
-  infoSection.includes('50981204500') &&
-  infoSection.includes('BY26ALFA30122G57320010270000') &&
-  infoSection.includes('ЗАО «Альфа-Банк»') &&
-  infoSection.includes('ALFABY2X') &&
-  infoSection.includes('mailto:Kolyaselekh@gmail.com') &&
-  infoSection.includes('tel:+375333786884') &&
-  infoSection.includes('Селех Николай Иванович') &&
+  !/<dt>[^<]*(?:IBAN|Банк|БИК|руководител|личн.{0,10}телефон)/i.test(infoSection) &&
   infoSection.includes('Место оказания услуг:') &&
   infoSection.includes('<details open>') &&
   !infoSection.includes('реквизиты пока не подтверждены владельцем проекта') &&
-  infoSection.includes('не заменяет такую политику') &&
+  infoSection.includes('не заменяет утверждённую политику') &&
+  infoSection.includes('id="baliInfoCloseBtn"') &&
+  infoSection.includes('data-bali-nav="profile"') &&
   html.includes('bali-info-page.css?v=20261019-2') &&
   infoCss.includes('.bali-info-legal-grid') &&
   infoCss.includes('word-break:break-all;') &&
@@ -1007,7 +1005,7 @@ assert(imageProcessor.includes('canvas.toDataURL("image/webp"') && imageProcesso
 assert(adminClient.includes('compressImage(file,"product")') &&
   adminClient.includes('compressImage(file,"poster")'), "Image picker must upload to Firestore");
 assert(html.includes('data-bali-nav="events"') && html.includes('id="eventsSection"'), "Guest events page missing");
-assert(app.includes('renderUpcomingEvents()') && app.includes('.sort((a,b)=>a.date.localeCompare(b.date))'),
+assert(app.includes('renderUpcomingEvents()') && app.includes('.sort((a,b)=>a.date.localeCompare(b.date)||'),
   "Upcoming events must display nearest first");
 assert(responsive.includes('grid-template-rows:auto 42px') &&
   responsive.includes('.header-content #menuNavBtn,') &&
@@ -1464,8 +1462,8 @@ assert(html.includes('id="baliCardNumber"') &&
   html.includes('id="baliQrDialog"') &&
   html.indexOf('id="baliShowQr"') < html.indexOf('id="baliIdFlipScene"') &&
   html.indexOf('id="baliShowQr"') > html.indexOf('id="baliIdPageHeading"') &&
-  html.includes('id="baliMobileProfileBtn"') &&
-  html.includes('id="baliMobileIdBtn"') &&
+  html.includes('id="profileBaliIdBtn" data-bali-nav="id"') &&
+  html.includes('data-bali-profile-action="id"') &&
   source("bali-id-flip.js").includes('httpsCallable(functions,"issueGuestQr")') &&
   html.includes('bali-id-motion.js?v=') &&
   source("bali-id-motion.js").includes('scene.addEventListener("pointermove"') &&
@@ -1474,7 +1472,7 @@ assert(html.includes('id="baliCardNumber"') &&
   source("bali-id-motion.js").includes('lastTouchTap') &&
   source("bali-id-motion.js").includes('window.BaliIdMotion=Object.freeze') &&
   source("bali-id-flip.css").includes('justify-self:center!important') &&
-  source("auth.js").includes('data-bali-nav="profile"') &&
+  source("auth.js").includes('window.location.hash="profile"') &&
   idClient.includes('runTransaction(db,async tx=>') &&
   idClient.includes('doc(db,"baliCounters","guests")') &&
   idClient.includes('doc(db,"baliIds",uid)') &&
@@ -1564,7 +1562,8 @@ assert(idLogo.includes('<svg') &&
   tierCss.includes('var(--bali-card-logo-filter') &&
   html.includes('class="bali-id-inline-mark"'),
   "BALI ID must preserve its original mask/BALI emblem without a subtitle on all tiers");
-assert(!html.includes('data-bali-transfer-form') &&
+assert(html.includes('id="baliIdTransferOpen"') &&
+  !html.includes('data-bali-transfer-form') &&
   !html.includes('bali-bonus-transfer-scaffold.js') &&
   admin.includes('data-bali-transfer-form') &&
   admin.includes('data-bali-transfer-submit disabled') &&
@@ -1579,7 +1578,7 @@ assert(!html.includes('data-bali-transfer-form') &&
   rules.includes('match /guestWallets/{uid}') &&
   rules.includes('match /bonusTransfers/{transferId}') &&
   source("BALI_BONUS_TRANSFERS_RESERVED.md").includes('idempotencyKey'),
-  "Future BALI ID bonus transfers must be scaffolded for admin/director, disabled everywhere, and inaccessible to guests");
+  "Guest transfers must be available from BALI ID while staff transfers on behalf of guests remain disabled");
 const shareStyles=source("bali-new-features.css");
 assert(shareClient.includes('const actions=card.querySelector(".bali-event-actions")') &&
   shareClient.includes('actions.append(button);') &&
@@ -1588,7 +1587,7 @@ assert(shareClient.includes('const actions=card.querySelector(".bali-event-actio
   shareStyles.includes('grid-template-columns:minmax(0,1.32fr) minmax(0,1fr)') &&
   shareStyles.includes('position:static;') &&
   !shareStyles.includes('#eventsGrid .bali-share-trigger{position:absolute') &&
-  html.includes('bali-share.js?v=20261021-plane1') &&
+  html.includes('bali-share.js?v=') &&
   html.includes('bali-new-features.css?v=20261019-2'),
   "Calendar Share must sit beside RSVP in the event footer, never overlay the poster");
 assert(shareClient.includes('canvas.width=WIDTH;canvas.height=HEIGHT') &&

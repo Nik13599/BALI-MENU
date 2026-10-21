@@ -26,8 +26,11 @@
     if(!transform||transform==="none")return flipped?180:0;
     try{
       const m=new DOMMatrixReadOnly(transform);
-      const degrees=Math.atan2(m.m13,m.m11)*180/Math.PI;
-      return Number.isFinite(degrees)?degrees:displayedAngle;
+      // CSS rotateY stores -sin(angle) in m13. Keep complete turns too,
+      // otherwise interrupting a 360deg return can jump to the wrong side.
+      const degrees=Math.atan2(-m.m13,m.m11)*180/Math.PI;
+      return Number.isFinite(degrees)
+        ? degrees+360*Math.round((displayedAngle-degrees)/360) : displayedAngle;
     }catch{return displayedAngle;}
   }
   function stopTimer(){
@@ -43,6 +46,7 @@
     const full=Math.abs(Math.cos(angle*Math.PI/180));
     scene.style.setProperty("--bali-id-shadow-scale",(.36+full*.64).toFixed(3));
     scene.style.setProperty("--bali-id-shadow-strength",(.29+(1-full)*.31).toFixed(3));
+    scene.style.setProperty("--bali-id-light-x",(32+Math.sin(angle*Math.PI/180)*38).toFixed(2)+"%");
   }
   function normalize(){
     stopTimer();
@@ -54,8 +58,8 @@
     displayedAngle=angle;
   }
   function animate(target,backVisible,{focus=false}={}){
-    stopTimer();
     let current=readAngle();
+    stopTimer();
     if(!Number.isFinite(current))current=flipped?180:0;
     frame(current);
     faceState(backVisible,focus);
@@ -92,23 +96,20 @@
     faceState(!flipped,focus);
     scene.classList.add("is-cinematic");
     const travel=target-current;
-    // Smooth monotonic rotation with only one soft retreat-and-return.
-    // An ease-in-out per half prevents jerks at the old four animation
-    // keyframe junctions; no changes to the manual-swipe path.
+    // One easing over the complete turn keeps angular speed continuous
+    // through the edge. Retreat only slightly, like turning a physical card.
     const keyframes=[
-      {offset:0,transform:"translateZ(0px) rotateY("+current+"deg) scale(1)",
-        easing:"cubic-bezier(.39,.02,.25,.95)"},
-      {offset:.5,transform:"translateZ(-76px) rotateY("+(current+travel*.5)+"deg) scale(.958)",
-        easing:"cubic-bezier(.4,0,.56,1)"},
+      {offset:0,transform:"translateZ(0px) rotateY("+current+"deg) scale(1)"},
+      {offset:.5,transform:"translateZ(-32px) rotateY("+(current+travel*.5)+"deg) scale(.985)"},
       {offset:1,transform:"translateZ(0px) rotateY("+target+"deg) scale(1)"}
     ];
     track.style.transition="none";
     cinematicEffect=track.animate(keyframes,{
-      duration:1150,easing:"linear",fill:"forwards"
+      duration:820,easing:"cubic-bezier(.3,0,.2,1)",fill:"forwards"
     });
     const running=cinematicEffect;
     running.addEventListener("finish",()=>{if(cinematicEffect===running&&!drag)normalize();},{once:true});
-    finishTimer=setTimeout(()=>{if(cinematicEffect===running&&!drag)normalize();},1240);
+    finishTimer=setTimeout(()=>{if(cinematicEffect===running&&!drag)normalize();},910);
   }
   track.addEventListener("transitionend",event=>{
     if(event.target===track&&event.propertyName==="transform"&&!drag)normalize();
@@ -148,7 +149,7 @@
     g.lastX=event.clientX;g.lastTime=now;
     // Immediately follow a drag in either direction; no easing while held.
     const progress=clamp(dx/dragDistance(),-1.15,1.15);
-    frame(g.current+progress*180);
+    if(!reduce.matches)frame(g.current+progress*180);
   });
   function finish(event,cancelled=false){
     const g=drag;
@@ -189,6 +190,8 @@
   }
   scene.addEventListener("pointerup",event=>finish(event));
   scene.addEventListener("pointercancel",event=>finish(event,true));
+  scene.addEventListener("lostpointercapture",event=>finish(event,true));
+  reduce.addEventListener?.("change",()=>{if(reduce.matches)reset();});
   window.addEventListener("blur",()=>{
     if(!drag)return;
     const g=drag;
