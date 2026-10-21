@@ -39,6 +39,7 @@
   <link rel="stylesheet" href="bali-qr-scanner.css?v=20261021-1">
   <link rel="stylesheet" href="bali-calendar-mobile-compact.css?v=20261021-compact2">
   <link rel="stylesheet" href="bali-calendar-no-poster-backdrop.css?v=20261021-layer-motion2">
+  <link rel="stylesheet" href="bali-id-onboarding.css?v=20261021-2">
 </head>
 
 <body class="bali-guest-theme">
@@ -512,7 +513,7 @@
             <div class="bali-info-block-icon" aria-hidden="true">ID</div>
             <div>
               <h2 id="baliInfoPrivilegeHeading">BALI ID · Privilege</h2>
-              <p>После регистрации гость получает персональный BALI ID со статусом Member. Другие категории и индивидуальные привилегии назначает администрация клуба.</p>
+              <p>После регистрации и ознакомления с программой гость подтверждает участие и получает персональный BALI ID со статусом Member. Без подтверждения карта не создаётся. Другие категории и индивидуальные привилегии назначает администрация клуба.</p>
               <p>Наличие цифровой карты не означает автоматического предоставления скидки или бесплатного входа.</p>
               <button type="button" data-bali-nav="id" class="bali-info-inline-nav">Моя BALI ID <span aria-hidden="true">↗</span></button>
             </div>
@@ -941,10 +942,65 @@
         </div>
       </div>
     </dialog>
+    <!-- Shown to a guest without a completed, signed-in profile. -->
+    <dialog id="baliIdLoginDialog" aria-labelledby="baliIdLoginTitle" aria-describedby="baliIdLoginExplanation">
+      <div class="bali-id-login-shell">
+        <span class="bali-id-welcome-kicker">BALI ID · PRIVILEGE</span>
+        <div class="bali-id-login-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="3"/>
+            <circle cx="9" cy="10" r="2"/>
+            <path d="M6 16c.6-2 5.4-2 6 0M15 9h3M15 13h3"/>
+          </svg>
+        </div>
+        <h2 id="baliIdLoginTitle">Войдите в личный кабинет или зарегистрируйтесь</h2>
+        <p id="baliIdLoginExplanation">Для получения персональной BALI ID необходимо войти в аккаунт или завершить регистрацию. После входа вы сможете ознакомиться с программой и активировать свою карту.</p>
+        <div class="bali-id-welcome-buttons">
+          <button type="button" id="baliIdLoginCancel">Не сейчас</button>
+          <button type="button" id="baliIdLoginAction">Войти / зарегистрироваться</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- The BALI ID is issued only after the guest has read and acknowledged this introduction. -->
+    <dialog id="baliIdWelcomeDialog" aria-labelledby="baliIdWelcomeTitle" aria-describedby="baliIdWelcomeLead">
+      <div class="bali-id-welcome-shell">
+        <header class="bali-id-welcome-head">
+          <span class="bali-id-welcome-kicker">BALI ID · PRIVILEGE</span>
+          <h2 id="baliIdWelcomeTitle">Ваша карта привилегий BALI</h2>
+          <p id="baliIdWelcomeLead">Перед активацией карты ознакомьтесь с возможностями программы. Персональный BALI ID будет выдан только после вашего подтверждения.</p>
+        </header>
+        <div id="baliIdWelcomeScroll" tabindex="0" role="region" aria-label="Описание BALI ID — прокрутите до конца">
+          <h3>Что такое BALI ID?</h3>
+          <p>Это персональная цифровая карта гостя ночного клуба BALI. Она привязана к вашему аккаунту и содержит уникальный номер, имя, текущий уровень и предоставленные клубом привилегии.</p>
+          <h3>Возможности карты</h3>
+          <ul>
+            <li><strong>Персональный номер и QR-код.</strong> Откройте свою карту или покажите временный QR-код сотруднику для проверки доступных привилегий.</li>
+            <li><strong>Бонусы и предложения.</strong> В зависимости от уровня и начислений клуба вам могут быть доступны бесплатные входы, шоты, коктейли, кальяны, скидки и специальные предложения. Сами по себе регистрация и выпуск карты не начисляют эти бонусы.</li>
+            <li><strong>Перевод другому гостю.</strong> Доступные для передачи бонусы можно отправлять по шестизначному номеру BALI ID или через сканирование QR-кода. При переводе можно оставить необязательное пожелание получателю.</li>
+            <li><strong>История операций.</strong> Просматривайте начисления, списания и переводы. Получатель может увидеть информацию о переводе и ваше пожелание.</li>
+            <li><strong>Управление привилегиями.</strong> На странице карты отображаются текущий баланс и доступные действия. Пополнение, списание и использование бонусов возможны только в соответствии с установленными клубом правилами; онлайн-оплата пока недоступна.</li>
+          </ul>
+          <h3>Уровни BALI PRIVILEGE</h3>
+          <p>В программе предусмотрены шесть основных уровней: <strong>MEMBER, SILVER, GOLD, PLATINUM, BLACK и PRIVATE</strong>. Сначала вы получаете уровень MEMBER. Более высокие уровни и конкретные привилегии назначает администрация клуба. Статус PRIVATE предоставляется по приглашению.</p>
+          <h3>Как активируется карта?</h3>
+          <p>После нажатия «Ознакомлен» мы сохраним подтверждение в вашем аккаунте и автоматически присвоим персональный BALI ID. Повторно подтверждать ознакомление при каждом входе не нужно. Если вы пока не готовы, нажмите «Не сейчас»: карта не будет создана.</p>
+          <p class="bali-id-welcome-note">Подтверждение означает, что вы ознакомились с этим описанием программы BALI ID. Дата подтверждения сохраняется в вашем аккаунте. Вопросы по работе карты и обработке персональных данных можно направить администрации клуба через раздел «Инфо».</p>
+        </div>
+        <footer class="bali-id-welcome-footer">
+          <p id="baliIdWelcomeHint" aria-live="polite">Прокрутите описание до конца, чтобы активировать подтверждение.</p>
+          <p id="baliIdWelcomeError" role="alert"></p>
+          <div class="bali-id-welcome-buttons">
+            <button type="button" id="baliIdWelcomeCancel">Не сейчас</button>
+            <button type="button" id="baliIdWelcomeAccept" disabled>Ознакомлен</button>
+          </div>
+        </footer>
+      </div>
+    </dialog>
     <script src="bali-dialogs.js?v=20261020-1" defer></script>
     <script src="firebase-config.js?v=20261020-2"></script>
     <script type="module" src="bali-age-gate.js?v=20261018-98"></script>
-    <script src="app.js?v=20261020-preorder3"></script>
+    <script src="app.js?v=20261021-id-login2"></script>
     <script src="bali-calendar.js?v=20261020-past-red1" defer></script>
     <script src="bali-calendar-coverflow.js?v=20261021-layer-motion2" defer></script>
     <script src="bali-pc-reference.js?v=20261019-1" defer></script>
@@ -967,8 +1023,9 @@
     <script type="module" src="bali-theme.js?v=20261017-60"></script>
     <script src="bali-mobile-reference.js?v=20261019-shell1" defer></script>
     <script type="module" src="bali-profile-media.js?v=20261020-1"></script>
-    <script type="module" src="bali-id.js?v=20261021-bonuses"></script>
-    <script src="bali-pc-id-home.js?v=20261020-showcase1" defer></script>
+    <script type="module" src="bali-id-onboarding.js?v=20261021-2"></script>
+    <script type="module" src="bali-id.js?v=20261021-consent1"></script>
+    <script src="bali-pc-id-home.js?v=20261021-id-login2" defer></script>
     <script src="bali-about-teaser.js?v=20261020-1" defer></script>
     <script src="bali-experience.js?v=20261020-1" defer></script>
     <script src="bali-id-motion.js?v=20261020-cinematic2" defer></script>
