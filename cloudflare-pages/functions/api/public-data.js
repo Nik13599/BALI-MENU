@@ -34,9 +34,11 @@ export async function onRequestGet({request,waitUntil}){
   const key=new Request(input.origin+"/api/public-data?path="+encodeURIComponent(path));
   const cache=caches.default;
   const cached=await cache.match(key);
-  if(cached)return new Response(cached.body,{
-    status:cached.status,headers:{...Object.fromEntries(cached.headers),"X-BALI-Cache":"HIT"}
-  });
+  if(cached){
+    const headers=new Headers(cached.headers);
+    headers.set("X-BALI-Cache","HIT");
+    return new Response(cached.body,{status:cached.status,headers});
+  }
   const base="https://firestore.googleapis.com/v1/projects/"+PROJECT+
     "/databases/(default)/documents";
   const coll=COLLECTIONS.has(path);
