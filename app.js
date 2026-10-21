@@ -26,6 +26,17 @@ let guestInterestDates=new Set();
 const pendingInterestDates=new Set();
 let showOnlyPlannedEvents=false;
 let lastRenderedEventsView=false;
+let baliVisibleEventRange=window.BaliEventLifecycle.visibleToday();
+const eventStatus=event=>window.BaliEventLifecycle.state(event);
+const withinCalendar=event=>event?.date>=baliVisibleEventRange.start&&event?.date<=baliVisibleEventRange.end;
+const baliHeartIcon='<svg class="bali-event-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.8a5.5 5.5 0 0 0-7.8 0L12 5.9l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
+function setBaliHeartButton(button,selected,status="upcoming"){
+ if(!button.querySelector(".bali-event-action-icon"))button.insertAdjacentHTML("afterbegin",baliHeartIcon);
+ let label=button.querySelector(".bali-event-action-text");
+ if(!label){label=document.createElement("span");label.className="bali-event-action-text";button.append(label);}
+ label.textContent=status==="live"?(selected?"Я здесь ✓":"Я уже здесь"):(selected?"В моих планах":"Хочу пойти");
+ button.classList.toggle("selected",selected);
+}
 let lastWheelSlideAt=0;
 let openOrdersAfterSignIn=new URLSearchParams(location.search).get('view')==='orders';
 
@@ -193,7 +204,7 @@ function syncInterestVisuals(){
         button.classList.toggle("selected",selected);
         button.setAttribute("aria-pressed",String(selected));
         button.setAttribute("aria-busy",String(waiting));
-        button.textContent=selected?"✓ В моих планах":"Хочу пойти";
+        setBaliHeartButton(button,selected,card.dataset.eventStatus||"upcoming");
         button.title=selected?"Нажмите, чтобы убрать мероприятие из планов":"Добавить мероприятие в планы";
         button.disabled=waiting;
     }
@@ -688,6 +699,19 @@ window.matchMedia("(min-width:1180px)").addEventListener("change",()=>{
 window.addEventListener("bali:home-placeholder",()=>{
     if(document.body.dataset.baliPage==="home")renderHomeEvents();
 });
+window.addEventListener("bali:calendar:range",({detail})=>{
+ if(!detail?.start||!detail?.end)return;
+ if(detail.start===baliVisibleEventRange.start&&detail.end===baliVisibleEventRange.end)return;
+ baliVisibleEventRange=detail;renderUpcomingEvents();
+});
+window.addEventListener("bali:calendar:tick",()=>{
+ const grid=document.getElementById("eventsGrid");
+ if(!grid)return;
+ if([...grid.querySelectorAll(".event-card[data-event-id]")].some(card=>{
+   const event=availableEvents.find(e=>(e.id||e.date)===(card.dataset.eventId||card.dataset.eventDate));
+   return event&&eventStatus(event)!==card.dataset.eventStatus;
+ }))renderUpcomingEvents();
+});
 function renderUpcomingEvents() {
     const grid=document.getElementById("eventsGrid");
     if(!grid)return;
@@ -697,9 +721,8 @@ function renderUpcomingEvents() {
     const changedView=lastRenderedEventsView!==showOnlyPlannedEvents;
     lastRenderedEventsView=showOnlyPlannedEvents;
     grid.replaceChildren();
-    const today=minskDateToday();
     const allUpcoming=availableEvents
-      .filter(e=>e?.date>=today&&/^\d{4}-\d{2}-\d{2}$/.test(e?.date||""))
+      .filter(e=>withinCalendar(e)&&/^\d{4}-\d{2}-\d{2}$/.test(e?.date||""))
       .sort((a,b)=>a.date.localeCompare(b.date)||
         (a.startTime||"").localeCompare(b.startTime||"")||
         (a.id||a.date).localeCompare(b.id||b.date));
@@ -710,7 +733,7 @@ function renderUpcomingEvents() {
         empty.className="events-empty";
         empty.textContent=showOnlyPlannedEvents
             ?"В планах пока нет будущих мероприятий. Нажмите «Хочу пойти» на интересующем событии."
-            :"Ближайшие мероприятия пока не опубликованы.";
+            :"На видимых датах календаря пока нет мероприятий.";
         grid.append(empty);
         grid.scrollLeft=0;
         updateEventCarouselPosition();
@@ -721,6 +744,8 @@ function renderUpcomingEvents() {
         card.className="event-card";
         card.dataset.eventDate=event.date;
         card.dataset.eventId=event.id||event.date;
+        const status=eventStatus(event);
+        card.dataset.eventStatus=status;
         if(typeof event.dotColor==="string"&&/^#[0-9a-fA-F]{6}$/.test(event.dotColor))
             card.dataset.dotColor=event.dotColor;
         const posterWrap=document.createElement("div");
@@ -773,8 +798,8 @@ function renderUpcomingEvents() {
         planBtn.type="button";
         planBtn.className="event-want-to-go"+(guestInterestDates.has(event.id||event.date)?" selected":"");
         planBtn.setAttribute("aria-pressed",String(guestInterestDates.has(event.id||event.date)));
-        planBtn.textContent=guestInterestDates.has(event.id||event.date)?"✓ В моих планах":"Хочу пойти";
-        planBtn.title=guestInterestDates.has(event.id||event.date)
+        setBaliHeartButton(planBtn,guestInterestDates.has(event.id||event.date),status);
+        planBtn.title=status==="live"?"Отметить присутствие на вечеринке":guestInterestDates.has(event.id||event.date)
             ?"Нажмите, чтобы убрать мероприятие из планов":"Добавить мероприятие в планы";
         planBtn.disabled=pendingInterestDates.has(event.id||event.date);
         const message=document.createElement("p");
@@ -789,7 +814,18 @@ function renderUpcomingEvents() {
         details.append(name,times,description,interested,message);
         const actions=document.createElement("div");
         actions.className="bali-event-actions";
-        actions.append(planBtn);
+        if(status==="past"){
+            const ended=document.createElement("span");
+            ended.className="bali-event-ended";
+            ended.textContent="Мероприятие прошло";
+            ended.setAttribute("role","status");
+            actions.append(ended);
+        }else if(status==="live"){
+            const banner=document.createElement("span");
+            banner.className="bali-event-live-label";
+            banner.textContent="Ждём тебя";
+            actions.append(banner,planBtn);
+        }else actions.append(planBtn);
         body.append(details,actions);
         card.append(posterWrap,body);
         grid.append(card);
