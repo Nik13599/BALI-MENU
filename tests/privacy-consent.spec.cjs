@@ -23,6 +23,7 @@ async function fixture(page,{returning=false,newProfile=false,anonymous=false}={
     export const signInWithPopup=async()=>{
       window.__popupUserActivation=Boolean(navigator.userActivation?.isActive);
       window.__googleCalls++;
+      if(window.__googleError)throw {code:window.__googleError};
       await window.__setUser({uid:'guest',email:'guest@example.test',emailVerified:true});
     };
     export const signInWithRedirect=async()=>{},getRedirectResult=async()=>{};
@@ -189,17 +190,14 @@ test('Google popup starts in the direct sign-in gesture after prior consent',asy
  await expect(page.locator('#authProfileForm')).toBeHidden();
 });
 
-test('HTTP production origin explains why Google sign-in requires HTTPS',async({page})=>{
+test('Firebase unauthorized-domain error gives a useful recovery message',async({page})=>{
  await fixture(page,{anonymous:true,newProfile:true});
  await page.evaluate(()=>{
-   history.replaceState(null,'','/privacy-fixture.html');
-   Object.defineProperty(window,'__mockOrigin', {value:true});
+   window.__googleError='auth/unauthorized-domain';
+   localStorage.setItem('bali-privacy-entry-approved','2026-10-21');
+   window.BaliAuth.open();
  });
- // This fixture is localhost, which must remain permitted for isolated tests.
- await page.evaluate(()=>window.BaliAuth.open());
  await page.locator('#authGoogleBtn').click();
- await page.locator('#baliPrivacyProcessing').check();
- await page.locator('#baliPrivacyInternational').check();
- await page.locator('#baliPrivacyAccept').click();
- await expect.poll(()=>page.evaluate(()=>window.__googleCalls)).toBe(1);
+ await expect(page.locator('#authMessage')).toContainText('Authorized domains');
+ await expect(page.locator('#authGoogleBtn')).toBeEnabled();
 });
