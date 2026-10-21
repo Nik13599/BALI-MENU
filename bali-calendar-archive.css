@@ -1,0 +1,29 @@
+/* BALI calendar archive: preserve square artwork; mark completed events. */
+/* Chronological history sits left of the selected current/future poster. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card[data-event-status="past"]>.bali-event-poster-wrap{
+  border:1px solid rgba(250,96,112,.82)!important;
+  box-shadow:0 0 0 1px rgba(250,96,112,.18),0 0 18px rgba(216,49,73,.30)!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card[data-event-status="past"].is-active>.bali-event-poster-wrap{
+  border-color:#fa6070!important;
+  box-shadow:0 0 0 1px rgba(250,96,112,.54),0 0 27px rgba(250,96,112,.38),0 10px 27px rgba(0,0,0,.40)!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card[data-event-status="past"].is-neighbor>.bali-event-poster-wrap{
+  border-color:rgba(250,96,112,.68)!important;
+  box-shadow:0 0 16px rgba(250,96,112,.25)!important;
+}
+/* A completed date takes precedence over an old RSVP or the today tint.
+   Days with multiple differently timed events retain individual status sectors. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"][data-past="true"],
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"][data-past="true"][data-selected="true"]{
+  background:#fa6070!important;
+  background-image:none!important;
+  border-color:#fa6070!important;
+  color:#151910!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"][data-past="true"] .bali-calendar-day-number{
+  color:#151910!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection .bali-calendar-day[data-event="true"][data-past="true"] .bali-calendar-event-dots .bali-calendar-event-dot{
+  background:#fa6070!important;
+}
