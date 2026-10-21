@@ -1,12 +1,14 @@
 const {test,expect}=require('@playwright/test');
 
 test.beforeEach(async({page})=>{
+  // Exercise the real page router with an already accepted fixture account.
+  await page.addInitScript(()=>{window.BaliIdOnboarding={isAccepted:()=>true,open:async()=>true}});
   await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
   await page.goto('/index.html');
   await page.evaluate(()=>{
     navigateGuestPage('profile');
     document.getElementById('profileSection').hidden=true;
-    document.getElementById('baliIdSection').hidden=false;
+    navigateGuestPage('id');
     document.getElementById('baliIdFlipScene').dataset.baliLoading='false';
     document.body.dataset.baliPage='id';
   });

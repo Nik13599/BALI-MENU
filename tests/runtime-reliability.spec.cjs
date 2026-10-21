@@ -10,7 +10,13 @@ async function fixture(page,script){
     window.__auth={currentUser:window.__user('a')};
     window.__reads=[];window.__writes=[];window.__gates={};window.__events=[];
     window.__snap=data=>({exists:()=>!!data,data:()=>data});
-    window.__getDoc=async ref=>{window.__reads.push(ref.path);return window.__gates[ref.path]||window.__snap(window.__profile(ref.path.split('/').at(-1)));};
+    window.__getDoc=async ref=>{
+      window.__reads.push(ref.path);
+      if(window.__gates[ref.path])return window.__gates[ref.path];
+      if(ref.path.includes('/privacyConsents/'))return window.__snap({version:'2026-10-21',processing:true,international:true,acceptedAt:1});
+      if(ref.path.includes('/privacyWithdrawals/'))return window.__snap(null);
+      return window.__snap(window.__profile(ref.path.split('/').at(-1)));
+    };
     window.__setUser=async id=>{window.__auth.currentUser=id?window.__user(id):null;return window.__authCallback(window.__auth.currentUser);};
     window.addEventListener('bali:orders',e=>window.__events.push(e.detail));
   });

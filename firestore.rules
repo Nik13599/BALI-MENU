@@ -38,6 +38,31 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Consent precedes profile creation. Receipts are private, immutable and
+    // tied to a verified account; neither guests nor staff may backdate them.
+    match /users/{uid}/privacyConsents/{version} {
+      allow get: if signedInAs(uid) || isAdmin() || isDirector();
+      allow list: if isAdmin() || isDirector();
+      allow create: if signedInAs(uid) && version == '2026-10-21'
+        && request.resource.data.keys().hasOnly(['version','processing','international','acceptedAt'])
+        && request.resource.data.version == version
+        && request.resource.data.processing == true
+        && request.resource.data.international == true
+        && request.resource.data.acceptedAt == request.time
+        && !exists(/databases/$(database)/documents/users/$(uid)/privacyWithdrawals/$(version));
+      allow update, delete: if false;
+    }
+    match /users/{uid}/privacyWithdrawals/{version} {
+      allow get: if signedInAs(uid) || isAdmin() || isDirector();
+      allow list: if isAdmin() || isDirector();
+      allow create: if signedInAs(uid) && version == '2026-10-21'
+        && exists(/databases/$(database)/documents/users/$(uid)/privacyConsents/$(version))
+        && request.resource.data.keys().hasOnly(['version','requestedAt'])
+        && request.resource.data.version == version
+        && request.resource.data.requestedAt == request.time;
+      allow update, delete: if false;
+    }
+
     // Only the signed-in owner may access a compact private avatar.
     match /users/{uid}/profileMedia/{mediaId} {
       allow get: if mediaId == 'avatar' && signedInAs(uid);

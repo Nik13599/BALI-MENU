@@ -29,7 +29,7 @@ const logged=()=>Boolean(uid&&auth.currentUser?.uid===uid&&auth.currentUser.emai
 function readable(error){
   const code=String(error?.code||"");
   if(code.includes("not-found")||code.includes("unimplemented")||code.includes("unavailable"))
-    return "Сервис BALI ID ещё не развернут либо временно недоступен. Перевод не выполнен.";
+    return "Сервис BALI ID временно недоступен. Перевод не выполнен.";
   if(code.includes("unauthenticated"))return "Войдите в подтверждённый аккаунт BALI.";
   if(code.includes("permission-denied"))return "Нет доступа к операции. Проверьте аккаунт.";
   if(code.includes("resource-exhausted"))return "Слишком много запросов. Повторите позднее.";
@@ -337,7 +337,7 @@ onAuthStateChanged(auth,user=>{
   },()=>{
     if(uid===user.uid){
       grants=[];renderBalance();
-      say("baliIdStatus","Баланс недоступен. Проверьте правила Firebase.");
+      say("baliIdStatus","Не удалось получить остатки привилегий. Повторите попытку позже.");
     }
   });
 });

@@ -35,7 +35,7 @@ async function mark(eventId){
   selected.add(eventId);publish();
   return {selected:true};
  }catch(error){
-  if(error?.code==="permission-denied")throw Error("Не удалось сохранить отметку. Проверьте правила доступа Firebase.");
+  if(error?.code==="permission-denied")throw Error("Не удалось сохранить отметку. Повторите попытку позже.");
   throw error;
  }finally{working.delete(eventId);}
 }

@@ -1,5 +1,7 @@
 const {test,expect}=require("@playwright/test");
 test.beforeEach(async({page})=>{
+  // Exercise the real page router with an already accepted fixture account.
+  await page.addInitScript(()=>{window.BaliIdOnboarding={isAccepted:()=>true,open:async()=>true}});
   await page.route("**/*",route=>
     new URL(route.request().url()).hostname==="127.0.0.1"
       ?route.continue():route.abort());
@@ -21,7 +23,7 @@ test("ID card is completely hidden outside its own page, even with fixed display
   // Open only the card page; its original size and ratio must remain intact.
   await page.evaluate(()=>{
     document.body.dataset.baliPage="id";
-    document.getElementById("baliIdSection").hidden=false;
+    navigateGuestPage("id");
   });
   await expect(section).toBeVisible();
   await expect(page.locator("#baliIdFlipScene")).toBeVisible();
@@ -46,7 +48,7 @@ test("ID-related dialogs close automatically when leaving the card page",async({
   await page.goto("/index.html#home");
   await page.evaluate(()=>{
     document.body.dataset.baliPage="id";
-    document.getElementById("baliIdSection").hidden=false;
+    navigateGuestPage("id");
     document.getElementById("baliHistoryDialog").showModal();
   });
   await expect(page.locator("#baliHistoryDialog")).toBeVisible();

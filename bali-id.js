@@ -97,8 +97,8 @@ async function allocate(uid,run){
   }catch(e){
     if(session!==run)return;
     setText("baliIdStatus",e.code==="permission-denied"
-      ?"Номер BALI ID ожидает активации новых правил Firebase администратором."
-      :"Не удалось получить BALI ID: "+(e.code||"ошибка сети")+". Повторите открытие профиля.");
+      ?"Не удалось активировать номер BALI ID. Повторите попытку позже."
+      :"Не удалось получить BALI ID. Повторите попытку позже.");
     offerRetry();
     return false;
   }

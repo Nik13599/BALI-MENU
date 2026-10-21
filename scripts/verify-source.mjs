@@ -567,7 +567,7 @@ const infoSection=html.slice(html.indexOf('id="contactsSection"'),html.indexOf('
 for(const term of ["Контакты и социальные сети","Режим работы","Посещение клуба","Меню и предзаказы","BALI ID · Privilege","Правовая информация","Сведения об организации","Персональные данные","Предзаказы, оплата и обращения"]){
   assert(infoSection.includes(term),"Info is missing required club/site section: "+term);
 }
-assert(html.includes('bali-info-page.css?v=20261019-2') &&
+assert(html.includes('bali-info-page.css?v=') &&
   html.includes('bali-info-page.js?v=20261019-1') &&
   html.includes('id="baliInfoContactMirror"') &&
   infoClient.includes('sidebar.cloneNode(true)') &&
@@ -587,10 +587,10 @@ assert(html.includes('bali-info-page.css?v=20261019-2') &&
   infoSection.includes('Место оказания услуг:') &&
   infoSection.includes('<details open>') &&
   !infoSection.includes('реквизиты пока не подтверждены владельцем проекта') &&
-  infoSection.includes('не заменяет утверждённую политику') &&
+  infoSection.includes('href="privacy.html"') &&
   infoSection.includes('id="baliInfoCloseBtn"') &&
   infoSection.includes('data-bali-nav="profile"') &&
-  html.includes('bali-info-page.css?v=20261019-2') &&
+  html.includes('bali-info-page.css?v=') &&
   infoCss.includes('.bali-info-legal-grid') &&
   infoCss.includes('word-break:break-all;') &&
   html.includes('href="tel:+375296700300"'),

@@ -76,7 +76,7 @@ function message(error){
   if(code.includes("permission-denied"))return "Доступ к операции запрещён.";
   if(code.includes("resource-exhausted"))return "Лимит или защита от повторного сканирования. Попробуйте позднее.";
   if(code.includes("failed-precondition"))return String(error?.message||"Код использован, истёк или недостаточно бонусов.").slice(0,180);
-  if(code.includes("not-found")||code.includes("unimplemented"))return "QR-сервис пока не развёрнут на сервере.";
+  if(code.includes("not-found")||code.includes("unimplemented"))return "Проверка QR-кода временно недоступна. Повторите попытку позже.";
   if(code.includes("invalid-argument"))return "Проверьте QR-код и количество.";
   return "Транзакция не подтверждена сервером. Повторите попытку.";
 }

@@ -435,7 +435,11 @@ function renderGuestPage(page,{scroll=true}={}) {
     };
     for(const [name,id] of Object.entries(sections)) {
         const section=document.getElementById(id);
-        if(section)section.hidden=name!==selected;
+        if(section){
+            section.hidden=name!==selected;
+            section.inert=name!==selected;
+            section.setAttribute("aria-hidden",String(name!==selected));
+        }
     }
     const back=document.getElementById("homeFloatingBtn");
     if(back)back.hidden=true;
@@ -447,6 +451,10 @@ function renderGuestPage(page,{scroll=true}={}) {
     }
     const dock=document.getElementById("baliCartDock");
     if(dock)dock.hidden=selected!=="menu"||baliActiveMenuMode!=="kitchen";
+    if(selected==="id" && document.body.dataset.baliPage!=="id"){
+        closeAllModals();
+        for(const dialog of document.querySelectorAll("dialog[open]"))dialog.close();
+    }
     document.body.dataset.baliPage=selected;
     // BALI ID dialogs live at document root to avoid clipping.
     // Close them on any navigation away, just as the page canvas is hidden.

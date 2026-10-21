@@ -60,10 +60,10 @@ async function menuSnapshot(lines) {
 }
 function errorText(error) {
   if (error?.code === "permission-denied") {
-    return "Firestore запретил запись. Проверьте опубликованные правила, дату мероприятия и актуальные цены.";
+    return "Не удалось отправить предзаказ. Проверьте дату мероприятия и обновите корзину.";
   }
-  if (error?.code === "unavailable") return "Firestore сейчас недоступен. Повторите попытку.";
-  return error?.message || "Неизвестная ошибка";
+  if (error?.code === "unavailable") return "Не удалось связаться с клубом. Повторите попытку.";
+  return error?.code ? "Не удалось выполнить действие с предзаказом. Повторите попытку позже." : error?.message || "Не удалось выполнить действие с предзаказом.";
 }
 async function save(payload, editId = null) {
   const user = signedUser();

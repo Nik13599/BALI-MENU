@@ -1,5 +1,7 @@
 const {test,expect}=require('@playwright/test');
 test.beforeEach(async({page})=>{
+  // Exercise the real page router with an already accepted fixture account.
+  await page.addInitScript(()=>{window.BaliIdOnboarding={isAccepted:()=>true,open:async()=>true}});
   await page.route('**/*',route=>new URL(route.request().url()).hostname==='127.0.0.1'
     ?route.continue():route.abort());
 });
@@ -128,7 +130,7 @@ test('desktop arrows and inverted wheel move fixed-center 3D posters in referenc
 test('BALI ID keeps its enlarged card on-screen without redundant heading',async({page})=>{
   await page.goto('/index.html#id');
   await page.evaluate(()=>{
-    document.getElementById('baliIdSection').hidden=false;
+    navigateGuestPage('id');
     document.body.dataset.baliPage='id';
   });
   await expect(page.locator('#baliIdFlipScene')).toBeVisible();
@@ -235,7 +237,7 @@ test('touch swipes directly move the 3D cards left and right without native scro
   expect(result.scrollLeft).toBe(0);
 });
 
-test('completed parties show solid ruby red, while today without events remains emerald', async ({page}) => {
+test('completed parties retain an unfilled red outline; today has a white contour', async ({page}) => {
   await openCalendar(page);
   const dates=await page.evaluate(()=>{
     const pieces=new Intl.DateTimeFormat('en-GB',{
@@ -271,23 +273,26 @@ test('completed parties show solid ruby red, while today without events remains 
   const today=await locate(dates.today);
   await expect(today).toHaveAttribute('data-today','true');
   await expect(today).toHaveAttribute('data-planned','true');
-  await expect(today).toHaveCSS('background-color','rgba(27, 176, 132, 0.21)');
-  await expect(today.locator('.bali-calendar-day-number')).toHaveCSS('color','rgb(131, 255, 208)');
+  await expect(today).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
+  await expect(today).toHaveCSS('outline-color','rgb(255, 255, 255)');
+  await expect(today.locator('.bali-calendar-day-number')).toHaveCSS('color','rgb(237, 244, 234)');
   const past=await locate(dates.past);
   await expect(past).toHaveAttribute('data-past','true');
   await expect(past).toHaveAttribute('data-planned','true');
   await expect(past).toHaveAttribute('data-event-count','2');
   await expect(past).toHaveAttribute('data-lifecycle-status','past');
-  await expect(past).toHaveCSS('background-color','rgb(250, 96, 112)');
+  await expect(past).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
+  await expect(past).toHaveCSS('border-color','rgb(250, 96, 112)');
   await expect(past).toHaveCSS('background-image','none');
   await expect(past.locator('.bali-calendar-event-dot')).toHaveCount(2);
   for(const dot of await past.locator('.bali-calendar-event-dot').all())
     await expect(dot).toHaveCSS('background-color','rgb(250, 96, 112)');
   await past.click();
   await expect(past).toHaveAttribute('data-selected','true');
-  // A selected or planned date must preserve its completed (red) event fill.
-  expect(await past.evaluate(node=>getComputedStyle(node).background)).toContain('rgb(250, 96, 112)');
-  await expect(past.locator('.bali-calendar-day-number')).toHaveCSS('color','rgb(21, 25, 16)');
+  // Selecting or planning an archived event must never fill its date.
+  await expect(past).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
+  await expect(past).toHaveCSS('border-color','rgb(250, 96, 112)');
+  await expect(past.locator('.bali-calendar-day-number')).toHaveCSS('color','rgb(255, 182, 189)');
   const future=await locate(dates.future);
   await expect(future).toHaveAttribute('data-past','false');
   await expect(future.locator('.bali-calendar-event-dot')).toHaveCSS('background-color','rgb(185, 255, 81)');
