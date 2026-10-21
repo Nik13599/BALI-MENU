@@ -485,13 +485,10 @@ function renderHomeEvents() {
     if(!receivedEventSnapshot)return;
     const track=document.getElementById("homeEventCarousel");
     if(!track)return;
-    const previousScroll=track.scrollLeft;
     const oldCards=[...track.querySelectorAll(":scope>.bali-home-event-card")];
     const savedEvents=new Map(oldCards.filter(card=>card.dataset.eventId)
         .map(card=>[card.dataset.eventId,card]));
     const rendered=[];
-    const preserveScroll=track.dataset.homeView==="all";
-    track.dataset.homeView="all";
     // Completed events stay in the calendar archive, not the homepage.
     const homeSlots=window.matchMedia("(min-width:1180px)").matches?5:3;
     // The FULL events calendar remains unlimited; only the homepage is capped.
@@ -659,8 +656,8 @@ function renderHomeEvents() {
             rendered.push(card);
         }
     }
-    // Reuse unchanged real cards during a time rollover. Existing DOM elements
-    // retain their CSS transforms, so they visibly move one place left.
+    // Reuse unchanged real posters. Expiring events leave the fixed 3/5 slot row
+    // after one hour; subsequent events advance in chronological order.
     const retained=new Set(rendered);
     for(const old of oldCards)if(!retained.has(old))old.remove();
     let anchor=track.querySelector(":scope>.bali-home-event-card");
@@ -668,14 +665,7 @@ function renderHomeEvents() {
         if(card===anchor)anchor=anchor.nextElementSibling;
         else track.insertBefore(card,anchor);
     }
-    window.BaliHomeCarousel?.focusUpcoming?.();
-    if(preserveScroll&&previousScroll>0){
-        requestAnimationFrame(()=>{
-            track.scrollLeft=Math.min(previousScroll,Math.max(0,track.scrollWidth-track.clientWidth));
-        });
-    }else{
-        track.scrollLeft=0;
-    }
+
 }
 
 // Switch between three compact slots and five desktop slots.
