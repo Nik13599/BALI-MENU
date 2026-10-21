@@ -7,3 +7,5 @@ The build copies public browser files from the repository root and selected asse
 Keep `baliminsk.by` on the current hosting until the `pages.dev` deployment has passed smoke tests.
 
 Deployment verification: The first Cloudflare Pages production build completed successfully on 2026-10-21. This documentation-only commit tests automatic GitHub-to-Cloudflare deployments before custom-domain cutover.
+
+Git integration reconnected after repository authorization. Second documentation-only change tests automatic deployment events.
