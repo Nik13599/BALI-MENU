@@ -292,22 +292,24 @@ assert(html.includes('bali-pc-viewport.css?v=') &&
   viewportCss.includes('body.bali-guest-theme #homeSection .bali-home-menu-banner') &&
   viewportCss.includes('body.bali-guest-theme #contactsSection,'),
   "Desktop approved dashboard must fit the full viewport and preserve only catalog/horizontal event scrolling");
-// Only the PC HOME teaser is padded to five slots. The actual calendar
-// receives no invented event objects, RSVP buttons, or coming-soon entries.
+// Home shows three square teaser slots on phones/tablets, five on desktop.
+// Calendar contains no invented placeholder events or fake RSVP buttons.
 const homeTeaser=app.slice(app.indexOf('function renderHomeEvents()'),app.indexOf('function renderUpcomingEvents()'));
-assert(homeTeaser.includes('const isPcHome=window.matchMedia("(min-width:1180px)").matches') &&
-  homeTeaser.includes('Math.max(0,5-upcoming.length)') &&
+assert(homeTeaser.includes('const homeSlots=window.matchMedia("(min-width:1180px)").matches?5:3') &&
+  homeTeaser.includes('Math.max(0,homeSlots-upcoming.length)') &&
   homeTeaser.includes('bali-home-event-card bali-home-event-placeholder') &&
   homeTeaser.includes('posterTitle:"SECRET"') &&
   homeTeaser.includes('Совсем скоро узнаете') &&
-  homeTeaser.includes('if(!upcoming.length&&!isPcHome)') &&
+  !homeTeaser.includes('if(!upcoming.length&&!isPcHome)') &&
+  homeTeaser.includes('eventStatus(e)!=="past"') &&
+  source("bali-event-posters-unified.css").includes("aspect-ratio:1/1!important") &&
   !app.slice(app.indexOf('function renderUpcomingEvents()')).includes('bali-home-event-placeholder') &&
   viewportCss.includes('v89 — Desktop home: cards take the former calendar heading') &&
   viewportCss.includes('v90 — Five balanced HOME event slots') &&
   viewportCss.includes('grid-template-columns:repeat(5,minmax(0,1fr))!important') &&
   viewportCss.includes('body.bali-guest-theme #homeSection .bali-pc-events-title {') &&
   viewportCss.includes('body.bali-guest-theme #homeSection #homeEventCarousel>.bali-home-event-placeholder'),
-  "PC HOME only must display five slots and extend posters; full calendar stays real-only.");
+  "Every Home viewport must show square SECRET placeholders for unused upcoming slots; calendar stays real-only.");
 // All 5 PC Home event cells share one editable visual style, NOT fake events.
 const placeholderAdmin=source("bali-home-placeholder-admin.js");
 const placeholderPublic=source("bali-home-placeholder.js");
@@ -354,7 +356,7 @@ assert(admin.includes('id="baliEventPlaceholderEditor"') &&
   viewportCss.includes('v91 — Branded SECRET picture') &&
   viewportCss.includes('bali-home-placeholder-image') &&
   adminPlaceholderCss.includes('.bali-placeholder-preview-card') &&
-  source("image-compressor.js").includes('"design-placeholder":{ratio:3/4,maxChars:120000') &&
+  source("image-compressor.js").includes('"design-placeholder":{ratio:1,maxChars:120000') &&
   rules.includes('function validHomeEventPlaceholder(d)') &&
   rules.includes("settingId == 'homeEventPlaceholder' && validHomeEventPlaceholder(request.resource.data)") &&
   !app.slice(app.indexOf('function renderUpcomingEvents()')).includes('BaliHomePlaceholder'),
@@ -999,9 +1001,9 @@ assert(rules.includes('allow list: if isAdmin();') && rules.includes('match /ord
   "Guest CRM privacy and admin access missing");
 assert(rules.includes("data.poster_url") && rules.includes("data:image/webp;base64") &&
   rules.includes("image_url.size() <= 95000"), "Secure compressed poster/product storage missing");
-assert(imageProcessor.includes('canvas.toDataURL("image/webp"') && imageProcessor.includes('let ratio=design?.ratio||(poster?4/5:1);') &&
+assert(imageProcessor.includes('canvas.toDataURL("image/webp"') && imageProcessor.includes('let ratio=design?.ratio||1;') &&
   imageProcessor.includes('ratio=iw/ih;'),
-  "Image compression must create 1:1 dishes and 4:5 flyers");
+  "Image compression must create 1:1 dishes, flyers and SECRET placeholder images");
 assert(adminClient.includes('compressImage(file,"product")') &&
   adminClient.includes('compressImage(file,"poster")'), "Image picker must upload to Firestore");
 assert(html.includes('data-bali-nav="events"') && html.includes('id="eventsSection"'), "Guest events page missing");
