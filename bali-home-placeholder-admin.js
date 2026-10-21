@@ -4,7 +4,7 @@ import {getApp,getApps,initializeApp} from "https://www.gstatic.com/firebasejs/1
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,onSnapshot,setDoc,serverTimestamp}
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import {prepareImage as compressImage} from "./image-compressor.js?v=20261020-2";
+import {prepareImage as compressImage} from "./image-compressor.js?v=20261021-square1";
 
 const $=id=>document.getElementById(id);
 const form=$("baliEventPlaceholderForm");
@@ -88,7 +88,7 @@ if(form){
   file.addEventListener("change",async()=>{
     const upload=file.files?.[0];if(!upload)return;
     const serial=++fileSerial;processing=true;access();
-    say("Подготавливаем афишу SECRET в формате 3:4…");
+    say("Подготавливаем квадратную афишу SECRET 1:1…");
     try{
       const data=await compressImage(upload,"design-placeholder");
       if(serial!==fileSerial)return;
