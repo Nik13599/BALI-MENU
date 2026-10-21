@@ -457,12 +457,13 @@ service cloud.firestore {
     }
     function validPromotion(data) {
       return data.keys().hasAll(['title','description','imageUrl','imageTabletUrl','imageMobileUrl','destination','buttonText','sort','published','updatedAt'])
-        && data.keys().hasOnly(['title','description','imageUrl','imageTabletUrl','imageMobileUrl','destination','buttonText','contactTitle','contactLinks','contactEnabled','contactHotspot','overlay','sort','published','updatedAt'])
+        && data.keys().hasOnly(['title','description','imageUrl','imageTabletUrl','imageMobileUrl','destination','buttonText','contactTitle','contactLinks','contactEnabled','contactHotspot','overlay','imageRemoved','sort','published','updatedAt'])
         && (!('contactTitle' in data) || (data.contactTitle is string && data.contactTitle.size() <= 70))
         && (!('contactLinks' in data) || validPromoContactLinks(data.contactLinks))
         && (!('contactEnabled' in data) || validPromoContactEnabled(data.contactEnabled))
         && (!('contactHotspot' in data) || validPromoHotspot(data.contactHotspot))
         && (!('overlay' in data) || validPromoOverlay(data.overlay))
+        && (!('imageRemoved' in data) || data.imageRemoved is bool)
         && data.title is string && (data.title.size() == 0 || (data.title.size() >= 2 && data.title.size() <= 100))
         && data.description is string && data.description.size() <= 260
         && validDesignImage(data.imageUrl, 155000)
