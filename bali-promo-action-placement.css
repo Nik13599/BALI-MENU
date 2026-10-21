@@ -1,0 +1,25 @@
+/* Responsive published banner CTA positions.
+   Predefined top/middle/bottom left/center/right are stored as the existing
+   safe manual percentage coordinates. Do not affect unrelated site buttons. */
+body.bali-guest-theme #homeSection .bali-pc-hero #baliPcOfferAction[hidden]{
+  display:none!important;
+}
+body.bali-guest-theme #homeSection .bali-pc-hero #baliPcOfferAction:not([hidden]){
+  overflow-wrap:anywhere!important;
+  white-space:normal!important;
+  text-align:center!important;
+  box-sizing:border-box!important;
+  touch-action:manipulation;
+}
+/* The CTA at bottom-right must not cover the carousel's next/previous controls.
+   Only move the carousel controls when that exact placement is selected. */
+body.bali-guest-theme #homeSection .bali-pc-hero.bali-promo-cta-lower-right .bali-pc-hero-controls{
+  top:clamp(9px,1.2vw,17px)!important;
+  right:clamp(9px,1.2vw,17px)!important;
+  bottom:auto!important;
+}
+@media(max-width:767px){
+  body.bali-guest-theme #homeSection .bali-pc-hero.bali-promo-cta-lower-right .bali-pc-hero-controls{
+    top:7px!important;right:8px!important;
+  }
+}
