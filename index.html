@@ -75,9 +75,14 @@
     }
     body.bali-guest-theme #authModal.modal .modal-content{
       margin:0 auto!important;
+      box-sizing:border-box!important;
+      flex:0 1 560px!important;
+      width:min(560px,calc(100vw - 32px))!important;
+      max-width:min(560px,calc(100vw - 32px))!important;
       max-height:calc(100dvh - 32px)!important;
-      max-width:min(600px,calc(100vw - 24px))!important;
       overflow-y:auto!important;
+      border-radius:18px!important;
+      transform:none!important;
     }
     body.bali-guest-theme #baliPrivacyDialog.bali-privacy-dialog[open]{
       position:fixed!important;
