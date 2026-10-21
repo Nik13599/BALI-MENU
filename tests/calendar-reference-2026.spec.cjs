@@ -125,7 +125,7 @@ test('desktop arrows and inverted wheel move fixed-center 3D posters in referenc
   await expect.poll(()=>page.evaluate(()=>window.BaliCalendarShowcase.getState().activeIndex),
     {timeout:6000}).toBe(2);
 });
-test('BALI ID keeps all four sides of the card on-screen, and shows right-hand title',async({page})=>{
+test('BALI ID keeps its enlarged card on-screen without redundant heading',async({page})=>{
   await page.goto('/index.html#id');
   await page.evaluate(()=>{
     document.getElementById('baliIdSection').hidden=false;
@@ -136,18 +136,17 @@ test('BALI ID keeps all four sides of the card on-screen, and shows right-hand t
     const area=document.getElementById('baliIdSection');
     const container=area.querySelector('.container');
     const card=document.getElementById('baliIdFlipScene');
-    const title=document.getElementById('baliIdPageHeading');
-    const rect=card.getBoundingClientRect(),head=title.getBoundingClientRect();
+    const rect=card.getBoundingClientRect();
     const w=window.innerWidth;
     const overflow=getComputedStyle(container).overflow;
     return {left:rect.left,right:rect.right,width:rect.width,viewport:w,
-      titleRight:head.right,titleText:title.textContent.trim(),
+      accessibleName:area.getAttribute('aria-label'),
       overflow,pageScrollable:document.documentElement.scrollHeight>window.innerHeight+5};
   });
   expect(layout.left).toBeGreaterThanOrEqual(8);
   expect(layout.right).toBeLessThanOrEqual(layout.viewport-8);
-  expect(layout.titleRight).toBeLessThanOrEqual(layout.viewport);
-  expect(layout.titleText).toContain('цифровая карта гостя');
+  expect(layout.accessibleName).toBe('BALI ID');
+  await expect(page.locator('#baliIdPageHeading')).toHaveCount(0);
   expect(layout.overflow).toBe('visible');
   expect(layout.pageScrollable).toBe(false);
   await expect.poll(()=>page.evaluate(()=>!!window.BaliIdMotion)).toBe(true);
