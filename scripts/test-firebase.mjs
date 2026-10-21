@@ -185,6 +185,37 @@ try{
    await assertFails(adminStorage.ref('public/admin-emulator/product/'+('c'.repeat(64))+'.webp').put(new Uint8Array(180001),{contentType:'image/webp'}));
    await assertFails(adminStorage.ref('public/admin-emulator/product/'+('d'.repeat(64))+'.webp').put(new Uint8Array(100),{contentType:'text/html'}));
   });
+  await t.test('server-only checkout gate blocks direct guest writes but keeps cancellation and staff actions',async()=>{
+   const flag=doc(staff,'settings','preorderSecurity');
+   await assertFails(setDoc(doc(db,'settings','preorderSecurity'),{backendRequired:true,updatedAt:serverTimestamp()}));
+   await assertFails(setDoc(flag,{backendRequired:true,unexpected:'x',updatedAt:serverTimestamp()}));
+   await assertSucceeds(setDoc(flag,{backendRequired:true,updatedAt:serverTimestamp()}));
+   const publicFlag=doc(env.unauthenticatedContext().firestore(),'settings','preorderSecurity');
+   assert.equal((await assertSucceeds(getDoc(publicFlag))).data().backendRequired,true);
+   await assertFails(setDoc(doc(db,'orders','malicious-order'),{
+      ownerUid:uid,email:'guest@example.test',customerName:'Тестовый гость',
+      customerPhone:'+375291234567',eventDate,eventId:eventDate,eventTitle:'Тестовое событие',
+      orderNumber:82,tableNumber:'5',bookingId:'',notes:'',status:'pending',
+      createdAt:serverTimestamp(),updatedAt:serverTimestamp()
+   }));
+   await env.withSecurityRulesDisabled(async context=>{
+    const seed=context.firestore();
+    await setDoc(doc(seed,'orders','server-gate-pending'),{
+      ownerUid:uid,email:'guest@example.test',customerName:'Тестовый гость',
+      customerPhone:'+375291234567',eventDate,eventId:eventDate,eventTitle:'Тестовое событие',
+      orderNumber:81,tableNumber:'5',bookingId:'',notes:'',status:'pending',
+      createdAt:Timestamp.now(),updatedAt:Timestamp.now()
+    });
+   });
+   const editable=doc(db,'orders','server-gate-pending');
+   await assertFails(updateDoc(editable,{tableNumber:'22',updatedAt:serverTimestamp()}));
+   await assertFails(setDoc(doc(db,'orders','server-gate-pending','items','1'),
+    {id:1,name:'Тестовое блюдо',unitPrice:25,quantity:1}));
+   await assertSucceeds(updateDoc(editable,{status:'cancelled',updatedAt:serverTimestamp()}));
+   await assertFails(setDoc(doc(db,'orders','malicious-order'),{ownerUid:uid}));
+   await assertSucceeds(updateDoc(doc(staff,'orders',orderId),{notes:'Staff note',updatedAt:serverTimestamp()}));
+   await assertSucceeds(setDoc(flag,{backendRequired:false,updatedAt:serverTimestamp()}));
+  });
   await t.test('logout stops access through the real order client',async()=>{
    await signOut(auth);await assert.rejects(window.BaliOrders.getOrderWithItems(orderId));
   });

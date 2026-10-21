@@ -2,7 +2,8 @@
  * BALI — безопасное оформление предзаказа на бесплатном Firestore Spark.
  * Сумма заказа НЕ принимается от клиента как достоверная:
  * каждая позиция проверяется Rules по цене и наличию в /menu/{id}.
- * Лимит: 12 разных позиций в одном заказе (из-за лимитов Rules для batch).
+ * Лимит: 12 разных позиций. При включённом backend-only режиме
+ * весь заказ проверяется атомарно сервером; до миграции работает старый поток.
  */
 import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
@@ -19,6 +20,39 @@ const db = getFirestore(app);
 let orderListener = null;
 let generation = 0;
 const MAX_DIFFERENT_ITEMS = 12;
+// Safe staged migration: the published admin flag is OFF until the server
+// callable is deployed and its production permissions are verified.
+let pendingPreorder=null;
+const hex=bytes=>Array.from(new Uint8Array(bytes),v=>v.toString(16).padStart(2,"0")).join("");
+const requestHash=async payload=>hex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(JSON.stringify(payload))));
+const sessionKey=uid=>"bali-preorder-request-"+uid;
+async function submitViaServer(user,{eventDate,eventId,tableNumber,bookingId,notes,lines,editId}){
+  const signature=await requestHash({uid:user.uid,eventDate,eventId,tableNumber,bookingId,notes,lines,editId});
+  let previous=pendingPreorder?.signature===signature?pendingPreorder:null;
+  if(!previous){
+    try{
+      const stored=JSON.parse(sessionStorage.getItem(sessionKey(user.uid))||"null");
+      if(stored?.signature===signature&&/^[a-f0-9]{32}$/.test(stored.requestId))previous=stored;
+    }catch(_error){}
+  }
+  if(!previous)previous={signature,requestId:hex(crypto.getRandomValues(new Uint8Array(16)))};
+  pendingPreorder=previous;
+  try{sessionStorage.setItem(sessionKey(user.uid),JSON.stringify(previous));}catch(_error){}
+  // Loading Functions only at actual checkout keeps the public menu fast.
+  const {getFunctions,httpsCallable}=await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-functions.js");
+  const send=httpsCallable(getFunctions(app,"europe-west1"),"submitBaliPreorder");
+  const reply=await send({
+    requestId:previous.requestId,event_date:eventDate,event_id:eventId,
+    table_number:tableNumber,booking_id:bookingId,notes,items:lines,
+    ...(editId?{edit_id:editId}:{})
+  });
+  if(pendingPreorder?.requestId===previous.requestId)pendingPreorder=null;
+  try{
+    const stored=JSON.parse(sessionStorage.getItem(sessionKey(user.uid))||"null");
+    if(stored?.requestId===previous.requestId)sessionStorage.removeItem(sessionKey(user.uid));
+  }catch(_error){}
+  return reply.data;
+}
 const emit = (name, detail) => window.dispatchEvent(new CustomEvent(name, {detail}));
 
 function signedUser() {
@@ -81,7 +115,21 @@ async function save(payload, editId = null) {
     throw new Error("Выберите мероприятие и укажите столик или ID бронирования.");
   }
   const lines = normalizeItems(payload.items);
-  // Проверка на клиенте улучшает UX; Firestore Rules повторяет обязательные проверки.
+  // Old production rules may not yet expose this new settings document.
+  // A denied read in that old configuration must not break legacy checkout;
+  // once the new rules are live, backendRequired is always readable.
+  let switchSnapshot=null;
+  try{switchSnapshot=await getDoc(doc(db,"settings","preorderSecurity"));}
+  catch(error){if(error?.code!=="permission-denied")throw error;}
+  if(switchSnapshot?.exists()&&switchSnapshot.data()?.backendRequired===true){
+    // No legacy fallback when the backend is required: bypassing the callable
+    // would silently remove the global basket limit and request-id safety.
+    return submitViaServer(user,{
+      eventDate,eventId,tableNumber,bookingId,notes,lines,editId
+    });
+  }
+  // Legacy direct Firestore checkout remains until the admin enables the
+  // verified server-only switch. Existing live orders continue to work.
   const eventRef = doc(db, "events", eventId);
   const eventSnap = await getDoc(eventRef);
   if (!eventSnap.exists() || !dateOpen(eventSnap.data()) ||

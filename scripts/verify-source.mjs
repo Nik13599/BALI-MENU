@@ -171,7 +171,7 @@ assert(admin.includes('bali-design-studio.css?v=') &&
   sitePublic.includes('label("#baliMenuHeading",data.menuPageTitle)') &&
   rules.includes('function validHomeInterface(d)') &&
   rules.includes("settingId == 'homeInterface' && validHomeInterface(request.resource.data)") &&
-  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder','siteBuilderPublished']"),
+  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder','siteBuilderPublished','preorderSecurity']"),
   "Live admin design studio must preview all 3 real device layouts, permit block editing and protect the site settings in Firestore");
 
 // Site builder must remain presentation-only, with admin drafts not readable by guests.
@@ -849,7 +849,7 @@ assert(themeCss.includes("/* BALI v58") &&
   !themeClient.includes('setProperty("--bg-'),
   "Theme may change interactive accents only, leaving fixed background color unchanged");
 assert(rules.includes('match /settings/{settingId}') &&
-  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder','siteBuilderPublished']") &&
+  rules.includes("allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder','siteBuilderPublished','preorderSecurity']") &&
   rules.includes("(settingId == 'siteBuilderDraft' && isAdmin())") &&
   rules.includes("settingId in ['siteBuilderDraft','siteBuilderPublished'] && validSiteBuilder(request.resource.data)") &&
   rules.includes('allow list: if false') &&
