@@ -38,3 +38,32 @@ test('BALI ID: QR then History at top; Pay, Top up, Transfer stay below enlarged
   expect(card.w).toBeGreaterThan(160);
   expect(card.h).toBeGreaterThan(90);
 });
+test('mobile ID: card slightly inset, QR and history aligned just beyond its right edge, actions usable',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/index.html');
+  await page.evaluate(()=>{
+    document.getElementById('baliIdSection').hidden=false;
+    document.body.dataset.baliPage='id';
+  });
+  const measures=await page.evaluate(()=>{
+    const box=id=>{
+      const r=document.getElementById(id).getBoundingClientRect();
+      return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
+    };
+    return {card:box('baliIdFlipScene'),qr:box('baliShowQr'),
+      history:box('baliIdHistoryOpen'),use:box('baliIdPayOpen'),
+      earn:box('baliIdTopupOpen'),transfer:box('baliIdTransferOpen'),
+      width:innerWidth};
+  });
+  expect(measures.card.width).toBeLessThan(measures.width-22);
+  expect(measures.card.width).toBeGreaterThan(160);
+  expect(measures.history.right).toBeGreaterThanOrEqual(measures.card.right-11);
+  expect(measures.history.right).toBeLessThanOrEqual(measures.width);
+  expect(Math.abs(measures.qr.top-measures.history.top)).toBeLessThan(3);
+  for(const name of ['use','earn','transfer']){
+    expect(measures[name].height).toBeGreaterThanOrEqual(44);
+    expect(measures[name].width).toBeGreaterThanOrEqual(82);
+  }
+  expect(measures.use.right).toBeLessThan(measures.earn.left+3);
+  expect(measures.earn.right).toBeLessThan(measures.transfer.left+3);
+});
