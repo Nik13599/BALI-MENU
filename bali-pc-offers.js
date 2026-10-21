@@ -125,6 +125,7 @@ if(image&&title&&description&&counter&&action&&hero){
       hero.classList.remove("has-artwork","is-image-only","has-no-action");
       counter.textContent="— / —";
       action.hidden=true;
+      for(const prop of ["left","top","bottom","right","transform","position"])action.style.removeProperty(prop);
       artHotspot.hidden=true;secondaryHotspot.hidden=true;thirdHotspot.hidden=true;activeHotspot=null;activeSecondarySpot=null;activeThirdSpot=null;
     }else{
       const seasonal=offer.id===holidayId;
@@ -164,9 +165,29 @@ if(image&&title&&description&&counter&&action&&hero){
       secondaryHotspot.hidden=!activeSecondarySpot;
       thirdHotspot.hidden=!activeThirdSpot;
       artHotspot.setAttribute("aria-label",offer.buttonText||"Связаться с менеджером BALI");
+      // Optional positioning of the CTA, independent for each published slide.
+      const placement=offer.buttonPlacement;
+      const mode=placement?.mode;
+      for(const property of ["left","top","bottom","right","transform","position"]){
+        action.style.removeProperty(property);
+      }
+      const disabled=mode==="none";
+      if(["left","center","right","manual"].includes(mode)){
+        const x=mode==="left"?17:mode==="right"?83:mode==="center"?50:
+          Math.max(5,Math.min(95,Number(placement.x)||50));
+        const y=mode==="manual"?Math.max(5,Math.min(95,Number(placement.y)||82)):82;
+        for(const [property,value] of Object.entries({
+          position:"absolute",left:x+"%",top:y+"%",bottom:"auto",right:"auto",
+          transform:"translate(-50%,-50%)"
+        }))action.style.setProperty(property,value,"important");
+      }
+      if(disabled){
+        activeHotspot=null;activeSecondarySpot=null;activeThirdSpot=null;
+        artHotspot.hidden=true;secondaryHotspot.hidden=true;thirdHotspot.hidden=true;
+      }
       // Keep a readable real CTA on mobile seasonal artwork; desktop uses the
       // invisible clickable regions drawn over the original three tile areas.
-      action.hidden=offer.destination==="none"||(!layer&&!seasonal&&!!activeHotspot);
+      action.hidden=offer.destination==="none"||disabled||(!layer&&!seasonal&&!!activeHotspot&& !mode);
       if(!action.hidden)action.firstChild.textContent=offer.buttonText||"Подробнее ";
       if(activeHotspot)positionHotspot();
     }
