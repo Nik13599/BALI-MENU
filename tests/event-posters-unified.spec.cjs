@@ -8,7 +8,7 @@ test.beforeEach(async({page})=>{
 test("Home always shows square, caption-free event and SECRET tiles — three compact, five desktop",async({page})=>{
  await page.goto("/index.html");
  await page.evaluate(()=>{
-   availableEvents=[];
+   window.dispatchEvent(new CustomEvent("bali:events",{detail:{events:[]}}));
    window.BaliHomePlaceholder={
      posterTitle:"SECRET",kicker:"SECRET",footerTitle:"СКОРО В BALI",
      footerSubtitle:"Скоро",imageUrl:"",accentColor:"#b9ff51",backgroundColor:"#12171c"
@@ -38,11 +38,11 @@ test("Home always shows square, caption-free event and SECRET tiles — three co
 test("Actual home event shows just a square poster and a small bare corner heart",async({page})=>{
  await page.goto("/index.html");
  await page.evaluate(()=>{
-   availableEvents=[{
+   window.dispatchEvent(new CustomEvent("bali:events",{detail:{events:[{
     id:"2099-10-30__2",date:"2099-10-30",title:"BALI TEST",
     description:"Подробное описание вечеринки",startTime:"23:00",endTime:"06:00",
     poster_url:"assets/bali-id-card-readable.svg",interestCount:0
-   }];
+   }]}}));
    renderHomeEvents();
  });
  const card=page.locator("#homeEventCarousel>.bali-home-event-card:not(.bali-home-event-placeholder)");
@@ -144,11 +144,11 @@ test("Tablet uses mobile-style Home composition and footer navigation",async({pa
 test("Home poster opens the event description instead of placing text on the image",async({page})=>{
  await page.goto("/index.html");
  await page.evaluate(()=>{
-   availableEvents=[{
+   window.dispatchEvent(new CustomEvent("bali:events",{detail:{events:[{
      id:"2026-10-30__2",date:"2026-10-30",title:"BALI POSTER DETAIL",
      description:"Полное описание отображается только после нажатия на афишу.",
      startTime:"23:00",endTime:"06:00",poster_url:"assets/bali-id-card-readable.svg"
-   }];
+   }]}}));
    renderHomeEvents();
  });
  await expect(page.locator("#homeEventCarousel .bali-home-open-event")).toHaveCount(1);
