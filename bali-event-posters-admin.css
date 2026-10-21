@@ -61,3 +61,17 @@
  display:none!important;
 }
 #baliEventPlaceholderEditor .bali-placeholder-preview-footer[hidden]{display:none!important}
+
+/* A thumbnail in the event-management list is the same square art as guests see. */
+#eventList .entry>.admin-list-thumbnail{
+ box-sizing:border-box!important;
+ flex:0 0 68px!important;
+ display:block!important;
+ width:68px!important;height:68px!important;
+ min-width:68px!important;min-height:68px!important;
+ aspect-ratio:1/1!important;
+ object-fit:cover!important;
+ object-position:center!important;
+ background:#060a07!important;
+ border-radius:8px!important;
+}
