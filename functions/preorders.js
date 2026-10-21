@@ -67,8 +67,8 @@ module.exports=({db,admin,verified,fail})=>async req=>{
       if(previous.fingerprint!==fingerprint)fail("already-exists","Идентификатор отправки использован для другого заказа.");
       return {...previous.result,alreadyProcessed:true};
     }
-    const eventInfo=event.data();
-    if(!event.exists||eventInfo.date!==eventDate||eventInfo.preorderEnabled!==true||
+    const eventInfo=event.exists?event.data():null;
+    if(!eventInfo||eventInfo.date!==eventDate||eventInfo.preorderEnabled!==true||
        typeof eventInfo.closesAt?.toMillis!=="function"||
        eventInfo.closesAt.toMillis()<=Date.now()||
        typeof eventInfo.title!=="string"||eventInfo.title.length<2||eventInfo.title.length>150)
