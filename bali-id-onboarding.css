@@ -1,0 +1,38 @@
+/* BALI ID first-use acknowledgement — independent from the fixed card page. */
+#baliIdWelcomeDialog{width:min(94vw,640px);max-height:min(92dvh,820px);padding:0;border:1px solid rgba(187,227,95,.29);border-radius:20px;color:#f4f6f2;background:linear-gradient(150deg,#1c211b,#0b0f0b 68%);box-shadow:0 28px 96px rgba(0,0,0,.76);overflow:hidden}
+#baliIdWelcomeDialog::backdrop{background:rgba(0,0,0,.84);backdrop-filter:blur(11px)}
+.bali-id-welcome-shell{display:flex;flex-direction:column;max-height:min(92dvh,820px);min-height:0}
+.bali-id-welcome-head{padding:26px 28px 15px;flex-shrink:0}
+.bali-id-welcome-kicker{display:block;color:#c2e47d;font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase}
+.bali-id-welcome-head h2{font-size:clamp(23px,3.4vw,32px);line-height:1.14;letter-spacing:-.035em;margin:8px 0 10px}
+.bali-id-welcome-head p{color:#c8d0c4;font-size:14px;line-height:1.55;margin:0}
+#baliIdWelcomeScroll{overflow-y:auto;overscroll-behavior:contain;min-height:0;max-height:min(47dvh,365px);padding:6px 28px 24px;scrollbar-color:#a9ce64 #151b13;scrollbar-width:thin}
+#baliIdWelcomeScroll h3{font-size:15px;margin:21px 0 9px;color:#e4f1c8}
+#baliIdWelcomeScroll p,#baliIdWelcomeScroll li{font-size:13px;line-height:1.65;color:#c7cec3}
+#baliIdWelcomeScroll p{margin:8px 0 12px}
+#baliIdWelcomeScroll ul{padding-left:19px;margin:9px 0 15px}
+#baliIdWelcomeScroll li+li{margin-top:9px}
+.bali-id-welcome-note{border-left:2px solid #acd966;padding:9px 14px;background:rgba(158,214,91,.055);border-radius:0 8px 8px 0}
+.bali-id-welcome-footer{flex-shrink:0;padding:15px 28px 24px;border-top:1px solid rgba(255,255,255,.09);background:#10160f}
+#baliIdWelcomeHint{color:#bdc5b9;font-size:12px;line-height:1.5;margin:0 0 10px}
+#baliIdWelcomeError{font-size:12px;color:#ffb6a6;line-height:1.45;margin:0 0 10px}
+#baliIdWelcomeError:empty{display:none}
+.bali-id-welcome-buttons{display:flex;gap:11px}
+.bali-id-welcome-buttons button{flex:1;min-height:45px;border-radius:9px;font:700 14px/1.2 inherit;cursor:pointer;transition:opacity .15s}
+#baliIdWelcomeCancel{background:transparent;color:#eee;border:1px solid rgba(255,255,255,.27)}
+#baliIdWelcomeAccept{background:#b9ed66;border:1px solid #b9ed66;color:#11190a}
+#baliIdWelcomeAccept:disabled{opacity:.35;cursor:not-allowed;filter:grayscale(.85)}
+@media(max-width:520px){#baliIdWelcomeDialog{width:calc(100vw - 22px);border-radius:15px}.bali-id-welcome-head{padding:22px 18px 12px}#baliIdWelcomeScroll{max-height:48dvh;padding:4px 18px 19px}.bali-id-welcome-footer{padding:14px 18px 20px}.bali-id-welcome-buttons button{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.bali-id-welcome-buttons button{transition:none}}
+
+/* Mandatory sign-in notification before the first-time programme introduction. */
+#baliIdLoginDialog{width:min(92vw,455px);padding:0;border:1px solid rgba(187,227,95,.28);border-radius:18px;background:linear-gradient(140deg,#1a2017,#080b09);color:#f5f8ef;box-shadow:0 28px 95px rgba(0,0,0,.76)}
+#baliIdLoginDialog::backdrop{background:rgba(0,0,0,.82);backdrop-filter:blur(10px)}
+.bali-id-login-shell{padding:27px 25px 24px;text-align:center}
+.bali-id-login-icon{width:62px;height:62px;border:1px solid rgba(193,229,119,.35);border-radius:18px;margin:19px auto 14px;display:grid;place-items:center;color:#c0e679;background:rgba(179,222,98,.08)}
+.bali-id-login-shell h2{font-size:clamp(20px,4vw,26px);font-weight:800;line-height:1.2;letter-spacing:-.025em;margin:0 0 12px}
+.bali-id-login-shell p{color:#bac3b5;font-size:13px;line-height:1.65;margin:0 0 24px}
+#baliIdLoginCancel,#baliIdLoginAction{min-height:48px;border-radius:9px;border:1px solid rgba(255,255,255,.2);font-size:13px;font-weight:750;cursor:pointer}
+#baliIdLoginCancel{color:#edf0e8;background:transparent}
+#baliIdLoginAction{color:#10170a;background:#b9ed66;border-color:#b9ed66}
+@media(max-width:520px){.bali-id-login-shell{padding:24px 17px 19px}.bali-id-login-shell .bali-id-welcome-buttons{flex-direction:column-reverse}.bali-id-login-shell .bali-id-welcome-buttons button{width:100%}}
