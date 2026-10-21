@@ -8,6 +8,11 @@
     about:["settings/siteBuilderPublished"],profile:[],id:[]
   };
   if(window.matchMedia("(max-width:767px)").matches)required.home.push("mobileAboutBackgrounds");
+  // The design editor intentionally uses draft layout data, not the published builder document.
+  if(new URLSearchParams(location.search).has("bali-admin-design-preview")){
+    required.home=required.home.filter(path=>path!=="settings/siteBuilderPublished");
+    required.about=[];
+  }
   const received=new Set(),validPages=new Set(Object.keys(required));
   let domReady=false,opening=false,opened=false,failed=false;
   let timeoutId;
@@ -43,6 +48,7 @@
       if(page==="home"){
         await waitImage(document.getElementById("baliPcHeroPoster"),8500,true);
         const photos=[...document.querySelectorAll("#homeEventCarousel .bali-home-event-card:not(.bali-home-event-placeholder) img")];
+        photos.push(document.getElementById("baliPcAboutImage"));
         if(window.matchMedia("(max-width:767px)").matches)
           photos.push(document.getElementById("baliMobileAboutBackgroundA"));
         await Promise.all(photos.map(img=>waitImage(img,5000)));
