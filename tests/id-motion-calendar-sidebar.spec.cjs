@@ -277,7 +277,7 @@ test('BALI ID card is centered, enlarged and top tools are QR then history',asyn
       actions:{top:actions.top,bottom:actions.bottom},tools,actionLabels,viewport:innerWidth};
   });
   expect(data.tools).toEqual(['baliShowQr','baliIdHistoryOpen']);
-  expect(data.actionLabels).toEqual(['Оплатить','Пополнить','Перевести']);
+  expect(data.actionLabels).toEqual(['Использовать','Получить','Перевести']);
   expect(data.card.width/data.card.height).toBeCloseTo(1.68,1);
   expect(data.card.left).toBeGreaterThanOrEqual(2);
   expect(data.card.right).toBeLessThanOrEqual(data.viewport-2);
