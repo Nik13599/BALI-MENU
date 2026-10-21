@@ -208,8 +208,10 @@ try{
     });
    });
    const editable=doc(db,'orders','server-gate-pending');
-   await assertSucceeds(updateDoc(editable,{status:'cancelled',updatedAt:serverTimestamp()}));
    await assertFails(updateDoc(editable,{tableNumber:'22',updatedAt:serverTimestamp()}));
+   await assertFails(setDoc(doc(db,'orders','server-gate-pending','items','1'),
+    {id:1,name:'Тестовое блюдо',unitPrice:25,quantity:1}));
+   await assertSucceeds(updateDoc(editable,{status:'cancelled',updatedAt:serverTimestamp()}));
    await assertFails(setDoc(doc(db,'orders','malicious-order'),{ownerUid:uid}));
    await assertSucceeds(updateDoc(doc(staff,'orders',orderId),{notes:'Staff note',updatedAt:serverTimestamp()}));
    await assertSucceeds(setDoc(flag,{backendRequired:false,updatedAt:serverTimestamp()}));
