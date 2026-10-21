@@ -202,3 +202,77 @@
   --bali-event-slide-width:min(60vw,45dvh,390px);
  }
 }
+
+/* DESKTOP HOME — align the full advertisement and all five square posters
+   precisely to the left/right edges of the large Menu button.
+   No tablet/phone geometry is changed. */
+@media(min-width:1180px){
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-events-panel{
+    width:100%!important;
+    min-width:0!important;
+    margin-inline:0!important;
+    padding-inline:0!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-pc-hero{
+    box-sizing:border-box!important;
+    grid-column:1!important;
+    justify-self:stretch!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin-inline:0!important;
+    padding-inline:0!important;
+  }
+  /* Keep the uploaded artwork's proportions. Never stretch the image. */
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal .bali-pc-hero-visual,
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal .bali-pc-hero-visual picture{
+    width:100%!important;
+    height:100%!important;
+    max-width:none!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-pc-hero.is-seasonal:not(.is-composed) .bali-pc-hero-visual img{
+    width:100%!important;
+    height:100%!important;
+    object-fit:contain!important;
+    object-position:center!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel.bali-home-events{
+    box-sizing:border-box!important;
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    grid-template-rows:minmax(0,1fr)!important;
+    grid-auto-flow:column!important;
+    align-items:center!important;
+    justify-content:stretch!important;
+    column-gap:clamp(11px,1.3vw,24px)!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow-x:hidden!important;
+    overflow-y:hidden!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #homeSection #homeEventCarousel>.bali-home-event-card{
+    box-sizing:border-box!important;
+    display:block!important;
+    justify-self:stretch!important;
+    align-self:center!important;
+    flex:none!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:100%!important;
+    aspect-ratio:1 / 1!important;
+    margin:0!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #homeSection #menuNavBtn.bali-home-menu-banner{
+    box-sizing:border-box!important;
+    justify-self:stretch!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin-inline:0!important;
+  }
+}
