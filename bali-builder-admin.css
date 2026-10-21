@@ -193,3 +193,9 @@ body[data-bali-admin-section="design"] .admin-tab[data-admin-tab="design"]{font-
 .bali-simple-banner-editor [data-promo-size]{
  color:#c5e5c3;font:650 10px/1.5 Manrope,Inter,sans-serif
 }
+
+.bali-promo-simple-image-actions{display:flex;flex-wrap:wrap;gap:8px}
+.bali-simple-banner-editor .bali-promo-simple-image-actions button{flex:1 1 130px;min-height:39px}
+.bali-simple-banner-editor .bali-promo-simple-remove{background:#4a1b21!important;border:1px solid #9c4b52!important;color:#ffe1e1!important;border-radius:8px!important;cursor:pointer}
+.bali-simple-banner-editor .bali-promo-simple-reload{background:transparent!important;border:1px solid #456449!important;color:#d0e1cd!important;min-height:36px;border-radius:8px;cursor:pointer}
+.bali-builder-utilities #baliBuilderOpenPromo{background:#b9ff51;color:#102015;border:0;border-radius:8px;padding:11px 15px;font-weight:800;cursor:pointer}
