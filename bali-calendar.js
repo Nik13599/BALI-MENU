@@ -38,6 +38,7 @@
    .map(value=>value.replace(/__[23]$/,""))
    .filter(valid));
  const lifecycle=window.BaliEventLifecycle;
+ const validDotColor=value=>typeof value==="string"&&/^#[0-9a-f]{6}$/i.test(value);
  let lastRange="";
  const calendarEvents=()=>{
    // Live server snapshots include past and future dates; local poster cards
@@ -45,13 +46,15 @@
    // if/when publishing on the same date is enabled.
    const items=eventSnapshot.map(event=>({
      date:event.date,
+     color:validDotColor(event.dotColor)?event.dotColor:null,
      id:event.id||event.date,status:lifecycle.state(event),title:event.title||"Мероприятие"
    })).filter(event=>valid(event.date));
    const existing=new Set(items.map(event=>event.id));
    for(const card of eventCards()){
      const date=card.dataset.eventDate,id=card.dataset.eventId||date;
      if(!valid(date)||existing.has(id))continue;
-     items.push({date,id,status:card.dataset.eventStatus||"upcoming",title:card.querySelector("h3")?.textContent||"Мероприятие"});
+     items.push({date,id,color:validDotColor(card.dataset.dotColor)?card.dataset.dotColor:null,
+       status:card.dataset.eventStatus||"upcoming",title:card.querySelector("h3")?.textContent||"Мероприятие"});
      existing.add(id);
    }
    return items;
@@ -100,6 +103,12 @@
    }
    btn.dataset.planned=String(planned);
    btn.dataset.eventCount=String(items.length);
+   // A planned day stays highlighted while the guest browses other posters.
+   // Archived events retain their red, unfilled archive state.
+   if(planned&&published&&!past){
+     btn.style.setProperty("background-color","#b9ff51","important");
+     btn.style.setProperty("color","#151910","important");
+   }
    btn.setAttribute("aria-pressed",String(s===selected));
    btn.setAttribute("aria-label",describe(s,{weekday:"long",day:"numeric",month:"long",year:"numeric"})+
      (published?". Мероприятий: "+items.length+".":"")+
@@ -121,6 +130,10 @@
        const dot=document.createElement("span");
        dot.className="bali-calendar-event-dot";
        dot.dataset.status=item.status;
+       // Respect the colour configured per event, but preserve status and contrast.
+       if(planned&&!past)dot.style.setProperty("background-color","#151910","important");
+       else if(item.status==="past")dot.style.setProperty("background-color","#fa6070","important");
+       else if(s!==selected&&item.color)dot.style.setProperty("background-color",item.color,"important");
        dots.append(dot);
      }
      btn.append(dots);
