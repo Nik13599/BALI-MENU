@@ -155,3 +155,96 @@
     --bali-home-menu-height:clamp(65px,10dvh,74px);
   }
 }
+
+/* 21 Oct | Exact desktop frame, measured against the real sidebar controls.
+   This rule only activates after the logo/address geometry is available.
+   Both desktop columns start at the logo's upper edge and finish exactly
+   at the lower edge of the Minsk / Kirova 13 map button. */
+@media(min-width:1180px){
+  :root[data-bali-theme] body.bali-guest-theme[data-bali-page="home"] #homeSection
+  .bali-home-inner.bali-pc-edge-aligned{
+    box-sizing:border-box!important;
+    height:var(--bali-home-edge-span)!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin-top:var(--bali-home-edge-top)!important;
+    padding-top:0!important;
+    padding-bottom:0!important;
+    grid-template-rows:
+      minmax(0,var(--bali-home-fit-promo))
+      minmax(0,var(--bali-home-fit-poster))
+      minmax(0,var(--bali-home-fit-menu))!important;
+    align-content:space-between!important;
+    row-gap:0!important;
+  }
+
+  /* Hero starts at the logo's top; square posters sit between the hero and
+     the Menu button, with the flexible vertical breathing room distributed
+     symmetrically inside the first two tracks. */
+  :root[data-bali-theme] body.bali-guest-theme[data-bali-page="home"] #homeSection
+  .bali-home-inner.bali-pc-edge-aligned .bali-home-events-panel{
+    grid-row:1/3!important;
+    grid-template-rows:
+      minmax(0,var(--bali-home-fit-promo))
+      minmax(0,var(--bali-home-fit-poster))!important;
+    align-content:space-between!important;
+    row-gap:0!important;
+    height:100%!important;
+    min-height:0!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme[data-bali-page="home"] #homeSection
+  .bali-home-inner.bali-pc-edge-aligned .bali-pc-hero{
+    grid-row:1!important;
+    align-self:start!important;
+    height:100%!important;
+    max-height:100%!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme[data-bali-page="home"] #homeSection
+  .bali-home-inner.bali-pc-edge-aligned .bali-pc-hero.is-seasonal{
+    width:min(100%,calc(var(--bali-home-fit-promo) * 1024 / 353))!important;
+    height:auto!important;
+    max-height:var(--bali-home-fit-promo)!important;
+    aspect-ratio:1024/353!important;
+    align-self:start!important;
+    justify-self:center!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme[data-bali-page="home"] #homeSection
+  .bali-home-inner.bali-pc-edge-aligned #homeEventCarousel.bali-home-events{
+    grid-row:2!important;
+    align-self:end!important;
+    min-height:0!important;
+    height:var(--bali-home-fit-poster)!important;
+    max-height:var(--bali-home-fit-poster)!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme[data-bali-page="home"] #homeSection
+  .bali-home-inner.bali-pc-edge-aligned #menuNavBtn.bali-home-menu-banner{
+    grid-row:3!important;
+    align-self:end!important;
+    height:var(--bali-home-fit-menu)!important;
+    min-height:0!important;
+  }
+
+  /* Right column is one full-height two-card grid. Thus the upper About
+     panel aligns with the logo while the BALI ID Privilege card shares
+     the same physical baseline as the Menu and Minsk address button. */
+  :root[data-bali-theme] body.bali-guest-theme[data-bali-page="home"] #homeSection
+  .bali-home-inner.bali-pc-edge-aligned .bali-pc-right-rail{
+    grid-row:1/4!important;
+    display:grid!important;
+    grid-template-rows:minmax(0,3.35fr) minmax(0,1.15fr)!important;
+    row-gap:var(--bali-pc-gap)!important;
+    min-height:0!important;
+    align-content:stretch!important;
+    align-self:stretch!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme[data-bali-page="home"] #homeSection
+  .bali-home-inner.bali-pc-edge-aligned .bali-pc-right-rail>.bali-pc-about,
+  :root[data-bali-theme] body.bali-guest-theme[data-bali-page="home"] #homeSection
+  .bali-home-inner.bali-pc-edge-aligned .bali-pc-right-rail>#baliHomeIdCard{
+    box-sizing:border-box!important;
+    min-height:0!important;
+    max-height:100%!important;
+    height:100%!important;
+    margin:0!important;
+  }
+}
