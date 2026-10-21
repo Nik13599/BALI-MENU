@@ -82,7 +82,8 @@ vm.runInNewContext(readFileSync("functions/index.js","utf8"),{
   exports,require:name=>name==="firebase-admin"?fakeAdmin:
     name==="firebase-functions/v2/https"?{onCall:(_options,handler)=>handler,HttpsError}:
      name==="qrcode"?{toDataURL:async()=> "data:image/png;base64,dGVzdA=="}:
-     name==="./bonus-qr"?()=>({}):require(name),
+     name==="./bonus-qr"?()=>({}):
+     name==="./preorders"?()=>async()=>({}):require(name),
   console,Date,Math,Number,String,Promise,Boolean,Array,Error,Set,Map,JSON,RegExp
 },{filename:"functions/index.js"});
 const auth=uid=>({auth:{uid,token:{email_verified:true}}});
