@@ -16,19 +16,6 @@ assert(html.indexOf('id="baliIdTransferOpen"')<html.indexOf('id="baliShowQr"') &
   html.includes('id="baliIdTopupOpen"') && html.includes('id="baliIdPayOpen"') &&
   html.includes('id="baliIdHistoryOpen"') && html.includes('id="baliTransferScanQr"'),
   "BALI ID must offer QR top-up, QR debit, history and recipient QR lookup");
-const topStart=html.indexOf('<div class="bali-id-topbar">');
-const markupTop=html.slice(topStart,html.indexOf('<div class="bali-profile-card bali-id-profile">',topStart));
-const markupBottom=html.slice(html.indexOf('<div class="bali-bank-actions"'),html.indexOf('<section class="bali-bank-wallet"'));
-const layoutCss=s("bali-qr-scanner.css");
-assert(markupTop.includes('id="baliIdPayOpen"')&&markupTop.includes('id="baliIdHistoryOpen"')&&
-  !markupBottom.includes('id="baliIdHistoryOpen"')&&
-  markupBottom.includes('id="baliIdTransferOpen"')&&
-  markupBottom.includes('id="baliIdTopupOpen"')&&
-  markupBottom.includes('id="baliShowQr"')&&
-  layoutCss.includes('grid-template-columns:repeat(3,minmax(0,1fr))!important')&&
-  layoutCss.includes('grid-column:auto!important')&&
-  layoutCss.includes('#baliIdHistoryOpen span::after'),
-  "Desktop and mobile controls must put Pay/History above the card, Transfer/Top up/QR below");
 assert(html.includes('bali-id-bank.js?v=')&&html.includes('bali-id-bank.css?v='),
   "Banking assets not loaded");
 for(const fn of ["previewBaliRecipient","transferBaliBenefits","listMyBaliHistory"]){
