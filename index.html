@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="bali-id-resident.css?v=20261021-2">
   <link rel="stylesheet" href="bali-id-card-unified.css?v=20261021-3">
   <link rel="stylesheet" href="bali-qr-scanner.css?v=20261021-1">
-  <link rel="stylesheet" href="bali-id-actions-positions.css?v=20261021-large-center2">
+  <link rel="stylesheet" href="bali-id-actions-positions.css?v=20261021-controls3">
   <link rel="stylesheet" href="bali-calendar-mobile-compact.css?v=20261021-compact2">
   <link rel="stylesheet" href="bali-calendar-no-poster-backdrop.css?v=20261021-planar-layer3">
   <link rel="stylesheet" href="bali-calendar-status-actions.css?v=20261021-1">
@@ -515,8 +515,8 @@
             <div class="bali-info-block-icon" aria-hidden="true">ID</div>
             <div>
               <h2 id="baliInfoPrivilegeHeading">BALI ID · Privilege</h2>
-              <p>После регистрации и ознакомления с программой гость подтверждает участие и получает персональный BALI ID со статусом Member. Без подтверждения карта не создаётся. Другие категории и индивидуальные привилегии назначает администрация клуба.</p>
-              <p>Наличие цифровой карты не означает автоматического предоставления скидки или бесплатного входа.</p>
+              <p>После регистрации и ознакомления с программой гость подтверждает участие и получает персональный BALI ID со статусом Member. Без подтверждения карта не создаётся. BALI ID — внутренняя клубная карта для скидок и бонусов, не банковская и не платёжная. Другие категории и индивидуальные привилегии назначает администрация клуба.</p>
+              <p>BALI ID не предназначена для оплаты деньгами, хранения средств либо денежных переводов в любой валюте. Наличие цифровой карты не означает автоматического предоставления скидки или бесплатного входа.</p>
               <button type="button" data-bali-nav="id" class="bali-info-inline-nav">Моя BALI ID <span aria-hidden="true">↗</span></button>
             </div>
           </section>
@@ -646,8 +646,8 @@
             </div>
           </div>
           <div class="bali-bank-actions" aria-label="Действия BALI ID">
-            <button type="button" id="baliIdPayOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 7h18v12H3zM3 11h18M7 15h4"/></svg>Оплатить</button>
-            <button type="button" id="baliIdTopupOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M12 8v8m-4-4h8"/></svg>Пополнить</button>
+            <button type="button" id="baliIdPayOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 7h18v12H3zM3 11h18M7 15h4"/></svg>Использовать</button>
+            <button type="button" id="baliIdTopupOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M12 8v8m-4-4h8"/></svg>Получить</button>
             <button type="button" id="baliIdTransferOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 8h16m-5-5 5 5-5 5M20 17H4m5-5-5 5 5 5"/></svg>Перевести</button>
           </div>
           <section class="bali-bank-wallet" aria-label="Мои количественные привилегии">
@@ -976,14 +976,14 @@
         </header>
         <div id="baliIdWelcomeScroll" tabindex="0" role="region" aria-label="Описание BALI ID — прокрутите до конца">
           <h3>Что такое BALI ID?</h3>
-          <p>Это персональная цифровая карта гостя ночного клуба BALI. Она привязана к вашему аккаунту и содержит уникальный номер, имя, текущий уровень и предоставленные клубом привилегии.</p>
+          <p>BALI ID — внутренняя цифровая карта гостя ночного клуба BALI. Она привязана к вашему аккаунту и содержит уникальный номер, имя, текущий уровень и предоставленные клубом привилегии. Это не банковская или платёжная карта и не электронный кошелёк: на ней не хранятся деньги, ею нельзя оплачивать покупки деньгами или переводить денежные средства.</p>
           <h3>Возможности карты</h3>
           <ul>
             <li><strong>Персональный номер и QR-код.</strong> Откройте свою карту или покажите временный QR-код сотруднику для проверки доступных привилегий.</li>
-            <li><strong>Бонусы и предложения.</strong> В зависимости от уровня и начислений клуба вам могут быть доступны бесплатные входы, шоты, коктейли, кальяны, скидки и специальные предложения. Сами по себе регистрация и выпуск карты не начисляют эти бонусы.</li>
+            <li><strong>Скидки и бонусы клуба.</strong> В зависимости от уровня и назначенных клубом привилегий вам могут быть доступны персональные скидки, бесплатные входы, шоты, коктейли, кальяны и специальные предложения. Эти бонусы не являются денежными средствами. Оформление карты само по себе не предоставляет скидку или бонусы автоматически.</li>
             <li><strong>Перевод другому гостю.</strong> Доступные для передачи бонусы можно отправлять по шестизначному номеру BALI ID или через сканирование QR-кода. При переводе можно оставить необязательное пожелание получателю.</li>
             <li><strong>История операций.</strong> Просматривайте начисления, списания и переводы. Получатель может увидеть информацию о переводе и ваше пожелание.</li>
-            <li><strong>Управление привилегиями.</strong> На странице карты отображаются текущий баланс и доступные действия. Пополнение, списание и использование бонусов возможны только в соответствии с установленными клубом правилами; онлайн-оплата пока недоступна.</li>
+            <li><strong>Использование клубных привилегий.</strong> На карте можно посмотреть выданные бонусы, получить начисление по QR-коду BALI, использовать бонус по QR-коду сотрудника и посмотреть историю. Это учёт клубных преимуществ, а не оплата деньгами.</li>
           </ul>
           <h3>Уровни BALI PRIVILEGE</h3>
           <p>В программе предусмотрены шесть основных уровней: <strong>MEMBER, SILVER, GOLD, PLATINUM, BLACK и PRIVATE</strong>. Сначала вы получаете уровень MEMBER. Более высокие уровни и конкретные привилегии назначает администрация клуба. Статус PRIVATE предоставляется по приглашению.</p>
