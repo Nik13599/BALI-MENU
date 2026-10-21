@@ -174,3 +174,17 @@
     margin-top:0!important;
   }
 }
+
+/* Desktop contact headings: display exactly two ordinary U+0020 spaces
+   between words. Preserve centering rather than justifying the line. */
+@media(min-width:1180px){
+  body.bali-guest-theme>.bali-pc-sidebar
+  .bali-pc-sidebar-contacts>.bali-pc-contacts-heading,
+  body.bali-guest-theme>.bali-pc-sidebar
+  .bali-pc-contact-location>.bali-pc-contacts-heading{
+    white-space:pre!important;
+    text-align:center!important;
+    text-align-last:center!important;
+    word-spacing:0!important;
+  }
+}
