@@ -13,6 +13,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1";
+import {withinOrderRetention} from "./bali-order-retention.js";
 
 const app = getApps().length ? getApp() : initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth = getAuth(app);
@@ -206,7 +207,7 @@ async function getOrderWithItems(id) {
   const user = signedUser();
   const ref=doc(db,"orders",id);
   const snapshot=await getDoc(ref);
-  if(!snapshot.exists() || snapshot.data().ownerUid !== user.uid) throw new Error("Заказ не найден.");
+  if(!snapshot.exists() || snapshot.data().ownerUid !== user.uid || !withinOrderRetention(snapshot.data())) throw new Error("Заказ не найден.");
   const lineDocs=await getDocs(collection(ref,"items"));
   return {id:snapshot.id,...snapshot.data(),items:lineDocs.docs.map(x=>x.data())};
 }
@@ -229,7 +230,7 @@ function watchUserOrders(user) {
     async snapshots=>{
       const run=++revision;
       try{
-        const orders=await readOrders(snapshots);
+        const orders=(await readOrders(snapshots)).filter(withinOrderRetention);
         if(current!==generation||run!==revision) return;
         orders.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
         emit("bali:orders",{orders,ownerUid:user.uid});

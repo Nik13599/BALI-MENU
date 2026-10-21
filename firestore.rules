@@ -820,11 +820,12 @@ service cloud.firestore {
         ])
         && data.keys().hasOnly([
           'ownerUid','email','customerName','customerPhone','eventDate',
-          'tableNumber','bookingId','notes','status','archived','orderNumber','eventId','eventTitle','createdAt','updatedAt'
+          'tableNumber','bookingId','notes','status','archived','orderNumber','eventId','eventTitle','createdAt','updatedAt','source','createdByUid'
         ])
         && (!('archived' in data) || data.archived is bool)
         && (!('orderNumber' in data) || (data.orderNumber is int
           && data.orderNumber >= 1 && data.orderNumber <= 999999))
+        && (!('source' in data) || (data.source == 'staff' && data.createdByUid is string))
         && data.ownerUid is string
         && data.email is string
         && data.customerName is string
@@ -841,7 +842,7 @@ service cloud.firestore {
         && data.bookingId is string && data.bookingId.size() <= 60
         && (data.tableNumber.size() > 0 || data.bookingId.size() > 0)
         && data.notes is string && data.notes.size() <= 500
-        && data.status in ['pending','confirmed','completed','cancelled']
+        && data.status in ['pending','confirmed','cancelled']
         && data.createdAt is timestamp && data.updatedAt is timestamp;
     }
 
@@ -857,8 +858,25 @@ service cloud.firestore {
         && resource.data.ownerUid == request.auth.uid
       );
 
-      allow create: if !serverOnlyPreorders() && hasProfile()
+      allow create: if (isAdmin()
         && orderShape(request.resource.data)
+        && ((request.resource.data.ownerUid == '' && request.resource.data.email == '')
+          || (request.resource.data.ownerUid != ''
+            && exists(/databases/$(database)/documents/users/$(request.resource.data.ownerUid))
+            && get(/databases/$(database)/documents/users/$(request.resource.data.ownerUid)).data.email == request.resource.data.email))
+        && request.resource.data.get('source','') == 'staff'
+        && request.resource.data.createdByUid == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && validOrderSequence(request.resource.data.get('eventId',request.resource.data.eventDate),
+          request.resource.data.orderNumber,orderId)
+        && exists(/databases/$(database)/documents/events/$(request.resource.data.eventId))
+        && get(/databases/$(database)/documents/events/$(request.resource.data.eventId)).data.date == request.resource.data.eventDate
+        && get(/databases/$(database)/documents/events/$(request.resource.data.eventId)).data.title == request.resource.data.eventTitle)
+        || (!serverOnlyPreorders() && hasProfile()
+        && orderShape(request.resource.data)
+        && !('source' in request.resource.data)
+        && !('createdByUid' in request.resource.data)
         && request.resource.data.ownerUid == request.auth.uid
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.customerName ==
@@ -874,7 +892,7 @@ service cloud.firestore {
         && canOrderFor(request.resource.data.get('eventId', request.resource.data.eventDate))
         && ('eventTitle' in request.resource.data)
         && request.resource.data.eventTitle ==
-          get(/databases/$(database)/documents/events/$(request.resource.data.get('eventId',request.resource.data.eventDate))).data.title;
+          get(/databases/$(database)/documents/events/$(request.resource.data.get('eventId',request.resource.data.eventDate))).data.title);
 
       allow update: if orderShape(request.resource.data)
         && (!serverOnlyPreorders() || isAdmin() || (
@@ -937,7 +955,7 @@ service cloud.firestore {
           )
         );
 
-      allow delete: if false;
+      allow delete: if isAdmin();
 
       match /items/{menuId} {
         function parentPath() {

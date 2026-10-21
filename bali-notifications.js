@@ -1,6 +1,6 @@
 /* Notifications appear only while the website is open. Persist guest unread list locally per account. */
 (() => {
-  const labels={pending:"ожидает подтверждения",confirmed:"подтверждён",completed:"выполнен",cancelled:"отменён"};
+  const labels={pending:"ожидает подтверждения",confirmed:"подтверждён",completed:"подтверждён",cancelled:"отменён"};
   let uid=null,scope=null,known=new Map(),feed=[],initialized=false;
   let giftUid=null,gifts=[];
   const cursorKey=()=> "bali-order-notices-v1:"+scope+":"+uid;
@@ -51,7 +51,12 @@
       }
       known.set(order.id,order.status);
     }
-    known=new Map([...known].slice(-100));
+    // The Firestore snapshot is authoritative. Removed orders must not survive
+    // in the notification feed or localStorage after an admin erases history.
+    const visible=new Set((Array.isArray(orders)?orders:[]).map(x=>x.id));
+    known=new Map([...known].filter(([id])=>visible.has(id)).slice(-100));
+    feed=feed.filter(item=>visible.has(item.id));
+    saveFeed();
     try{localStorage.setItem(cursorKey(),JSON.stringify([...known]));}catch(_){}
     render();
   }

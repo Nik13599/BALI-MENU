@@ -1,0 +1,167 @@
+/* BALI staff preorder desk: compact, table-first, responsive, dedicated UI. */
+body.bali-preorders-workspace{--surface:#121713;--surface-2:#1b231d;--border:#344239;--ink:#f4f8f4;--muted:#9dab9e;--gold:#b9ff51;--gold-strong:#b9ff51;--focus:#b9ff51;min-height:100vh;background:#0b100c;color:var(--ink)}
+.bali-preorders-workspace .topbar{position:sticky;top:0;z-index:10;justify-content:flex-start;gap:19px;min-height:52px;padding:10px clamp(14px,2vw,28px);background:#101610f5;border-bottom:1px solid #2b3b2b}
+.bali-preorders-workspace .topbar .brand{color:#fff;font-weight:900}
+.bali-preorders-workspace .topbar .brand span{color:#b9ff51}
+.bali-preorders-workspace .topbar-label{color:#96a495;font-size:11px;margin:0;letter-spacing:.13em}
+.preorder-main{max-width:1560px;margin:auto;padding:15px clamp(12px,2vw,28px) 48px}
+.preorder-workspace{min-width:0;width:100%}
+.preorder-workspace-toolbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin:0 0 14px}
+.preorder-workspace-toolbar .eyebrow{font-size:10px;margin-bottom:2px}
+.preorder-workspace-toolbar h1{font-size:clamp(22px,2.6vw,29px);line-height:1.2;letter-spacing:-.025em;margin:0}
+.preorder-workspace-account{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:11px;color:#a2b1a4}
+.bali-preorders-workspace button{min-height:36px;padding:7px 12px;border-radius:9px}
+.bali-preorders-workspace button.primary{background:#b9ff51;border-color:#b9ff51;color:#101609;font-weight:850}
+.bali-preorders-workspace button.primary:hover:not(:disabled){background:#d0ff88;border-color:#d0ff88}
+.bali-preorders-workspace button:not(.primary){background:#1c251e;color:#e7efe6;border:1px solid #384b3d}
+.bali-preorders-workspace button.danger-action{border-color:#7c4249;color:#ffb3bb}
+.bali-preorders-workspace .login-card{margin:7vh auto 0;max-width:480px}
+.bali-preorders-workspace .eyebrow{color:#b9ff51}
+.bali-preorders-workspace .preorder-controls{display:flex;justify-content:space-between;align-items:end;gap:12px;padding:12px 14px;border:1px solid #304134;border-radius:12px;background:#141b15}
+.bali-preorders-workspace .preorder-filters{flex:1;display:grid;grid-template-columns:minmax(145px,210px) minmax(170px,300px) auto;align-items:end;gap:10px}
+.bali-preorders-workspace .preorder-filters label{margin:0;color:#a9baaa;font-size:11px}
+.bali-preorders-workspace .preorder-filters select{margin-top:5px;min-height:38px;padding:7px 10px;background:#202b22;border:1px solid #3b5040;color:#fff}
+.bali-preorders-workspace .preorder-filters .admin-archive-toggle{display:flex;gap:7px;align-items:center;align-self:end;min-height:38px;white-space:nowrap;font-size:11px}
+.bali-preorders-workspace .admin-archive-toggle input{margin:0;accent-color:#b9ff51}
+.bali-preorders-workspace .preorder-controls #createManualOrder{white-space:nowrap;min-height:38px}
+.bali-preorders-workspace .preorder-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}
+.bali-preorders-workspace .preorder-stat{min-height:61px;padding:10px 12px;border:1px solid #2a392e;background:#141a15;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:7px}
+.bali-preorders-workspace .preorder-stat-label{font-size:11px;color:#a3b1a5}
+.bali-preorders-workspace .preorder-stat-number{font-weight:850;font-size:22px;line-height:1;color:#f0f5ec;font-variant-numeric:tabular-nums}
+.bali-preorders-workspace .preorder-stat.awaiting .preorder-stat-number{color:#f2dca7}
+.bali-preorders-workspace .preorder-stat.accepted .preorder-stat-number{color:#b9ff51}
+.bali-preorders-workspace .preorder-tools{margin:0 0 10px;border:1px solid #304034;background:#141b15;border-radius:10px}
+.bali-preorders-workspace .preorder-tools>summary{padding:9px 13px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-weight:750;font-size:12px;cursor:pointer;list-style:none}
+.bali-preorders-workspace .preorder-tools>summary::-webkit-details-marker{display:none}
+.bali-preorders-workspace .preorder-tools>summary>span{font-weight:550;font-size:10px;color:#91ad94}
+.bali-preorders-workspace .preorder-tools-body{border-top:1px solid #304034;padding:11px 13px 12px}
+.bali-preorders-workspace .preorder-tools-body .actions{display:flex;gap:8px;flex-wrap:wrap}
+.bali-preorders-workspace .preorder-tools-body .check{display:flex;align-items:center;gap:8px;margin:10px 0 0;font-size:11px}
+.bali-preorders-workspace .preorder-tools-body .check input{margin:0;accent-color:#b9ff51}
+.bali-preorders-workspace .preorder-history-controls{display:flex;justify-content:space-between;align-items:center;gap:9px;border-top:1px solid #304034;margin-top:12px;padding-top:12px;color:#90a090;font-size:11px}
+.bali-preorders-workspace .preorder-history-controls button{color:#f1b3b9}
+.bali-preorders-workspace #ordersAdminStatus{min-height:0;margin:0 0 7px;font-size:11px}
+.bali-preorders-workspace #ordersAdminStatus:empty{display:none}
+.bali-preorders-workspace #ordersDishSummary{padding:9px 12px;margin-bottom:10px;background:#172117;border:1px solid #334a36;border-radius:9px;max-height:113px;overflow:auto}
+.bali-preorders-workspace #ordersDishSummary h3{color:#c1f48c;margin:0 0 4px;font-size:12px}
+.bali-preorders-workspace #ordersDishSummary p{display:inline-block;margin:0 14px 2px 0;font-size:11px;color:#d1dccf}
+.bali-preorders-workspace .preorder-compact-list{display:grid;gap:5px;min-height:80px}
+.bali-preorders-workspace .preorder-table-header,.bali-preorders-workspace .preorder-compact-row{display:grid;grid-template-columns:minmax(175px,1.4fr) minmax(130px,.95fr) minmax(125px,1.25fr) 94px 114px minmax(145px,1fr);gap:10px;align-items:center}
+.bali-preorders-workspace .preorder-table-header{font-size:10px;font-weight:700;color:#879c89;padding:0 12px 5px}
+.bali-preorders-workspace .preorder-compact-row{position:relative;background:#151c16;border:1px solid #304033;border-radius:10px;padding:11px 12px;min-height:68px}
+.bali-preorders-workspace .preorder-compact-row:nth-child(even){background:#182019}
+.bali-preorders-workspace .preorder-cell{min-width:0}
+.bali-preorders-workspace .preorder-cell strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:750}
+.bali-preorders-workspace .preorder-cell small{display:block;color:#a0b0a2;font-size:10px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bali-preorders-workspace .preorder-cell.reference strong{color:#dafbb1}
+.bali-preorders-workspace .preorder-cell a{color:#bdcbbd;font-size:10px;text-decoration:none}
+.bali-preorders-workspace .preorder-cell.amount strong{text-align:right;font-size:13px}
+.bali-preorders-workspace .preorder-state{display:inline-block;border-radius:7px;white-space:nowrap;padding:5px 7px;border:1px solid;font-size:10px;font-weight:750;line-height:1.1}
+.bali-preorders-workspace .preorder-state-pending{color:#f6d996;background:#332c1c;border-color:#745b35}
+.bali-preorders-workspace .preorder-state-confirmed{color:#bdff6e;background:#25341e;border-color:#4e753b}
+.bali-preorders-workspace .preorder-state-cancelled{color:#f9aeb4;background:#39292b;border-color:#755059}
+.bali-preorders-workspace .preorder-status-cell{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.bali-preorders-workspace .preorder-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;min-width:0}
+.bali-preorders-workspace .preorder-actions button{font-size:11px;padding:5px 8px;min-height:30px;white-space:nowrap}
+.bali-preorders-workspace .preorder-actions button.confirm{color:#bdff6e;border-color:#527849}
+.bali-preorders-workspace .preorder-action-menu{position:relative}
+.bali-preorders-workspace .preorder-action-menu summary{min-width:30px;min-height:30px;display:grid;place-items:center;padding:0 5px;border:1px solid #455649;border-radius:8px;cursor:pointer;list-style:none;font-size:18px;line-height:1;color:#e0f7d4;background:#202b21}
+.bali-preorders-workspace .preorder-action-menu summary::-webkit-details-marker{display:none}
+.bali-preorders-workspace .preorder-action-menu[open] .preorder-dropdown{position:absolute;right:0;top:34px;z-index:7;display:grid;gap:5px;min-width:145px;padding:7px;background:#202c21;border:1px solid #4b634f;border-radius:9px;box-shadow:0 9px 20px #0008}
+.bali-preorders-workspace .preorder-dropdown button{width:100%;text-align:left}
+.bali-preorders-workspace #ordersAdminList>p{margin:0}
+.bali-preorders-workspace .order-edit-dialog{max-height:calc(100dvh - 32px);overflow:auto}
+.bali-preorders-workspace input:not([type=checkbox]),.bali-preorders-workspace textarea,.bali-preorders-workspace select{background:#1e2920;border:1px solid #405342}
+.bali-preorders-workspace input:focus,.bali-preorders-workspace select:focus{border-color:#b9ff51}
+@media(max-width:1160px){
+ .bali-preorders-workspace .preorder-table-header{display:none}
+ .bali-preorders-workspace .preorder-compact-row{grid-template-columns:minmax(170px,1.4fr) minmax(125px,1fr) minmax(120px,1.15fr) 100px;grid-template-areas:"ref guest dishes amount" "status status actions actions";row-gap:9px}
+ .bali-preorders-workspace .preorder-cell.reference{grid-area:ref}
+ .bali-preorders-workspace .preorder-cell.guest{grid-area:guest}
+ .bali-preorders-workspace .preorder-cell.dishes{grid-area:dishes}
+ .bali-preorders-workspace .preorder-cell.amount{grid-area:amount}
+ .bali-preorders-workspace .preorder-status-cell{grid-area:status}
+ .bali-preorders-workspace .preorder-actions{grid-area:actions}
+}
+@media(max-width:700px){
+ .preorder-main{padding:10px 10px 35px}
+ .preorder-workspace-toolbar{margin-bottom:10px}
+ .preorder-workspace-toolbar h1{font-size:22px}
+ .preorder-workspace-account{gap:5px;justify-content:flex-end}
+ .preorder-workspace-account #adminEmail{max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .bali-preorders-workspace .preorder-controls{display:block;padding:10px}
+ .bali-preorders-workspace .preorder-filters{grid-template-columns:1fr 1fr;gap:7px}
+ .bali-preorders-workspace .preorder-filters .admin-archive-toggle{grid-column:1/-1;min-height:24px}
+ .bali-preorders-workspace .preorder-controls #createManualOrder{width:100%;margin-top:9px}
+ .bali-preorders-workspace .preorder-stats{gap:5px;grid-template-columns:repeat(4,minmax(0,1fr))}
+ .bali-preorders-workspace .preorder-stat{display:block;padding:8px 5px;min-height:55px;text-align:center}
+ .bali-preorders-workspace .preorder-stat-label{font-size:9px;line-height:1.1;margin-bottom:4px}
+ .bali-preorders-workspace .preorder-stat-number{font-size:17px}
+ .bali-preorders-workspace .preorder-compact-row{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"ref status" "guest amount" "dishes dishes" "actions actions";gap:6px 9px;padding:10px}
+ .bali-preorders-workspace .preorder-status-cell{justify-content:flex-end}
+ .bali-preorders-workspace .preorder-cell.amount strong{font-size:12px}
+ .bali-preorders-workspace .preorder-actions{justify-content:flex-end;border-top:1px solid #2b3b2d;padding-top:7px}
+ .bali-preorders-workspace .preorder-compact-row .preorder-cell.dishes strong{font-size:11px;font-weight:550}
+ .bali-preorders-workspace .preorder-compact-row .preorder-cell.dishes small{display:none}
+ .bali-preorders-workspace .preorder-history-controls{align-items:start;flex-direction:column}
+}
+@media print{
+ body.bali-preorders-workspace{background:#fff!important;color:#000!important}
+ .bali-preorders-workspace .topbar,.bali-preorders-workspace .login-card,.bali-preorders-workspace .preorder-workspace-toolbar,.bali-preorders-workspace #adminOrdersPanel{display:none!important}
+ .bali-preorders-workspace #adminView,.bali-preorders-workspace #orderPrintSheet{display:block!important}
+ .bali-preorders-workspace #orderPrintSheet{color:#000!important;padding:20px;font:14px Arial,sans-serif}
+ .bali-preorders-workspace #orderPrintSheet table{border-collapse:collapse;width:100%}
+ .bali-preorders-workspace #orderPrintSheet td,.bali-preorders-workspace #orderPrintSheet th{border:1px solid #999;padding:6px;text-align:left}
+}
+
+/* Two compact report blocks for each selected event. */
+.bali-preorders-workspace .preorder-report-note{font-size:11px;color:#a9b9aa;margin:0 0 11px}
+.bali-preorders-workspace .preorder-report-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #2c3b30}
+.bali-preorders-workspace .preorder-report-description{min-width:0;flex:1}
+.bali-preorders-workspace .preorder-report-description strong{display:block;font-size:12px;color:#edf5ec}
+.bali-preorders-workspace .preorder-report-description small{display:block;font-size:10px;color:#a2b2a3;margin-top:4px;line-height:1.35}
+.bali-preorders-workspace .preorder-report-actions{display:flex;flex-wrap:wrap;gap:6px;flex-shrink:0}
+.bali-preorders-workspace .preorder-report-actions button{white-space:nowrap;font-size:11px;min-height:34px;padding:6px 11px}
+.bali-preorders-workspace .preorder-report-actions button:last-child{color:#b9ff51;border-color:#4a6943}
+.bali-telegram-report-dialog{position:fixed;inset:0;margin:auto;border:1px solid #465f4a;border-radius:15px;max-width:min(660px,95vw);width:100%;max-height:88vh;background:#141d15;color:#f5faf2;padding:19px;box-shadow:0 15px 60px #000b;font-family:Inter,Arial,sans-serif}
+.bali-telegram-report-dialog::backdrop{background:#000c;backdrop-filter:blur(3px)}
+.bali-telegram-report-dialog h2{margin:0 0 4px;font-size:20px;color:#fff}
+.bali-telegram-report-dialog p{font-size:11px;color:#b4c4b3;line-height:1.5;margin:6px 0 9px}
+.bali-telegram-report-dialog textarea{box-sizing:border-box;display:block;width:100%;min-height:230px;max-height:48vh;resize:vertical;background:#0b100c;border:1px solid #4e6550;border-radius:9px;padding:12px;font:12px/1.45 monospace;color:#f4f7f1}
+.bali-telegram-report-actions{display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.bali-telegram-report-actions button{background:#202b22;border:1px solid #425544;padding:9px 11px;border-radius:8px;color:#f1f6ec;cursor:pointer}
+.bali-telegram-report-actions button.primary{background:#b9ff51;color:#111b0c;font-weight:800}
+.bali-telegram-report-actions button:disabled{opacity:.45;cursor:default}
+@media(max-width:700px){.bali-preorders-workspace .preorder-report-row{align-items:flex-start;flex-direction:column}.bali-preorders-workspace .preorder-report-actions{width:100%}.bali-preorders-workspace .preorder-report-actions button{flex:1}.bali-telegram-report-dialog{padding:12px}}
+
+/* Read-only full order view: prominent on mobile, never mistaken for edit. */
+.bali-preorders-workspace .preorder-actions .preorder-view-button{border:1px solid #779f58;background:#2a3826;color:#cbff9c;font-weight:800}
+.bali-preorders-workspace .preorder-details-dialog{box-sizing:border-box;position:fixed;inset:0;margin:auto;width:min(590px,calc(100vw - 20px));max-width:calc(100vw - 20px);max-height:calc(100dvh - 20px);overflow-y:auto;overscroll-behavior:contain;background:#111a13;border:1px solid #4a6149;border-radius:14px;color:#f0f6ed;padding:18px;box-shadow:0 25px 70px #000b}
+.bali-preorders-workspace .preorder-details-dialog::backdrop{background:#000b;backdrop-filter:blur(5px)}
+.bali-preorders-workspace .preorder-details-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:0 0 12px;border-bottom:1px solid #2f4032}
+.bali-preorders-workspace .preorder-details-head h2{font-size:clamp(17px,3.5vw,22px);margin:2px 0 0;color:#fff;overflow-wrap:anywhere}
+.bali-preorders-workspace .preorder-details-head button{min-width:32px;min-height:32px;padding:4px 7px}
+.bali-preorders-workspace .preorder-details-content{padding:12px 0}
+.bali-preorders-workspace .preorder-detail-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:8px}
+.bali-preorders-workspace .preorder-detail-field{padding:8px 10px;background:#1b261d;border:1px solid #304232;border-radius:9px;min-width:0}
+.bali-preorders-workspace .preorder-detail-field small{display:block;color:#9aac9d;font-size:10px;margin-bottom:3px}
+.bali-preorders-workspace .preorder-detail-field strong{font-size:12px;line-height:1.35;overflow-wrap:anywhere;color:#f3f9f1;font-weight:650}
+.bali-preorders-workspace .preorder-detail-section-title{font-size:13px;margin:13px 0 5px;color:#b9ff51}
+.bali-preorders-workspace .preorder-detail-items{margin-top:4px}
+.bali-preorders-workspace .preorder-detail-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #2c3d30}
+.bali-preorders-workspace .preorder-detail-item-name{min-width:0;flex:1}
+.bali-preorders-workspace .preorder-detail-item-name strong{display:block;font-size:12px;font-weight:700}
+.bali-preorders-workspace .preorder-detail-item-name small{font-size:10px;color:#a3b3a4}
+.bali-preorders-workspace .preorder-detail-item-amount{display:flex;gap:12px;align-items:center;flex-shrink:0;font-size:11px}
+.bali-preorders-workspace .preorder-detail-item-amount strong{color:#b9ff51}
+.bali-preorders-workspace .preorder-detail-total{display:flex;justify-content:space-between;align-items:center;padding:13px 0;font-size:14px;font-weight:800}
+.bali-preorders-workspace .preorder-detail-total strong{color:#b9ff51;font-size:17px}
+.bali-preorders-workspace .preorder-details-actions{position:sticky;bottom:-18px;background:#111a13;display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap;padding:12px 0 2px;border-top:1px solid #304232}
+.bali-preorders-workspace .preorder-detail-error{color:#ff9eac}
+@media(max-width:700px){
+  .bali-preorders-workspace .preorder-actions{justify-content:space-between;flex-wrap:wrap}
+  .bali-preorders-workspace .preorder-actions .preorder-view-button{flex:1 1 116px;min-height:36px;background:#31452b;border-color:#86b966;color:#d4ffb7}
+  .bali-preorders-workspace .preorder-details-dialog{padding:12px;width:calc(100vw - 16px);max-height:calc(100dvh - 16px);border-radius:11px}
+  .bali-preorders-workspace .preorder-detail-item-amount{gap:7px}
+  .bali-preorders-workspace .preorder-details-actions{bottom:-12px}
+}

@@ -1811,7 +1811,7 @@ function renderMyOrders() {
     const statusText = {
         pending:'Ожидает подтверждения',
         confirmed:'Подтверждён',
-        completed:'Выполнен',
+        completed:'Подтверждён',
         cancelled:'Отменён'
     };
     for (const order of myOrders) {

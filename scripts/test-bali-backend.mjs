@@ -81,6 +81,7 @@ const exports={};
 vm.runInNewContext(readFileSync("functions/index.js","utf8"),{
   exports,require:name=>name==="firebase-admin"?fakeAdmin:
     name==="firebase-functions/v2/https"?{onCall:(_options,handler)=>handler,HttpsError}:
+    name==="firebase-functions/v2/scheduler"?{onSchedule:(_options,handler)=>handler}:
      name==="qrcode"?{toDataURL:async()=> "data:image/png;base64,dGVzdA=="}:
      name==="./bonus-qr"?()=>({}):
      name==="./preorders"?()=>async()=>({}):require(name),

@@ -321,3 +321,28 @@ exports.previewBaliRecipientQr=api("previewBaliRecipientQr",async req=>{
   const receiver=await nameAndId(row.data().uid);
   return {name:receiver.name,number:receiver.number};
 });
+
+/* Physical 30-day retention of preorders including their nested items.
+ * Requires deployment of this Cloud Function and the Blaze/Scheduler setup.
+ * Client-side lists independently hide records after 30 days. */
+const {onSchedule}=require("firebase-functions/v2/scheduler");
+exports.expireBaliPreorderHistory=onSchedule({
+  region:REGION,schedule:"every day 03:10",timeZone:"Europe/Minsk",
+  timeoutSeconds:540,maxInstances:1
+},async ()=>{
+  const cutoff=TS.fromMillis(Date.now()-30*24*60*60*1000);
+  let removed=0;
+  // Each loop fetches the oldest documents again, so deletions are not skipped.
+  for(let page=0;page<100;page++){
+    const records=await db.collection("orders").where("createdAt","<",cutoff)
+      .orderBy("createdAt").limit(100).get();
+    if(records.empty)break;
+    for(const order of records.docs){
+      // Deleting only a Firestore parent document does NOT delete subcollections.
+      await db.recursiveDelete(order.ref);
+      removed++;
+    }
+    if(records.size<100)break;
+  }
+  console.info(JSON.stringify({event:"bali.preorders.retention",removed}));
+});

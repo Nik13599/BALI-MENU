@@ -3,6 +3,7 @@ import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/1
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,collection,doc,getDoc,getDocs,query,orderBy,where,limit,startAfter}
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {withinOrderRetention} from "./bali-order-retention.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 let authorized=false,clients=[],lastClient=null,loadedAll=false,selected=null,lastOrder=null,history=[],token=0;
@@ -59,7 +60,7 @@ async function loadClients(){
 }
 function orderCard(o){
   const card=el("article","","client-history-order");
-  card.append(el("h4","№ "+(Number.isInteger(o.orderNumber)?String(o.orderNumber).padStart(2,"0"):o.id)+" · "+(o.status==="cancelled"?"Отменён":o.status==="pending"?"Ожидает":o.status==="confirmed"?"Подтверждён":"Выполнен")));
+  card.append(el("h4","№ "+(Number.isInteger(o.orderNumber)?String(o.orderNumber).padStart(2,"0"):o.id)+" · "+(o.status==="cancelled"?"Отменён":o.status==="pending"?"Ожидает":o.status==="confirmed"?"Подтверждён":"Подтверждён")));
   card.append(el("p",o.eventDate+" · "+(o.tableNumber?"Столик "+o.tableNumber:"Бронь "+o.bookingId)));
   card.append(el("p","Состав: "+o.items.map(x=>x.name+" × "+x.quantity).join(", ")));
   card.append(el("strong",currency(o.total)));
@@ -85,7 +86,7 @@ async function loadHistory(){
       return {id:o.id,...o.data(),items,total:items.reduce((sum,x)=>sum+x.unitPrice*x.quantity,0)};
     }));
     if(sequence!==token)return;
-    history.push(...mapped);
+    history.push(...mapped.filter(withinOrderRetention));
     lastOrder=snaps.docs.at(-1)||null;
     history.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     const panel=$("clientHistoryList");panel.replaceChildren();
@@ -111,6 +112,9 @@ function openHistory(client){
   $("clientHistoryCard").scrollIntoView({behavior:"smooth",block:"start"});
   void loadHistory();
 }
+window.addEventListener("bali:admin:order-deleted",()=>{
+  if(selected&&authorized){lastOrder=null;history=[];token++;void loadHistory();}
+});
 $("clientSearch").addEventListener("input",renderClients);
 $("closeClientHistory").addEventListener("click",()=>{$("clientHistoryCard").hidden=true;selected=null;token++;});
 onAuthStateChanged(auth,async user=>{

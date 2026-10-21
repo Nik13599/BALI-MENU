@@ -1,0 +1,38 @@
+name: BALI preorder workspace checks
+on:
+  pull_request:
+    paths:
+      - 'admin*.js'
+      - 'admin.html'
+      - 'preorders*'
+      - 'bali-preorder-reports.js'
+      - 'scripts/test-preorder-reports.mjs'
+      - 'orders-firestore.js'
+      - 'bali-order-retention.js'
+      - 'bali-notifications.js'
+      - 'firestore.rules'
+      - 'functions/**'
+      - 'scripts/test-firebase.mjs'
+      - 'tests/preorders-workspace.spec.cjs'
+      - '.github/workflows/preorders-check.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - run: node scripts/test-preorder-reports.mjs
+      - run: npm run test:firebase
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/preorders-workspace.spec.cjs --project=desktop
