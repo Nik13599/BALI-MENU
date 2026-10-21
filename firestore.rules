@@ -399,8 +399,15 @@ service cloud.firestore {
         && d.updatedAt == request.time;
     }
 
+    // Server-only checkout switch: remains OFF until the callable is deployed
+    // and tested in production. Firestore Rules cannot count subcollection rows.
+    function validPreorderSecurity(d) {
+      return d.keys().hasAll(['backendRequired','updatedAt'])
+        && d.keys().hasOnly(['backendRequired','updatedAt'])
+        && d.backendRequired is bool && d.updatedAt == request.time;
+    }
     match /settings/{settingId} {
-      allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder','siteBuilderPublished']
+      allow get: if settingId in ['appearance','menuVisibility','homeDesign','homeInterface','homeEventPlaceholder','siteBuilderPublished','preorderSecurity']
         || (settingId == 'siteBuilderDraft' && isAdmin());
       allow list: if false;
       allow create, update: if isAdmin()
@@ -409,7 +416,8 @@ service cloud.firestore {
             || (settingId == 'homeDesign' && validHomeDesign(request.resource.data))
             || (settingId == 'homeInterface' && validHomeInterface(request.resource.data))
             || (settingId == 'homeEventPlaceholder' && validHomeEventPlaceholder(request.resource.data))
-            || (settingId in ['siteBuilderDraft','siteBuilderPublished'] && validSiteBuilder(request.resource.data)));
+            || (settingId in ['siteBuilderDraft','siteBuilderPublished'] && validSiteBuilder(request.resource.data))
+            || (settingId == 'preorderSecurity' && validPreorderSecurity(request.resource.data)));
       allow delete: if false;
     }
 
@@ -740,6 +748,11 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
+    function serverOnlyPreorders() {
+      return exists(/databases/$(database)/documents/settings/preorderSecurity)
+        && get(/databases/$(database)/documents/settings/preorderSecurity).data.backendRequired == true;
+    }
+
     function canOrderFor(date) {
       return exists(/databases/$(database)/documents/events/$(date))
         && get(/databases/$(database)/documents/events/$(date)).data.preorderEnabled == true
@@ -788,10 +801,12 @@ service cloud.firestore {
     match /orderCounters/{eventId} {
       allow get: if request.auth != null && request.auth.token.email_verified == true;
       allow list, delete: if false;
-      allow create: if request.auth != null && request.auth.token.email_verified == true
+      allow create: if (!serverOnlyPreorders() || isAdmin())
+        && request.auth != null && request.auth.token.email_verified == true
         && validCounter(eventId) && request.resource.data.count == 1
         && counterWitness(eventId);
-      allow update: if request.auth != null && request.auth.token.email_verified == true
+      allow update: if (!serverOnlyPreorders() || isAdmin())
+        && request.auth != null && request.auth.token.email_verified == true
         && validCounter(eventId)
         && request.resource.data.count == resource.data.count + 1
         && request.resource.data.lastOrderId != resource.data.lastOrderId
@@ -842,7 +857,7 @@ service cloud.firestore {
         && resource.data.ownerUid == request.auth.uid
       );
 
-      allow create: if hasProfile()
+      allow create: if !serverOnlyPreorders() && hasProfile()
         && orderShape(request.resource.data)
         && request.resource.data.ownerUid == request.auth.uid
         && request.resource.data.email == request.auth.token.email
@@ -862,6 +877,11 @@ service cloud.firestore {
           get(/databases/$(database)/documents/events/$(request.resource.data.get('eventId',request.resource.data.eventDate))).data.title;
 
       allow update: if orderShape(request.resource.data)
+        && (!serverOnlyPreorders() || isAdmin() || (
+          ownerOfOrder(resource.data) && resource.data.status == 'pending'
+          && request.resource.data.status == 'cancelled'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+        ))
         && (
           (request.resource.data.get('eventId',request.resource.data.eventDate)
               == resource.data.get('eventId',resource.data.eventDate)
@@ -946,9 +966,9 @@ service cloud.firestore {
           request.auth != null && request.auth.token.email_verified == true
           && get(parentPath()).data.ownerUid == request.auth.uid
         );
-        allow create, update: if (ownEditableOrder() || isAdmin())
+        allow create, update: if ((!serverOnlyPreorders() && ownEditableOrder()) || isAdmin())
           && validItem(request.resource.data);
-        allow delete: if ownEditableOrder() || isAdmin();
+        allow delete: if (!serverOnlyPreorders() && ownEditableOrder()) || isAdmin();
       }
     }
 
