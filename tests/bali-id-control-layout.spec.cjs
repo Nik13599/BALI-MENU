@@ -2,7 +2,7 @@ const {test,expect}=require('@playwright/test');
 test.beforeEach(async({page})=>{
   await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
 });
-test('BALI ID: QR then History at top; Pay, Top up, Transfer stay below enlarged card',async({page})=>{
+test('BALI ID: QR then History at top; Use, Receive, Transfer are separated below enlarged card',async({page})=>{
   await page.goto('/index.html#id');
   await page.evaluate(()=>{
     document.getElementById('baliIdSection').hidden=false;
@@ -22,6 +22,7 @@ test('BALI ID: QR then History at top; Pay, Top up, Transfer stay below enlarged
       ratio:getComputedStyle(scene).aspectRatio,viewport:window.innerWidth};
   });
   const {history,qr,card,pay,topup,transfer}=rects;
+  console.log('BALI-ID-GEOMETRY',JSON.stringify({viewport:rects.viewport,card,pay,topup,transfer,qr,history}));
   await expect(page.locator('#baliIdPageHeading')).toHaveCount(0);
   expect(Math.abs(history.y-qr.y)).toBeLessThan(3);
   expect(qr.r).toBeLessThan(history.x+2);
@@ -55,6 +56,7 @@ test('mobile ID: card slightly inset, QR and history aligned just beyond its rig
       earn:box('baliIdTopupOpen'),transfer:box('baliIdTransferOpen'),
       width:innerWidth};
   });
+  console.log('BALI-ID-MOBILE',JSON.stringify(measures));
   expect(measures.card.width).toBeLessThan(measures.width-22);
   expect(measures.card.width).toBeGreaterThan(160);
   expect(measures.history.right).toBeGreaterThanOrEqual(measures.card.right-11);
