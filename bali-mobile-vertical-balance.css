@@ -1,0 +1,102 @@
+/* BALI Home | phone-height-only rhythm. 21 October 2026.
+   Equal VERTICAL intervals:
+   header / about / square posters / event promo / map / socials / bottom dock.
+   Mobile width, side padding, poster-to-poster gap and tablet/PC stay unchanged.
+   --bali-mobile-header-bottom and --bali-mobile-nav-inset are updated from
+   the actual two navigation rectangles, so browser safe areas and banner height
+   do not create an extra first or last gap. */
+@media (max-width:767px) {
+  :root[data-bali-theme] body.bali-guest-theme #homeSection:not([hidden]) {
+    position:fixed!important;
+    top:var(--bali-mobile-header-bottom,calc(clamp(68px,10.4dvh,92px) + 22px))!important;
+    bottom:var(--bali-mobile-nav-inset,calc(clamp(67px,9.2dvh,84px) + 7px + env(safe-area-inset-bottom)))!important;
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+
+  /* Explicit sizes make every grid track end exactly at its visible card edge.
+     space-evenly distributes the free height into SIX matching intervals:
+     one above, four between five blocks, and one below. */
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-inner,
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-inner:has(.bali-pc-hero.is-seasonal) {
+    grid-template-rows:
+      minmax(0,var(--bali-mobile-home-hero-height))
+      minmax(0,var(--bali-mobile-home-poster-height))
+      minmax(0,var(--bali-mobile-home-promo-height))
+      max-content
+      max-content!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    align-content:space-evenly!important;
+    align-items:stretch!important;
+    row-gap:0!important;
+    column-gap:0!important;
+    padding-top:0!important;
+    padding-bottom:0!important;
+    margin-top:0!important;
+    margin-bottom:0!important;
+  }
+
+  /* The contact wrapper cannot add a second, independent gap. Its two
+     existing children become tracks 4 and 5 in the exact same grid. */
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-home-contacts-card {
+    display:contents!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #homeSection
+  .bali-home-contacts-card .bali-yandex-map{
+    grid-column:1!important;
+    grid-row:4!important;
+    align-self:stretch!important;
+    justify-self:stretch!important;
+    margin-top:0!important;
+    margin-bottom:0!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #homeSection
+  .bali-home-contacts-card .bali-home-social{
+    grid-column:1!important;
+    grid-row:5!important;
+    align-self:stretch!important;
+    justify-self:stretch!important;
+    margin-top:0!important;
+    margin-bottom:0!important;
+  }
+  /* Do not change carousel's horizontal spacing, square card sizing, or art. */
+  :root[data-bali-theme] body.bali-guest-theme #homeSection
+  #homeEventCarousel.bali-home-events{
+    grid-row:2!important;
+    margin-top:0!important;
+    margin-bottom:0!important;
+    transform:none!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #homeSection .bali-pc-hero{
+    grid-row:3!important;
+    margin-top:0!important;
+    margin-bottom:0!important;
+  }
+}
+
+/* Preserve a useful minimum gap for compact screens without cropping
+   the address or social actions. The actual gap remains equally distributed. */
+@media (max-width:767px) and (max-height:620px) {
+  :root[data-bali-theme] body.bali-guest-theme #homeSection{
+    --bali-mobile-home-hero-height:clamp(90px,17dvh,108px);
+  }
+  :root[data-bali-theme] body.bali-guest-theme #homeSection
+  .bali-home-contacts-card .bali-yandex-map{
+    height:52px!important;
+    min-height:52px!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #homeSection
+  .bali-home-contacts-card .bali-home-social{
+    height:40px!important;
+    min-height:40px!important;
+  }
+}
