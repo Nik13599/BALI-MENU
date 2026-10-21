@@ -156,3 +156,132 @@ body.bali-guest-theme #baliIdSection .bali-bank-actions #baliIdTransferOpen{
     height:32px!important;
   }
 }
+
+/* BALI ID CARD RESTORED SIZE — 21 Oct 2026
+   Layout only. The three action handlers, flip gestures, card aspect ratio,
+   tier styling, bonus details, and upper tool positions remain unchanged. */
+
+/* On desktop the card's CENTER, rather than the entire card/actions stack,
+   sits at the exact midpoint of the available page (after the side rail).
+   Using viewport lengths avoids accidental height-axis % resolution. */
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection>.container{
+  --bali-id-large-width:min(780px,calc(100vw - var(--bali-pc-side,240px) - 78px),calc((100dvh - 360px)*1.68));
+  --bali-id-half-card-height:calc(var(--bali-id-large-width)*.29761905);
+  --bali-id-lower-gap:clamp(26px,3.5dvh,37px);
+  --bali-id-action-height:clamp(42px,5.4dvh,55px);
+  position:relative!important;
+  height:100%!important;
+  min-height:0!important;
+  overflow:visible!important;
+  padding-inline:0!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-profile-card.bali-id-profile{
+  position:absolute!important;
+  inset:0!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+  transform:none!important;
+  display:block!important;
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  pointer-events:none!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-flip-scene{
+  box-sizing:border-box!important;
+  position:absolute!important;
+  top:50%!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:auto!important;
+  transform:translate(-50%,-50%)!important;
+  width:var(--bali-id-large-width)!important;
+  max-width:calc(100vw - 20px)!important;
+  height:auto!important;
+  min-height:0!important;
+  aspect-ratio:1.68 / 1!important;
+  margin:0!important;
+  overflow:visible!important;
+  pointer-events:auto!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-bank-actions{
+  position:absolute!important;
+  top:calc(50% + var(--bali-id-half-card-height) + var(--bali-id-lower-gap))!important;
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(-50%)!important;
+  width:min(var(--bali-id-large-width),620px)!important;
+  max-width:calc(100% - 16px)!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  pointer-events:auto!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-bank-actions>button{
+  height:var(--bali-id-action-height)!important;
+  min-height:var(--bali-id-action-height)!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-bank-wallet{
+  position:absolute!important;
+  top:calc(50% + var(--bali-id-half-card-height) + var(--bali-id-lower-gap) + var(--bali-id-action-height) + 13px)!important;
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(-50%)!important;
+  width:min(var(--bali-id-large-width),620px)!important;
+  max-width:calc(100% - 16px)!important;
+  margin:0!important;
+  pointer-events:auto!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-status{
+  position:absolute!important;
+  top:calc(50% + var(--bali-id-half-card-height) + var(--bali-id-lower-gap) + var(--bali-id-action-height) + 88px)!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  width:min(var(--bali-id-large-width),620px)!important;
+  max-width:calc(100% - 16px)!important;
+  margin:0!important;
+  text-align:center!important;
+  pointer-events:none!important;
+}
+
+/* Tablet: use most of the content canvas but leave the menu's fixed bars and
+   enough room below the card for payment, top-up and transfer buttons. */
+@media(min-width:768px) and (max-width:1179px){
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection>.container{
+    --bali-id-large-width:min(calc(100vw - 44px),740px,calc((100dvh - 340px)*1.68));
+  }
+}
+
+/* Phone: almost edge-to-edge card, with the actions lowered BELOW its bottom.
+   The upper QR/history buttons preserve their earlier top-right coordinates. */
+@media(max-width:767px){
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection{
+    padding-inline:clamp(4px,1vw,6px)!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection>.container{
+    --bali-id-large-width:min(calc(100vw - 18px),calc((100dvh - 330px)*1.68));
+    --bali-id-lower-gap:clamp(27px,4dvh,37px);
+    --bali-id-action-height:clamp(39px,5.7dvh,48px);
+    padding-inline:0!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-bank-actions{
+    width:min(var(--bali-id-large-width),440px)!important;
+    max-width:calc(100% - 10px)!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-bank-wallet,
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-status{
+    width:min(var(--bali-id-large-width),440px)!important;
+    max-width:calc(100% - 10px)!important;
+  }
+}
+@media(max-height:620px){
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection>.container{
+    --bali-id-lower-gap:clamp(15px,2.5dvh,24px);
+  }
+}
