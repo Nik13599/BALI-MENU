@@ -76,33 +76,85 @@
   bodyObserver.observe(document.body,{attributes:true,attributeFilter:["data-bali-page"]});
   refreshNavigation();
 
-  // Align the bottom edge of the Yandex Maps button with the bottom of the
-  // large homepage Menu call-to-action, not with the bottom of the viewport.
-  // The offset is measured at the homepage's unscrolled position, so the
-  // fixed PC sidebar does not jump while visitors scroll its contents.
+  // Desktop homepage frame: the logo and map/address control are the
+  // actual visual anchors. The right About + BALI ID rail, advertising
+  // carousel, five square posters and Menu must share these boundaries.
+  // Do not adjust the sidebar from the Menu: that created a circular layout
+  // dependency when the home grid was resized.
   const sidebar=document.querySelector(".bali-pc-sidebar");
-  const contacts=sidebar?.querySelector(".bali-pc-sidebar-contacts");
+  const logo=sidebar?.querySelector(".bali-pc-brand .bali-brand-logo");
+  const address=sidebar?.querySelector(".bali-pc-contact-location > a");
   const homepage=document.getElementById("homeSection");
-  const homeMenu=document.getElementById("menuNavBtn");
+  const homeInner=homepage?.querySelector(".bali-home-inner");
+  const eventsPanel=homeInner?.querySelector(".bali-home-events-panel");
   let alignmentFrame=0;
-  function alignContactsWithMenu(){
+
+  // Heights stay within the two sidebar anchors. The five event posters
+  // remain square, while only the advertisement is allowed to become
+  // narrower (preserving the artwork's exact 1024:353 proportions).
+  function alignHomeToSidebar(){
     alignmentFrame=0;
-    if(!desktop.matches||!sidebar||!contacts||!homeMenu||homeMenu.getClientRects().length===0)return;
+    if(!homeInner||!homepage||!sidebar)return;
+    if(!desktop.matches){
+      homeInner.classList.remove("bali-pc-edge-aligned");
+      return;
+    }
+    if(document.body.dataset.baliPage!=="home")return;
+    if(!logo||!address||!eventsPanel||!logo.getClientRects().length||!address.getClientRects().length)return;
+    sidebar.style.removeProperty("--bali-contact-menu-alignment");
+
+    const top=logo.getBoundingClientRect().top;
+    const bottom=address.getBoundingClientRect().bottom;
+    const homeTop=homepage.getBoundingClientRect().top;
     const sidebarBottom=sidebar.getBoundingClientRect().bottom;
-    const menuBottom=homeMenu.getBoundingClientRect().bottom+(homepage?.scrollTop||0);
-    const inset=Math.max(0,Math.round(sidebarBottom-menuBottom-10));
-    sidebar.style.setProperty("--bali-contact-menu-alignment",inset+"px");
+    // If the sidebar itself has overflowed a short desktop viewport, the
+    // address is scrolled out of sight: keep the existing fallback layout.
+    if(bottom>sidebarBottom+2||bottom-top<320){
+      homeInner.classList.remove("bali-pc-edge-aligned");
+      return;
+    }
+
+    const span=Math.round((bottom-top)*100)/100;
+    const gap=parseFloat(getComputedStyle(homeInner).columnGap)||12;
+    const centerWidth=eventsPanel.getBoundingClientRect().width;
+    if(centerWidth<250)return;
+    const naturalPoster=Math.max(70,Math.min((centerWidth-4*gap)/5,innerHeight*.28));
+    const menuHeight=Math.max(65,Math.min(96,innerHeight*.105));
+    const naturalPromo=Math.min(centerWidth*353/1024,innerHeight*.46);
+    const remaining=span-naturalPoster-menuHeight-2*gap;
+    if(remaining<75){
+      homeInner.classList.remove("bali-pc-edge-aligned");
+      return;
+    }
+    const promoHeight=Math.min(naturalPromo,remaining);
+    const values={
+      "--bali-home-edge-top":Math.max(0,top-homeTop).toFixed(2)+"px",
+      "--bali-home-edge-span":span.toFixed(2)+"px",
+      "--bali-home-fit-promo":promoHeight.toFixed(2)+"px",
+      "--bali-home-fit-poster":naturalPoster.toFixed(2)+"px",
+      "--bali-home-fit-menu":menuHeight.toFixed(2)+"px"
+    };
+    for(const [name,value] of Object.entries(values)){
+      if(homeInner.style.getPropertyValue(name)!==value)homeInner.style.setProperty(name,value);
+    }
+    homeInner.classList.add("bali-pc-edge-aligned");
   }
-  function requestContactAlignment(){
+  function requestHomeAlignment(){
     if(alignmentFrame)cancelAnimationFrame(alignmentFrame);
-    alignmentFrame=requestAnimationFrame(alignContactsWithMenu);
+    alignmentFrame=requestAnimationFrame(alignHomeToSidebar);
   }
-  window.addEventListener("resize",requestContactAlignment,{passive:true});
-  desktop.addEventListener?.("change",requestContactAlignment);
-  if(typeof ResizeObserver!=="undefined"&&homeMenu){
-    const sizeObserver=new ResizeObserver(requestContactAlignment);
-    sizeObserver.observe(homeMenu);
+  window.addEventListener("resize",requestHomeAlignment,{passive:true});
+  window.addEventListener("load",requestHomeAlignment,{once:true});
+  desktop.addEventListener?.("change",requestHomeAlignment);
+  if(typeof ResizeObserver!=="undefined"){
+    const observer=new ResizeObserver(requestHomeAlignment);
+    for(const node of [logo,address,homeInner]){
+      if(node)observer.observe(node);
+    }
   }
-  requestContactAlignment();
-  window.addEventListener("load",requestContactAlignment,{once:true});
+  if(document.fonts?.ready)document.fonts.ready.then(requestHomeAlignment);
+  document.addEventListener("visibilitychange",()=>{
+    if(!document.hidden)requestHomeAlignment();
+  });
+  requestHomeAlignment();
 })();
