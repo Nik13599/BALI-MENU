@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="bali-qr-admin.css?v=20261021-1">
   <link rel="stylesheet" href="bali-builder-admin.css?v=20261021-removal4">
   <link rel="stylesheet" href="bali-promo-contacts.css?v=20261020-1">
+  <link rel="stylesheet" href="bali-event-posters-admin.css?v=20261021-square1">
 <script src="bali-content-readiness.js?v=20261020-2"></script>
 </head>
 <body class="bali-admin-theme">
@@ -487,7 +488,7 @@
                 <label for="eventPosterFile">Афиша мероприятия (загрузить JPG/PNG/WebP)</label>
                 <input type="file" id="eventPosterFile" accept="image/*">
                 <img id="eventPosterPreview" class="image-preview poster-preview" alt="Предпросмотр афиши" hidden>
-                <p class="hint">Афиша автоматически подгоняется под формат 4:5.</p>
+                <p class="hint">Все афиши сохраняются квадратными — 1:1 (рекомендуется 1000 × 1000 px). Название, дата, время и описание отображаются только при открытии афиши. На главной — маленькое сердечко, в календаре — кнопки действий.</p>
               </div>
               <label class="check availability-toggle"><input id="eventOpen" type="checkbox" checked><span>Разрешить предзаказы</span></label>
               <p class="hint" id="eventSlotPreorderHint" hidden>Для каждого мероприятия предзаказ включается отдельно. Гость выбирает дату, название мероприятия и позиции кухни.</p>
@@ -513,9 +514,9 @@
                  aria-labelledby="baliEventPlaceholderHeading">
           <div class="card-heading">
             <div>
-              <div class="eyebrow">ОФОРМЛЕНИЕ ГЛАВНОЙ · ПК</div>
+              <div class="eyebrow">ОФОРМЛЕНИЕ ГЛАВНОЙ · ВСЕ УСТРОЙСТВА</div>
               <h3 id="baliEventPlaceholderHeading">Единая заглушка мероприятий</h3>
-              <p class="hint">Отдельно от мероприятий. Один шаблон автоматически повторяется во всех свободных местах из пяти на главной. В полном календаре заглушки не показываются.</p>
+              <p class="hint">Отдельно от мероприятий. Один квадратный шаблон SECRET заполняет свободные места на главной: три на телефоне и планшете, пять на ПК. Если все мероприятия завершились, автоматически показываются заглушки. В календаре остаются настоящие события.</p>
             </div>
             <span class="tag">Общий шаблон</span>
           </div>
@@ -524,7 +525,7 @@
               <label>Основная надпись на изображении
                 <input id="baliPlaceholderPosterTitle" type="text" minlength="1" maxlength="40" value="SECRET" required>
               </label>
-              <div class="double">
+              <div class="double bali-placeholder-legacy-fields" hidden>
                 <label>Заголовок внизу
                   <input id="baliPlaceholderFooterTitle" type="text" minlength="1" maxlength="52" value="СКОРО В BALI" required>
                 </label>
@@ -533,8 +534,8 @@
                 </label>
               </div>
               <div class="bali-placeholder-poster-upload">
-                <strong>Изображение · 900 × 1200 px · 3:4</strong>
-                <small>По умолчанию — чёрный фон с надписью SECRET. При желании можно загрузить собственную картинку JPG/PNG/WebP или добавить HTTPS-ссылку. Картинка автоматически сжимается в WebP.</small>
+                <strong>Квадратное изображение · 1000 × 1000 px · 1:1</strong>
+                <small>По умолчанию — чёрный фон с надписью SECRET. При желании можно загрузить собственную картинку JPG/PNG/WebP или добавить HTTPS-ссылку. Картинка сохраняется квадратной (WebP) и используется на всех устройствах.</small>
                 <label>Загрузить картинку
                   <input type="file" id="baliPlaceholderImageFile" accept="image/png,image/jpeg,image/webp,image/heic,image/heif">
                 </label>
@@ -567,12 +568,12 @@
                     <strong id="baliPlaceholderPreviewTitle">SECRET</strong>
                   </div>
                 </div>
-                <div class="bali-placeholder-preview-footer" id="baliPlaceholderPreviewFooter">
+                <div class="bali-placeholder-preview-footer" id="baliPlaceholderPreviewFooter" hidden>
                   <strong id="baliPlaceholderPreviewFooterTitle">СКОРО В BALI</strong>
                   <span id="baliPlaceholderPreviewFooterSubtitle">Совсем скоро узнаете</span>
                 </div>
               </article>
-              <p class="hint">Чёрное поле SECRET и нижние надписи имеют тот же размер и отступы, что обычная карточка мероприятия. Все заглушки одинаковые и исчезают по мере добавления реальных событий.</p>
+              <p class="hint">Видна только квадратная картинка с SECRET посередине, без надписей сверху или снизу. Заглушки автоматически заменяются реальными афишами.</p>
             </div>
           </div>
         </section>
