@@ -1,0 +1,79 @@
+/* One genuine account entry on phones and tablets. BALI ID is opened from
+   the profile page, rather than posing as a second user button in the header.
+   Loaded after the legacy navigation styles to avoid breakpoint collisions. */
+@media(max-width:1179px){
+  body.bali-guest-theme .header #baliMobileProfileBtn,
+  body.bali-guest-theme .header #baliMobileIdBtn{
+    display:none!important;
+    visibility:hidden!important;
+  }
+  body.bali-guest-theme .header .bali-pc-account-wrap{
+    position:relative!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:43px!important;
+    min-width:43px!important;
+    max-width:43px!important;
+    flex:0 0 43px!important;
+    height:43px!important;
+    margin-left:auto!important;
+    margin-right:0!important;
+    z-index:3!important;
+  }
+  body.bali-guest-theme .header #accountBtn{
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 43px!important;
+    position:relative!important;
+    width:43px!important;
+    min-width:43px!important;
+    max-width:43px!important;
+    height:43px!important;
+    min-height:43px!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:11px!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    color:transparent!important;
+    -webkit-text-fill-color:transparent!important;
+    font-size:0!important;
+    line-height:0!important;
+    text-indent:-9999px!important;
+    overflow:hidden!important;
+    cursor:pointer!important;
+    touch-action:manipulation!important;
+  }
+  body.bali-guest-theme .header #accountBtn::before{
+    content:""!important;
+    display:block!important;
+    position:absolute!important;
+    inset:6px!important;
+    width:31px!important;
+    height:31px!important;
+    background:var(--bali-mobile-neon,var(--bt-primary,#b9ff51))!important;
+    mask:url("assets/nav-icons/profile.svg") center/contain no-repeat!important;
+    -webkit-mask:url("assets/nav-icons/profile.svg") center/contain no-repeat!important;
+    text-indent:0!important;
+  }
+  body.bali-guest-theme .header #accountBtn::after{
+    content:none!important;
+    display:none!important;
+  }
+  body.bali-guest-theme .header #accountBtn:focus-visible{
+    outline:2px solid var(--bt-primary,#b9ff51)!important;
+    outline-offset:2px!important;
+  }
+  /* Only three distinct routes remain in the lower dock:
+     Home / Calendar / Menu. Profile and Info are reached from the header. */
+  body.bali-guest-theme .bali-bottom-nav{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+  body.bali-guest-theme .bali-bottom-nav .bali-nav-profile-item,
+  body.bali-guest-theme .bali-bottom-nav .bali-nav-info-item{
+    display:none!important;
+  }
+}
