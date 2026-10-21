@@ -184,3 +184,12 @@ body[data-bali-admin-section="design"] .admin-tab[data-admin-tab="design"]{font-
  font:850 12px/1.35 Manrope,Inter,sans-serif
 }
 .bali-simple-banner-editor [data-promo-save]:disabled{opacity:.48;cursor:wait}
+
+.bali-simple-banner-editor .bali-promo-simple-reset{
+ width:100%;padding:9px;border:1px solid #45684a;border-radius:8px;
+ background:#1a2920;color:#bed3c4;font:700 11px Manrope,Inter,sans-serif;
+ cursor:pointer
+}
+.bali-simple-banner-editor [data-promo-size]{
+ color:#c5e5c3;font:650 10px/1.5 Manrope,Inter,sans-serif
+}
