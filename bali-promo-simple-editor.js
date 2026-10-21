@@ -201,7 +201,9 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
   finally{if(id===activeId)busy=false;event.target.value="";}
  });
  $("save").addEventListener("click",async()=>{
-  if(!record||busy||!canEdit())return;
+  if(!canEdit()){say("Публикация недоступна: войдите под активным администратором.");return;}
+  if(busy){say("Загрузка или сохранение ещё выполняется. Проверьте статус операции.");return;}
+  if(!record){say("Не удалось загрузить слайд. Нажмите «Перезагрузить данные из Firebase» и повторите.");return;}
   collect(false);
   const id=activeId;
   if(record.title.length!==0&&record.title.length<2){say("Текст должен состоять минимум из 2 символов или быть пустым.");return;}
