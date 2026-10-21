@@ -16,7 +16,7 @@ async function prepare(page,count=10){
     const frag=document.createDocumentFragment();
     for(let i=0;i<n;i++){
       const event=document.createElement('article');
-      event.className='event-card';event.dataset.eventDate='2026-11-'+String(i+1).padStart(2,'0');
+      event.className='event-card';event.dataset.eventDate='2026-10-'+String(i+22).padStart(2,'0');
       const poster=document.createElement('div');poster.className='bali-event-poster-wrap';
       const img=document.createElement('img');img.src='assets/bali-id-card-readable.svg';
       img.className='event-poster';poster.append(img);
