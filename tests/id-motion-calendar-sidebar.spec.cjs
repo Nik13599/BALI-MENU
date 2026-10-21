@@ -196,9 +196,15 @@ test('BALI ID has no redundant heading or grey panel, and the flip keeps real de
   expect(before.radius).not.toBe('0px');
   const r=await page.locator('#baliIdFlipScene').boundingBox();
   await page.mouse.click(r.x+r.width*.51,r.y+r.height*.49);
-  expect(await page.evaluate(()=>window.BaliIdMotion.getState().flipped)).toBe(true);
-  expect(await page.evaluate(()=>window.BaliIdMotion.getState().cinematic)).toBe(true);
-  expect(await page.locator('#baliIdFlipTrack').evaluate(n=>n.getAnimations().length)).toBeGreaterThan(0);
+  // Read one animation frame atomically; separate protocol round trips can
+  // outlive the 820ms animation on a busy CI worker.
+  const flipping=await page.evaluate(()=>({
+    ...window.BaliIdMotion.getState(),
+    animations:document.getElementById('baliIdFlipTrack').getAnimations().length
+  }));
+  expect(flipping.flipped).toBe(true);
+  expect(flipping.cinematic).toBe(true);
+  expect(flipping.animations).toBeGreaterThan(0);
   await expect.poll(()=>page.evaluate(()=>window.BaliIdMotion.getState().cinematic),{timeout:2200}).toBe(false);
 });
 
