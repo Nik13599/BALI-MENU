@@ -258,6 +258,9 @@ if(form&&list&&status){
       // remains possible before production rules for contact-modal are deployed.
       const payload={title,description,imageUrl,imageTabletUrl:versions.tablet,
         imageMobileUrl:versions.mobile,destination,buttonText,sort,published,updatedAt:serverTimestamp()};
+      // Keep text/button styling created in the simple banner composer.
+      const previous=records.get(id)?.overlay;
+      if(previous)payload.overlay=previous;
       if(destination==="contact-modal"){
         Object.assign(payload,{contactTitle,contactLinks,contactEnabled,contactHotspot});
       }
