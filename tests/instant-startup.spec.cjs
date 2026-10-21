@@ -55,6 +55,11 @@ test('home, navigation and current public data work before the Firebase SDK fini
     expect(await page.evaluate(()=>availableEvents[0].closesAt.toDate().toISOString())).toBe('2099-10-24T20:00:00.000Z');
     await expect(page.locator('#homeSection')).not.toContainText(/загружа|получаем актуаль/i);
     await expect(page.locator('#menuGrid .spinner')).toHaveCount(0);
+    await page.locator('[data-bali-menu-mode="bar"]').click();
+    await expect(page.locator('#baliAgeGate')).toBeVisible();
+    await page.locator('#baliAgeGate [data-age-answer="yes"]').click();
+    await expect(page.locator('[data-bali-menu-mode="bar"]')).toHaveAttribute('aria-pressed','true');
+    expect(await page.evaluate(()=>Boolean(window.__domReady))).toBe(false);
     const query=gate.requests.find(q=>q.from[0].collectionId==='promotions');
     expect(query.where.fieldFilter).toEqual({field:{fieldPath:'published'},op:'EQUAL',value:{booleanValue:true}});
     expect(await page.evaluate(()=>Object.keys(localStorage).some(key=>key.includes(':promotions')))).toBe(false);
@@ -71,6 +76,21 @@ test('saved public menu appears while both network paths are pending, then refre
     gate.releaseMenu();
     await expect(page.locator('#menuGrid .menu-item-name')).toHaveText(menu.name);
     await expect(page.locator('#menuGrid .menu-item-price')).toContainText('25');
+  }finally{gate.releaseMenu();gate.releaseSdk();}
+});
+
+test('a direct ID link keeps its login gate when authentication loads later',async({page})=>{
+  const gate=await slowSdk(page);
+  try{
+    await page.goto('/index.html#id',{waitUntil:'commit'});
+    await expect(page.locator('body')).toHaveAttribute('data-bali-page','home');
+    await page.evaluate(()=>{
+      window.__idRequests=0;
+      window.BaliIdOnboarding={isAccepted:()=>false,open:async()=>{window.__idRequests++;return false;}};
+      window.dispatchEvent(new Event('bali:id-onboarding-ready'));
+    });
+    expect(await page.evaluate(()=>window.__idRequests)).toBe(1);
+    await expect(page.locator('#baliIdSection')).toBeHidden();
   }finally{gate.releaseMenu();gate.releaseSdk();}
 });
 

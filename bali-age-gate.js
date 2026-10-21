@@ -1,14 +1,23 @@
 /* 18+ consent: account-only persistence, no guest bypass cookie. */
-import {getApp,getApps,initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
-const auth=getAuth(app),db=getFirestore(app);
 const dialog=document.getElementById("baliAgeGate");
 let current=null,version=0,acceptedUid=null,busy=false;
-onAuthStateChanged(auth,user=>{
-  current=user?.emailVerified?user:null;version++;acceptedUid=null;
-});
+let db,doc,getDoc,setDoc,serverTimestamp;
+// Guest confirmation is local and immediately available. Account persistence
+// attaches in the background, without blocking access to the public cards.
+Promise.all([
+  import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"),
+  import("https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"),
+  import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js")
+]).then(([apps,authApi,store])=>{
+  const app=apps.getApps().length?apps.getApp():apps.initializeApp(window.BALI_FIREBASE_CONFIG);
+  db=store.getFirestore(app);
+  ({doc,getDoc,setDoc,serverTimestamp}=store);
+  authApi.onAuthStateChanged(authApi.getAuth(app),user=>{
+    const next=user?.emailVerified?user:null;
+    if(current?.uid!==next?.uid){version++;acceptedUid=null;}
+    current=next;
+  });
+}).catch(error=>console.warn("BALI 18+ account storage:",error.code||"unavailable"));
 const consentRef=uid=>doc(db,"users",uid,"ageConfirmations","restrictedMenus");
 async function confirm(){
   if(busy||!dialog)return false;

@@ -46,6 +46,18 @@ function setBaliHeartButton(button,selected,status="upcoming"){
 }
 let lastWheelSlideAt=0;
 let openOrdersAfterSignIn=new URLSearchParams(location.search).get('view')==='orders';
+let pendingIdNavigation=null;
+
+function requestBaliId(replace=false) {
+    if(!window.BaliIdOnboarding?.open){pendingIdNavigation={replace};return;}
+    pendingIdNavigation=null;
+    void window.BaliIdOnboarding.open().then(allowed=>{
+        if(allowed)navigateGuestPage("id",{replace});
+    });
+}
+window.addEventListener("bali:id-onboarding-ready",()=>{
+    if(pendingIdNavigation)requestBaliId(pendingIdNavigation.replace);
+});
 
 // Карточки могут иметь разную ширину на ПК и мобильном экране.
 // Индекс рассчитывается по реальным позициям, а не по фиксированным пикселям.
@@ -413,9 +425,7 @@ function renderGuestPage(page,{scroll=true}={}) {
         if(window.location.hash==="#id"){
             history.replaceState({baliPage:"home"},"",window.location.pathname+window.location.search);
         }
-        void window.BaliIdOnboarding?.open?.().then(allowed=>{
-            if(allowed)navigateGuestPage("id");
-        });
+        requestBaliId();
         page="home";
     }
     const selected=BALI_GUEST_PAGES.has(page)?page:"home";
@@ -516,10 +526,9 @@ function switchBaliMenuMode(nextMode) {
 
 function navigateGuestPage(page,{replace=false}={}) {
     const selected=BALI_GUEST_PAGES.has(page)?page:"home";
+    if(selected!=="id")pendingIdNavigation=null;
     if(selected==="id" && !window.BaliIdOnboarding?.isAccepted?.()){
-        void window.BaliIdOnboarding?.open?.().then(allowed=>{
-            if(allowed)navigateGuestPage("id",{replace});
-        });
+        requestBaliId(replace);
         return;
     }
     const path=selected==="home"?
