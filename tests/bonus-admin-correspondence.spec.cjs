@@ -12,7 +12,7 @@ async function mount(page,file,modules,{admin=true,custom=true,delayKinds=false}
     window.__kinds=custom?[...builtins,{id:'dessert',name:'Десерты'}]:builtins;
     window.__calls=[];window.__kindResolvers=[];window.__auth={currentUser:{uid:'staff_fixture_001',emailVerified:true}};
     window.__callbacks=[];window.__setUser=user=>{window.__auth.currentUser=user;for(const cb of window.__callbacks)cb(user)};
-    window.BALI_FIREBASE_CONFIG={};window.BaliAuth={isRegistered:()=>true};
+    window.BALI_FIREBASE_CONFIG={};window.BaliAuth={isRegistered:()=>true,getProfile:()=>({uid:window.__auth.currentUser?.uid})};
     window.BaliQrScanner={showReceipt:data=>{window.__receipt=data}};
     window.confirm=()=>true;window.alert=()=>{};window.print=()=>{window.__printed=true};
     window.getApps=()=>[{}];window.getApp=()=>({});window.initializeApp=()=>({});
