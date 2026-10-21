@@ -291,6 +291,9 @@ exports.issueBaliQuantity=api("issueBaliQuantity",async req=>{
 
 Object.assign(exports,require("./bonus-qr")({api,admin,db,TS,verified,privileged,fail,nameAndId,wallet}));
 
+// New order API is deployed first. Clients switch only after production verification.
+exports.submitBaliPreorder=api("submitBaliPreorder",require("./preorders")({db,admin,verified,fail}));
+
 /* Short-lived, opaque BALI ID recipient QR. The QR never exposes a UID or phone. */
 const QRForCard=require("qrcode");
 exports.issueGuestQr=api("issueGuestQr",async req=>{
