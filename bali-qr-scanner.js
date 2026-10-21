@@ -1,4 +1,4 @@
-/* Secure camera-first QR scanner for BALI ID: top-up, payment and card recipient lookup.
+/* Secure camera-first QR scanner for internal club bonus grants, redemption and card recipient lookup.
    No wallet mutations happen in browser; each operation requires server confirmation. */
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
@@ -34,7 +34,7 @@ shell.append(head,instructions,video,toolRow,inputLabel,check,status,confirmBox)
 dialog.append(shell);document.body.append(dialog);
 const receipt=el("dialog","bali-qr-dialog"),receiptShell=el("div","bali-qr-shell");
 const receiptHead=el("div","bali-qr-head");
-const receiptTitle=el("h2","","BALI · ЧЕК"),receiptClose=el("button","","Закрыть");
+const receiptTitle=el("h2","","BALI · ОПЕРАЦИЯ"),receiptClose=el("button","","Закрыть");
 receiptHead.append(receiptTitle,receiptClose);
 const receiptBody=el("section","bali-qr-receipt");
 receiptShell.append(receiptHead,receiptBody);receipt.append(receiptShell);document.body.append(receipt);
@@ -75,7 +75,7 @@ function message(error){
 }
 function setModal(modeArg){
   mode=modeArg;
-  title.textContent=mode==="credit"?"ПОПОЛНИТЬ BALI ID":mode==="debit"?"ОПЛАТИТЬ БОНУСАМИ":"ПЕРЕВОД ПО QR";
+  title.textContent=mode==="credit"?"ПОЛУЧИТЬ БОНУСЫ BALI":mode==="debit"?"ИСПОЛЬЗОВАТЬ БОНУСЫ":"ПЕРЕВОД ПО QR";
   instructions.textContent=mode==="recipient"?"Наведите камеру на QR-код карты получателя.":
     mode==="credit"?"Сканируйте QR-код начисления от BALI.":"Сканируйте QR-код списания от сотрудника клуба.";
 }
@@ -129,7 +129,7 @@ function showReceipt(data){
   const stamped=el("p","",fmt.format(new Date(data.createdAt))+" · Минск");
   const balanceLabel=el("p","",Number.isInteger(data.balanceAfter)?"Остаток: "+data.balanceAfter+" шт.":"BALI ID · PRIVILEGE");
   const number=el("small","bali-qr-receipt-number","Операция № "+data.id);
-  const until=el("p","","Чек доступен до "+fmt.format(new Date(data.expiresAt||data.createdAt+30*86400000)));
+  const until=el("p","","Подтверждение доступно до "+fmt.format(new Date(data.expiresAt||data.createdAt+30*86400000)));
   receiptBody.append(headline,summary,stamped,balanceLabel,number,until);
   if(dialog.open)dialog.close();
   if(!receipt.open)receipt.showModal();
