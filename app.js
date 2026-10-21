@@ -378,6 +378,16 @@ function resetGuestVerticalPosition(page) {
 }
 
 function renderGuestPage(page,{scroll=true}={}) {
+    // Direct #id links, history restoration and PC showcase must obey the same gate.
+    if(page==="id" && !window.BaliIdOnboarding?.isAccepted?.()){
+        if(window.location.hash==="#id"){
+            history.replaceState({baliPage:"home"},"",window.location.pathname+window.location.search);
+        }
+        void window.BaliIdOnboarding?.open?.().then(allowed=>{
+            if(allowed)navigateGuestPage("id");
+        });
+        page="home";
+    }
     const selected=BALI_GUEST_PAGES.has(page)?page:"home";
     const sections={
         home:"homeSection", menu:"menuPage",
@@ -462,6 +472,12 @@ function switchBaliMenuMode(nextMode) {
 
 function navigateGuestPage(page,{replace=false}={}) {
     const selected=BALI_GUEST_PAGES.has(page)?page:"home";
+    if(selected==="id" && !window.BaliIdOnboarding?.isAccepted?.()){
+        void window.BaliIdOnboarding?.open?.().then(allowed=>{
+            if(allowed)navigateGuestPage("id",{replace});
+        });
+        return;
+    }
     const path=selected==="home"?
         window.location.pathname+window.location.search:
         "#"+selected;
@@ -1001,9 +1017,7 @@ function attachEventListeners() {
     }
     for(const nav of document.querySelectorAll("[data-bali-nav]")){
         nav.addEventListener("click",()=>{
-            if(nav.dataset.baliNav==="id"&&!window.BaliAuth?.isRegistered?.()){
-                window.BaliAuth?.open?.();return;
-            }
+            // All BALI ID entry points share the login notice and first-use gate.
             // The Calendar tab always opens all events; the personal
             // "Мои планы" view remains available from the profile page.
             if(nav.dataset.baliNav==="events")showOnlyPlannedEvents=false;
@@ -1015,10 +1029,7 @@ function attachEventListeners() {
         if(!window.BaliAuth?.isRegistered?.()){window.BaliAuth?.open?.();return;}
         navigateGuestPage("profile");
     };
-    const openId=()=>{
-        if(!window.BaliAuth?.isRegistered?.()){window.BaliAuth?.open?.();return;}
-        navigateGuestPage("id");
-    };
+    const openId=()=>navigateGuestPage("id");
     document.getElementById("baliMobileProfileBtn")?.addEventListener("click",openAccount);
     document.getElementById("baliMobileIdBtn")?.addEventListener("click",openId);
     document.getElementById("baliCartDock")?.addEventListener("click",openCart);
