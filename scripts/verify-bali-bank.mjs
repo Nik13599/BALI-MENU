@@ -11,11 +11,26 @@ for(const id of [
   "baliTransferRecipientName","baliTransferNext","baliTransferChoices",
   "baliTransferConfirm","baliHistoryDialog","baliIdHistoryScroll","baliIdHistoryList"
 ])assert(html.includes('id="'+id+'"'),"Missing banking UI: "+id);
-assert(html.indexOf('id="baliIdTransferOpen"')<html.indexOf('id="baliShowQr"') &&
-  html.indexOf('id="baliShowQr"')<html.indexOf('class="bali-bank-wallet"') &&
-  html.includes('id="baliIdTopupOpen"') && html.includes('id="baliIdPayOpen"') &&
-  html.includes('id="baliIdHistoryOpen"') && html.includes('id="baliTransferScanQr"'),
-  "BALI ID must offer QR top-up, QR debit, history and recipient QR lookup");
+const idPage=html.slice(html.indexOf('<section id="baliIdSection"'),html.indexOf('<!-- Guest benefit transfers'));
+const topTools=idPage.slice(idPage.indexOf('class="bali-id-page-tools"'),idPage.indexOf('class="bali-profile-card bali-id-profile"'));
+const cardActions=idPage.slice(idPage.indexOf('class="bali-bank-actions"'),idPage.indexOf('class="bali-bank-wallet"'));
+const pay=cardActions.indexOf('id="baliIdPayOpen"'),topup=cardActions.indexOf('id="baliIdTopupOpen"'),send=cardActions.indexOf('id="baliIdTransferOpen"');
+assert(pay>=0&&pay<topup&&topup<send&&
+  topTools.includes('id="baliIdHistoryOpen"')&&
+  topTools.includes('id="baliShowQr"')&&
+  topTools.indexOf('id="baliIdHistoryOpen"')<topTools.indexOf('id="baliShowQr"')&&
+  !topTools.includes('id="baliIdPayOpen"')&&
+  !cardActions.includes('id="baliShowQr"')&&
+  topTools.includes('<span>QR-код</span>')&&
+  html.includes('id="baliTransferScanQr"')&&
+  html.includes('bali-id-actions-positions.css?v='),
+  "BALI ID: history and QR below page heading; Pay, Top up, Transfer beneath unchanged card");
+const positionCss=s("bali-id-actions-positions.css");
+assert(positionCss.includes('grid-template-columns:repeat(3,minmax(0,1fr))!important')&&
+  positionCss.includes('position:absolute!important')&&
+  !positionCss.includes('aspect-ratio')&&
+  !positionCss.includes('--bali-bank-card-width'),
+  "Action placement must not alter ID card aspect ratio or sizing");
 assert(html.includes('bali-id-bank.js?v=')&&html.includes('bali-id-bank.css?v='),
   "Banking assets not loaded");
 for(const fn of ["previewBaliRecipient","transferBaliBenefits","listMyBaliHistory"]){

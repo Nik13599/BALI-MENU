@@ -1,0 +1,158 @@
+/* BALI ID: user-approved control order and location; never resize the card.
+   History + QR are placed below the BALI ID heading in the page workspace.
+   Card intrinsic size and existing viewport width variables are untouched. */
+body.bali-guest-theme #baliIdSection > .container{
+  position:relative!important;
+}
+/* Keep the controls outside the card's centered sizing/grid layout. */
+body.bali-guest-theme #baliIdSection .bali-id-topbar{
+  position:absolute!important;
+  inset:0 0 auto 0!important;
+  transform:none!important;
+  width:100%!important;
+  min-height:0!important;
+  height:auto!important;
+  display:block!important;
+  margin:0!important;
+  padding:0!important;
+  z-index:12!important;
+  pointer-events:none;
+}
+body.bali-guest-theme #baliIdSection .bali-id-topbar .bali-id-page-title{
+  width:100%!important;
+  padding:0!important;
+  margin:0!important;
+  text-align:center!important;
+  line-height:1.2!important;
+  pointer-events:auto;
+}
+body.bali-guest-theme #baliIdSection .bali-id-page-tools{
+  position:absolute!important;
+  top:clamp(40px,6dvh,64px)!important;
+  right:0!important;
+  left:auto!important;
+  transform:none!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:clamp(6px,1.2vw,11px)!important;
+  width:max-content!important;
+  max-width:100%!important;
+  margin:0!important;
+  z-index:15!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-page-tools button,
+body.bali-guest-theme #baliIdSection .bali-id-page-tools #baliShowQr{
+  box-sizing:border-box!important;
+  position:static!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:clamp(35px,4.6dvh,42px)!important;
+  min-height:35px!important;
+  padding:7px clamp(9px,1.2vw,14px)!important;
+  gap:7px!important;
+  border-radius:10px!important;
+  border:1px solid rgba(185,255,81,.46)!important;
+  background:rgba(27,39,31,.9)!important;
+  color:#f3ffe6!important;
+  font:750 clamp(11px,1.1vw,13px)/1.12 Manrope,Inter,sans-serif!important;
+  white-space:nowrap!important;
+  cursor:pointer!important;
+  pointer-events:auto!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-page-tools button svg{
+  width:clamp(17px,1.6vw,20px)!important;
+  height:clamp(17px,1.6vw,20px)!important;
+  flex:none!important;
+  display:block!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-page-tools button span{
+  display:inline!important;
+  font:inherit!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-page-tools button:focus-visible{
+  outline:2px solid #d5ff8c!important;
+  outline-offset:2px!important;
+}
+/* Under the card, exactly three actions in the requested order on all screens. */
+body.bali-guest-theme #baliIdSection .bali-bank-actions{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-flow:row!important;
+}
+body.bali-guest-theme #baliIdSection .bali-bank-actions > button{
+  grid-column:auto!important;
+  grid-row:auto!important;
+  justify-self:stretch!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  white-space:nowrap!important;
+}
+body.bali-guest-theme #baliIdSection .bali-bank-actions #baliIdPayOpen{
+  order:0;
+  background:#26342a!important;
+  color:#f2ffe9!important;
+  border:1px solid rgba(185,255,81,.38)!important;
+}
+body.bali-guest-theme #baliIdSection .bali-bank-actions #baliIdTopupOpen{
+  order:1;
+  background:var(--bt-primary,#b9ff51)!important;
+  color:#111c0f!important;
+}
+body.bali-guest-theme #baliIdSection .bali-bank-actions #baliIdTransferOpen{
+  order:2;
+  background:#26342a!important;
+  color:#f2ffe9!important;
+  border:1px solid rgba(185,255,81,.38)!important;
+}
+@media(max-width:767px){
+  body.bali-guest-theme #baliIdSection .bali-id-topbar .bali-id-page-title{
+    text-align:center!important;
+    padding:0!important;
+    letter-spacing:.05em!important;
+  }
+  body.bali-guest-theme #baliIdSection .bali-id-page-tools{
+    top:clamp(30px,5.7dvh,44px)!important;
+    right:clamp(0px,1vw,4px)!important;
+    gap:6px!important;
+  }
+  body.bali-guest-theme #baliIdSection .bali-id-page-tools button,
+  body.bali-guest-theme #baliIdSection .bali-id-page-tools #baliShowQr{
+    height:35px!important;
+    min-height:35px!important;
+    padding:6px 9px!important;
+    font-size:11px!important;
+  }
+  body.bali-guest-theme #baliIdSection .bali-bank-actions{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    column-gap:clamp(5px,1.6vw,9px)!important;
+  }
+  body.bali-guest-theme #baliIdSection .bali-bank-actions > button{
+    grid-column:auto!important;
+    width:100%!important;
+    min-height:39px!important;
+    height:clamp(39px,5.7dvh,48px)!important;
+    font-size:clamp(10px,2.85vw,13px)!important;
+    padding:6px 4px!important;
+    gap:4px!important;
+  }
+  body.bali-guest-theme #baliIdSection .bali-bank-actions > button svg{
+    width:clamp(15px,4.3vw,19px)!important;
+    height:clamp(15px,4.3vw,19px)!important;
+  }
+}
+@media(max-height:620px){
+  body.bali-guest-theme #baliIdSection .bali-id-page-tools{
+    top:clamp(25px,4.6dvh,35px)!important;
+  }
+  body.bali-guest-theme #baliIdSection .bali-id-page-tools button,
+  body.bali-guest-theme #baliIdSection .bali-id-page-tools #baliShowQr{
+    min-height:30px!important;
+    height:32px!important;
+  }
+}
