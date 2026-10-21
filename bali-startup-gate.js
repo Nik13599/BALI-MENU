@@ -4,7 +4,7 @@
   const required={
     home:["events","promotions","settings/homeDesign","settings/homeInterface",
       "settings/homeEventPlaceholder","settings/siteBuilderPublished"],
-    events:["events"],menu:["menu"],contacts:["settings/homeInterface"],
+    events:["events"],menu:["menu","bar_menu","hookah_menu","tea_menu"],contacts:["settings/homeInterface"],
     about:["settings/siteBuilderPublished"],profile:[],id:[]
   };
   if(window.matchMedia("(max-width:767px)").matches)required.home.push("mobileAboutBackgrounds");
@@ -50,7 +50,6 @@
       if(page!==route()){opening=false;reveal();return;}
       opened=true;clearTimeout(timeoutId);
       document.documentElement.classList.remove("bali-await-content");
-      overlay()?.remove();
       window.dispatchEvent(new Event("bali:startup-ready"));
     }catch(error){
       fail(error?.message||"Не удалось загрузить изображения BALI.");
@@ -70,6 +69,18 @@
   window.BaliStartupParsed=ready;
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ready,{once:true});
   else ready();
+  // History.pushState does not emit hashchange: the SPA router calls this explicitly.
+  window.BaliStartupGate={page(next){
+    if(!domReady||failed||!required[next])return;
+    if(!required[next].every(path=>received.has(path))){
+      if(opened){
+        opened=false;
+        document.documentElement.classList.add("bali-await-content");
+        clearTimeout(timeoutId);
+        timeoutId=setTimeout(()=>fail("Нет подтверждения актуальных данных. Повторите загрузку."),18000);
+      }
+    }else if(!opened){reveal();}
+  }};
   window.addEventListener("hashchange",reveal);
   window.addEventListener("popstate",reveal);
   // Never reveal the shipped SECRET screen as a network-error fallback.

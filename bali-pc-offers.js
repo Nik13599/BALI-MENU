@@ -74,14 +74,7 @@ if(image&&title&&description&&counter&&action&&hero){
     const primary=offer?.imageRemoved===true?"":validImage(offer?.imageUrl)?offer.imageUrl:"";
     const tablet=validImage(offer?.imageTabletUrl)?offer.imageTabletUrl:primary;
     const mobile=validImage(offer?.imageMobileUrl)?offer.imageMobileUrl:primary;
-    image.hidden=!primary;
-    if(primary){
-      if(image.getAttribute("src")!==primary)image.src=primary;
-      image.alt=offer?.title?"Иллюстрация к предложению «"+offer.title+"»":"Баннер BALI PRIVILEGE";
-    }else{
-      if(image.hasAttribute("src"))image.removeAttribute("src");
-      image.alt="";
-    }
+    // Set responsive sources before the image URL so mobile does not first download desktop art.
     if(tabletSource){
       if(tablet&&tabletSource.getAttribute("srcset")!==tablet)tabletSource.srcset=tablet;
       else if(!tablet&&tabletSource.hasAttribute("srcset"))tabletSource.removeAttribute("srcset");
@@ -89,6 +82,14 @@ if(image&&title&&description&&counter&&action&&hero){
     if(mobileSource){
       if(mobile&&mobileSource.getAttribute("srcset")!==mobile)mobileSource.srcset=mobile;
       else if(!mobile&&mobileSource.hasAttribute("srcset"))mobileSource.removeAttribute("srcset");
+    }
+    image.hidden=!primary;
+    if(primary){
+      if(image.getAttribute("src")!==primary)image.src=primary;
+      image.alt=offer?.title?"Иллюстрация к предложению «"+offer.title+"»":"Баннер BALI PRIVILEGE";
+    }else{
+      if(image.hasAttribute("src"))image.removeAttribute("src");
+      image.alt="";
     }
   }
   function validOffer(v){

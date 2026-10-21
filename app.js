@@ -373,6 +373,7 @@ function renderGuestPage(page,{scroll=true}={}) {
         for(const dialog of document.querySelectorAll("dialog[open]"))dialog.close();
     }
     document.body.dataset.baliPage=selected;
+    window.BaliStartupGate?.page(selected);
     // BALI ID dialogs live at document root to avoid clipping.
     // Close them on any navigation away, just as the page canvas is hidden.
     if(selected!=="id"){
