@@ -1,7 +1,7 @@
 /* BALI visual page builder: published public presentation data only.
    Drafts never load here. Existing site logic remains authoritative. */
-import {getApp,getApps,initializeApp} from "./bali-public-reader.js?v=20261021-live-content1";
-import {getFirestore,doc,onSnapshot} from "./bali-public-reader.js?v=20261021-live-content1";
+import {getApp,getApps,initializeApp} from "./bali-public-reader.js?v=20261021-live-content3";
+import {getFirestore,doc,onSnapshot} from "./bali-public-reader.js?v=20261021-live-content3";
 const core=window.BaliBuilderCore;
 if(!core)throw new Error("BALI Builder renderer missing");
 const isAdminPreview=new URLSearchParams(location.search).has("bali-admin-design-preview");

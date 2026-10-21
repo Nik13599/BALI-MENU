@@ -505,7 +505,8 @@ function renderHomeEvents() {
         img.src=safeImageUrl(event.poster_url);
         img.alt="Афиша "+event.title;
         img.loading="eager";
-        img.fetchPriority="high";
+        // The published hero has fetchpriority=high; do not let five posters compete.
+        img.fetchPriority=track.childElementCount===0?"auto":"low";
         posterWrap.append(img);
         const dateBadge=document.createElement("time");
         dateBadge.className="bali-home-date-badge";

@@ -107,25 +107,46 @@ export function onSnapshot(ref,...args){
   const fail=error=>{if(active&&!hasData&&restFailed&&sdkFailed)onError?.(error);};
   const initial=cached(ref);
   if(initial){hasData=true;queueMicrotask(()=>{if(active&&!serverLive)deliver(initial);});}
+  let sdkStarted=false,subscribeTimer;
+  const startLive=()=>{
+    if(!active||sdkStarted)return;
+    sdkStarted=true;
+    clearTimeout(subscribeTimer);
+    window.removeEventListener('bali:startup-ready',startLive);
+    sdk().then(([apps,store])=>{
+      if(!active)return;
+      const app=apps.getApps().length?apps.getApp():apps.initializeApp(config());
+      const db=store.getFirestore(app);
+      let target=ref.kind==='document'?store.doc(db,...ref.path.split('/')):store.collection(db,ref.path);
+      if(ref.filters?.length)target=store.query(target,...ref.filters.map(f=>store.where(f.field,f.op,f.value)));
+      const next=result=>{
+        if(!active)return;
+        if(result.metadata?.fromCache!==true||result.metadata?.hasPendingWrites)serverLive=true;
+        else if(hasData)return; // A late local cache cannot replace a server result.
+        hasData=true;deliver(result);
+      };
+      const error=error=>{sdkFailed=true;fail(error);};
+      stop=options?store.onSnapshot(target,options,next,error):store.onSnapshot(target,next,error);
+    }).catch(error=>{sdkFailed=true;fail(error);});
+  };
   read(ref).then(result=>{
     if(active&&!serverLive){hasData=true;deliver(result);}
-  }).catch(error=>{restFailed=true;fail(error);});
-  sdk().then(([apps,store])=>{
-    if(!active)return;
-    const app=apps.getApps().length?apps.getApp():apps.initializeApp(config());
-    const db=store.getFirestore(app);
-    let target=ref.kind==='document'?store.doc(db,...ref.path.split('/')):store.collection(db,ref.path);
-    if(ref.filters?.length)target=store.query(target,...ref.filters.map(f=>store.where(f.field,f.op,f.value)));
-    const next=result=>{
-      if(!active)return;
-      if(result.metadata?.fromCache!==true||result.metadata?.hasPendingWrites)serverLive=true;
-      else if(hasData)return; // A late local cache cannot replace a server result.
-      hasData=true;deliver(result);
-    };
-    const error=error=>{sdkFailed=true;fail(error);};
-    stop=options?store.onSnapshot(target,options,next,error):store.onSnapshot(target,next,error);
-  }).catch(error=>{sdkFailed=true;fail(error);});
-  return ()=>{active=false;stop?.();};
+  }).catch(error=>{
+    restFailed=true;fail(error);
+    // If REST cannot fetch current data, start the SDK fallback immediately.
+    startLive();
+  });
+  if(window.BaliStartupGate&&!window.BaliStartupReady){
+    // Do not compete with the first banner and events download.
+    // A bounded fallback prevents a broken startup gate from disabling live updates.
+    window.addEventListener('bali:startup-ready',startLive,{once:true});
+    subscribeTimer=setTimeout(startLive,4500);
+  }else startLive();
+  return ()=>{
+    active=false;clearTimeout(subscribeTimer);
+    window.removeEventListener('bali:startup-ready',startLive);
+    stop?.();
+  };
 }
 
 // These requests overlap HTML/CSS parsing and SDK downloads. No cached or

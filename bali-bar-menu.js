@@ -2,8 +2,8 @@
  * Separate Firestore collection means alcoholic products NEVER enter the food
  * preorder catalog or basket. No product prices are fabricated.
  */
-import {initializeApp,getApps,getApp} from "./bali-public-reader.js?v=20261021-live-content1";
-import {getFirestore,collection,onSnapshot} from "./bali-public-reader.js?v=20261021-live-content1";
+import {initializeApp,getApps,getApp} from "./bali-public-reader.js?v=20261021-live-content3";
+import {getFirestore,collection,onSnapshot} from "./bali-public-reader.js?v=20261021-live-content3";
 
 import {categoryLabel,catalogCard,catalogGroup} from "./bali-menu-cards.js?v=20261020-2";
 

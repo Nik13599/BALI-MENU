@@ -55,6 +55,7 @@
       }
       if(page!==route()){opening=false;reveal();return;}
       opened=true;clearTimeout(timeoutId);
+      window.BaliStartupReady=true;
       document.documentElement.classList.remove("bali-await-content");
       window.dispatchEvent(new Event("bali:startup-ready"));
     }catch(error){
