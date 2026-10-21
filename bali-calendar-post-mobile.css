@@ -224,3 +224,23 @@ body.bali-guest-theme #baliShareDialog .bali-share-preview{
     padding-inline:11px!important;
   }
 }
+
+/* BALI calendar detail modal: lock scrolling while only the poster is being
+   viewed; unlock it solely after the real "Подробнее" action.
+   Same interaction on PC, tablet and phone. */
+:root[data-bali-theme] body.bali-guest-theme
+#baliEventDetailDialog.bali-event-post[data-scroll-unlocked="false"]{
+  overflow-x:hidden!important;
+  overflow-y:hidden!important;
+  overscroll-behavior:contain!important;
+  scrollbar-width:none!important;
+  /* On unusually short windows keep all three action buttons in reach
+     before scroll is unlocked, without cutting off the square artwork. */
+  width:min(94vw,478px,calc(89dvh - 155px))!important;
+  max-width:calc(100vw - 16px)!important;
+}
+:root[data-bali-theme] body.bali-guest-theme
+#baliEventDetailDialog.bali-event-post[data-scroll-unlocked="true"]{
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+}
