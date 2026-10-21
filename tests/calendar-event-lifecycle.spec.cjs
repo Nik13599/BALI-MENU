@@ -3,7 +3,7 @@ test.beforeEach(async({page})=>page.route("**/*",r=>new URL(r.request().url()).h
 test("Minsk start/end and overnight 23:00–06:00 are accurate",async({page})=>{
  await page.goto("/index.html#events");
  const value=await page.evaluate(()=>{
-  const {state,monthRange}=window.BaliEventLifecycle;
+  const {state,homeVisible,monthRange}=window.BaliEventLifecycle;
   const at=s=>Date.parse(s);
   const d={date:"2026-10-21",startTime:"18:00",endTime:"22:00"};
   const n={date:"2026-10-21",startTime:"23:00",endTime:"06:00"};
@@ -13,7 +13,11 @@ test("Minsk start/end and overnight 23:00–06:00 are accurate",async({page})=>{
    start:state(d,at("2026-10-21T18:00:00+03:00")),
    end:state(d,at("2026-10-21T22:00:00+03:00")),
    overnight:state(n,at("2026-10-22T05:59:59+03:00")),
-   overnightEnd:state(n,at("2026-10-22T06:00:00+03:00"))
+   overnightEnd:state(n,at("2026-10-22T06:00:00+03:00")),
+   homeStillVisible:homeVisible(n,at("2026-10-22T06:59:59+03:00")),
+   homeExpired:homeVisible(n,at("2026-10-22T07:00:00+03:00")),
+   sameDayStillVisible:homeVisible(d,at("2026-10-21T22:59:59+03:00")),
+   sameDayExpired:homeVisible(d,at("2026-10-21T23:00:00+03:00"))
   };
  });
  expect(value.range.start).toBe("2026-09-28");
@@ -23,6 +27,10 @@ test("Minsk start/end and overnight 23:00–06:00 are accurate",async({page})=>{
  expect(value.end).toBe("past");
  expect(value.overnight).toBe("live");
  expect(value.overnightEnd).toBe("past");
+ expect(value.homeStillVisible).toBe(true);
+ expect(value.homeExpired).toBe(false);
+ expect(value.sameDayStillVisible).toBe(true);
+ expect(value.sameDayExpired).toBe(false);
 });
 test("same date preserves event statuses and shows two solid dots without status sectors",async({page})=>{
  await page.goto("/index.html#events");
