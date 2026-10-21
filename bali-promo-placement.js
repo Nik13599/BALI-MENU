@@ -15,6 +15,7 @@ export const PROMO_POSITION_PRESETS=Object.freeze({
   "bottom-right":Object.freeze({x:83,y:82})
 });
 export const PROMO_POSITION_OPTIONS=Object.freeze([
+  ["original","Исходное расположение (как было)"],
   ["none","Скрыть кнопку"],
   ["top-left","Слева вверху"],
   ["top-center","По центру вверху"],
@@ -33,6 +34,7 @@ const numberOr=(value,fallback)=>{
 };
 export function promoEditorMode(stored){
   const mode=stored?.mode;
+  if(!mode)return "original";
   if(mode==="none")return "none";
   if(mode==="left")return "bottom-left";
   if(mode==="center")return "bottom-center";
@@ -43,7 +45,7 @@ export function promoEditorMode(stored){
       .find(([,point])=>point.x===x&&point.y===y);
     return preset?.[0]||"manual";
   }
-  return "bottom-center";
+  return "original";
 }
 export function promoEditorXY(mode,x=50,y=82){
   const preset=PROMO_POSITION_PRESETS[mode];
@@ -53,6 +55,7 @@ export function promoEditorXY(mode,x=50,y=82){
       y:clamp(Math.round(numberOr(y,82)),5,95)};
 }
 export function promoStorePlacement(mode,x=50,y=82){
+  if(mode==="original")return null; // Omit field: keep existing holiday artwork hotspots.
   const coords=promoEditorXY(mode,x,y);
   // 'manual' keeps the exact numeric coordinates; 'none' hides hotspots too.
   return {mode:mode==="none"?"none":"manual",x:coords.x,y:coords.y};
