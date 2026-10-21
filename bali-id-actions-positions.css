@@ -469,3 +469,70 @@ body.bali-guest-theme #baliIdSection .bali-bank-actions #baliIdTransferOpen{
   visibility:hidden!important;
   pointer-events:none!important;
 }
+
+
+/* BALI ID 21.10 — small visual lift, without resizing the physical card.
+   Keep the two top controls inside the ID page, close to its header,
+   and exactly the same size on mobile, tablet and desktop.
+   Do not change the position of the three actions below the card. */
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection>.container{
+  --bali-id-card-lift:clamp(14px,2.35dvh,24px);
+  --bali-id-tools-gap:clamp(7px,1.1dvh,12px);
+}
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-flip-scene{
+  transform:translate(-50%,calc(-50% - var(--bali-id-card-lift)))!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-page-tools{
+  box-sizing:border-box!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-items:stretch!important;
+  justify-content:stretch!important;
+  width:min(256px,calc(100% - 12px))!important;
+  max-width:calc(100% - 12px)!important;
+  gap:8px!important;
+  top:var(--bali-id-tools-gap)!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-page-tools button,
+:root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-page-tools #baliShowQr{
+  box-sizing:border-box!important;
+  display:inline-flex!important;
+  grid-column:auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  justify-self:stretch!important;
+  flex:1 1 0!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:42px!important;
+  min-height:42px!important;
+  margin:0!important;
+  padding:8px!important;
+  gap:7px!important;
+  font-size:12px!important;
+}
+@media(max-width:767px){
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection>.container{
+    --bali-id-card-lift:clamp(12px,2dvh,18px);
+    --bali-id-tools-gap:clamp(6px,.8dvh,9px);
+  }
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-page-tools{
+    width:min(224px,calc(100% - 12px))!important;
+    gap:6px!important;
+    top:var(--bali-id-tools-gap)!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-page-tools button,
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection .bali-id-page-tools #baliShowQr{
+    height:40px!important;
+    min-height:40px!important;
+    padding:7px 6px!important;
+    gap:5px!important;
+    font-size:11px!important;
+  }
+}
+@media(max-height:620px){
+  :root[data-bali-theme] body.bali-guest-theme #baliIdSection>.container{
+    --bali-id-card-lift:12px;
+  }
+}
