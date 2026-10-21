@@ -224,6 +224,22 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/staffRoles/$(request.auth.uid)).data.role == 'director'
         && get(/databases/$(database)/documents/staffRoles/$(request.auth.uid)).data.active == true;
     }
+    // Only order staff accounts provisioned by the backend are authorized.
+    // This role never grants access to general site settings, wallets or users.
+    function isPreorderStaff() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/preorderStaff/$(request.auth.uid))
+        && get(/databases/$(database)/documents/preorderStaff/$(request.auth.uid)).data.active == true
+        && get(/databases/$(database)/documents/preorderStaff/$(request.auth.uid)).data.role == 'preorders';
+    }
+    function canManagePreorders() {
+      return isAdmin() || isPreorderStaff();
+    }
+    match /preorderStaff/{uid} {
+      allow get: if isAdmin() || signedInAs(uid);
+      allow list, create, update, delete: if false;
+    }
     match /staffRoles/{uid} {
       allow get: if signedInAs(uid) || isAdmin();
       allow list, create, update, delete: if false;
@@ -790,7 +806,7 @@ service cloud.firestore {
       return getAfter(order).data.eventDate == request.resource.data.date
         && getAfter(order).data.get('eventId',getAfter(order).data.eventDate) == eventId
         && getAfter(order).data.orderNumber == request.resource.data.count
-        && (getAfter(order).data.ownerUid == request.auth.uid || isAdmin())
+        && (getAfter(order).data.ownerUid == request.auth.uid || canManagePreorders())
         && (
           (!exists(order) && getAfter(order).data.createdAt == request.time)
           || (exists(order)
@@ -801,11 +817,11 @@ service cloud.firestore {
     match /orderCounters/{eventId} {
       allow get: if request.auth != null && request.auth.token.email_verified == true;
       allow list, delete: if false;
-      allow create: if (!serverOnlyPreorders() || isAdmin())
+      allow create: if (!serverOnlyPreorders() || canManagePreorders())
         && request.auth != null && request.auth.token.email_verified == true
         && validCounter(eventId) && request.resource.data.count == 1
         && counterWitness(eventId);
-      allow update: if (!serverOnlyPreorders() || isAdmin())
+      allow update: if (!serverOnlyPreorders() || canManagePreorders())
         && request.auth != null && request.auth.token.email_verified == true
         && validCounter(eventId)
         && request.resource.data.count == resource.data.count + 1
@@ -853,12 +869,12 @@ service cloud.firestore {
     }
 
     match /orders/{orderId} {
-      allow get, list: if isAdmin() || (
+      allow get, list: if canManagePreorders() || (
         request.auth != null && request.auth.token.email_verified == true
         && resource.data.ownerUid == request.auth.uid
       );
 
-      allow create: if (isAdmin()
+      allow create: if (canManagePreorders()
         && orderShape(request.resource.data)
         && ((request.resource.data.ownerUid == '' && request.resource.data.email == '')
           || (request.resource.data.ownerUid != ''
@@ -895,7 +911,7 @@ service cloud.firestore {
           get(/databases/$(database)/documents/events/$(request.resource.data.get('eventId',request.resource.data.eventDate))).data.title);
 
       allow update: if orderShape(request.resource.data)
-        && (!serverOnlyPreorders() || isAdmin() || (
+        && (!serverOnlyPreorders() || canManagePreorders() || (
           ownerOfOrder(resource.data) && resource.data.status == 'pending'
           && request.resource.data.status == 'cancelled'
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
@@ -913,8 +929,8 @@ service cloud.firestore {
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.ownerUid == resource.data.ownerUid
         && request.resource.data.email == resource.data.email
-        && (request.resource.data.customerName == resource.data.customerName || isAdmin())
-        && (request.resource.data.customerPhone == resource.data.customerPhone || isAdmin())
+        && (request.resource.data.customerName == resource.data.customerName || canManagePreorders())
+        && (request.resource.data.customerPhone == resource.data.customerPhone || canManagePreorders())
         && request.resource.data.updatedAt == request.time
         && (
           // Посетитель редактирует данные только до подтверждения администратором.
@@ -939,9 +955,9 @@ service cloud.firestore {
             )
           )
           ||
-          // Администратор редактирует заказ без права менять владельца и email.
+          // Preorder staff may edit order data, never ownership or email.
           (
-            isAdmin()
+            canManagePreorders()
             && request.resource.data.diff(resource.data).affectedKeys()
                 .hasOnly([
                   'customerName','customerPhone','eventDate','eventId','eventTitle','orderNumber','tableNumber','bookingId',
@@ -955,7 +971,7 @@ service cloud.firestore {
           )
         );
 
-      allow delete: if isAdmin();
+      allow delete: if canManagePreorders();
 
       match /items/{menuId} {
         function parentPath() {
@@ -980,13 +996,13 @@ service cloud.firestore {
             && data.name == get(/databases/$(database)/documents/menu/$(menuId)).data.name
             && data.unitPrice == get(/databases/$(database)/documents/menu/$(menuId)).data.price;
         }
-        allow get, list: if isAdmin() || (
+        allow get, list: if canManagePreorders() || (
           request.auth != null && request.auth.token.email_verified == true
           && get(parentPath()).data.ownerUid == request.auth.uid
         );
-        allow create, update: if ((!serverOnlyPreorders() && ownEditableOrder()) || isAdmin())
+        allow create, update: if ((!serverOnlyPreorders() && ownEditableOrder()) || canManagePreorders())
           && validItem(request.resource.data);
-        allow delete: if (!serverOnlyPreorders() && ownEditableOrder()) || isAdmin();
+        allow delete: if (!serverOnlyPreorders() && ownEditableOrder()) || canManagePreorders();
       }
     }
 

@@ -293,6 +293,7 @@ Object.assign(exports,require("./bonus-qr")({api,admin,db,TS,verified,privileged
 
 // New order API is deployed first. Clients switch only after production verification.
 exports.submitBaliPreorder=api("submitBaliPreorder",require("./preorders")({db,admin,verified,fail}));
+Object.assign(exports,require("./preorder-staff")({admin,db,api,fail}));
 
 /* Short-lived, opaque BALI ID recipient QR. The QR never exposes a UID or phone. */
 const QRForCard=require("qrcode");

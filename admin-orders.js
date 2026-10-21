@@ -16,6 +16,7 @@ const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=false,orders=[],catalog=[];
 let events=new Map(),dateOrders=[],loadedDate="",unsubDateOrders=null,dateRevision=0;
+let preorderOnlyStaff=false;
 let editOrder=null,editLines=[],originalIds=new Set(),creatingOrder=false;
 const statuses={pending:"Ожидает подтверждения",confirmed:"Подтверждён",cancelled:"Отменён"};
 const normalizedOrderStatus=status=>status==="completed"?"confirmed":status;
@@ -402,7 +403,7 @@ function openCreateOrder(){
   ensureAdmin();
   creatingOrder=true;editOrder=null;editLines=[];originalIds=new Set();
   $("orderEditTitle").textContent="Новый предзаказ · по телефону";
-  $("manualOrderGuestLink").hidden=false;
+  $("manualOrderGuestLink").hidden=preorderOnlyStaff;
   $("editOrderGuestEmail").value="";
   $("editOrderDate").value=$("ordersDateFilter").value||[...events.values()].find(x=>x.date)?.date||"";
   fillOrderEventOptions();
@@ -644,15 +645,21 @@ async function subscribe(user) {
   if(unsubDateOrders){unsubDateOrders();unsubDateOrders=null;}
   dateRevision++;dateOrders=[];loadedDate="";
   const current=++generation;
-  orders=[];catalog=[];events=new Map();authorized=false;
+  orders=[];catalog=[];events=new Map();authorized=false;preorderOnlyStaff=false;
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
   $("ordersAdminList").textContent="Проверяем права...";
   if(!user||!user.emailVerified)return;
   try{
-    const role=await getDoc(doc(db,"admins",user.uid));
+    const adminRole=await getDoc(doc(db,"admins",user.uid));
     if(current!==generation)return;
-    if(!role.exists()||role.data().active!==true) {
-      $("ordersAdminList").textContent="Нет прав администратора.";return;
+    const isOwner=adminRole.exists()&&adminRole.data().active===true;
+    const staffRole=compactWorkspace&&!isOwner
+      ?await getDoc(doc(db,"preorderStaff",user.uid)):null;
+    if(current!==generation)return;
+    preorderOnlyStaff=!isOwner&&Boolean(staffRole?.exists()&&
+      staffRole.data().active===true&&staffRole.data().role==="preorders");
+    if(!isOwner&&!preorderOnlyStaff){
+      $("ordersAdminList").textContent="Нет доступа к предзаказам.";return;
     }
     authorized=true;
     const readOrders=createOrderSnapshotReader(readOrderLines);

@@ -12,9 +12,17 @@
 <section class="card login-card" id="loginView">
 <div class="login-logo" aria-hidden="true">✦</div><div class="eyebrow">BALI · ПРЕДЗАКАЗЫ</div>
 <h1>Вход сотрудников</h1>
-<p class="login-description">Управление предзаказами. Только для авторизованных сотрудников.</p>
-<button type="button" class="primary login-button" id="adminSignIn">Войти через Google →</button>
-<button type="button" id="adminSwitchAccount" hidden>Сменить Google-аккаунт</button>
+<p class="login-description">Вход только для сотрудников, назначенных руководителем.</p>
+<form id="preorderStaffLogin" class="preorder-login-form">
+<label for="staffLoginName">Логин сотрудника</label>
+<input id="staffLoginName" name="login" autocomplete="username" minlength="3" maxlength="32" pattern="[a-zA-Z][a-zA-Z0-9_-]{2,31}" required placeholder="Например, staff01">
+<label for="staffLoginPassword">Пароль</label>
+<input id="staffLoginPassword" name="password" type="password" autocomplete="current-password" minlength="12" required placeholder="Ваш пароль">
+<button type="submit" class="primary login-button" id="staffPasswordSignIn">Войти в предзаказы</button>
+</form>
+<details class="preorder-admin-owner-entry"><summary>Вход владельца через Google</summary>
+<button type="button" id="adminSignIn">Войти с правами администратора</button></details>
+<button type="button" id="adminSwitchAccount" hidden>Сменить учётную запись</button>
 <p class="hint" id="loginIdentity"></p><p id="loginStatus" class="status" role="status"></p></section>
 <section id="adminView" class="preorder-workspace" hidden>
 <div class="preorder-workspace-toolbar"><div><div class="eyebrow">BALI / STAFF</div><h1 id="ordersHeading">Предзаказы</h1></div><div class="preorder-workspace-account"><span id="adminEmail"></span><button id="adminSignOut" type="button">Выйти</button></div></div>
@@ -113,6 +121,6 @@
   </dialog>
 </main>
 <script src="firebase-config.js?v=20261020-2"></script>
-<script type="module" src="preorders-access.js?v=20261021-1"></script>
-<script type="module" src="admin-orders.js?v=20261021-mobile-view1"></script>
+<script type="module" src="preorders-access.js?v=20261021-staff1"></script>
+<script type="module" src="admin-orders.js?v=20261021-staff1"></script>
 </body></html>
