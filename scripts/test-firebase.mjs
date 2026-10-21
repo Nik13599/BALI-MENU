@@ -71,6 +71,35 @@ try{
   const stranger=env.authenticatedContext('stranger',{email:'stranger@example.test',email_verified:true}).firestore();
   const unverified=env.authenticatedContext(uid,{email:'guest@example.test',email_verified:false}).firestore();
   const staff=env.authenticatedContext('admin-emulator',{email:'admin@example.test',email_verified:true}).firestore();
+  await t.test('privacy receipts are verified, private, immutable and use server time',async()=>{
+   const consent=doc(db,'users',uid,'privacyConsents','2026-10-21');
+   const valid={version:'2026-10-21',processing:true,international:true,acceptedAt:serverTimestamp()};
+   await assertFails(setDoc(consent,{...valid,processing:false}));
+   await assertFails(setDoc(consent,{...valid,international:false}));
+   await assertFails(setDoc(consent,{...valid,acceptedAt:Timestamp.fromMillis(1)}));
+   await assertFails(setDoc(consent,{...valid,email:'extra@example.test'}));
+   await assertFails(setDoc(doc(stranger,'users',uid,'privacyConsents','2026-10-21'),valid));
+   await assertFails(setDoc(doc(unverified,'users',uid,'privacyConsents','2026-10-21'),valid));
+   await assertSucceeds(setDoc(consent,valid));
+   assert.equal((await getDoc(consent)).data().processing,true);
+   await assertSucceeds(getDoc(doc(staff,'users',uid,'privacyConsents','2026-10-21')));
+   for(const client of [stranger,unverified,env.unauthenticatedContext().firestore()]){
+    await assertFails(getDoc(doc(client,'users',uid,'privacyConsents','2026-10-21')));
+   }
+   await assertFails(updateDoc(consent,{acceptedAt:serverTimestamp()}));
+   await assertFails(setDoc(doc(db,'users',uid,'privacyConsents','unknown'),{...valid,version:'unknown'}));
+  });
+  await t.test('withdrawal requires own consent, remains private and cannot be overwritten',async()=>{
+   const ref=doc(db,'users',uid,'privacyWithdrawals','2026-10-21');
+   const valid={version:'2026-10-21',requestedAt:serverTimestamp()};
+   await assertFails(setDoc(doc(stranger,'users','stranger','privacyWithdrawals','2026-10-21'),valid));
+   await assertFails(setDoc(doc(stranger,'users',uid,'privacyWithdrawals','2026-10-21'),valid));
+   await assertFails(setDoc(ref,{...valid,requestedAt:Timestamp.fromMillis(1)}));
+   await assertSucceeds(setDoc(ref,valid));
+   await assertFails(updateDoc(ref,{requestedAt:serverTimestamp()}));
+   await assertFails(getDoc(doc(stranger,'users',uid,'privacyWithdrawals','2026-10-21')));
+   await assertSucceeds(getDoc(doc(staff,'users',uid,'privacyWithdrawals','2026-10-21')));
+  });
   await t.test('other users and unverified accounts cannot read private data',async()=>{
    for(const client of [stranger,unverified,env.unauthenticatedContext().firestore()]){
     await assertFails(getDoc(doc(client,'users',uid)));
