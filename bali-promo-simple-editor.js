@@ -7,7 +7,7 @@ const holidayPoster="assets/BALI_banner_badge_rectangular_only.png";
 const defaults=()=>({
  title:"БРОНИРОВАНИЕ НОВОГОДНИХ КОРПОРАТИВОВ",
  description:"Проведите незабываемый праздник в центре Минска. Выберите дату заранее.",
- imageUrl:"",imageMobileUrl:"",imageTabletUrl:"",
+ imageUrl:"",imageMobileUrl:"",imageTabletUrl:"",imageRemoved:false,
  destination:"contact-modal",buttonText:"Забронировать заранее",
  contactTitle:"Забронировать новогодний корпоратив",
  contactLinks:{phone:"",telegram:"",instagram:"",whatsapp:"",viber:""},
@@ -37,7 +37,10 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
    <input type="file" data-promo-file accept="image/png,image/jpeg,image/webp,image/heic,image/heif">
    <small>Загрузка не меняет размер блока. Изображение показывается на всех устройствах; при необходимости используйте исходник нужных пропорций.</small>
   </label>
-  <button type="button" class="bali-promo-simple-reset" data-promo-reset-image>Вернуть исходную картинку</button>
+  <div class="bali-promo-simple-image-actions">
+   <button type="button" class="bali-promo-simple-remove" data-promo-remove-image>Удалить изображение</button>
+   <button type="button" class="bali-promo-simple-reset" data-promo-reset-image>Вернуть исходную картинку</button>
+  </div>
   <label class="bali-builder-field">Или HTTPS-ссылка на изображение
    <input type="url" data-promo-image-url placeholder="https://...">
   </label>
@@ -60,6 +63,7 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
     <label class="bali-builder-field">Скругление, px<input data-promo-button-radius type="number" min="0" max="48" value="10"></label>
   </div>
   <button type="button" class="bali-promo-simple-publish" data-promo-save>Сохранить и опубликовать слайд</button>
+  <button type="button" class="bali-promo-simple-reload" data-promo-reload>Перезагрузить данные из Firebase</button>
   <p data-promo-status role="status" aria-live="polite">Выберите рекламный блок в предпросмотре.</p>
  `;
  const $=key=>root.querySelector("[data-promo-"+key+"]");
@@ -67,7 +71,7 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
  let activeId=null,record=null,busy=false,serial=0,updating=false;
  const say=text=>{status.textContent=text;};
  const showPreview=()=>{
-   const url=record?.imageUrl||(activeId===holidayId?holidayPoster:"");
+   const url=record?.imageRemoved?"":record?.imageUrl||(activeId===holidayId?holidayPoster:"");
    preview.hidden=!url;
    if(url)preview.src=url;else preview.removeAttribute("src");
  };
@@ -87,8 +91,11 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
  };
  const publishPreview=()=>{
   try{
-   frame.contentWindow?.dispatchEvent(new CustomEvent("bali:promo-preview",
-     {detail:{offer:record?{id:activeId,...record}:null}}));
+   const win=frame.contentWindow;
+   if(win){
+    win.dispatchEvent(new win.CustomEvent("bali:promo-preview",
+      {detail:{offer:record?{id:activeId,...record}:null}}));
+   }
   }catch{}
   showPreview();
  };
@@ -120,9 +127,12 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
  }
  async function select(id){
   root.hidden=!id;
-  if(!id)return;
+  if(!id){
+   serial++;activeId=null;record=null;busy=false;
+   return;
+  }
   displaySize();
-  if(id===activeId)return;
+  if(id===activeId&&(record||busy))return;
   const request=++serial;
   activeId=id;record=null;busy=true;say("Загружаем настройки слайда…");
   try{
@@ -134,7 +144,7 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
    if(!record.overlay)record.overlay=initialOverlay();
    draw();say("Изменения отображаются в предпросмотре. Нажмите «Сохранить и опубликовать слайд» для гостей.");
   }catch(e){
-   if(request===serial)say("Не удалось открыть баннер: "+(e.code||e.message||"ошибка"));
+   if(request===serial)say("Не удалось открыть баннер: "+(e.code||e.message||"ошибка")+". Нажмите «Перезагрузить данные из Firebase» для повтора.");
   }finally{if(request===serial)busy=false;}
  }
  const refresh=()=>{
@@ -144,10 +154,24 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
  for(const key of ["title","button-text","font-size","text-color","button-background","button-color","button-radius","align"]){
   $(key).addEventListener("input",refresh);
  }
+ $("remove-image").addEventListener("click",()=>{
+  if(!record||!canEdit())return;
+  record.imageUrl="";record.imageTabletUrl="";record.imageMobileUrl="";
+  record.imageRemoved=true;
+  record.overlay={...initialOverlay(),...record.overlay,enabled:true};
+  $("image-url").value="";
+  publishPreview();
+  say("Картинка удалена в предпросмотре. Чтобы удалить её на сайте, нажмите «Сохранить и опубликовать слайд».");
+ });
+ $("reload").addEventListener("click",()=>{
+  if(!activeId)return;
+  const id=activeId;activeId=null;record=null;busy=false;select(id);
+ });
  $("reset-image").addEventListener("click",()=>{
   if(!record)return;
   record.imageUrl="";
   record.imageTabletUrl="";record.imageMobileUrl="";
+  record.imageRemoved=false;
   record.overlay={...initialOverlay(),enabled:false};
   $("image-url").value="";
   draw();publishPreview();
@@ -158,7 +182,7 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
   const value=$("image-url").value.trim();
   if(value&&!safeImage(value)){say("Используйте изображение по HTTPS.");return;}
   record.imageUrl=value;
-  if(value){record.imageTabletUrl="";record.imageMobileUrl="";record.overlay.enabled=true;}
+  if(value){record.imageRemoved=false;record.imageTabletUrl="";record.imageMobileUrl="";record.overlay.enabled=true;}
   refresh();
  });
  $("file").addEventListener("change",async event=>{
@@ -168,7 +192,7 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
    const image=await prepareImage(file,"design-hero");
    if(id!==activeId||revision!==serial)return;
    if(!safeImage(image))throw Error("Слишком большой файл после сжатия");
-   record.imageUrl=image;record.imageMobileUrl="";record.imageTabletUrl="";
+   record.imageUrl=image;record.imageMobileUrl="";record.imageTabletUrl="";record.imageRemoved=false;
    record.overlay={...initialOverlay(),...record.overlay,enabled:true};
    $("image-url").value=image.startsWith("https://")?image:"";
    collect();publishPreview();
@@ -182,7 +206,7 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
   const id=activeId;
   if(record.title.length!==0&&record.title.length<2){say("Текст должен состоять минимум из 2 символов или быть пустым.");return;}
   if(!safeImage(record.imageUrl)&&record.imageUrl!==""){say("Загрузите картинку или укажите HTTPS-ссылку.");return;}
-  if(!record.title&&!record.description&&!record.imageUrl){say("Добавьте картинку или надпись.");return;}
+  if(!record.title&&!record.description&&!record.imageUrl&&!record.imageRemoved){say("Добавьте картинку или надпись.");return;}
   // Keep the original booking route/contact channels unchanged.
   const payload={...record,
     imageUrl:record.imageUrl||"",imageTabletUrl:record.imageTabletUrl||"",imageMobileUrl:record.imageMobileUrl||"",
@@ -191,8 +215,16 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
   try{
    await setDoc(doc(db,"promotions",id),payload);
    if(id!==activeId)return;
-   record={...record,published:true};
-   say("Слайд опубликован! На сайте будут показаны выбранная картинка, надпись и кнопка.");
+   const check=await getDoc(doc(db,"promotions",id));
+   if(!check.exists())throw Error("После сохранения Firebase не вернул слайд.");
+   const saved=check.data();
+   if(saved.title!==payload.title||saved.imageUrl!==payload.imageUrl||
+      saved.imageRemoved!==payload.imageRemoved||
+      saved.overlay?.buttonRadius!==payload.overlay?.buttonRadius){
+      throw Error("Сохранённые данные отличаются от опубликованных. Обновите редактор и повторите.");
+   }
+   record={...saved,published:true};
+   say(record.imageRemoved?"Изображение удалено и публикация подтверждена Firebase.":"Слайд опубликован — сохранение подтверждено повторным чтением Firebase.");
    notify?.("Рекламный слайд опубликован отдельно от черновика оформления.");
   }catch(e){
    say(e.code==="permission-denied"?"Нет разрешения Firebase. Проверьте публикацию правил для баннеров.":"Ошибка сохранения: "+(e.code||e.message||"неизвестная ошибка"));
