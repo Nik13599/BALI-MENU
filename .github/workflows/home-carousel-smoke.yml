@@ -1,0 +1,25 @@
+name: BALI Home carousel smoke test
+on:
+  pull_request:
+    paths:
+      - 'bali-home-coverflow.js'
+      - 'index.html'
+      - 'tests/home-poster-coverflow.spec.cjs'
+      - 'tests/event-posters-unified.spec.cjs'
+      - '.github/workflows/home-carousel-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  coverflow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run check:styles
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/home-poster-coverflow.spec.cjs tests/event-posters-unified.spec.cjs --workers=2
