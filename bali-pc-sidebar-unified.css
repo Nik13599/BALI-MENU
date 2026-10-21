@@ -1,11 +1,11 @@
 /* Unified BALI desktop sidebar, identical wherever the persistent rail is shown.
-   Latest request: reduce the preceding 1.30x visible panel and all its controls
-   by 25%. Thus their size relative to the earlier baseline is 1.30 * .75 = .975.
+   Latest request: enlarge the last saved visible panel and every control by 10%.
+   Previous factor .975 * 1.10 = 1.0725, shared by rail and control geometry.
    Preserve left and inter-column gutters; reduce the allocated sidebar track too.
    Tablet and phone styles are not affected. */
 @media (min-width:1180px) {
   :root {
-    --bali-pc-sidebar-scale:.975;
+    --bali-pc-sidebar-scale:1.0725;
     --bali-pc-sidebar-base-side:clamp(215px,16.5vw,700px);
     --bali-pc-sidebar-base-visible:calc(var(--bali-pc-sidebar-base-side) - var(--bali-pc-sidebar-left) - var(--bali-pc-gap));
     --bali-pc-side:calc(var(--bali-pc-sidebar-left) + var(--bali-pc-sidebar-base-visible) * var(--bali-pc-sidebar-scale) + var(--bali-pc-gap));
@@ -44,7 +44,7 @@
     padding:calc(2px * var(--bali-pc-sidebar-scale)) calc(6px * var(--bali-pc-sidebar-scale))!important;
   }
 
-  /* Brand image keeps its proportions as the visible rail becomes narrower. */
+  /* Brand image keeps its proportions as the visible rail becomes wider. */
   body.bali-guest-theme>.bali-pc-sidebar .bali-pc-brand .bali-brand-logo {
     width:min(100%,calc(clamp(145px,12.5vw,530px) * var(--bali-pc-sidebar-scale)))!important;
   }
