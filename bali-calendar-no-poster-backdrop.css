@@ -48,10 +48,22 @@
   box-shadow:none!important;
 }
 
-/* Layer each poster as one complete artwork; the mirrored side planes stay
-   BELOW the centered square even if their 3D edges overlap geometrically.
-   A separate legacy stylesheet uses important z-index on every card. */
-:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card{
+/* Keep BALI coverflow as visually 3D cards in a *2D stacking scene*.
+   The old nested preserve-3d/perspective scene allowed a rotated right-hand
+   plane to be composited above the center regardless of CSS z-index. The
+   card-local perspective keeps the mirrored tilt but makes layer order exact. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsCarouselShell,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid{
+  perspective:none!important;
+  -webkit-perspective:none!important;
+  transform-style:flat!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active,
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-neighbor{
+  transform:translate3d(calc(-50% + var(--bali-stage-x,0px)),0,0)
+    perspective(1050px) rotateY(var(--bali-stage-angle,0deg))
+    scale(var(--bali-stage-scale,1))!important;
   transform-style:flat!important;
   isolation:isolate!important;
 }
@@ -61,6 +73,22 @@
 :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-neighbor{
   z-index:250!important;
 }
+/* The image and its buttons become visible together; a legacy .32s body fade
+   used to make the controls appear late after the slide had stopped. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-card-body{
+  transition:opacity .07s linear!important;
+}
+@media(prefers-reduced-motion:reduce){
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card,
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active,
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-neighbor{
+    transform:translate3d(calc(-50% + var(--bali-stage-x,0px)),0,0)
+      scale(var(--bali-stage-scale,1))!important;
+  }
+  :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card .event-card-body{
+    transition:none!important;
+  }
+}
 
 /* Phone: the two existing buttons fall as a swipe/slide starts, then rise
    into their original positions only after the next square has arrived.
@@ -69,14 +97,14 @@
   :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid>.event-card.is-active .bali-event-actions{
     transform:translate3d(0,0,0)!important;
     opacity:1!important;
-    transition:transform .13s cubic-bezier(.18,.92,.32,1),opacity .11s ease-out!important;
+    transition:transform .085s cubic-bezier(.2,.95,.3,1),opacity .065s linear!important;
     will-change:transform,opacity;
   }
   :root[data-bali-theme] body.bali-guest-theme #eventsSection #eventsGrid.is-actions-lowered>.event-card.is-active .bali-event-actions{
     transform:translate3d(0,clamp(48px,8dvh,76px),0)!important;
     opacity:0!important;
     pointer-events:none!important;
-    transition:transform .19s cubic-bezier(.55,0,1,.45),opacity .18s ease-in!important;
+    transition:transform .11s ease-in,opacity .09s linear!important;
   }
 }
 @media(max-width:767px) and (prefers-reduced-motion:reduce){
