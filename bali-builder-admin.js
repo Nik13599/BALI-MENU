@@ -51,7 +51,7 @@ const homeBlocks=[
 const homeCardSelector=".bali-pc-hero,.bali-mobile-home-hero,.bali-home-events-panel,.bali-pc-about,.bali-pc-id-card,.bali-home-menu-banner,.bali-home-contacts-card,.bali-pc-sidebar-contacts,#homeSection,.header";
 let model=core.emptyModel(),published=core.emptyModel(),currentDevice="desktop",currentPage="home";
 let authorized=false,loading=false,saving=false,dirty=false,enabled=true,authEpoch=0,unsub=null,selection=null,overlay=null,drag=null,history=[],future=[];
-let writingImage=false,styleClipboard=null;
+let writingImage=false,styleClipboard=null,promoEditor=null;
 const view={
  status:$("baliBuilderStatus"),page:$("baliBuilderPage"),mode:$("baliBuilderMode"),
  draft:$("baliBuilderSaveDraft"),publish:$("baliBuilderPublish"),restore:$("baliBuilderRestore"),
@@ -198,8 +198,8 @@ function initialize(){
  trail.className="bali-builder-layer-trail";
  trail.setAttribute("aria-label","Иерархия элементов страницы");
  inspector.append(trail);
- const managed=createSimplePromoEditor({db,frame,canEdit:()=>authorized,notify:msg});
- inspector.append(managed.root);
+ promoEditor=createSimplePromoEditor({db,frame,canEdit:()=>authorized,notify:msg});
+ inspector.append(promoEditor.root);
  const content=document.createElement("div");content.className="bali-builder-content";
  content.innerHTML='<label class="bali-builder-field"><span>Текст элемента</span><textarea data-builder-main="text" rows="3" placeholder="Новый текст"></textarea></label>'+
  '<label class="bali-builder-field"><span>Переход кнопки / ссылки</span><select data-builder-main="link"></select><input data-builder-main="url" type="text" placeholder="https://... или tel:+375..." hidden></label>'+
@@ -429,7 +429,7 @@ function renderInspector(){
  if(promo){
   inspector.classList.toggle("bali-builder-promo-mode",isManaged);
   inspector.querySelector(".bali-builder-content").hidden=isManaged;
-  managed.select(isManaged?hero.dataset.baliOfferId||"bali-new-year-2026":null);
+  promoEditor?.select(isManaged?hero.dataset.baliOfferId||"bali-new-year-2026":null);
  }
  inspector.querySelector("#baliBuilderSelected").textContent=selection?(selection.id?"Новый "+(item?.kind||"элемент"):node?.tagName+" · "+(node?.classList?.[0]||node?.id||"элемент")):"Выберите элемент на сайте";
  inspector.querySelector("#baliBuilderSelector").textContent=selection?.id?selection.id:selection?.selector||"Нажмите на любой текст, кнопку, карточку или изображение";
