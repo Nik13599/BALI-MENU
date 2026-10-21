@@ -60,3 +60,23 @@ export function promoStorePlacement(mode,x=50,y=82){
   // 'manual' keeps the exact numeric coordinates; 'none' hides hotspots too.
   return {mode:mode==="none"?"none":"manual",x:coords.x,y:coords.y};
 }
+
+// Consistent and safe responsive anchoring for visible placement presets.
+// Edge buttons use an inset instead of centering outside the artwork.
+export function promoPositionStyle(stored){
+  if(!stored||stored.mode==="none")return null;
+  const legacy={left:[17,82],center:[50,82],right:[83,82]};
+  const pair=legacy[stored.mode];
+  const point=promoEditorXY("manual",pair?.[0]??stored.x,pair?.[1]??stored.y);
+  const leftEdge=point.x<=20,rightEdge=point.x>=80;
+  const topEdge=point.y<=20,bottomEdge=point.y>=80;
+  return {
+    left:rightEdge?"auto":leftEdge?"4%":point.x+"%",
+    right:rightEdge?"4%":"auto",
+    top:bottomEdge?"auto":topEdge?"7%":point.y+"%",
+    bottom:bottomEdge?"7%":"auto",
+    transform:"translate("+(leftEdge||rightEdge?"0":"-50%")+","+(topEdge||bottomEdge?"0":"-50%")+")",
+    maxWidth:"min(72%, calc(100% - 20px))",
+    lowerRight:rightEdge&&bottomEdge
+  };
+}
