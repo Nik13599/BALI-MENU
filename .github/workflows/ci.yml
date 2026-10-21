@@ -22,6 +22,8 @@ jobs:
           node --check app.js
           node --input-type=module --check < auth.js
           node --input-type=module --check < bali-id-flip.js
+          node --input-type=module --check < bali-id-onboarding.js
+          node --check bali-pc-id-home.js
           node --input-type=module --check < bali-id.js
           node --input-type=module --check < bali-id-bank.js
           node --check functions/index.js
@@ -70,6 +72,7 @@ jobs:
         run: |
           node scripts/verify-source.mjs
           node scripts/verify-bali-bank.mjs
+          node scripts/verify-bali-id-onboarding.mjs
 
       - name: Проверка защищённых переводов BALI ID
         run: |
