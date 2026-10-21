@@ -150,13 +150,17 @@ function animateTo(next,smooth=true){
   const last=cards().length-1;
   if(last<0)return;
   next=clamp(next,0,last);
+  const moving=smooth&&!reduce.matches&&Math.abs(position-next)>=.001;
+  // Hide action rows BEFORE the selection/notification changes. All cards
+  // remain hidden for the whole slide, so swapping is-active cannot blink
+  // or move the buttons midway through the stage animation.
+  if(moving)lowerActions();
   activeIndex=next;
   lastCardId=cards()[next]?.dataset.eventId||cards()[next]?.dataset.eventDate||"";
   notify();
-  if(!smooth||reduce.matches||Math.abs(position-next)<.001){
+  if(!moving){
     position=next;render();raiseActions();return;
   }
-  lowerActions();
   const initial=position,delta=next-initial;
   const started=performance.now(),duration=clamp(570+Math.abs(delta)*145,580,1150);
   const running={raf:0};
