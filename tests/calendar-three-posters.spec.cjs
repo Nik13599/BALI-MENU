@@ -252,3 +252,54 @@ test('centered poster stays above both mirrored side posters',async({page})=>{
   expect(left.turn).toBeGreaterThanOrEqual(60);
   expect(right.turn).toBeLessThanOrEqual(-60);
 });
+
+
+test('solid-color overlap regression: right plane cannot paint over active square',async({page})=>{
+  await prepare(page,5);
+  await page.evaluate(async()=>{
+    window.BaliCalendarShowcase.focusIndex(2,false);
+    const cards=[...document.querySelectorAll('#eventsGrid>.event-card')];
+    const svg=color=>`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="${color}"/></svg>`;
+    for(const [i,card] of cards.entries()){
+      const color=i===2?'#e82c35':i===3?'#2456eb':'#28d65c';
+      const img=card.querySelector('.event-poster');
+      img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg(color));
+    }
+    await Promise.all(cards.map(card=>card.querySelector('img').decode()));
+    // Force a measurable visual intersection, not merely CSS z-index.
+    // If the old preserve-3d scene returns, blue may render above red.
+    const right=cards[3];
+    const width=parseFloat(document.getElementById('eventsGrid').style.getPropertyValue('--bali-event-slide-width'));
+    right.style.setProperty('--bali-stage-x',(width*.30).toFixed(2)+'px');
+  });
+  const locations=await page.evaluate(()=>{
+    const center=document.querySelector('#eventsGrid>.event-card.is-active>.bali-event-poster-wrap').getBoundingClientRect();
+    const right=document.querySelector('#eventsGrid>.event-card[data-stage-side="right"]>.bali-event-poster-wrap').getBoundingClientRect();
+    const x=center.left+center.width*.75;
+    const y=center.top+center.height*.5;
+    return {x,y,centerRight:center.right,rightLeft:right.left,rightRight:right.right,
+      gridStyle:getComputedStyle(document.getElementById('eventsGrid')).transformStyle};
+  });
+  expect(locations.rightLeft).toBeLessThan(locations.x);
+  expect(locations.rightRight).toBeGreaterThan(locations.x);
+  expect(locations.gridStyle).toBe('flat');
+  const shot=await page.screenshot({animations:'disabled'});
+  const sharp=require('sharp');
+  const pixels=await sharp(shot).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+  const pos=(Math.floor(locations.y)*pixels.info.width+Math.floor(locations.x))*pixels.info.channels;
+  const [red,green,blue]=pixels.data.subarray(pos,pos+3);
+  expect(red,`Center right-quarter pixel RGB=${red},${green},${blue}`).toBeGreaterThan(145);
+  expect(blue,`Side blue must NOT obscure the central red square`).toBeLessThan(125);
+});
+
+test('mobile controls rise before the poster travel ends',async({page})=>{
+  test.skip(page.viewportSize().width>767,'phone only');
+  await prepare(page,4);
+  const timing=await page.locator('#eventsGrid .event-card.is-active .bali-event-actions').evaluate(el=>{
+    const style=getComputedStyle(el);
+    return {durations:style.transitionDuration.split(',').map(x=>parseFloat(x)),
+      delay:style.transitionDelay};
+  });
+  expect(Math.max(...timing.durations)).toBeLessThanOrEqual(.09);
+  expect(timing.delay).not.toContain('0.2s');
+});
