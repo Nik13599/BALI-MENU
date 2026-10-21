@@ -1,7 +1,7 @@
 /* Shared public homepage-only event placeholder template.
    A single administrator-authored document controls ALL empty PC-home slots. */
-import {getApp,getApps,initializeApp} from "./bali-public-reader.js?v=20261021-instant-pages1";
-import {getFirestore,doc,onSnapshot} from "./bali-public-reader.js?v=20261021-instant-pages1";
+import {getApp,getApps,initializeApp} from "./bali-public-reader.js?v=20261021-instant-pages2";
+import {getFirestore,doc,onSnapshot} from "./bali-public-reader.js?v=20261021-instant-pages2";
 export const BALI_PLACEHOLDER_DEFAULTS=Object.freeze({
   posterTitle:"SECRET",kicker:"SECRET",
   footerTitle:"СКОРО В BALI",footerSubtitle:"Совсем скоро узнаете",

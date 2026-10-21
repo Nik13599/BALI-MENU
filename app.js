@@ -1624,6 +1624,8 @@ async function openCheckout() {
     if (!(await window.BaliAuth.requireProfile())) return;
     const customer = window.BaliAuth.getProfile();
     if (!customer) return;
+    const oldError=document.getElementById("checkoutOrderError");
+    if(oldError){oldError.hidden=true;oldError.textContent="";}
     document.getElementById('customerName').value = customer.name;
     document.getElementById('customerPhone').value = customer.phone;
     document.getElementById('customerEmail').value = customer.email;
@@ -1733,38 +1735,46 @@ async function handleCheckout(e) {
         total_amount: calculateTotal()
     };
 
-    // Disable button
+    // Failure leaves the cart and entered booking details untouched.
+    // Native alert() blocks Safari, making the button appear stuck at "Отправляем".
     const submitBtn = e.target.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Отправляем...';
+    const submitLabel=submitBtn?.querySelector("span");
+    const feedback=document.getElementById("checkoutOrderError");
+    if(!submitBtn||!feedback)return;
+    if(submitBtn.disabled)return;
+    feedback.hidden=true;
+    feedback.textContent="";
+    submitBtn.disabled=true;
+    if(submitLabel)submitLabel.textContent="Отправляем…";
+    try{
+        const result=await placeOrder(formData);
+        if(!result?.success){
+            feedback.textContent='Не удалось отправить предзаказ: '+
+                (result?.error||'Сервис временно недоступен. Корзина сохранена.');
+            feedback.hidden=false;
+            feedback.scrollIntoView({block:"nearest",behavior:"auto"});
+            return;
+        }
 
-    const result = await placeOrder(formData);
-
-    if (result.success) {
-        // Show success modal
         elements.displayOrderId.textContent =
             (result.event_title||selectedEvent.title)+' №'+
             (result.order_number||result.order_id)+
             (result.booking_id?' · ID бронирования '+result.booking_id:'')+
             (result.table_number?' · Столик '+result.table_number:'');
 
-        // Store order ID for tracking
         try { localStorage.setItem('last_order_id', result.order_id); } catch (_) {}
-
         closeCheckout();
         showSuccess();
-
-        // Clear cart
         clearCart();
-
-        // Reset form
         elements.checkoutForm.reset();
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Отправить предзаказ';
-    } else {
-        alert('Не удалось отправить предзаказ: ' + (result.error || 'Попробуйте ещё раз.'));
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Отправить предзаказ';
+    }catch(error){
+        feedback.textContent="Не удалось завершить отправку. Корзина сохранена. "+
+            (window.BaliOrders?.errorText(error)||"Проверьте соединение и повторите позже.");
+        feedback.hidden=false;
+        feedback.scrollIntoView({block:"nearest",behavior:"auto"});
+    }finally{
+        submitBtn.disabled=false;
+        if(submitLabel)submitLabel.textContent="Отправить предзаказ";
     }
 }
 
