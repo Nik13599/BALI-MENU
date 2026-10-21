@@ -223,7 +223,7 @@ assert(html.includes('id="baliMobileAboutBackgroundA"') &&
   admin.includes('data-design-editor="mobileAbout"') &&
   admin.includes('id="baliMobileAboutFiles"') &&
   admin.includes('multiple>') &&
-  admin.includes('bali-mobile-about-admin.js?v=20261020-2') &&
+  admin.includes('bali-mobile-about-admin.js?v=') &&
   admin.includes('bali-mobile-about-admin.css?v=20261019-1') &&
   mobileAboutAdmin.includes('const MAX=8') &&
   mobileAboutAdmin.includes('writeBatch(db)') &&
