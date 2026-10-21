@@ -275,6 +275,14 @@ let activeDetailCard=null;
 const detailLike=document.getElementById("baliEventDetailLike");
 const detailShare=document.getElementById("baliEventDetailShare");
 const detailComments=document.getElementById("baliEventDetailComments");
+const detailCaption=document.getElementById("baliEventDetailCaption");
+// The event date and time are public immediately; the caption belongs to
+// "Подробнее" and must not be rendered until the guest explicitly opens it.
+function setDetailCaptionExpanded(expanded){
+  if(detailCaption)detailCaption.hidden=!expanded;
+  dialog.dataset.scrollUnlocked=String(expanded);
+  detailComments?.setAttribute("aria-expanded",String(expanded));
+}
 function syncDetailLike(){
   if(!activeDetailCard||!detailLike)return;
   const button=activeDetailCard.querySelector(".event-want-to-go");
@@ -303,10 +311,9 @@ detailShare?.addEventListener("click",()=>{
 // The original poster opens in a fixed, non-scrollable view. Explicitly
 // pressing "Подробнее" unlocks the same native modal scroll on every device.
 detailComments?.addEventListener("click",()=>{
-  dialog.dataset.scrollUnlocked="true";
-  detailComments.setAttribute("aria-expanded","true");
+  setDetailCaptionExpanded(true);
   requestAnimationFrame(()=>{
-    document.getElementById("baliEventDetailCaption")?.scrollIntoView({
+    detailCaption?.scrollIntoView({
       behavior:reduce.matches?"instant":"smooth",block:"nearest"
     });
   });
@@ -332,8 +339,7 @@ new MutationObserver(changes=>{
 }).observe(grid,{subtree:true,attributes:true,attributeFilter:["aria-pressed","disabled"]});
 dialog.addEventListener("close",()=>{
   activeDetailCard=null;
-  dialog.dataset.scrollUnlocked="false";
-  detailComments?.setAttribute("aria-expanded","false");
+  setDetailCaptionExpanded(false);
 });
 const openDetails=card=>{
   const poster=card.querySelector(".event-poster");
@@ -349,9 +355,8 @@ const openDetails=card=>{
   document.getElementById("baliEventDetailHours").textContent=card.querySelector(".bali-event-hours")?.textContent||"Время уточняется";
   document.getElementById("baliEventDetailDescription").textContent=
     card.querySelector(".bali-event-description")?.textContent||"Дополнительная информация появится перед мероприятием.";
-  // Reset the scroll permission each time another poster is opened.
-  dialog.dataset.scrollUnlocked="false";
-  detailComments?.setAttribute("aria-expanded","false");
+  // Never carry the previous event's opened description into the next one.
+  setDetailCaptionExpanded(false);
   if(!dialog.open)dialog.showModal();
   dialog.scrollTop=0;
   syncDetailLike();
