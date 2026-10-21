@@ -1121,6 +1121,7 @@ function attachEventListeners() {
         navigateGuestPage("events");
     });
     document.getElementById("profileDataBtn")?.addEventListener("click",()=>window.BaliAuth?.open());
+    document.getElementById("profileSignInBtn")?.addEventListener("click",()=>window.BaliAuth?.open());
     document.getElementById("profileLogoutBtn")?.addEventListener("click",()=>{
         if(window.BaliAuth?.isRegistered())document.getElementById("authSignOutBtn")?.click();
         else window.BaliAuth?.open();
@@ -1137,12 +1138,14 @@ function attachEventListeners() {
         const email=document.getElementById("baliProfileEmail");
         const avatar=document.querySelector(".bali-profile-avatar");
         const logout=document.getElementById("profileLogoutBtn");
+        const signIn=document.getElementById("profileSignInBtn");
         if(name)name.textContent=detail?.name||"Гость BALI";
         if(phone)phone.textContent=detail?.phone||"Войдите в личный кабинет";
         if(email)email.textContent=detail?.email||"";
         const avatarInitial=avatar?.querySelector("#baliAvatarInitial");
         if(avatarInitial)avatarInitial.textContent=(detail?.name||"B").trim().slice(0,1).toLocaleUpperCase("ru-RU");
         if(logout)logout.hidden=!detail?.signedIn;
+        if(signIn)signIn.hidden=Boolean(detail?.registered);
     });
     document.getElementById("menuNavBtn")?.addEventListener("click",event=>{
         event.preventDefault();showGuestSection("menu");
