@@ -24,7 +24,7 @@ async function fixture(page,{returning=false,newProfile=false,anonymous=false}={
       window.__popupUserActivation=Boolean(navigator.userActivation?.isActive);
       window.__googleCalls++;
       if(window.__googleError)throw {code:window.__googleError};
-      await window.__setUser({uid:'guest',email:'guest@example.test',emailVerified:true});
+      await window.__setUser({uid:'guest',email:'guest@example.test',emailVerified:true,displayName:'Google User'});
     };
     export const signInWithRedirect=async()=>{},getRedirectResult=async()=>{};
     export const signOut=async()=>window.__setUser(null);`,
@@ -212,4 +212,61 @@ test('returning Google member reaches My BALI instead of staying behind login',a
  await expect.poll(()=>page.evaluate(()=>window.BaliAuth.isRegistered())).toBe(true);
  await expect(page.locator('#authModal')).not.toHaveClass(/active/);
  await expect(page.locator('#overlay')).not.toHaveClass(/active/);
+});
+
+test('new Google account sees only two required editable fields then lands on home',async({page})=>{
+ await fixture(page,{anonymous:true,newProfile:true});
+ await page.evaluate(()=>window.BaliAuth.open());
+ await page.locator('#authGoogleBtn').click();
+ await accept(page);
+ await expect(page.locator('#authModal')).toHaveAttribute('data-auth-step','complete');
+ await expect(page.locator('#authModalTitle')).toHaveText('Завершите регистрацию');
+ await expect(page.locator('#authProfileForm')).toBeVisible();
+ await expect(page.locator('#authName')).toBeVisible();
+ await expect(page.locator('#authPhone')).toBeVisible();
+ await expect(page.locator('#authEmail')).toBeHidden();
+ await expect(page.locator('#authGoogleBtn')).toBeHidden();
+ await expect(page.locator('#accountMyOrdersBtn')).toBeHidden();
+ await expect(page.locator('#authName')).toHaveValue('');
+ await expect(page.locator('#authPhone')).toHaveValue('');
+ await expect(page.locator('#authSaveBtn')).toHaveText('Продолжить');
+ await expect(page.locator('#authName')).toHaveAttribute('required','');
+ await expect(page.locator('#authPhone')).toHaveAttribute('required','');
+
+ await page.locator('#authSaveBtn').click();
+ expect(await page.evaluate(()=>window.BaliAuth.isRegistered())).toBe(false);
+ expect(await page.evaluate(()=>window.__privacyWrites.map(x=>x.path))).toEqual(['users/guest/privacyConsents/2026-10-21']);
+
+ await page.locator('#authName').fill('А');
+ await page.locator('#authPhone').fill('+375291234567');
+ await page.locator('#authSaveBtn').click();
+ expect(await page.evaluate(()=>window.BaliAuth.isRegistered())).toBe(false);
+
+ await page.locator('#authName').fill('Кирилл');
+ await page.locator('#authPhone').fill('неверный номер');
+ await page.locator('#authSaveBtn').click();
+ await expect(page.locator('#authSaveMessage')).toContainText('международном формате');
+ expect(await page.evaluate(()=>window.BaliAuth.isRegistered())).toBe(false);
+
+ await page.locator('#authPhone').fill('+375 (29) 123-45-67');
+ await page.locator('#authSaveBtn').click();
+ await expect.poll(()=>page.evaluate(()=>window.BaliAuth.isRegistered())).toBe(true);
+ await expect(page.locator('#authModal')).not.toHaveClass(/active/);
+ await expect(page.locator('#baliPrivacyDialog')).toBeHidden();
+ await expect(page.locator('#overlay')).not.toHaveClass(/active/);
+ await expect(page).toHaveURL(/#home$/);
+ const saved=await page.evaluate(()=>window.__privacyDocs['users/guest']);
+ expect(saved.name).toBe('Кирилл');
+ expect(saved.phone).toBe('+375291234567');
+});
+
+test('an existing complete profile never sees the required registration screen again',async({page})=>{
+ await fixture(page,{returning:true});
+ await expect.poll(()=>page.evaluate(()=>window.BaliAuth.isRegistered())).toBe(true);
+ await expect(page.locator('#authModal')).not.toHaveClass(/active/);
+ await page.evaluate(()=>window.BaliAuth.open());
+ await expect(page.locator('#authModal')).toHaveAttribute('data-auth-step','edit');
+ await expect(page.locator('#authName')).toHaveValue('Гость BALI');
+ await expect(page.locator('#authPhone')).toHaveValue('+375291234567');
+ await expect(page.locator('#authSaveBtn')).toHaveText('Сохранить профиль');
 });
