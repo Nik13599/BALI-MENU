@@ -50,10 +50,11 @@ function render(){
   const entries=cards(),count=entries.length;
   if(!count){prev.disabled=true;next.disabled=true;raiseActions();return;}
   const stageWidth=grid.clientWidth||500;
-  const angle=reduce.matches?0:58; // Stronger turn than 45°, as in reference
+  const angle=reduce.matches?0:64; // Mirror-turned sides sit behind the centered poster
   // Keep the first side poster distinct from the centre, with a small gap,
   // while letting its far edge leave the stage naturally (reference crop).
-  const projectedHalf=slideWidth*Math.cos(angle*Math.PI/180)*.9*.5;
+  // Retain the previous spacing allowance while turning the sides farther away.
+  const projectedHalf=slideWidth*Math.cos(Math.max(0,angle-6)*Math.PI/180)*.9*.5;
   const gap=mobile()?6:Math.max(10,stageWidth*.012);
   // Leave a real visible gap between the side planes and the centered
   // square. Perspective makes their bounding boxes wider than the naive
@@ -81,7 +82,12 @@ function render(){
     card.style.setProperty("--bali-stage-scale",scale.toFixed(3));
     card.style.setProperty("--bali-stage-opacity",visible?fade.toFixed(3):"0");
     card.style.setProperty("--bali-stage-brightness",Math.max(.69,1-a*.14).toFixed(3));
-    card.style.zIndex=String(500-Math.round(a*40));
+    // The legacy CSS sets z-index:var(--bali-poster-z,1)!important;
+    // merely setting card.style.zIndex was ignored in that cascade.
+    // The active poster always sits ABOVE every side poster and edge fade.
+    const layer=selected?700:(visible?250:0);
+    card.style.setProperty("--bali-poster-z",String(layer));
+    card.style.zIndex=String(layer);
     card.style.visibility=visible?"visible":"hidden";
     card.style.pointerEvents=selected&&visible?"auto":"none";
     card.setAttribute("aria-hidden",String(!visible));
@@ -128,6 +134,9 @@ function animateTo(next,smooth=true){
     const progress=clamp((now-started)/duration,0,1);
     position=initial+delta*ease(progress);
     render();
+    // Start raising during the final part of the slide. The CSS rise
+    // finishes before the incoming poster reaches its resting position.
+    if(progress>=.70)raiseActions();
     if(progress<1)running.raf=requestAnimationFrame(tick);
     else{position=next;animation=null;render();raiseActions();}
   };
