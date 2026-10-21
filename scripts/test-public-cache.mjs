@@ -64,3 +64,29 @@ assert(publicReader.includes('/api/public-data?path='));
 assert(publicReader.includes('if(error.code==="edge-missing")await fallbackSdk()'));
 assert(publicReader.includes('["settings/homeDesign"'));
 console.log("BALI public edge cache: approved reads, CDN hit, filtered promotions, 403/429 safety, private data isolation PASS.");
+
+// Bound persistent snapshots: they must not stay stale after later admin edits.
+stored.clear();pending.length=0;
+const kvMap=new Map();
+const kv={get:async key=>kvMap.get(key)||null,put:async (key,data)=>kvMap.set(key,JSON.parse(data))};
+await onRequestGet({...make("events"),env:{BALI_PUBLIC_CONTENT:kv}});
+await Promise.all(pending.splice(0));
+const fresh=await onRequestGet({...make("events"),env:{BALI_PUBLIC_CONTENT:kv}});
+assert.equal(fresh.headers.get("X-BALI-Cache"),"HIT"); // edge cache first
+stored.clear();
+const kvFresh=await onRequestGet({...make("events"),env:{BALI_PUBLIC_CONTENT:kv}});
+assert.equal(kvFresh.headers.get("X-BALI-Cache"),"KV");
+await Promise.all(pending.splice(0));
+const kvKey="bali:public:v1:events";
+kvMap.get(kvKey).cachedAt=Date.now()-20*60*1000;
+stored.clear();
+const upstreamBefore=upstreamCalls;
+globalThis.fetch=async(url,opts)=>{
+ upstreamCalls++;
+ return new Response(JSON.stringify([{document:{name:"events/new",fields:{title:{stringValue:"New event"}}}}]),{status:200});
+};
+const afterExpiry=await onRequestGet({...make("events"),env:{BALI_PUBLIC_CONTENT:kv}});
+assert.equal(afterExpiry.headers.get("X-BALI-Cache"),"MISS");
+assert.equal(upstreamCalls,upstreamBefore+1);
+await Promise.all(pending.splice(0));
+console.log("BALI bounded Cloudflare KV freshness: fresh mirror uses no Firestore; expired mirror refreshes PASS.");

@@ -18,6 +18,11 @@ const DOCUMENTS=new Set([
 const PUBLISHED_ONLY=new Set(["promotions","mobileAboutBackgrounds"]);
 const TTL=path=>path==="events"||path==="promotions"?20:
   path==="menu"?30:path.startsWith("settings/")?30:60;
+// Bounded KV age prevents permanent staleness if an administrator updates
+// Firestore from an old browser that does not publish to Cloudflare.
+// Historical images and events are retained; only public reads are cached.
+const MAX_KV_AGE_MS=path=>path==="events"||path==="promotions"?2*60*1000:
+  path==="menu"?3*60*1000:5*60*1000;
 const json=(body,status,headers={})=>new Response(JSON.stringify(body),{
   status,headers:{"Content-Type":"application/json; charset=utf-8",
     "X-Content-Type-Options":"nosniff",...headers}
@@ -46,7 +51,9 @@ export async function onRequestGet({request,waitUntil,env}){
   if(env?.BALI_PUBLIC_CONTENT){
     try{
       const mirror=await env.BALI_PUBLIC_CONTENT.get(kvKey,"json");
-      if(mirror&&Array.isArray(mirror.documents)){
+      if(mirror&&Array.isArray(mirror.documents)&&
+         Number.isFinite(mirror.cachedAt)&&mirror.cachedAt<=Date.now()&&
+         Date.now()-mirror.cachedAt<MAX_KV_AGE_MS(path)){
         const answer=json({documents:mirror.documents},200,{
           "Cache-Control":"public, max-age=0, s-maxage="+ttl,
           "X-BALI-Cache":"KV"
@@ -93,7 +100,7 @@ export async function onRequestGet({request,waitUntil,env}){
     });
     waitUntil(cache.put(key,response.clone()));
     if(env?.BALI_PUBLIC_CONTENT)waitUntil(
-      env.BALI_PUBLIC_CONTENT.put(kvKey,JSON.stringify(payload))
+      env.BALI_PUBLIC_CONTENT.put(kvKey,JSON.stringify({...payload,cachedAt:Date.now()}))
         .catch(()=>{}) // A cache-write failure must not hide approved content.
     );
     return response;
