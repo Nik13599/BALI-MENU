@@ -250,6 +250,15 @@
         display:block!important;
       }
     }
+    @media(min-width:768px) and (max-width:1179px) {
+      /* Preserve square artwork when the tablet row stretches to its panel. */
+      :root[data-bali-theme] body.bali-guest-theme #homeSection
+      #homeEventCarousel.bali-home-events > .bali-home-event-card {
+        height:auto!important;
+        max-height:none!important;
+        align-self:center!important;
+      }
+    }
     @media(prefers-reduced-motion:reduce) {
       :root[data-bali-theme] body.bali-guest-theme #homeSection
       #homeEventCarousel.bali-home-events > .bali-home-event-card {
