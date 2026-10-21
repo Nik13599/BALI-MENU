@@ -8,7 +8,7 @@
  const reduce=matchMedia("(prefers-reduced-motion:reduce)");
  const cards=()=>[...track.querySelectorAll(":scope>.bali-home-event-card")];
  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
- let index=0,key="",raf=0,lastWheel=0,start=null,previous,next;
+ let index=1,key="",raf=0,lastWheel=0,start=null,previous,next;
  const identity=(el,i)=>el?.dataset.eventId||"placeholder-"+i;
  function controls(){
    if(!previous?.isConnected){
@@ -55,7 +55,14 @@
  function sync(){
    const list=cards();
    const chosen=key?list.findIndex((el,i)=>identity(el,i)===key):-1;
-   index=chosen>=0?chosen:0;draw();
+   index=chosen>=0?chosen:clamp(1,0,Math.max(0,list.length-1));draw();
+ }
+ // On lineup changes, the chronological first, second and third cards
+ // must occupy LEFT, CENTER and RIGHT (not CENTER, RIGHT, hidden).
+ function focusUpcoming(){
+   index=clamp(1,0,Math.max(0,cards().length-1));
+   key="";
+   draw();
  }
  function move(amount){if(!cards().length)return;index=clamp(index+amount,0,cards().length-1);draw()}
  new MutationObserver(records=>{
@@ -85,6 +92,6 @@
  window.addEventListener("resize",()=>requestAnimationFrame(draw),{passive:true});
  desktop.addEventListener("change",()=>requestAnimationFrame(draw));
  if(typeof ResizeObserver==="function")new ResizeObserver(()=>requestAnimationFrame(draw)).observe(track);
- window.BaliHomeCarousel=Object.freeze({move,refresh:sync,getState:()=>({index,count:cards().length,key})});
+ window.BaliHomeCarousel=Object.freeze({move,refresh:sync,focusUpcoming,getState:()=>({index,count:cards().length,key})});
  sync();
 })();
