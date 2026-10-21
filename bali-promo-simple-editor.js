@@ -216,7 +216,8 @@ export function createSimplePromoEditor({db,frame,canEdit,notify}){
   if(!record||!canEdit())return;
   record.imageUrl="";record.imageTabletUrl="";record.imageMobileUrl="";
   record.imageRemoved=true;
-  record.overlay={...initialOverlay(),...record.overlay,enabled:$("overlay-enabled").checked};
+  $("overlay-enabled").checked=true;
+  record.overlay={...initialOverlay(),...record.overlay,enabled:true};
   $("image-url").value="";
   publishPreview();
   say("Картинка удалена в предпросмотре. Чтобы удалить её на сайте, нажмите «Сохранить и опубликовать слайд».");
