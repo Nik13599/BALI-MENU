@@ -897,3 +897,23 @@ body.bali-guest-theme .bali-mobile-about-dialog:not([open]){display:none!importa
     font-size:clamp(28px,4vw,44px)!important;
   }
 }
+
+
+/* 21 Oct | Phone homepage tagline: reduce the single-line headline just
+   enough for the opening B in BALI and the final letters to remain visible.
+   Do not change the existing banner size or tablet typography. */
+@media(max-width:767px){
+  body.bali-guest-theme #homeSection
+  .bali-mobile-home-hero .bali-mobile-home-hero-copy>h1{
+    box-sizing:border-box!important;
+    max-width:100%!important;
+    font-size:clamp(15px,5vw,23px)!important;
+    letter-spacing:-.045em!important;
+    padding-left:2px!important;
+    padding-right:2px!important;
+    text-align:left!important;
+    text-indent:0!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+  }
+}
