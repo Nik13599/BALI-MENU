@@ -1359,10 +1359,10 @@ assert(html.includes('id="eventsCarouselShell"') &&
   html.includes('aria-roledescription="карусель"'), "Accessible event carousel shell missing");
 assert(!html.includes('<h2 class="section-title">Меню BALI</h2>'),
   "Do not duplicate menu title after category buttons");
-assert(app.includes('function initEventCarousel()') &&
-  app.includes('track.addEventListener("wheel"') &&
-  app.includes('track.addEventListener("keydown"'),
-  "Events must scroll by desktop wheel and keyboard");
+assert(source("bali-calendar-coverflow.js").includes('shell.addEventListener("wheel"') &&
+  source("bali-calendar-coverflow.js").includes('grid.addEventListener("keydown"') &&
+  !app.includes('function initEventCarousel()'),
+  "One stage controller must own desktop wheel and keyboard without a competing legacy carousel");
 assert(app.includes('const previousDate=previousCards[previousIndex]?.dataset.eventId||previousCards[previousIndex]?.dataset.eventDate') &&
   app.includes('centerEventCard(grid,cards[restoreIndex],false)'),
   "Realtime RSVP refreshes must preserve carousel position");
@@ -1411,10 +1411,11 @@ assert(carouselCss.includes('line-clamp:2') &&
   carouselCss.includes('.events-topbar') &&
   carouselCss.includes('flex-wrap:nowrap'),
   "Calendar topbar and footer must remain compact");
-assert(app.includes('const fitStorySlides=()=>') &&
-  app.includes('track.clientHeight-(mobile?90:105)') &&
-  app.includes('observer.observe(track)'),
-  "Stories must size from measured available height");
+assert(source("bali-calendar-coverflow.js").includes('function measure()') &&
+  source("bali-calendar-coverflow.js").includes('area.height-(phone?80:76)') &&
+  source("bali-calendar-coverflow.js").includes('observer.observe(grid)') &&
+  !app.includes('fitStorySlides'),
+  "The stage must measure available height without legacy code overwriting its poster width");
 assert(html.includes('bali-calendar-reference.css?v=') &&
   html.includes('bali-calendar-coverflow.js?v=') &&
   html.includes('id="baliEventDetailDialog"') &&
