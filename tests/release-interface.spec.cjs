@@ -50,6 +50,20 @@ test('all calendar states use contours, bold dots and only the active future dat
  expect(instant).toEqual({animating:true,date:'2026-10-22'});
  await expect(future).toHaveCSS('background-color','rgb(185, 255, 81)');
 });
+test('custom event dot colours and saved plans survive calendar navigation',async({page})=>{
+ await calendar(page);
+ await page.evaluate(()=>window.dispatchEvent(new CustomEvent('bali:events',{detail:{events:[
+  {id:'2026-10-22',date:'2026-10-22',title:'BALI PARTY',startTime:'23:00',endTime:'06:00',dotColor:'#ff00aa'}
+ ]}})));
+ const future=day(page,'2026-10-22');
+ await expect(future.locator('.bali-calendar-event-dot').first()).toHaveCSS('background-color','rgb(255, 0, 170)');
+ await page.evaluate(()=>window.dispatchEvent(new CustomEvent('bali:calendar:plans-changed',{detail:{dates:['2026-10-22']}})));
+ await expect(future).toHaveCSS('background-color','rgb(185, 255, 81)');
+ await expect(future.locator('.bali-calendar-event-dot').first()).toHaveCSS('background-color','rgb(21, 25, 16)');
+ await page.evaluate(()=>window.dispatchEvent(new CustomEvent('bali:calendar:plans-changed',{detail:{dates:[]}})));
+ await expect(future).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
+ await expect(future.locator('.bali-calendar-event-dot').first()).toHaveCSS('background-color','rgb(255, 0, 170)');
+});
 test('dragging updates the calendar before finger release and neighbours sit close behind the centre',async({page})=>{
  await calendar(page);
  await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(1,false));
