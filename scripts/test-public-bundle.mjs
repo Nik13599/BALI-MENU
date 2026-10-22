@@ -39,7 +39,7 @@ assert.deepEqual(Object.keys(a).sort(),paths.slice().sort());
 assert.equal(a.menu[0].fields.title.stringValue,"menu");
 assert.equal(store.has("bali:public:bundle:v1"),true);
 assert.equal(fetchCount,0);
-assert.equal(kvGets,14); // 1 aggregate + 13 per-path on first cold bundle
+assert.equal(kvGets,15); // 1 aggregate + 1 revision + 13 per-path on first cold bundle
 const beforeGets=kvGets;
 const hit=await onRequestGet(ctx(url));
 assert.equal(hit.status,200);
@@ -47,7 +47,7 @@ assert.equal(kvGets,beforeGets,"Cloudflare Cache API must avoid KV reads");
 edge.clear();
 const aggregate=await onRequestGet(ctx(url));
 assert.equal(aggregate.status,200);
-assert.equal(kvGets,beforeGets+1,"Warm bundle uses exactly one KV read");
+assert.equal(kvGets,beforeGets+2,"Warm bundle uses aggregate and revision KV reads");
 assert.equal(fetchCount,0);
 assert.equal((await onRequestGet(ctx(url+"?orders=1"))).status,400);
 assert.equal((await onRequestGet(ctx(url+"?path=admins"))).status,400);
