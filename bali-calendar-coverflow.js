@@ -130,13 +130,19 @@ function render(){
   const counter=document.getElementById("eventsCarouselPosition");
   if(counter)counter.textContent=String(activeIndex+1).padStart(2,"0")+" / "+String(count).padStart(2,"0");
 }
-function notify(){
+function notify(userInitiated=false){
   const card=cards()[activeIndex];
   if(card)window.dispatchEvent(new CustomEvent("bali:calendar:active-event",{
-    detail:{date:card.dataset.eventDate,forced:true}
+    detail:{
+      date:card.dataset.eventDate,
+      eventId:card.dataset.eventId||card.dataset.eventDate,
+      status:card.dataset.eventStatus,
+      userInitiated,
+      forced:true
+    }
   }));
 }
-function animateTo(next,smooth=true,syncSelection=true){
+function animateTo(next,smooth=true,syncSelection=true,userInitiated=false){
   if(animation){cancelAnimationFrame(animation.raf);animation=null;}
   const last=cards().length-1;
   if(last<0)return;
@@ -146,9 +152,10 @@ function animateTo(next,smooth=true,syncSelection=true){
   // remain hidden for the whole slide, so swapping is-active cannot blink
   // or move the buttons midway through the stage animation.
   if(moving)lowerActions();
+  const changed=activeIndex!==next;
   activeIndex=next;
   lastCardId=cards()[next]?.dataset.eventId||cards()[next]?.dataset.eventDate||"";
-  if(syncSelection)notify();
+  if(syncSelection)notify(userInitiated&&changed);
   if(!moving){
     position=next;render();raiseActions();return;
   }
@@ -170,8 +177,10 @@ function animateTo(next,smooth=true,syncSelection=true){
   };
   running.raf=requestAnimationFrame(tick);
 }
-function focusIndex(index,smooth=true,syncSelection=true){animateTo(index,smooth,syncSelection)}
-function move(delta){focusIndex(activeIndex+delta,true)}
+function focusIndex(index,smooth=true,syncSelection=true,userInitiated=false){
+  animateTo(index,smooth,syncSelection,userInitiated);
+}
+function move(delta){focusIndex(activeIndex+delta,true,true,true)}
 function syncCards(){
   const previousId=lastCardId;
   const entries=cards();
@@ -239,7 +248,7 @@ grid.addEventListener("pointermove",event=>{
   if(center!==activeIndex){
     activeIndex=center;
     lastCardId=cards()[center]?.dataset.eventId||cards()[center]?.dataset.eventDate||"";
-    notify();
+    notify(true);
   }
   render();
 },{passive:false});
@@ -253,7 +262,7 @@ function endGesture(event,cancel=false){
   }
   // Drag LEFT = posters move left = next event; drag RIGHT = previous.
   const step=clamp(Math.round(Math.abs(dx)/Math.max(75,slideWidth*.75)),1,3);
-  focusIndex(g.startIndex+(dx<0?step:-step),true);
+  focusIndex(g.startIndex+(dx<0?step:-step),true,true,true);
 }
 grid.addEventListener("pointerup",event=>endGesture(event),{passive:true});
 grid.addEventListener("pointercancel",event=>endGesture(event,true),{passive:true});
