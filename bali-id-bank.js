@@ -6,13 +6,22 @@ import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/1
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {getFunctions,httpsCallable} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-functions.js";
+import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
 const $=id=>document.getElementById(id);
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1");
-const lookupFn=httpsCallable(functions,"previewBaliRecipient");
-const transferFn=httpsCallable(functions,"transferBaliBenefits");
-const historyFn=httpsCallable(functions,"listMyBaliHistory");
-const kindsFn=httpsCallable(functions,"listBaliBonusKinds");
+const firebaseLookupFn=httpsCallable(functions,"previewBaliRecipient");
+const firebaseTransferFn=httpsCallable(functions,"transferBaliBenefits");
+const firebaseHistoryFn=httpsCallable(functions,"listMyBaliHistory");
+const firebaseKindsFn=httpsCallable(functions,"listBaliBonusKinds");
+const lookupFn=async request=>sheetsEnabled()
+  ?{data:(await sheetsRequest("bonusRecipient",request)).recipient}:firebaseLookupFn(request);
+const transferFn=async request=>sheetsEnabled()
+  ?{data:(await sheetsRequest("bonusTransfer",request)).result}:firebaseTransferFn(request);
+const historyFn=async request=>sheetsEnabled()
+  ?{data:{...await sheetsRequest("bonusHistory"),nextCursor:null}}:firebaseHistoryFn(request);
+const kindsFn=async request=>sheetsEnabled()
+  ?{data:{kinds:[]}}:firebaseKindsFn(request);
 const builtinNames={shot:"Шоты",cocktail:"Коктейли",hookah:"Кальяны",entry:"Бесплатные проходы",discount:"Скидка"};
 const builtinKinds=["shot","cocktail","hookah","entry"];
 let names=Object.assign(Object.create(null),builtinNames),activeKinds=new Set(builtinKinds),kindsRound=0;
@@ -20,7 +29,7 @@ const dt=new Intl.DateTimeFormat("ru-RU",{timeZone:"Europe/Minsk",year:"numeric"
 const node=(tag,cls,content)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(content!==undefined)n.textContent=content;return n};
 const say=(id,value)=>{const n=$(id);if(n)n.textContent=value};
 const validateNumber=value=>/^\d{6}$/.test(value)&&Number(value)>0;
-const milliseconds=t=>typeof t?.toMillis==="function"?t.toMillis():typeof t==="number"?t:null;
+const milliseconds=t=>typeof t?.toMillis==="function"?t.toMillis():typeof t==="number"?t:typeof t==="string"?Date.parse(t)||null:null;
 const current=g=>{const ms=milliseconds(g.expiresAt);return !g.expiresAt||Boolean(ms&&ms>Date.now())};
 const sendable=g=>g&&activeKinds.has(g.kind)&&
   g.transferable===true&&!g.unlimited&&!g.eventRef&&
@@ -241,6 +250,13 @@ $("baliTransferConfirm")?.addEventListener("click",async()=>{
     const result=(await transferFn(payload)).data;
     if(token!==run||uid!==myUid||!transferDlg.open)return;
     if(!result?.ok)throw Error("Server transfer missing confirmation");
+    if(sheetsEnabled()){
+      const {card}=await sheetsRequest("card");
+      if(uid===myUid){
+        grants=Array.isArray(card?.bonuses)?card.bonuses:[];
+        walletReady=true;renderBalance();
+      }
+    }
     say("baliTransferReviewStatus","Перевод подтверждён. Бонусы начислены получателю.");
     say("baliTransferSuccess","Отправлено: "+recipient.name+" · "+recipient.number);
     button.hidden=true;$("baliTransferCompleted").hidden=false;requestId=null;
@@ -337,6 +353,21 @@ function startWallet(user){
   uid=user.uid;
   const round=kindsRound;
   void loadKinds(user);
+  if(sheetsEnabled()){
+    walletStop=()=>{};
+    void sheetsRequest("card").then(({card})=>{
+      if(uid!==user.uid||round!==kindsRound||auth.currentUser?.uid!==user.uid)return;
+      if(!card?.activated){walletReady=false;grants=[];renderBalance();return;}
+      grants=Array.isArray(card.bonuses)?card.bonuses:[];
+      walletReady=true;renderBalance();
+      if(transferDlg?.open&&stage==="choices")renderChoices();
+    }).catch(()=>{
+      if(uid!==user.uid||round!==kindsRound)return;
+      walletReady=false;grants=[];renderBalance();
+      say("baliIdStatus","Не удалось загрузить бонусы BALI ID.");
+    });
+    return;
+  }
   walletStop=onSnapshot(doc(db,"guestWallets",user.uid),snapshot=>{
     if(uid!==user.uid||round!==kindsRound)return;
     grants=Array.isArray(snapshot.data()?.grants)?snapshot.data().grants:[];
@@ -352,6 +383,12 @@ function startWallet(user){
 }
 onAuthStateChanged(auth,startWallet);
 window.addEventListener("bali:guest-page",()=>startWallet(auth.currentUser));
+window.addEventListener("bali:sheets-card",event=>{
+  if(!sheetsEnabled()||!event.detail?.card||event.detail.uid!==uid)return;
+  grants=Array.isArray(event.detail.card.bonuses)?event.detail.card.bonuses:[];
+  walletReady=true;renderBalance();
+  if(transferDlg?.open&&stage==="choices")renderChoices();
+});
 window.addEventListener("bali:auth-state",event=>{
   if(!event.detail?.registered)authReset();
   else startWallet(auth.currentUser);
