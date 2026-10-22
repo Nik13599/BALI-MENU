@@ -312,7 +312,12 @@ function compactOrderRow(o){
   amount.append(node("strong",fmt(o.total)));
   const statusBox=node("div","","preorder-status-cell");
   const state=normalizedOrderStatus(o.status);
-  statusBox.append(node("span",statuses[state]||"Подтверждён","preorder-state preorder-state-"+state));
+  const statusDot=node("span","","preorder-state preorder-state-"+state);
+  const statusLabel=statuses[state]||"Неизвестный статус";
+  statusDot.setAttribute("role","img");
+  statusDot.setAttribute("aria-label",statusLabel);
+  statusDot.title=statusLabel;
+  statusBox.append(statusDot);
   if(o.archived)statusBox.append(node("small","Архив"));
   const actions=node("div","","preorder-actions");
   const view=button("Посмотреть заказ",()=>void openOrderDetails(o.id),"preorder-view-button");
