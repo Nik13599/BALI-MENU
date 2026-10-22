@@ -7,16 +7,31 @@ const db=getFirestore(app),auth=getAuth(app);
 let uid="",stop=null,selected=new Set();
 const working=new Set();
 const publish=()=>window.dispatchEvent(new CustomEvent("bali:checkins",{detail:{ids:[...selected]}}));
-onAuthStateChanged(auth,user=>{
- if(stop){stop();stop=null;}
- uid=user?.emailVerified?user.uid:"";selected=new Set();publish();
- if(!uid)return;
+// Live-event actions appear on the home posters and calendar.
+// A signed-in guest looking at menu/checkout or contacts should not incur
+// a permanent Firestore check-in subscription.
+const checkinPages=new Set(["home","events"]);
+const checkinsVisible=()=>checkinPages.has(document.body.dataset.baliPage);
+function stopCheckinReader(){if(stop){stop();stop=null;}}
+function startCheckinReader(){
+ if(!uid||stop||!checkinsVisible())return;
  const currentUid=uid;
- stop=onSnapshot(collection(db,"users",uid,"eventCheckins"),snapshot=>{
+ stop=onSnapshot(collection(db,"users",currentUid,"eventCheckins"),snapshot=>{
   if(uid!==currentUid)return;
   selected=new Set(snapshot.docs.map(d=>d.id));publish();
- },error=>{console.warn("BALI event check-in:",error.code)});
+ },error=>{if(uid===currentUid)console.warn("BALI event check-in:",error.code)});
+}
+onAuthStateChanged(auth,user=>{
+ stopCheckinReader();
+ uid=user?.emailVerified?user.uid:"";
+ selected=new Set();publish();
+ startCheckinReader();
 });
+window.addEventListener("bali:guest-page",event=>{
+ if(checkinPages.has(event.detail?.page))startCheckinReader();
+ else stopCheckinReader();
+});
+
 async function mark(eventId){
  if(!/^\d{4}-\d{2}-\d{2}(?:__(?:2|3))?$/.test(eventId))throw Error("Недопустимое мероприятие.");
  if(selected.has(eventId))return {alreadyMarked:true};

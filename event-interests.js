@@ -34,12 +34,16 @@ function errorMessage(error){
   if(error?.code==="unavailable")return "Нет соединения. Попробуйте позже.";
   return error?.message||"Не удалось сохранить выбранное событие.";
 }
-onAuthStateChanged(auth,user=>{
+// Only subscribe while the guest is looking at screens showing personal plans.
+// Browsing the kitchen, cart, informational pages or checkout never starts
+// an event-interest Firestore subscription.
+const interestPages=new Set(["home","events","profile"]);
+const isRelevantPage=()=>interestPages.has(document.body.dataset.baliPage);
+function stopInterestReader(){
   if(unsubscribe){unsubscribe();unsubscribe=null;}
-  selected=new Set();loaded=false;
-  uid=user?.emailVerified?user.uid:"";
-  publish();
-  if(!uid){loaded=true;publish();return;}
+}
+function startInterestReader(){
+  if(!uid||unsubscribe||!isRelevantPage())return;
   const watcherUid=uid;
   unsubscribe=onSnapshot(
     collection(db,"users",watcherUid,"eventInterests"),
@@ -58,7 +62,20 @@ onAuthStateChanged(auth,user=>{
       publish();
     }
   );
+}
+onAuthStateChanged(auth,user=>{
+  stopInterestReader();
+  selected=new Set();loaded=false;
+  uid=user?.emailVerified?user.uid:"";
+  publish();
+  if(!uid){loaded=true;publish();return;}
+  startInterestReader();
 });
+window.addEventListener("bali:guest-page",event=>{
+  if(interestPages.has(event.detail?.page))startInterestReader();
+  else stopInterestReader();
+});
+
 async function toggle(eventId){
   if(!/^\d{4}-\d{2}-\d{2}(?:__(?:2|3))?$/.test(eventId))throw new Error("Некорректный номер мероприятия.");
   const date=eventId.slice(0,10);
