@@ -8,7 +8,7 @@ import {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBat
 import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1";
 import {withinOrderRetention,ORDER_RETENTION_MS} from "./bali-order-retention.js";
 import {createBaliStaffPreorder} from "./bali-staff-preorder-create.js?v=20261021-1";
-import {composeBaliPreorderReport,composeBaliSinglePreorder,downloadBaliPreorderReport,showBaliPreorderTelegram} from "./bali-preorder-reports.js?v=20261022-order-share1";
+import {composeBaliPreorderReport,composeBaliSinglePreorder,downloadBaliPreorderReport,showBaliPreorderTelegram} from "./bali-preorder-reports.js?v=20261022-aggregate-report3";
 const readOrderLines=async row=>{
   const lines=await getDocs(collection(row.ref,"items"));
   return lines.docs.map(line=>line.data());
@@ -336,7 +336,7 @@ async function fetchWorkspaceReport(kind){
   ensureAdmin();
   const date=$("preorderReportDate").value;
   const id=$("preorderReportEvent").value;
-  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date))throw new Error("Выберите дату отчёта.");
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error("Выберите дату отчёта.");
   const source=await getDocs(query(collection(db,"orders"),where("eventDate","==",date)));
   const matching=source.docs.filter(entry=>withinOrderRetention(entry.data())&&
     (!id||(entry.data().eventId||entry.data().eventDate)===id));
