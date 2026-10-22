@@ -118,5 +118,6 @@ jobs:
           echo "::notice::Project owner: enable the Cloud Functions and Cloud Build APIs, then grant the deployment service account the minimum necessary roles for deploying functions and configuring Firebase Auth."
           echo "::notice::Cloud Functions API: https://console.cloud.google.com/apis/library/cloudfunctions.googleapis.com?project=$FIREBASE_PROJECT_ID"
           echo "::notice::Cloud Build API: https://console.cloud.google.com/apis/library/cloudbuild.googleapis.com?project=$FIREBASE_PROJECT_ID"
+          echo "::notice::Artifact Registry API: https://console.cloud.google.com/apis/library/artifactregistry.googleapis.com?project=$FIREBASE_PROJECT_ID"
           echo "::notice::Firebase Authentication: https://console.firebase.google.com/project/$FIREBASE_PROJECT_ID/authentication/providers"
           echo "::notice::IAM: https://console.cloud.google.com/iam-admin/iam?project=$FIREBASE_PROJECT_ID"
