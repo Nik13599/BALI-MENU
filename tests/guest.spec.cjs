@@ -47,6 +47,36 @@ test('approved hidden search, category filtering and safe rendering', async ({pa
   await expect(page.locator('#menuGrid img')).toHaveCount(0);
 });
 
+test('Want to Go persists only in browser storage, even without login', async ({page}) => {
+  await page.goto('/index.html#events');
+  await expect.poll(()=>page.evaluate(()=>Boolean(window.BaliInterests?.toggle))).toBe(true);
+  const id='2099-10-24__2';
+  const selected=await page.evaluate(async id=>{
+    const result=await window.BaliInterests.toggle(id);
+    return {result,items:JSON.parse(localStorage.getItem('bali:my-plans:local:v1'))};
+  },id);
+  expect(selected.result).toEqual({selected:true});
+  expect(selected.items).toContain(id);
+  await page.reload();
+  await expect.poll(()=>page.evaluate(id=>window.BaliInterests?.getSelected?.().has(id),id)).toBe(true);
+  expect(await page.evaluate(()=>window.BaliInterests.toggle('2099-10-24__2'))).toEqual({selected:false});
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('bali:my-plans:local:v1')))).toEqual([]);
+});
+
+test('Want to Go does not pretend browser-blocked storage succeeded', async ({page}) => {
+  await page.goto('/index.html#events');
+  await expect.poll(()=>page.evaluate(()=>Boolean(window.BaliInterests?.toggle))).toBe(true);
+  const error=await page.evaluate(async()=>{
+    const original=Storage.prototype.setItem;
+    Storage.prototype.setItem=()=>{throw new DOMException('Storage disabled','QuotaExceededError');};
+    try{await window.BaliInterests.toggle('2099-10-24');return 'unexpected success';}
+    catch(e){return e.message;}
+    finally{Storage.prototype.setItem=original;}
+  });
+  expect(error).toContain('Браузер не разрешил сохранить');
+  expect(await page.evaluate(()=>window.BaliInterests.getSelected().has('2099-10-24'))).toBe(false);
+});
+
 test('cart quantities, keyboard focus and dismissal', async ({page}) => {
   await menu(page);
   const card = page.locator('#menuGrid .menu-item').first();
