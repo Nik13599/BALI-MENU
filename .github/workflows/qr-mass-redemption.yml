@@ -1,0 +1,30 @@
+name: BALI QR mass redemption safety
+on:
+  push:
+    branches:
+      - feature/qr-mass-redemption-20261023
+  pull_request:
+    paths:
+      - 'functions/bonus-qr.js'
+      - 'scripts/test-bali-qr.mjs'
+      - 'bali-qr-admin.js'
+      - '.github/workflows/qr-mass-redemption.yml'
+permissions:
+  contents: read
+jobs:
+  qr-transactions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm ci --prefix functions --no-audit --no-fund
+      - name: Verify production QR code and transaction tests
+        run: |
+          node --check functions/bonus-qr.js
+          node --input-type=module --check < bali-qr-admin.js
+          node scripts/test-bali-qr.mjs
+          node scripts/test-bali-backend.mjs
