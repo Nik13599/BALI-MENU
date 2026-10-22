@@ -832,8 +832,11 @@ function minskDateToday() {
     const p = Object.fromEntries(parts.map(x => [x.type,x.value]));
     return p.year + '-' + p.month + '-' + p.day;
 }
+let checkoutCalendarEvents=null;
 function availablePreorderEvents(){
-    return availableEvents.filter(e=>e.preorderEnabled &&
+    const source=document.getElementById("checkoutModal")?.classList.contains("active")&&
+        checkoutCalendarEvents?checkoutCalendarEvents:availableEvents;
+    return source.filter(e=>e.preorderEnabled &&
         e.date>=minskDateToday() && e.closesAt?.toDate?.()>new Date());
 }
 function populateEventNames(preferredId=""){
@@ -905,9 +908,8 @@ async function refreshCheckoutCalendar(){
             if(checkout?.classList.contains("active")){
                 const id=document.getElementById("eventSelect")?.value;
                 const date=document.getElementById("eventDateSelect")?.value;
-                // Prefer the freshest published snapshot for event/date selection.
-                const old=availableEvents;
-                availableEvents=latest;
+                // Only affect checkout selectors, never overwrite homepage posters.
+                checkoutCalendarEvents=latest;
                 populateEvents();
                 if(date&&availablePreorderEvents().some(event=>event.date===date)){
                     document.getElementById("eventDateSelect").value=date;
@@ -1743,6 +1745,7 @@ async function openCheckout() {
 }
 
 function closeCheckout() {
+    checkoutCalendarEvents=null;
     editingOrderId = null;
     editingOriginalReference = null;
     elements.checkoutModal.classList.remove('active');
