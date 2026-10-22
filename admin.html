@@ -588,7 +588,32 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
             </form>
           </details>
         </section></details>
-        <details class="bali-admin-tool" id="baliGuestBonusTools"><summary><strong>Бонусы и QR-коды</strong><span>Начисления, новые направления и печать кодов</span></summary><section class="card bali-qr-admin" id="baliQrAdminPanel">
+        <details class="bali-admin-tool" id="baliGuestCoinTools">
+  <summary><strong>BALI COIN</strong><span>Баланс баллов на карте, начисление и история</span></summary>
+  <section class="card bali-coin-admin">
+    <div class="card-heading"><h3>BALI COIN · управление баллами</h3><span class="tag">Только администратор</span></div>
+    <p class="hint">BALI COIN — внутренние баллы лояльности, не реальные деньги. Каждое начисление или списание фиксируется в истории. Баланс на карте отображается только после ответа сервера.</p>
+    <form id="baliCoinChangeForm" class="bali-coin-admin-form">
+      <label>Гость<input id="baliCoinGuestName" readonly placeholder="Выберите гостя из списка клиентов"></label>
+      <input id="baliCoinGuestUid" type="hidden">
+      <label>Операция<select id="baliCoinOperation"><option value="credit">Начислить BALI COIN</option><option value="debit">Списать BALI COIN</option></select></label>
+      <label>Количество<input id="baliCoinQuantity" type="number" min="1" max="1000000" step="1" required placeholder="100"></label>
+      <label>Основание<input id="baliCoinReason" maxlength="160" minlength="5" required placeholder="Например, бонус за посещение"></label>
+      <button id="baliCoinSubmit" class="primary" type="submit" disabled>Провести операцию</button>
+    </form>
+    <div class="bali-coin-overview">Текущий баланс: <strong id="baliCoinAdminBalance">—</strong> BALI COIN</div>
+    <p id="baliCoinAdminStatus" class="status" role="status" aria-live="polite">Подключение Google Таблиц требуется для начислений.</p>
+  </section>
+</details>
+<style>
+.bali-coin-admin-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:8px;align-items:end}
+.bali-coin-admin-form label{min-width:0;display:grid;gap:4px;font-size:11px}
+.bali-coin-admin-form button{min-height:36px}.bali-coin-overview{margin-top:8px;font-size:12px;color:#dcefd5}
+.bali-coin-overview strong{color:#b9ff51;font-variant-numeric:tabular-nums;font-size:17px}
+@media(max-width:1100px){.bali-coin-admin-form{grid-template-columns:repeat(2,minmax(0,1fr))}.bali-coin-admin-form button{grid-column:1/-1}}
+@media(max-width:450px){.bali-coin-admin-form{grid-template-columns:1fr}}
+</style>
+<details class="bali-admin-tool" id="baliGuestBonusTools"><summary><strong>Бонусы и QR-коды</strong><span>Начисления, новые направления и печать кодов</span></summary><section class="card bali-qr-admin" id="baliQrAdminPanel">
   <div class="card-heading"><h3>BALI ID · QR-БОНУСЫ</h3><span class="tag">Управление</span></div>
   <p class="hint">Создавайте разовые и многоразовые QR-коды для начисления и списания. Каждая операция подтверждается пользователем и фиксируется на сервере.</p>
   <form id="baliAdminBonusGrantForm" class="bali-qr-admin-form" autocomplete="off">
@@ -1517,6 +1542,7 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
 </main>
 
 <script src="firebase-config.js?v=20261020-2"></script>
+<script src="bali-sheets-config.js?v=20261022-coin1"></script>
 <script type="module" src="bali-public-publisher.js?v=20261022-browser1"></script>
 <script type="module" src="bali-preorder-migration-audit-admin.js?v=20261022-audit1"></script>
 <script type="module" src="admin-firestore.js?v=20261022-localplans1"></script>
@@ -1527,10 +1553,11 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
 <script type="module" src="bali-home-design-admin.js?v=20261022-browser-publication1"></script>
 <script type="module" src="bali-home-placeholder-admin.js?v=20261022-browser-publication1"></script>
 <script type="module" src="admin-orders.js?v=20261021-compact2"></script>
-<script type="module" src="admin-clients.js?v=20261021-retention1"></script>
+<script type="module" src="admin-clients.js?v=20261022-sheets-stage1"></script>
 <script type="module" src="preorder-staff-admin.js?v=20261022-firebase-status2"></script>
-<script type="module" src="bali-privilege-admin.js?v=20261021-5priv-compact1"></script>
-<script type="module" src="bali-qr-admin.js?v=20261021-2"></script>
+<script type="module" src="bali-privilege-admin.js?v=20261022-sheets-stage1"></script>
+<script type="module" src="bali-coin-admin.js?v=20261022-coin1"></script>
+<script type="module" src="bali-qr-admin.js?v=20261022-sheets-stage1"></script>
 <script src="bali-smart-design.js?v=20261019-2" defer></script>
 <script src="admin-dashboard.js?v=20261021-workspace1-compact1" defer></script>
 <script src="bali-design-studio.js?v=20261019-idcard1-compact1" defer></script>
