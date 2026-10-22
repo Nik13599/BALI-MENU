@@ -10,11 +10,12 @@ export async function sheetsRequest(action,payload={},options={}){
   const token=action==="health"?"":await provider?.();
   if(action!=="health"&&!token)throw Object.assign(new Error("Войдите в аккаунт BALI."),{code:"unauthenticated"});
   // Coalesce concurrent identity checks only; never cache completed roles.
-  if(action==="me"&&!options.signal){
-    if(pendingRoles.has(token))return pendingRoles.get(token);
+  if((action==="me"||action==="staffRecentOrders")&&!options.signal&&Object.keys(payload).length===0){
+    const requestKey=action+":"+token;
+    if(pendingRoles.has(requestKey))return pendingRoles.get(requestKey);
     const pending=sendSheetsRequest(action,payload,options,token);
-    pendingRoles.set(token,pending);
-    try{return await pending;}finally{pendingRoles.delete(token);}
+    pendingRoles.set(requestKey,pending);
+    try{return await pending;}finally{pendingRoles.delete(requestKey);}
   }
   return sendSheetsRequest(action,payload,options,token);
 }
