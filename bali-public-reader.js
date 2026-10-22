@@ -160,7 +160,9 @@ export function onSnapshot(ref,...args){
         // kitchen/bar catalog; never replace it with fake default content.
         const backup=cached(ref,{allowStale:true});
         if(backup&&!lastVersion){send(backup);lastVersion="saved-public-catalog";}
-        else if(!backup)onError?.(error);
+        else if(!backup&&!lastVersion)onError?.(error);
+        // A temporary polling failure must never erase a successfully
+        // displayed real poster, banner or menu catalog.
       }
     }finally{busy=false;}
   }
