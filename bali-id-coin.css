@@ -18,3 +18,13 @@ body.bali-guest-theme #baliIdSection .bali-id-bottom .bali-id-coin output{
   body.bali-guest-theme #baliIdSection .bali-id-number{font-size:clamp(15px,3.6vw,19px)!important;letter-spacing:.025em!important}
   body.bali-guest-theme #baliIdSection .bali-id-coin{margin-left:auto!important}
 }
+
+.bali-id-coin-history{display:grid;gap:7px;padding:8px 0 11px;margin:0 0 10px;border-bottom:1px solid rgba(190,235,175,.25)}
+.bali-id-coin-history[hidden]{display:none!important}
+.bali-id-coin-history>strong{color:#baff69;font:800 12px Manrope,Inter,sans-serif}
+.bali-id-coin-history-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:7px 4px;border-bottom:1px solid rgba(190,235,175,.11)}
+.bali-id-coin-history-caption{display:grid;gap:3px}
+.bali-id-coin-history-caption strong{font-size:11px}
+.bali-id-coin-history-caption small{font-size:10px;color:#b0c6b2}
+.bali-id-coin-history-count{font-size:12px;font-variant-numeric:tabular-nums;color:#caff8e}
+.bali-id-coin-history-entry p{grid-column:1/-1;color:#bdcdbd;font-size:10px;margin:0}
