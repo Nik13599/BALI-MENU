@@ -14,6 +14,7 @@ import {
 
 import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1";
 import {withinOrderRetention} from "./bali-order-retention.js";
+import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
 
 const app = getApps().length ? getApp() : initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth = getAuth(app);
@@ -147,6 +148,22 @@ async function save(payload, editId = null) {
     throw new Error("Выберите мероприятие и укажите столик или ID бронирования.");
   }
   const lines = normalizeItems(payload.items);
+  if(sheetsEnabled()){
+    const signature=await requestHash({uid:user.uid,eventDate,eventId,tableNumber,bookingId,notes,lines,editId});
+    let pending=null;
+    try{pending=JSON.parse(sessionStorage.getItem(sessionKey(user.uid))||"null");}catch(_){}
+    if(!pending||pending.signature!==signature)
+      pending={signature,requestId:hex(crypto.getRandomValues(new Uint8Array(16)))};
+    try{sessionStorage.setItem(sessionKey(user.uid),JSON.stringify(pending));}catch(_){}
+    const data=editId
+      ?(await sheetsRequest("editOrder",{id:editId,tableNumber,bookingId,notes,items:lines})).order
+      :(await sheetsRequest("createOrder",{requestId:pending.requestId,eventDate,eventId,
+          tableNumber,bookingId,notes,customerName:profile.name,
+          customerPhone:profile.phone,items:lines})).order;
+    try{sessionStorage.removeItem(sessionKey(user.uid));}catch(_){}
+    return {success:true,order_id:data.id,order_number:data.orderNumber,
+      event_title:data.eventTitle||"",table_number:tableNumber,booking_id:bookingId,total:data.total};
+  }
   // Old production rules may not yet expose this new settings document.
   // A denied read in that old configuration must not break legacy checkout;
   // once the new rules are live, backendRequired is always readable.
@@ -236,6 +253,12 @@ async function save(payload, editId = null) {
 }
 async function getOrderWithItems(id) {
   const user = signedUser();
+  if(sheetsEnabled()){
+    const {orders}=await sheetsRequest("myOrders");
+    const record=orders?.find(o=>o.id===id);
+    if(!record)throw new Error("Заказ не найден.");
+    return record;
+  }
   const ref=doc(db,"orders",id);
   const snapshot=await getDoc(ref);
   if(!snapshot.exists() || snapshot.data().ownerUid !== user.uid || !withinOrderRetention(snapshot.data())) throw new Error("Заказ не найден.");
@@ -244,6 +267,10 @@ async function getOrderWithItems(id) {
 }
 async function cancel(id) {
   signedUser();
+  if(sheetsEnabled()){
+    await sheetsRequest("cancelOrder",{id});
+    return;
+  }
   await updateDoc(doc(db,"orders",id),{status:"cancelled",updatedAt:serverTimestamp()});
 }
 function watchUserOrders(user) {
@@ -256,6 +283,18 @@ function watchUserOrders(user) {
   });
   emit("bali:orders",{orders:[],ownerUid:user?.uid||null,loading:!!user});
   if(!user) return;
+  if(sheetsEnabled()){
+    orderListener=()=>{};
+    void sheetsRequest("myOrders").then(({orders})=>{
+      if(current!==generation||auth.currentUser?.uid!==user.uid)return;
+      const data=(orders||[]).filter(withinOrderRetention).sort((a,b)=>
+        Date.parse(b.createdAt||0)-Date.parse(a.createdAt||0));
+      emit("bali:orders",{orders:data,ownerUid:user.uid});
+    }).catch(error=>{
+      if(current===generation)emit("bali:orders-error",{message:errorText(error)});
+    });
+    return;
+  }
   orderListener=onSnapshot(
     query(collection(db,"orders"),where("ownerUid","==",user.uid),limit(40)),
     async snapshots=>{
