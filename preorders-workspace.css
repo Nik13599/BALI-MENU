@@ -496,10 +496,23 @@ body.bali-preorders-workspace{
   .bali-preorders-workspace .preorder-compact-row .preorder-action-menu{margin-left:auto}
 }
 
-/* Color-coded statuses for compact BALI STAFF order cards. */
+/* Bold status dots occupy the card's top-right corner, not a grid column. */
+.bali-preorders-workspace .preorder-table-header,
+.bali-preorders-workspace .preorder-compact-row{
+  grid-template-columns:minmax(0,1fr) 105px minmax(260px,max-content);
+  grid-template-areas:none;
+  gap:10px;
+}
+.bali-preorders-workspace .preorder-table-header>span:nth-child(3){display:none}
+.bali-preorders-workspace .preorder-compact-row .preorder-status-cell{
+  position:absolute;grid-area:auto;top:9px;right:11px;
+  display:flex;align-items:center;justify-content:flex-end;
+  gap:5px;z-index:1;
+}
 .bali-preorders-workspace .preorder-compact-row .preorder-state{
-  display:block;flex:none;box-sizing:border-box;width:18px;height:18px;
-  padding:0;border:2px solid transparent;border-radius:50%;
+  display:block;flex:none;box-sizing:border-box;
+  width:18px;height:18px;padding:0;
+  border:2px solid transparent;border-radius:50%;
   font-size:0;line-height:0;box-shadow:0 0 0 2px #071009;
 }
 .bali-preorders-workspace .preorder-compact-row .preorder-state-pending{
@@ -512,9 +525,27 @@ body.bali-preorders-workspace{
   background:#ef4b52;border-color:#ffafb4;
 }
 @media(min-width:1081px){
-  .bali-preorders-workspace .preorder-table-header,
-  .bali-preorders-workspace .preorder-compact-row{
-    grid-template-columns:minmax(0,1fr) 96px 70px minmax(165px,max-content);
+  .bali-preorders-workspace .preorder-compact-row .preorder-actions{
+    padding-right:25px;
   }
-  .bali-preorders-workspace .preorder-compact-row .preorder-status-cell{justify-content:center}
+}
+@media(max-width:1080px){
+  .bali-preorders-workspace .preorder-compact-row{
+    grid-template-columns:minmax(0,1fr) 110px;
+    grid-template-areas:"primary amount" "actions actions";
+    gap:6px 10px;
+  }
+  .bali-preorders-workspace .preorder-compact-row .preorder-status-cell{
+    grid-area:auto;
+  }
+}
+@media(max-width:700px){
+  .bali-preorders-workspace .preorder-compact-row{
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:"primary primary" ". amount" "actions actions";
+    gap:6px 8px;
+  }
+  .bali-preorders-workspace .preorder-compact-row .preorder-status-cell{
+    top:8px;right:10px;grid-area:auto;
+  }
 }
