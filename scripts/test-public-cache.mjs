@@ -64,3 +64,32 @@ assert(publicReader.includes('/api/public-data?path='));
 assert(publicReader.includes('if(error.code==="edge-missing")await fallbackSdk()'));
 assert(publicReader.includes('["settings/homeDesign"'));
 console.log("BALI public edge cache: approved reads, CDN hit, filtered promotions, 403/429 safety, private data isolation PASS.");
+
+// Durable KV snapshots must be reused when Firestore refuses reads.
+stored.clear();pending.length=0;
+const kvRows=new Map();
+const kv={get:async key=>kvRows.get(key)||null,
+  put:async(key,data)=>{kvRows.set(key,JSON.parse(data));}};
+globalThis.fetch=async()=>new Response(JSON.stringify([{document:{
+  name:"projects/bali-menu-5a48b/databases/(default)/documents/events/real_event",
+  fields:{title:{stringValue:"Настоящая афиша"}}
+}}]),{status:200});
+const context=(path)=>({...make(path),env:{BALI_PUBLIC_CONTENT:kv}});
+const first=await onRequestGet(context("events"));
+assert.equal(first.status,200);
+await Promise.all(pending.splice(0));
+assert.equal(kvRows.get("bali:public:v1:events").documents.length,1);
+stored.clear();
+globalThis.fetch=async()=>new Response("quota",{status:429});
+const second=await onRequestGet(context("events"));
+assert.equal(second.status,200);
+assert.equal(second.headers.get("X-BALI-Cache"),"KV");
+await Promise.all(pending.splice(0));
+kvRows.get("bali:public:v1:events").cachedAt=Date.now()-24*60*60*1000;
+stored.clear();
+const stale=await onRequestGet(context("events"));
+assert.equal(stale.status,200);
+assert.equal(stale.headers.get("X-BALI-Cache"),"STALE");
+assert.equal((await stale.json()).documents[0].fields.title.stringValue,"Настоящая афиша");
+await Promise.all(pending.splice(0));
+console.log("Last real public content survives Firestore quota exhaustion PASS.");
