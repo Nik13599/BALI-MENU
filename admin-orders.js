@@ -6,6 +6,7 @@ import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.
 import {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBatch,
   serverTimestamp,runTransaction,query,limit,orderBy,where,Timestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1";
+import {filterBaliPreorders,sumBaliPreorders,dashboardBaliPreorders,preorderActive} from "./bali-preorder-metrics.js";
 import {withinOrderRetention,ORDER_RETENTION_MS} from "./bali-order-retention.js";
 import {createBaliStaffPreorder} from "./bali-staff-preorder-create.js?v=20261021-1";
 import {composeBaliPreorderReport,composeBaliSinglePreorder,downloadBaliPreorderReport,showBaliPreorderTelegram} from "./bali-preorder-reports.js?v=20261022-order-share1";
@@ -18,6 +19,16 @@ const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=false,orders=[],catalog=[];
 let events=new Map(),dateOrders=[],loadedDate="",unsubDateOrders=null,dateRevision=0;
 let preorderOnlyStaff=false;
+let guestOrders=[],guestQueueReady=false,guestQueueError=false;
+const isGuestRequest=o=>o?.source==="guest-kv";
+window.addEventListener("bali:staff-guest-orders",event=>{
+  if(!compactWorkspace||!authorized)return;
+  guestQueueError=event.detail?.state==="error";
+  if(!guestQueueError){
+    guestOrders=event.detail?.orders||[];guestQueueReady=true;
+    renderDates();renderOrders();
+  }else setStatus("Невозможно проверить гостевую очередь. Общие цифры пока неполные.");
+});
 let editOrder=null,editLines=[],originalIds=new Set(),creatingOrder=false;
 const statuses={pending:"Ожидает подтверждения",confirmed:"Подтверждён",cancelled:"Отменён"};
 const normalizedOrderStatus=status=>status==="completed"?"confirmed":status;
@@ -38,9 +49,14 @@ function button(title,onClick,cls=""){
   const b=node("button",title,cls);b.type="button";b.addEventListener("click",onClick);return b;
 }
 function ensureAdmin(){if(!authorized||!auth.currentUser)throw new Error("Доступ только для администратора.");}
-function total(items){return items.reduce((sum,x)=>sum+Number(x.unitPrice||0)*Number(x.quantity||0),0);}
+function total(items){return sumBaliPreorders([{id:"temporary",items}],{}).amount;}
 async function fetchComplete(id) {
   ensureAdmin();
+  if(id.startsWith("G-")){
+    const item=guestOrders.find(o=>o.id===id);
+    if(!item)throw new Error("Гостевая заявка ещё не загружена.");
+    return item;
+  }
   const ref=doc(db,"orders",id),snapshot=await getDoc(ref);
   if(!snapshot.exists())throw new Error("Заказ не найден.");
   const lines=await getDocs(collection(ref,"items"));
@@ -213,7 +229,7 @@ async function openOrderDetails(id){
     totalRow.append(node("span","Итого"),node("strong",fmt(total(o.items))));
     content.append(totalRow);
     if(o.notes)content.append(orderDetailsField("Пожелания к заказу",o.notes));
-    $("orderDetailsEdit").hidden=Boolean(o.archived);
+    $("orderDetailsEdit").hidden=Boolean(o.archived)||isGuestRequest(o);
     $("orderDetailsEdit").onclick=()=>{dialog.close();void openEditor(id);};
     $("orderDetailsPrint").disabled=false;
     $("orderDetailsPrint").onclick=()=>printOrder(o);
@@ -275,25 +291,36 @@ function compactOrderRow(o){
   view.setAttribute("data-preorder-view",o.id);
   actions.append(view);
   if(!o.archived){
-    actions.append(button("Изменить",()=>void openEditor(o.id)));
-    if(state==="pending")actions.append(button("Подтвердить",()=>void setOrderStatus(o,"confirmed"),"confirm"));
+    if(!isGuestRequest(o))actions.append(button("Изменить",()=>void openEditor(o.id)));
+    if(state==="pending")actions.append(button("Подтвердить",()=>void (isGuestRequest(o)
+      ?setGuestOrderStatus(o,"confirmed"):setOrderStatus(o,"confirmed")),"confirm"));
   }
   const dropdown=node("details","","preorder-action-menu");
   const trigger=node("summary","⋯");trigger.setAttribute("aria-label","Дополнительные действия с заказом");
   const menu=node("div","","preorder-dropdown");
   const menuButton=(label,fn,cls="")=>button(label,()=>{dropdown.open=false;fn();},cls);
-  if(!o.archived&&state!=="cancelled")menu.append(menuButton("Отменить заказ",()=>void setOrderStatus(o,"cancelled")));
+  if(!o.archived&&state!=="cancelled")menu.append(menuButton("Отменить заказ",()=>void (isGuestRequest(o)
+    ?setGuestOrderStatus(o,"cancelled"):setOrderStatus(o,"cancelled"))));
   menu.append(menuButton("Отчёт PDF",()=>void exportSinglePreorder(o.id,"pdf").catch(e=>setStatus("Ошибка отчёта: "+(e.message||e.code)))));
   menu.append(menuButton("Отчёт PNG",()=>void exportSinglePreorder(o.id,"png").catch(e=>setStatus("Ошибка отчёта: "+(e.message||e.code)))));
   menu.append(menuButton("Текст в Telegram",()=>void exportSinglePreorder(o.id,"telegram").catch(e=>setStatus("Ошибка отчёта: "+(e.message||e.code)))));
   menu.append(menuButton("Печать",()=>printOrder(o)));
-  menu.append(o.archived
-    ?menuButton("Вернуть из архива",()=>void archiveOrder(o,false))
-    :menuButton("В архив",()=>void archiveOrder(o,true)));
-  menu.append(menuButton("Удалить навсегда",()=>void deleteOrder(o),"danger-action"));
+  if(!isGuestRequest(o)){
+    menu.append(o.archived
+      ?menuButton("Вернуть из архива",()=>void archiveOrder(o,false))
+      :menuButton("В архив",()=>void archiveOrder(o,true)));
+    menu.append(menuButton("Удалить навсегда",()=>void deleteOrder(o),"danger-action"));
+  }
   dropdown.append(trigger,menu);actions.append(dropdown);
   row.append(ref,guest,dishes,amount,statusBox,actions);
   return row;
+}
+async function setGuestOrderStatus(order,status){
+  try{
+    if(!confirm("Изменить статус гостевой заявки "+orderLabel(order)+"?"))return;
+    await window.BaliStaffGuestInbox.setStatus(order,status);
+    setStatus("Гостевая заявка обновлена.");
+  }catch(e){setStatus("Ошибка гостевой заявки: "+(e.message||e.code));}
 }
 async function exportSinglePreorder(id,format){
   ensureAdmin();
@@ -315,7 +342,7 @@ function renderSinglePreorderReportOptions(){
   if(!select)return;
   const previous=select.value;
   const distinct=new Map();
-  for(const order of [...orders,...dateOrders]){
+  for(const order of [...orders,...dateOrders,...(compactWorkspace?guestOrders:[])]){
     if(order.id&&withinOrderRetention(order))distinct.set(order.id,order);
   }
   const rows=[...distinct.values()].sort((a,b)=>
@@ -367,14 +394,14 @@ function renderOrders(){
     container.append(node("p","Загружаем предзаказы выбранной даты..."));return;
   }
   const source=date?dateOrders:orders;
-  const shown=source.filter(o=>withinOrderRetention(o)&&(!date||o.eventDate===date)&&
-    (!selectedEvent||(o.eventId||o.eventDate)===selectedEvent)&&
-    (showArchive||!o.archived)).sort((a,b)=>
+  const shown=filterBaliPreorders([...source,...(compactWorkspace?guestOrders:[])],{
+    date,eventId:selectedEvent,archive:showArchive
+  }).filter(withinOrderRetention).sort((a,b)=>
       b.eventDate.localeCompare(a.eventDate)||
       eventTitle(a).localeCompare(eventTitle(b),"ru")||
       (Number(a.orderNumber)||0)-(Number(b.orderNumber)||0));
   if(date&&selectedEvent){
-    const live=shown.filter(o=>!o.archived&&o.status!=="cancelled");
+    const live=shown.filter(preorderActive);
     const tally=new Map();
     for(const o of live)for(const item of o.items){
       const key=String(item.id)+"|"+item.name;
@@ -393,10 +420,11 @@ function renderOrders(){
     const stats=$("ordersStats");
     if(stats){
       stats.replaceChildren();
+      const summary=dashboardBaliPreorders(shown);
       const counters=[
-        ["Всего заказов",shown.length,"all"],
-        ["Ожидают",shown.filter(o=>normalizedOrderStatus(o.status)==="pending"&&!o.archived).length,"awaiting"],
-        ["Подтверждены",shown.filter(o=>normalizedOrderStatus(o.status)==="confirmed"&&!o.archived).length,"accepted"]
+        [date?"Всего заказов":"В загруженной очереди",summary.count,"all"],
+        ["Ожидают",summary.pending,"awaiting"],
+        ["Подтверждены",summary.confirmed,"accepted"]
       ];
       for(const [title,count,type] of counters){
         const card=node("div","","preorder-stat "+type);
@@ -448,6 +476,7 @@ function renderDates(){
   const el=$("ordersDateFilter"),old=el.value;
   el.replaceChildren(new Option("Все даты",""));
   const dates=[...new Set([...orders.filter(withinOrderRetention).map(x=>x.eventDate),
+    ...(compactWorkspace?guestOrders.filter(withinOrderRetention).map(x=>x.eventDate):[]),
     ...[...events.values()].map(x=>x.date)])].filter(Boolean).sort().reverse();
   for(const date of dates)el.add(new Option(date,date));
   if([...el.options].some(x=>x.value===old))el.value=old;
@@ -458,7 +487,7 @@ function renderEventFilter(){
   select.replaceChildren(new Option("Все мероприятия",""));
   const found=new Map();
   for(const [id,event] of events)if(!date||event.date===date)found.set(id,event.title);
-  for(const o of [...orders,...dateOrders].filter(withinOrderRetention))
+  for(const o of [...orders,...dateOrders,...(compactWorkspace?guestOrders:[])].filter(withinOrderRetention))
     if(!date||o.eventDate===date)found.set(o.eventId||o.eventDate,eventTitle(o));
   for(const [id,title] of [...found].sort((a,b)=>a[1].localeCompare(b[1],"ru")))
     select.add(new Option(title,id));
@@ -741,6 +770,8 @@ async function subscribe(user) {
   dateRevision++;dateOrders=[];loadedDate="";
   const current=++generation;
   orders=[];catalog=[];events=new Map();authorized=false;preorderOnlyStaff=false;
+  guestOrders=[];guestQueueReady=false;guestQueueError=false;
+  if(compactWorkspace)window.BaliStaffGuestInbox?.stop();
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
   $("ordersAdminList").textContent="Проверяем права...";
   if(!user||!user.emailVerified)return;
@@ -757,6 +788,7 @@ async function subscribe(user) {
       $("ordersAdminList").textContent="Нет доступа к предзаказам.";return;
     }
     authorized=true;
+    if(compactWorkspace)window.BaliStaffGuestInbox?.start();
     const readOrders=createOrderSnapshotReader(readOrderLines);
     let revision=0;
     unsubEvents=onSnapshot(collection(db,"events"),snap=>{
