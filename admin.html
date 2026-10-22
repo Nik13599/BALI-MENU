@@ -44,16 +44,6 @@
   <section id="adminView" class="admin-shell" hidden>
     <aside class="admin-sidebar" aria-label="Навигация по панели">
       <div class="sidebar-caption">BALI / УПРАВЛЕНИЕ</div>
-      <div class="bali-public-publish-tool" style="padding:7px 11px;border:1px solid #394d3a;border-radius:9px;margin:8px 0">
-        <button id="baliPublicPublishAll" type="button" style="width:100%;font-size:12px">Обновить публичные данные Cloudflare</button>
-        <p id="baliPublicPublishStatus" class="hint" role="status" aria-live="polite" style="font-size:10px;margin:4px 0 0">Афиши, меню, тексты и оформление без доступа к личным кабинетам.</p>
-      </div>
-      <details id="baliMigrationAuditPanel" style="margin:8px 0;padding:8px 11px;border:1px solid #394d3a;border-radius:9px">
-        <summary style="cursor:pointer;font-size:12px">Проверка переноса заказов</summary>
-        <button id="baliMigrationAuditButton" type="button" style="margin:8px 0;font-size:12px">Сравнить Firebase и D1</button>
-        <p id="baliMigrationAuditStatus" class="hint" role="status" aria-live="polite" style="font-size:11px">Только проверка. Перенос и переключение здесь недоступны.</p>
-        <ul id="baliMigrationAuditResults" hidden style="padding-left:20px;font-size:11px"></ul>
-      </details>
       <nav class="admin-tabs" aria-label="Разделы">
         <div class="admin-nav-group" role="presentation">Начало работы</div>
         <button type="button" class="admin-tab active" data-admin-tab="overview" aria-selected="true" aria-controls="adminOverviewPanel">
@@ -82,6 +72,21 @@
           <span class="tab-icon" aria-hidden="true"><svg class="bali-ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 1-4c-1-1 0-3 2-3h2c5 0 3-11-6-11Z"/><circle cx="7" cy="10" r=".7"/><circle cx="10" cy="6.5" r=".7"/><circle cx="15" cy="7.5" r=".7"/></svg></span><span>Цвета сайта</span>
         </button>
       </nav>
+      <details class="admin-sidebar-tools" id="adminServiceTools">
+        <summary>Служебные инструменты</summary>
+        <div class="admin-sidebar-tools-content">
+      <div class="bali-public-publish-tool" style="padding:7px 11px;border:1px solid #394d3a;border-radius:9px;margin:8px 0">
+        <button id="baliPublicPublishAll" type="button" style="width:100%;font-size:12px">Обновить публичные данные Cloudflare</button>
+        <p id="baliPublicPublishStatus" class="hint" role="status" aria-live="polite" style="font-size:10px;margin:4px 0 0">Афиши, меню, тексты и оформление без доступа к личным кабинетам.</p>
+      </div>
+      <details id="baliMigrationAuditPanel" style="margin:8px 0;padding:8px 11px;border:1px solid #394d3a;border-radius:9px">
+        <summary style="cursor:pointer;font-size:12px">Проверка переноса заказов</summary>
+        <button id="baliMigrationAuditButton" type="button" style="margin:8px 0;font-size:12px">Сравнить Firebase и D1</button>
+        <p id="baliMigrationAuditStatus" class="hint" role="status" aria-live="polite" style="font-size:11px">Только проверка. Перенос и переключение здесь недоступны.</p>
+        <ul id="baliMigrationAuditResults" hidden style="padding-left:20px;font-size:11px"></ul>
+      </details>
+        </div>
+      </details>
       <p class="sidebar-note">Изменения появятся на сайте после сохранения. В конструкторе используйте «Опубликовать».</p>
     </aside>
 
