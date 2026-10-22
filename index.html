@@ -965,6 +965,10 @@
         <div class="bali-bank-dialog-head"><h2 id="baliHistoryTitle">ИСТОРИЯ ОПЕРАЦИЙ</h2><button type="button" id="baliHistoryClose" class="bali-bank-icon" aria-label="Закрыть историю">×</button></div>
         <p class="bali-bank-step-note">Начисления, списания, переводы · время Минска</p>
         <div id="baliIdHistoryScroll" class="bali-bank-history-scroll" tabindex="0" aria-label="Список операций">
+          <section id="baliIdCoinHistory" class="bali-id-coin-history" hidden aria-label="История BALI COIN">
+            <strong>BALI COIN · история баллов</strong>
+            <div id="baliIdCoinHistoryList" aria-live="polite"></div>
+          </section>
           <div id="baliIdHistoryList"></div>
           <button type="button" class="bali-bank-secondary" id="baliIdHistoryMore" hidden>Показать ещё</button>
         </div>
@@ -1317,6 +1321,7 @@
     <script src="bali-id-motion.js?v=20261021-motion3"></script>
     <script type="module" src="bali-id-flip.js?v=20261021-release1"></script>
     <script type="module" src="bali-id-bank.js?v=20261022-sheets-stage1"></script>
+    <script type="module" src="bali-id-coin.js?v=20261022-coin1"></script>
     <script type="module" src="bali-transfer-inbox.js?v=20261021-1"></script>
     <script type="module" src="bali-qr-scanner.js?v=20261021-release1"></script>
     <script src="bali-share.js?v=20261021-story-publish3"></script>
