@@ -96,6 +96,17 @@ const eventTitle=o=>o.eventTitle||events.get(o.eventId||o.eventDate)?.title||"Н
  * guest site's BALI Calendar. The private Sheets catalog is only a fallback
  * while this public snapshot is unavailable. */
 const minskToday=()=>new Date(Date.now()+3*3600000).toISOString().slice(0,10);
+const activeCalendarEvent=event=>Boolean(event&&event.preorderEnabled===true&&
+  /^\d{4}-\d{2}-\d{2}$/.test(event.date)&&event.date>=minskToday()&&
+  Date.parse(event.closesAt)>Date.now());
+function activePreorderEvent(id,date){
+  if(date<minskToday())return false;
+  const event=events.get(id||date);
+  // The published calendar is authoritative once available; a deleted or
+  // already-finished event must not resurface from the stored order history.
+  if(calendarSourceLoaded)return activeCalendarEvent(event)&&event.date===date;
+  return event?activeCalendarEvent(event)&&event.date===date:true;
+}
 const calendarValue=field=>field?.stringValue??field?.timestampValue??
   field?.booleanValue??field?.integerValue??field?.doubleValue??"";
 async function refreshCalendarEvents({force=false,quiet=false}={}){
@@ -608,6 +619,7 @@ function renderOrders(){
   }
   const source=date?dateOrders:orders;
   const shown=source.filter(o=>withinOrderRetention(o)&&(!date||o.eventDate===date)&&
+    (!compactWorkspace||activePreorderEvent(o.eventId,o.eventDate))&&
     (!selectedEvent||(o.eventId||o.eventDate)===selectedEvent)&&
     (showArchive||!o.archived)).map(effectiveOrder).sort((a,b)=>
       b.eventDate.localeCompare(a.eventDate)||
@@ -686,24 +698,34 @@ function renderOrders(){
 function renderDates(){
   const el=$("ordersDateFilter"),old=el.value;
   el.replaceChildren(new Option("Все даты",""));
-  // Primary source: real event dates published by the main BALI Calendar.
-  // Keep order dates too, because a past event may already be removed from
-  // the calendar while its preorder remains inside the 30-day history.
-  const dates=[...new Set([[...events.values()].map(x=>x.date),
-    orders.filter(withinOrderRetention).map(x=>x.eventDate),
-    dateOrders.filter(withinOrderRetention).map(x=>x.eventDate)].flat())]
-    .filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)).sort().reverse();
+  const upcoming=compactWorkspace;
+  // Only active and future dates are selectable in BALI STAFF.
+  // Old orders stay stored for history and audit, not in the active queue.
+  const dates=[...new Set([
+    ...[...events.values()].filter(event=>!upcoming||activeCalendarEvent(event)).map(x=>x.date),
+    ...orders.filter(withinOrderRetention).filter(x=>!upcoming||activePreorderEvent(x.eventId,x.eventDate)).map(x=>x.eventDate),
+    ...dateOrders.filter(withinOrderRetention).filter(x=>!upcoming||activePreorderEvent(x.eventId,x.eventDate)).map(x=>x.eventDate)
+  ])].filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&(!upcoming||x>=minskToday()))
+    .sort(upcoming?undefined:(a,b)=>b.localeCompare(a));
+  if(upcoming)dates.sort();
   for(const date of dates)el.add(new Option(readableOrderDate(date),date));
-  if([...el.options].some(x=>x.value===old))el.value=old;
+  if(dates.includes(old))el.value=old;
+  else if(old){
+    dateRevision++;dateOrders=[];loadedDate="";
+  }
   renderEventFilter();
 }
 function renderEventFilter(){
   const select=$("ordersEventFilter"),date=$("ordersDateFilter").value,old=select.value;
   select.replaceChildren(new Option("Все мероприятия",""));
   const found=new Map();
-  for(const [id,event] of events)if(!date||event.date===date)found.set(id,event.title);
+  for(const [id,event] of events)
+    if((!date||event.date===date)&&(!compactWorkspace||activeCalendarEvent(event)))
+      found.set(id,event.title);
   for(const o of [...orders,...dateOrders].filter(withinOrderRetention))
-    if(!date||o.eventDate===date)found.set(o.eventId||o.eventDate,eventTitle(o));
+    if((!date||o.eventDate===date)&&
+       (!compactWorkspace||activePreorderEvent(o.eventId,o.eventDate)))
+      found.set(o.eventId||o.eventDate,eventTitle(o));
   for(const [id,title] of [...found].sort((a,b)=>a[1].localeCompare(b[1],"ru")))
     select.add(new Option(title,id));
   if([...select.options].some(x=>x.value===old))select.value=old;
@@ -761,7 +783,8 @@ function fillOrderEventOptions(preferredId=""){
   const existingId=!creatingOrder&&editOrder?(editOrder.eventId||editOrder.eventDate):"";
   select.replaceChildren(new Option("Выберите мероприятие",""));
   const today=minskToday();
-  const available=[...events].filter(([id,event])=>event.date>=today||id===existingId)
+  const available=[...events].filter(([id,event])=>
+    compactWorkspace?activeCalendarEvent(event):event.date>=today||id===existingId)
     .sort((a,b)=>a[1].date.localeCompare(b[1].date)||
       (a[1].startTime||"").localeCompare(b[1].startTime||"")||
       a[1].title.localeCompare(b[1].title,"ru"));
@@ -783,7 +806,8 @@ $("editOrderEvent").addEventListener("change",()=>{
 $("editOrderDate").addEventListener("change",()=>{
   const date=$("editOrderDate").value;
   const select=$("editOrderEvent");
-  const matches=[...events.values()].filter(event=>event.date===date);
+  const matches=[...events.values()].filter(event=>event.date===date&&
+    (!compactWorkspace||activeCalendarEvent(event)));
   if(matches.length===1)select.value=matches[0].id;
   else if(events.get(select.value)?.date!==date)select.value="";
 });
@@ -793,7 +817,8 @@ function openCreateOrder(){
   $("orderEditTitle").textContent="Новый предзаказ · по телефону";
   $("manualOrderGuestLink").hidden=preorderOnlyStaff;
   $("editOrderGuestEmail").value="";
-  $("editOrderDate").value=$("ordersDateFilter").value||[...events.values()].find(x=>x.date)?.date||"";
+  $("editOrderDate").value=$("ordersDateFilter").value||
+    [...events.values()].find(x=>!compactWorkspace||activeCalendarEvent(x))?.date||"";
   fillOrderEventOptions();
   $("editOrderStatus").value="pending";
   for(const id of ["editOrderName","editOrderPhone","editOrderReference","editOrderNotes"])$(id).value="";
@@ -1091,7 +1116,7 @@ async function subscribe(user) {
           void refresh();
           void refreshCalendarEvents({quiet:true}).catch(()=>{});
         }
-      },60000);
+      },20000);
       unsubOrders=()=>clearInterval(timer);
       const focus=()=>{
         void refresh();
