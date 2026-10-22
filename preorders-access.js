@@ -33,7 +33,7 @@ $("preorderStaffLogin").addEventListener("submit",async e=>{
   }finally{button.disabled=false;}
 });
 $("adminSignIn").addEventListener("click",async()=>{
-  $("adminSignIn").disabled=true;status("Вход администратора...");
+  $("adminSignIn").disabled=true;status("Вход через Google...");
   try{await signInWithPopup(auth,new GoogleAuthProvider());}
   catch(error){status("Вход не завершён: "+(error.code||error.message));}
   finally{$("adminSignIn").disabled=false;}
