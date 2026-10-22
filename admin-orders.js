@@ -281,7 +281,7 @@ function compactOrderRow(o){
   const previewEl=node("small",preview||"Блюда отсутствуют");previewEl.title=preview;
   dishes.append(previewEl);
   const amount=node("div","","preorder-cell amount");
-  amount.append(node("strong",fmt(o.total)));
+  amount.append(node("strong",fmt(total(o.items))));
   const statusBox=node("div","","preorder-status-cell");
   const state=normalizedOrderStatus(o.status);
   statusBox.append(node("span",statuses[state]||"Подтверждён","preorder-state preorder-state-"+state));
@@ -848,17 +848,20 @@ async function exportEventReport(kind,format="csv"){
   setStatus("Загружаем ВСЕ заказы выбранного мероприятия для выгрузки...");
   try{
     const snapshot=await getDocs(query(collection(db,"orders"),where("eventDate","==",date)));
+    const guest=compactWorkspace?await window.BaliStaffGuestInbox.refresh():[];
     const matching=snapshot.docs.filter(row=>withinOrderRetention(row.data())&&
       (row.data().eventId||row.data().eventDate)===eventId);
+    const guestMatching=guest.filter(row=>withinOrderRetention(row)&&
+      row.eventDate===date&&(row.eventId||row.eventDate)===eventId);
     const includeInactive=$("exportIncludeCancelled").checked;
     // Detailed report is an audit of ALL orders for the event, including
     // cancellations marked by status. Kitchen totals exclude them by default.
     const eligible=matching.filter(row=>kind==="orders"||includeInactive||
       (!row.data().archived&&row.data().status!=="cancelled"));
-    const completed=await Promise.all(eligible.map(async row=>{
+    const completed=[...await Promise.all(eligible.map(async row=>{
       const lines=await getDocs(collection(row.ref,"items"));
       return {id:row.id,...row.data(),items:lines.docs.map(x=>x.data())};
-    }));
+    })),...guestMatching.filter(row=>kind==="orders"||includeInactive||preorderActive(row))];
     completed.sort((a,b)=>(a.orderNumber||0)-(b.orderNumber||0)||
       (a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
     const title=events.get(eventId)?.title||completed[0]?.eventTitle||
@@ -905,10 +908,67 @@ async function exportEventReport(kind,format="csv"){
         ["Дата","Мероприятие","Код блюда","Наименование блюда","Всего порций","Сумма, BYN"],
         dishes.map(x=>[date,title,x.id,x.name,x.quantity,x.amount.toFixed(2)]));
     }
-    setStatus("Выгрузка: "+completed.length+" заказов из "+matching.length+
+    setStatus("Выгрузка: "+completed.length+" заказов из "+(matching.length+guestMatching.length)+
       " по мероприятию «"+title+"». "+(includeInactive?"Отменённые включены.":"Отменённые и архив исключены."));
   }catch(e){setStatus("Не удалось выгрузить отчёт: "+(e.code||e.message));}
   finally{renderEventFilter();}
+}
+// Export the ENTIRE selected scope. No 100-order screen limit:
+// empty date = all retained dates, date alone = all events on that date,
+// date + event = one specific event including __2 / __3.
+async function exportScopedReport(kind,format){
+  ensureAdmin();
+  if(!compactWorkspace)return;
+  const date=$("ordersDateFilter").value;
+  const eventId=$("ordersEventFilter").value;
+  if(eventId&&!date)throw Error("Сначала выберите дату.");
+  if(!guestQueueReady||guestQueueError)
+    throw Error("Не подтверждена полная загрузка гостевых заявок. Обновите очередь.");
+  setStatus("Загружаем все заказы для полного отчёта...");
+  const condition=date?where("eventDate","==",date):
+    where("createdAt",">=",Timestamp.fromMillis(Date.now()-ORDER_RETENTION_MS));
+  const source=await getDocs(query(collection(db,"orders"),condition));
+  if(source.size>2400)throw Error("Слишком большой отчёт. Выберите дату мероприятия.");
+  const rows=source.docs.filter(x=>withinOrderRetention(x.data())&&
+    (!date||x.data().eventDate===date)&&
+    (!eventId||(x.data().eventId||x.data().eventDate)===eventId));
+  const freshGuests=await window.BaliStaffGuestInbox.refresh();
+  const guests=freshGuests.filter(x=>withinOrderRetention(x)&&
+    (!date||x.eventDate===date)&&(!eventId||x.eventId===eventId));
+  const full=await Promise.all(rows.map(async row=>{
+    const items=await getDocs(collection(row.ref,"items"));
+    return {id:row.id,...row.data(),items:items.docs.map(x=>x.data())};
+  }));
+  const archive=$("showArchivedOrders")?.getAttribute("aria-pressed")==="true";
+  const selected=filterBaliPreorders([...full,...guests],{date,eventId,archive});
+  const active=kind==="dishes"?selected.filter(preorderActive):selected;
+  const name=eventId?events.get(eventId)?.title||selected[0]?.eventTitle||eventId
+    :date?"Все мероприятия за "+date:"Все мероприятия · последние 30 дней";
+  const report=composeBaliPreorderReport({
+    kind,date:date||"30 дней",eventTitle:name,orders:active,
+    includeCancelled:false,allEvents:!eventId
+  });
+  if(format==="telegram")showBaliPreorderTelegram(report);
+  else await downloadBaliPreorderReport(report,format);
+  const sums=sumBaliPreorders(active);
+  setStatus("Полный отчёт: "+sums.count+" заказов · "+sums.portions+
+    " порций · "+fmt(sums.amount)+
+    (archive?" · архив включён":" · архив скрыт")+
+    (kind==="dishes"?" · отменённые исключены":" · отменённые показаны"));
+}
+if(compactWorkspace){
+  for(const [id,kind,format] of [
+    ["baliScopeOrdersPdf","orders","pdf"],["baliScopeOrdersPng","orders","png"],
+    ["baliScopeOrdersTelegram","orders","telegram"],["baliScopeDishesPdf","dishes","pdf"],
+    ["baliScopeDishesPng","dishes","png"],["baliScopeDishesTelegram","dishes","telegram"]
+  ]){
+    $(id)?.addEventListener("click",async event=>{
+      const b=event.currentTarget;b.disabled=true;
+      try{await exportScopedReport(kind,format);}
+      catch(e){setStatus("Ошибка полного отчёта: "+(e.message||e.code||"unknown"));}
+      finally{b.disabled=false;}
+    });
+  }
 }
 $("exportEventOrders")?.addEventListener("click",()=>void exportEventReport("orders",compactWorkspace?"pdf":"csv"));
 $("exportEventDishes")?.addEventListener("click",()=>void exportEventReport("dishes",compactWorkspace?"pdf":"csv"));
