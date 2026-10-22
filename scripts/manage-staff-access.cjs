@@ -11,7 +11,6 @@
  * Requires: npm ci --prefix functions and application default credentials.
  */
 "use strict";
-const readline=require("node:readline/promises");
 const {stdin,stdout,stderr}=require("node:process");
 const path=require("node:path");
 const admin=require(path.join(__dirname,"../functions/node_modules/firebase-admin"));
@@ -41,8 +40,8 @@ async function askPassword(){
   throw Error("Ввод пароля прерван.");
 }
 (async()=>{
-  const projectId=process.env.BALI_FIREBASE_PROJECT_ID;
-  if(!projectId||!/^[a-z0-9-]{6,80}$/.test(projectId))throw Error("Укажите BALI_FIREBASE_PROJECT_ID.");
+  const projectId=process.env.BALI_FIREBASE_PROJECT_ID||"bali-menu-5a48b";
+  if(projectId!=="bali-menu-5a48b")throw Error("Отказ: недопустимый Firebase Project ID для BALI.");
   admin.initializeApp({credential:admin.credential.applicationDefault(),projectId});
   const auth=admin.auth(),db=admin.firestore();
   if(action==="create"){
@@ -66,7 +65,7 @@ async function askPassword(){
       await auth.updateUser(user.uid,{disabled:true}).catch(()=>{});
       throw error;
     }
-    stdout.write("Сотрудник создан, доступ к предзаказам активен. UID: "+user.uid+"\n");
+    stdout.write("Учётная запись создана, Firestore роль выдана. UID: "+user.uid+"\n");
     stdout.write("Если предзаказы сейчас используют Google Sheets backend, нужна ОТДЕЛЬНАЯ staff-роль там.\n");
     return;
   }
