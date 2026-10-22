@@ -2,6 +2,7 @@
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
 
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app);
@@ -54,6 +55,10 @@ function showReview(){
   });
 }
 async function checkAgreement(uid){
+  if(sheetsEnabled()){
+    const {card}=await sheetsRequest("card");
+    return card?.activated===true&&card?.agreed===true;
+  }
   const snapshot=await getDoc(agreementRef(uid));
   return snapshot.exists()&&snapshot.data()?.version===VERSION;
 }
@@ -108,11 +113,16 @@ accept?.addEventListener("click",async()=>{
   cancel.disabled=true;
   error.textContent="";
   try{
-    try{
-      await setDoc(agreementRef(user.uid),{version:VERSION,acceptedAt:serverTimestamp()});
-    }catch(writeError){
-      // Concurrent acceptance in another tab is valid; all other failures block issuance.
-      if(!await checkAgreement(user.uid))throw writeError;
+    if(sheetsEnabled()){
+      const response=await sheetsRequest("activateCard",{accepted:true});
+      if(response.card?.activated!==true)throw Error("BALI ID registration not confirmed");
+    }else{
+      try{
+        await setDoc(agreementRef(user.uid),{version:VERSION,acceptedAt:serverTimestamp()});
+      }catch(writeError){
+        // Concurrent acceptance in another tab is valid; all other failures block issuance.
+        if(!await checkAgreement(user.uid))throw writeError;
+      }
     }
     if(auth.currentUser?.uid!==user.uid)throw Error("Сменился аккаунт. Откройте BALI ID заново.");
     acceptedUid=user.uid;
