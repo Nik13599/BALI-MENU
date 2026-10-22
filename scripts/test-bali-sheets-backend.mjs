@@ -162,6 +162,30 @@ assert.equal(ok("staff","me").role,"staff");
 assert.equal(ok("staff","staffOrders",{date:eventDate,eventId:eventDate}).orders.length,1);
 assert.equal(ok("staff","staffRecentOrders").orders.length,1);
 ok("staff","staffReport",{date:eventDate,eventId:eventDate,kind:"orders"});
+
+ // Both guest checkout and logged-in checkout share one event-wide serial.
+const signedOrder=ok("guestA","createOrder",{...guestOrder,
+  customerName:"Анна",requestId:"auth_request_1234567890"}).order;
+assert.equal(signedOrder.orderNumber,2);
+ok("staff","staffStatus",{id:signedOrder.id,status:"cancelled"});
+const anonymousNext=ok("","guestCreateOrder",{...guestOrder,
+  customerPhone:"+375291234568",requestId:"guest_request_9876543210"}).order;
+assert.equal(anonymousNext.orderNumber,3); // cancellation does not reuse a serial
+assert.equal(ok("","guestCreateOrder",{...guestOrder,
+  customerPhone:"+375291234568",requestId:"guest_request_9876543210"}).order.orderNumber,3);
+const secondEventId=eventDate+"__2";
+sheets.get("Мероприятия").push([secondEventId,eventDate,"BALI Second Event",true,closesAt,""]);
+const firstAtSecondEvent=ok("","guestCreateOrder",{...guestOrder,
+  eventId:secondEventId,requestId:"second_event_guest_123456"}).order;
+assert.equal(firstAtSecondEvent.orderNumber,1); // same date, another event resets to 1
+assert.equal(ok("guestA","createOrder",{...guestOrder,customerName:"Анна",
+  eventId:secondEventId,requestId:"second_event_auth_123456"}).order.orderNumber,2);
+const followingDate=new Date(Date.now()+6*86400000).toISOString().slice(0,10);
+const followingClose=new Date(Date.now()+7*86400000).toISOString();
+sheets.get("Мероприятия").push([followingDate,followingDate,"Next BALI Night",true,followingClose,""]);
+assert.equal(ok("","guestCreateOrder",{...guestOrder,eventDate:followingDate,
+  eventId:followingDate,requestId:"next_date_guest_123456"}).order.orderNumber,1);
+
 for(const action of ["adminGuests","adminGuestOrders","adminCard","staffList","staffManage",
   "coinChange","privilegeAssign","privilegeRulesSave","bonusGrant","catalogSync"])
   fail("staff",action,{uid:"guestUID_0001"},"permission-denied");
