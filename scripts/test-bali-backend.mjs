@@ -84,6 +84,7 @@ vm.runInNewContext(readFileSync("functions/index.js","utf8"),{
     name==="firebase-functions/v2/scheduler"?{onSchedule:(_options,handler)=>handler}:
      name==="qrcode"?{toDataURL:async()=> "data:image/png;base64,dGVzdA=="}:
      name==="./bonus-qr"?()=>({}):
+     name==="./brsm"?()=>({}):
      name==="./preorders"?()=>async()=>({}):
      name==="./preorder-staff"?()=>({manageBaliPreorderStaff:async()=>({})}):require(name),
   console,Date,Math,Number,String,Promise,Boolean,Array,Error,Set,Map,JSON,RegExp
