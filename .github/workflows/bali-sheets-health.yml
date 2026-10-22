@@ -18,12 +18,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          failed=0
           for url in https://bali-nightclub-menu.pages.dev/api/bali-v3 https://baliminsk.by/api/bali-v3; do
             echo "Checking ${url}"
             http=$(curl --silent --show-error --location --max-time 45 --retry 2 --retry-delay 4 --output response.json --write-out "%{http_code}" \
               -H 'Content-Type: application/json' --data '{"action":"health"}' "$url")
             echo "HTTP ${http}"
-            API_STATUS="${http}" node --input-type=module - <<'JS'
+            API_STATUS="${http}" node --input-type=module - <<'JS' || failed=1
           import {readFileSync} from "node:fs";
           const raw=readFileSync("response.json","utf8");
           let result={};
@@ -34,3 +35,4 @@ jobs:
             process.exit(1);
           JS
           done
+          exit "$failed"
