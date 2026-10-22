@@ -191,6 +191,22 @@ await test("repeat-code cooldown is per guest, honours elapsed time, and credits
     "admin counts real committed receipts without a hot counter");
 });
 
+await test("800 distinct guests can redeem one repeat QR without modifying its shared document",async()=>{
+  const h=harness(),[{code}]=await h.batch({mode:"repeat",quantity:1});
+  const guests=Array.from({length:800},(_,i)=>"BALI_mass_guest_"+String(i).padStart(4,"0"));
+  for(const [i,uid] of guests.entries()){
+    h.memory.set("users/"+uid,{name:"Гость "+i});
+    h.memory.set("baliIds/"+uid,{uid,number:i+100});
+  }
+  const results=await Promise.all(guests.map(uid=>h.apply(code,"a",1,uid)));
+  assert.equal(results.filter(x=>x.ok===true).length,800);
+  const shared=h.memory.get("baliBonusQRCodes/"+code);
+  assert.equal(shared.uses,0,"No repeat guest updates the shared QR document");
+  assert.equal([...h.memory.keys()].filter(k=>k.startsWith("walletOperations/")).length,800);
+  const inventory=await h.call("listBaliQrCodes",{},staff);
+  assert.equal(inventory.codes.find(x=>x.code===code)?.uses,800);
+});
+
 await test("invalid, unknown and revoked vouchers fail without writes; custom bonus kinds remain usable",async()=>{
   const h=harness();
   for(const code of ["../wallets",null,"A".repeat(48),"a".repeat(47)])
