@@ -1174,10 +1174,22 @@ async function fetchMenuItems() {
 }
 
 let editingOrderId = null;
+// Order database code is not fetched and cannot subscribe during public
+// browsing, menu selection, cart viewing or checkout field entry.
+let orderServiceLoading=null;
+async function ensureOrdersService(){
+    if(window.BaliOrders)return window.BaliOrders;
+    orderServiceLoading??=import("./orders-firestore.js?v=20261022-submit-only1")
+      .then(()=>{
+        if(!window.BaliOrders)throw Error("Не удалось подключить приём предзаказов.");
+        return window.BaliOrders;
+      }).catch(error=>{orderServiceLoading=null;throw error;});
+    return orderServiceLoading;
+}
 async function placeOrder(orderData) {
     try {
-        if (!window.BaliOrders) throw new Error('Модуль предзаказов ещё загружается. Обновите страницу.');
-        const result = await window.BaliOrders.save(orderData, editingOrderId);
+        const orders=await ensureOrdersService();
+        const result = await orders.save(orderData, editingOrderId);
         editingOrderId = null;
         return result;
     } catch (error) {
@@ -1809,12 +1821,22 @@ async function openMyOrders() {
     }
     closeCart();
     closeCheckout();
+    // Explicit history opening is the only place allowed to subscribe to
+    // user's order list. Closing history cancels that subscription.
+    try{
+        const orders=await ensureOrdersService();
+        orders.startHistory?.();
+    }catch(error){
+        alert("Не удалось открыть историю предзаказов: "+(error.message||"ошибка соединения"));
+        return;
+    }
     document.getElementById('myOrdersModal').classList.add('active');
     document.getElementById('myOrdersModal').setAttribute('aria-hidden','false');
     elements.overlay.classList.add('active');
     renderMyOrders();
 }
 function closeMyOrders() {
+    window.BaliOrders?.stopHistory?.();
     document.getElementById('myOrdersModal')?.classList.remove('active');
     document.getElementById('myOrdersModal')?.setAttribute('aria-hidden','true');
     if (!elements.checkoutModal.classList.contains('active') &&

@@ -17,6 +17,14 @@ for(const [name,page] of [["guest",guest],["admin",admin],["staff",staff]]){
 assert(!/manifest\.webmanifest|service-worker\.js/i.test(workflows));
 assert(app.includes("history.pushState("),"Guest SPA navigation must preserve the page");
 assert(app.includes("history.replaceState("),"Browser Back and shared links must remain supported");
+assert(!guest.includes('src="orders-firestore.js'),"Guest entry must not preload order database");
+assert(app.includes('ensureOrdersService()'),"Orders service should be loaded on the actual action");
+assert(app.includes('orders.startHistory?.()'),"Order history is requested on demand");
+const orderSvc=await load("orders-firestore.js");
+assert(!orderSvc.includes('onAuthStateChanged(auth,watchUserOrders);'),
+  "Order collection subscription must not start when a restored account opens the site");
+assert(orderSvc.includes('function stopHistory()'),"Closing history must stop order reads");
+
 assert(guest.includes('id="homeSection"')&&guest.includes('id="eventsSection"')&&
   guest.includes('id="menuPage"'),"Guest sections must stay in a single browser app");
 assert(admin.includes('id="adminView"')&&staff.includes('id="adminView"'),
