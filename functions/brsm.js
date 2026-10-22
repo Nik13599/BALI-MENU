@@ -242,6 +242,16 @@ module.exports=({api,admin,db,TS,verified,privileged,fail})=>{
    });
    return result;
  });
+ const reopenBrsmRegistration=api("reopenBrsmRegistration",async req=>{
+   const staff=await owner(req);
+   await db.runTransaction(async tx=>{
+     const p=await tx.get(publicDraw);
+     if(p.exists&&["live","finished","tiebreak"].includes(p.data().status))
+       fail("failed-precondition","Уже начатый розыгрыш нельзя вернуть в режим регистрации.");
+     tx.set(campaign,{closed:false,reopenedAt:at(),reopenedBy:staff},{merge:true});
+   });
+   return {closed:false};
+ });
  const getBrsmAdminState=api("getBrsmAdminState",async req=>{
    await owner(req);
    const [d,p,lock]=await Promise.all([privateDraw.get(),publicDraw.get(),campaign.get()]);
@@ -250,5 +260,5 @@ module.exports=({api,admin,db,TS,verified,privileged,fail})=>{
  });
  return {getBrsmCard,assignBrsmCard,createBrsmPromo,redeemBrsmPromo,revokeBrsmPromo,
    listBrsmEvents,createBrsmQrBatch,redeemBrsmQr,startBrsmDraw,callBrsmNumber,
-   finishBrsmTie,getBrsmAdminState};
+   finishBrsmTie,getBrsmAdminState,reopenBrsmRegistration};
 };
