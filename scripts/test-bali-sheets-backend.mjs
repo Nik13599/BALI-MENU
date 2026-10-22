@@ -180,6 +180,49 @@ const firstAtSecondEvent=ok("","guestCreateOrder",{...guestOrder,
 assert.equal(firstAtSecondEvent.orderNumber,1); // same date, another event resets to 1
 assert.equal(ok("guestA","createOrder",{...guestOrder,customerName:"Анна",
   eventId:secondEventId,requestId:"second_event_auth_123456"}).order.orderNumber,2);
+// Staff edit retains guest identity and the event number, with prices validated
+// against the server catalog rather than trusting the browser.
+const original=ok("staff","staffOrders",{date:eventDate,eventId:eventDate}).orders
+  .find(o=>o.id===firstGuest.id);
+assert.equal(original.orderNumber,1);
+const updated=ok("staff","staffEditOrder",{
+  id:original.id,expectedUpdatedAt:original.updatedAt,
+  eventDate,eventId:eventDate,customerName:"Исправленное имя",
+  customerPhone:"+375291234570",tableNumber:"42",bookingId:"",
+  notes:"Без специй",status:"confirmed",items:[{id:101,quantity:3}]
+}).order;
+assert.equal(updated.orderNumber,1);
+assert.equal(updated.total,45);
+assert.equal(updated.items[0].quantity,3);
+assert.equal(updated.ownerUid,original.ownerUid);
+assert.equal(updated.email,original.email);
+assert.equal(updated.createdAt,original.createdAt);
+assert.equal(ok("staff","staffReport",{date:eventDate,eventId:eventDate,kind:"dishes"}).portions,3);
+fail("staff","staffEditOrder",{
+  id:original.id,expectedUpdatedAt:"2000-01-01T00:00:00.000Z",
+  eventDate,eventId:eventDate,customerName:"Старое",customerPhone:"+375291234570",
+  tableNumber:"42",bookingId:"",notes:"",status:"pending",
+  items:[{id:101,quantity:1}]
+},"failed-precondition");
+fail("guestA","staffEditOrder",{
+  id:original.id,expectedUpdatedAt:updated.updatedAt,eventDate,eventId:eventDate,
+  customerName:"Злоумышленник",customerPhone:"+375291234570",
+  tableNumber:"42",bookingId:"",notes:"",status:"pending",
+  items:[{id:101,quantity:1}]
+},"permission-denied");
+const moved=ok("staff","staffEditOrder",{
+  id:original.id,expectedUpdatedAt:updated.updatedAt,
+  eventDate,eventId:secondEventId,customerName:updated.customerName,
+  customerPhone:updated.customerPhone,tableNumber:"42",bookingId:"",
+  notes:"",status:"confirmed",items:[{id:101,quantity:1}]
+}).order;
+assert.equal(moved.orderNumber,3); // existing serials 1 and 2 at second event
+assert.equal(moved.eventTitle,"BALI Second Event");
+assert.equal(ok("staff","staffOrders",{date:eventDate,eventId:eventDate}).orders.some(o=>o.id===moved.id),false);
+assert.equal(ok("staff","staffOrders",{date:eventDate,eventId:secondEventId}).orders.some(o=>o.id===moved.id),true);
+assert.equal(sheets.get("Позиции заказов").filter(r=>r[0]===moved.id).length,1);
+assert.equal(sheets.get("История изменений").some(r=>r[1]===moved.id&&r[3]==="staff-edit"),true);
+
 const followingDate=new Date(Date.now()+6*86400000).toISOString().slice(0,10);
 const followingClose=new Date(Date.now()+7*86400000).toISOString();
 sheets.get("Мероприятия").push([followingDate,followingDate,"Next BALI Night",true,followingClose,""]);
