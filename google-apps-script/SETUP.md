@@ -25,11 +25,12 @@ https://docs.google.com/spreadsheets/d/1QxY-WgMwTT_5F3tdHxZICVbdUo4XOvgqI_7endBh
    `google-apps-script/BaliBackend.gs` из этого репозитория:
    https://github.com/Nik13599/BALI-MENU/blob/main/google-apps-script/BaliBackend.gs
 5. Нажать **Сохранить**.
-6. **Ключ уже создан** в закрытой вкладке `Настройки`, ячейка **B2**. Код Apps Script считывает его непосредственно из приватной таблицы. **Не вставляйте его в GitHub и не меняйте значение.** Если нужно использовать отдельное Script Property, можно создать `BALI_BRIDGE_KEY`, но это необязательно.
-7. Выбрать функцию `baliCheckSetup`, нажать **Run / Выполнить** и разрешить доступ к этой таблице, закрытой папке фотографий и URL Fetch.
-8. В списке **Executions** убедиться, что проверка завершена без ошибок.
+6. **Сначала** откройте закрытый лист **Настройки**, ячейку **B2**, и перенесите ключ в Cloudflare Worker как Secret `BALI_BRIDGE_KEY` (см. шаг 4). Нельзя запускать `baliCheckSetup` **до** переноса ключа в Cloudflare: скрипт удаляет ключ из таблицы.
+7. Затем выберите в Apps Script функцию `baliCheckSetup` и нажмите **Run / Выполнить**. Разрешите доступ к этой таблице, папке фотографий и URL Fetch.
+8. Этот запуск **переносит ключ из ячейки B2 в закрытые Script Properties** и стирает его из таблицы. В разделе **Executions** убедитесь, что проверка завершилась без ошибок. В таблице появится отметка `BALI_BRIDGE_KEY_MIGRATED`; значение B2 должно быть пустым.
+9. Только после этого публикуйте Web App (шаг 3).
 
-## 3. Опубликовать Apps Script
+**Безопасность:** рабочий секрет не остаётся в пользовательской таблице. В продакшене Apps Script принимает ключ **только из Script Properties**, даже если в таблице появится ячейка с похожим названием.\n\n## 3. Опубликовать Apps Script
 
 1. Нажать **Deploy → New deployment**.
 2. Выбрать тип **Web app**.
@@ -52,7 +53,7 @@ https://github.com/Nik13599/BALI-MENU/blob/main/cloudflare-worker/BaliSheetsGate
 1. Откройте [Cloudflare Workers](https://dash.cloudflare.com/399972c0a0358037b0cb4d0d46ce69a3/workers-and-pages) и выберите `bali-sheets-private-api`.
 2. В **Settings → Variables and Secrets** добавьте:
    - `SHEETS_SCRIPT_URL` как **Secret** со значением URL развёрнутого Apps Script `https://script.google.com/macros/s/.../exec`.
-   - `BALI_BRIDGE_KEY` как **Secret** со значением **ячейки B2** закрытой таблицы BALI, вкладка `Настройки`.
+   - `BALI_BRIDGE_KEY` как **Secret** со значением **ячейки B2** закрытой таблицы BALI, вкладка `Настройки`, **до** запуска `baliCheckSetup`. После запуска скрипт очистит ячейку.
 3. Нажмите **Deploy / Сохранить и развернуть**, если Cloudflare попросит подтвердить изменения.
 4. Никогда не размещайте эти значения в GitHub, HTML, логах или общедоступном документе.
 
