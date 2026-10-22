@@ -72,6 +72,28 @@ export async function onRequestPost({request,env}){
     const encoded=JSON.stringify({...snapshot,cachedAt:Date.now()});
     if(encoded.length>16000000)return reply({error:"Content too large for public KV snapshot"},413);
     await env.BALI_PUBLIC_CONTENT.put("bali:public:v1:"+path,encoded);
+    // Keep the one-read guest bundle in sync with the administrator's publish.
+    // If an aggregate does not exist yet, guests assemble it from per-path KV.
+    // All bundle paths remain fixed to the public allowlist above.
+    try{
+      const bundle=await env.BALI_PUBLIC_CONTENT.get("bali:public:bundle:v1","json");
+      if(bundle?.sources&&typeof bundle.sources==="object"){
+        const safe={};
+        let complete=true;
+        for(const name of [...COLLECTIONS,...DOCUMENTS]){
+          const rows=name===path?snapshot.documents:bundle.sources[name];
+          if(!Array.isArray(rows)){complete=false;break;}
+          safe[name]=rows;
+        }
+        if(complete){
+          const encodedBundle=JSON.stringify({sources:safe,cachedAt:Date.now()});
+          if(encodedBundle.length<18000000)
+            await env.BALI_PUBLIC_CONTENT.put("bali:public:bundle:v1",encodedBundle);
+        }
+      }
+    }catch(_){
+      // The per-path snapshot was committed. Guest fallback remains available.
+    }
     // Do not expose stored content to the admin caller (may contain base64 images).
     // KV is eventually consistent, but browser CDN copies expire within 60sec.
     return reply({ok:true,path,count:snapshot.documents.length},200);
