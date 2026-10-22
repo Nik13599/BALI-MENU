@@ -8,7 +8,7 @@
  */
 const ACTIONS=new Set(["health","me","profileSave","menu","myOrders","createOrder","editOrder","cancelOrder",
   "staffOrders","staffStatus","staffReport","staffList","staffManage",
-  "adminGuests","adminGuestOrders","card","activateCard","adminCard",
+  "adminGuests","adminGuestOrders","catalogSync","card","activateCard","adminCard",
   "consentAccept","coinHistory","coinChange","privilegeAssign","privilegeRules","privilegeRulesSave","bonusGrant","bonusHistory",
   "bonusRecipient","bonusTransfer","plans", "avatarGet","avatarSave"]);
 function reply(body,status=200){
