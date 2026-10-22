@@ -1154,6 +1154,20 @@ async function fetchMenuItems() {
 }
 
 let editingOrderId = null;
+let editingOriginalReference = null;
+function preorderReferenceValue(order){
+    return [order?.tableNumber,order?.bookingId].map(x=>String(x||"").trim())
+      .filter(Boolean).join(" / ");
+}
+function preorderReferenceParts(value,original=null){
+    const ref=String(value||"").trim();
+    if(original&&ref===preorderReferenceValue(original))
+        return {tableNumber:String(original.tableNumber||""),bookingId:String(original.bookingId||"")};
+    if(!ref||ref.length>60)return null;
+    return /^\d{1,20}$/.test(ref)
+      ?{tableNumber:ref,bookingId:""}
+      :{tableNumber:"",bookingId:ref};
+}
 // Order database code is not fetched and cannot subscribe during public
 // browsing, menu selection, cart viewing or checkout field entry.
 let orderServiceLoading=null;
@@ -1639,7 +1653,7 @@ async function openCheckout() {
     document.getElementById("baliCheckoutEmailRow").hidden=guestCheckout;
     document.getElementById("baliGuestCheckoutConsent").hidden=!guestCheckout;
     document.getElementById("baliCheckoutGuestHint").textContent=guestCheckout
-        ?"Имя, телефон, дата, мероприятие и столик либо ID бронирования обязательны. Вход через Google не требуется."
+        ?"Имя, телефон, дата, мероприятие и ID брони / номер стола обязательны. Вход через Google не требуется."
         :"Имя и телефон берутся из вашего зарегистрированного профиля.";
 
     closeCart();
@@ -1670,6 +1684,7 @@ async function openCheckout() {
 
 function closeCheckout() {
     editingOrderId = null;
+    editingOriginalReference = null;
     elements.checkoutModal.classList.remove('active');
     elements.overlay.classList.remove('active');
 }
@@ -1730,16 +1745,18 @@ async function handleCheckout(e) {
     if(!customer)return;
     const eventDate = document.getElementById('eventDateSelect').value;
     const eventId = document.getElementById('eventSelect').value;
-    const tableNumber = document.getElementById('tableNumber').value.trim();
-    const bookingId = document.getElementById('bookingId').value.trim();
+    const bookingReference = document.getElementById('orderReference').value.trim();
+    const parts=preorderReferenceParts(bookingReference,editingOriginalReference);
+    const tableNumber=parts?.tableNumber||"";
+    const bookingId=parts?.bookingId||"";
     const selectedEvent=availablePreorderEvents().find(e =>
         e.date===eventDate && (e.id||e.date)===eventId);
     if(!selectedEvent){
         alert('Выберите доступное мероприятие из списка.');
         return;
     }
-    if (!tableNumber && !bookingId) {
-        alert('Укажите номер столика или ID бронирования.');
+    if(!parts){
+        alert('Укажи ID брони или номер стола (не более 60 символов).');
         return;
     }
 
@@ -1796,8 +1813,7 @@ async function handleCheckout(e) {
         elements.displayOrderId.textContent =
             (result.event_title||selectedEvent.title)+' №'+
             (result.order_number||result.order_id)+
-            (result.booking_id?' · ID бронирования '+result.booking_id:'')+
-            (result.table_number?' · Столик '+result.table_number:'');
+            (bookingReference?' · ID брони / номер стола: '+bookingReference:'');
 
         try { localStorage.setItem('last_order_id', result.order_id); } catch (_) {}
         closeCheckout();
@@ -1895,12 +1911,11 @@ function renderMyOrders() {
             'Название мероприятия не сохранено';
         head.textContent=eventTitle+' №'+
             (Number.isInteger(order.orderNumber)?order.orderNumber:order.id)+
-            (order.bookingId?' · ID бронирования '+order.bookingId:'')+
-            (order.tableNumber?' · Столик '+order.tableNumber:'')+
+            (preorderReferenceValue(order)?' · '+preorderReferenceValue(order):'')+
             ' · '+(statusText[order.status]||order.status);
         const meta = document.createElement('p');
         meta.textContent=order.eventDate+' · '+eventTitle+' · '+
-            (order.tableNumber?'Столик '+order.tableNumber:'ID '+order.bookingId);
+            'ID брони / номер стола: '+(preorderReferenceValue(order)||'—');
         const items = document.createElement('ul');
         for(const item of order.items||[]) {
             const li = document.createElement('li');
@@ -1944,6 +1959,7 @@ async function editMyOrder(orderId) {
         }));
         saveCart();updateCartUI();
         editingOrderId=orderId;
+        editingOriginalReference={tableNumber:order.tableNumber,bookingId:order.bookingId};
         closeMyOrders();
         await openCheckout();
         const dateSelect=document.getElementById('eventDateSelect');
@@ -1953,8 +1969,7 @@ async function editMyOrder(orderId) {
         if(!dateSelect.value || !document.getElementById('eventSelect').value){
             alert('Предзаказ на это мероприятие закрыт. Выберите другую доступную дату и вечеринку.');
         }
-        document.getElementById('tableNumber').value=order.tableNumber;
-        document.getElementById('bookingId').value=order.bookingId;
+        document.getElementById('orderReference').value=preorderReferenceValue(order);
         document.getElementById('orderNotes').value=order.notes||'';
     }catch(error){alert(window.BaliOrders?.errorText(error)||error.message);}
 }
