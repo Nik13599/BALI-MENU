@@ -322,15 +322,31 @@ function baliStaffEditOrder(user,data){
 }
 
 function baliStatus(user,data){
-  const id=BALI_TEXT(data.id,80),status=BALI_TEXT(data.status,20);
-  if(!["pending","confirmed","cancelled"].includes(status))BALI_FAIL("invalid-argument","Неверный статус.");
+  const id=BALI_TEXT(data.id,80),status=BALI_TEXT(data.status,20),
+    requestId=BALI_TEXT(data.requestId,64),expected=BALI_TEXT(data.expectedUpdatedAt,60);
+  if(!id||!["pending","confirmed","cancelled"].includes(status)||
+      (requestId&&!/^[a-f0-9]{32}$/.test(requestId)))
+    BALI_FAIL("invalid-argument","Некорректное изменение статуса.");
   return baliLock(()=>{
     const sheet=BALI_SHEET("orders"),orders=BALI_ROWS("orders"),index=orders.findIndex(x=>String(x[0])===id);
     if(index<0)BALI_FAIL("not-found","Заказ не найден.");
+    const row=orders[index],currentStatus=String(row[13]||"");
+    // A successful request can be retried after the tab closes or network times out.
+    // The requestId is unique per browser action, not per server attempt.
+    if(requestId){
+      const audit=BALI_ROWS("audit").find(r=>String(r[1])===id&&String(r[2])===user.uid&&
+        String(r[3])==="status"&&String(r[5])===requestId+":"+status);
+      if(audit)return {id,status,updatedAt:BALI_ISO(row[5]),alreadyApplied:true};
+    }
+    if(currentStatus===status)return {id,status,updatedAt:BALI_ISO(row[5]),alreadyApplied:true};
+    if(expected&&BALI_ISO(row[5])!==expected)
+      BALI_FAIL("aborted","Заказ уже изменён другим сотрудником. Обновите список.");
+    const now=BALI_NOW();
     sheet.getRange(index+2,14).setValue(status);
-    sheet.getRange(index+2,6).setValue(BALI_NOW());
-    BALI_SHEET("audit").appendRow([BALI_NOW(),id,user.uid,"status",2,status]);
-    return {id,status};
+    sheet.getRange(index+2,6).setValue(now);
+    BALI_SHEET("audit").appendRow([now,id,user.uid,"status",2,
+      requestId?requestId+":"+status:status]);
+    return {id,status,updatedAt:now};
   });
 }
 function baliStaffRecentOrders(user){
