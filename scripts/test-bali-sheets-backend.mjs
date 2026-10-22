@@ -256,7 +256,7 @@ assert.equal(sheets.get("История изменений").some(r=>r[1]===move
 const liveDate=new Date(Date.now()+8*86400000).toISOString().slice(0,10);
 const liveClose=new Date(Date.now()+9*86400000).toISOString();
 publishedOnlyEvents.push({id:liveDate,date:liveDate,title:"BALI Live Website Event",
-  closesAt:liveClose});
+  closesAt:liveClose,preorderEnabled:true});
 assert.equal(sheets.get("Мероприятия").some(r=>r[0]===liveDate),false);
 const movedToWebsite=ok("staff","staffEditOrder",{
   id:moved.id,expectedUpdatedAt:moved.updatedAt,eventDate:liveDate,eventId:liveDate,
@@ -267,6 +267,20 @@ assert.equal(movedToWebsite.eventTitle,"BALI Live Website Event");
 assert.equal(movedToWebsite.eventDate,liveDate);
 assert.equal(movedToWebsite.orderNumber,1);
 assert.equal(ok("staff","staffReport",{date:liveDate,eventId:liveDate,kind:"orders"}).count,1);
+// Both guest and signed-in guests can order as soon as an event appears in
+// the published BALI Calendar, before it is copied into the Sheets mirror.
+const websiteGuest=ok("","guestCreateOrder",{
+  ...guestOrder,eventDate:liveDate,eventId:liveDate,
+  customerPhone:"+375291234572",requestId:"published_new_guest_12345"
+}).order;
+assert.equal(websiteGuest.orderNumber,2);
+assert.equal(sheets.get("Мероприятия").some(row=>row[0]===liveDate),false);
+const disabledEventDate=new Date(Date.now()+10*86400000).toISOString().slice(0,10);
+publishedOnlyEvents.push({id:disabledEventDate,date:disabledEventDate,
+  title:"Closed Event",closesAt:new Date(Date.now()+11*86400000).toISOString(),
+  preorderEnabled:false});
+fail("","guestCreateOrder",{...guestOrder,eventDate:disabledEventDate,eventId:disabledEventDate,
+  customerPhone:"+375291234573",requestId:"published_closed_guest_1234"},"failed-precondition");
 // An event cannot be invented by editing the request payload.
 fail("staff","staffEditOrder",{
   id:movedToWebsite.id,expectedUpdatedAt:movedToWebsite.updatedAt,
