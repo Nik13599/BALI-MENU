@@ -234,7 +234,7 @@ async function openOrderDetails(id){
     totalRow.append(node("span","Итого"),node("strong",fmt(total(o.items))));
     content.append(totalRow);
     if(o.notes)content.append(orderDetailsField("Пожелания к заказу",o.notes));
-    $("orderDetailsEdit").hidden=Boolean(o.archived)||sheetsEnabled();
+    $("orderDetailsEdit").hidden=Boolean(o.archived);
     $("orderDetailsEdit").onclick=()=>{dialog.close();void openEditor(id);};
     $("orderDetailsPrint").disabled=false;
     $("orderDetailsPrint").onclick=()=>printOrder(o);
@@ -320,7 +320,7 @@ function compactOrderRow(o){
   view.setAttribute("data-preorder-view",o.id);
   actions.append(view);
   if(!o.archived){
-    if(!sheetsEnabled())actions.append(button("Изменить",()=>void openEditor(o.id)));
+    actions.append(button("Изменить",()=>void openEditor(o.id));
     if(state==="pending")actions.append(button("Подтвердить",()=>void setOrderStatus(o,"confirmed"),"confirm"));
   }
   const dropdown=node("details","","preorder-action-menu");
@@ -365,7 +365,7 @@ function syncWorkspaceReportScope(){
   const scope=$("preorderReportScope");
   if(scope){
     scope.textContent=date
-      ?"Отчёт: "+date+" · "+(eventId?selected.selectedOptions[0]?.textContent||"Выбранное мероприятие":"Все мероприятия за день")
+      ?"Отчёт: "+readableOrderDate(date)+" · "+(eventId?selected.selectedOptions[0]?.textContent||"Все мероприятия за день")
       :"Выберите дату в верхнем фильтре. Отчёт за все даты сразу не формируется.";
   }
   setWorkspaceReportEnabled();
@@ -564,9 +564,14 @@ function renderOrders(){
 function renderDates(){
   const el=$("ordersDateFilter"),old=el.value;
   el.replaceChildren(new Option("Все даты",""));
-  const dates=[...new Set([...orders.filter(withinOrderRetention).map(x=>x.eventDate),
-    ...[...events.values()].map(x=>x.date)])].filter(Boolean).sort().reverse();
-  for(const date of dates)el.add(new Option(date,date));
+  // Primary source: real event dates published by the main BALI Calendar.
+  // Keep order dates too, because a past event may already be removed from
+  // the calendar while its preorder remains inside the 30-day history.
+  const dates=[...new Set([[...events.values()].map(x=>x.date),
+    orders.filter(withinOrderRetention).map(x=>x.eventDate),
+    dateOrders.filter(withinOrderRetention).map(x=>x.eventDate)].flat())]
+    .filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)).sort().reverse();
+  for(const date of dates)el.add(new Option(readableOrderDate(date),date));
   if([...el.options].some(x=>x.value===old))el.value=old;
   renderEventFilter();
 }
@@ -796,6 +801,21 @@ $("orderEditForm").addEventListener("submit",async event=>{
       setStatus("Ручной предзаказ «"+chosenTitle+" №"+assignedNumber+"» создан. Сумма: "+fmt(total(editLines)));
       return;
     }
+    if(sheetsEnabled()){
+      const {order:saved}=await sheetsRequest("staffEditOrder",{
+        id:editOrder.id,expectedUpdatedAt:editOrder.updatedAt,
+        eventDate,eventId,customerName,customerPhone,tableNumber,bookingId,
+        notes,status,items:editLines.map(x=>({id:x.id,quantity:x.quantity}))
+      });
+      if(!saved?.id)throw new Error("Сервер не подтвердил изменение заказа.");
+      // Keep both cached queues coherent without waiting for the next refresh.
+      orders=orders.map(row=>row.id===saved.id?saved:row);
+      dateOrders=dateOrders.map(row=>row.id===saved.id?saved:row);
+      $("orderEditDialog").close();
+      renderDates();renderOrders();
+      setStatus("Заказ "+orderLabel(saved)+" сохранён. Сумма: "+fmt(saved.total));
+      return;
+    }
     // Ensure the order hasn't changed in another admin session.
     const ref=doc(db,"orders",editOrder.id);
     const fresh=await getDoc(ref);
@@ -893,15 +913,15 @@ async function subscribe(user) {
       });
       orders=(recent.orders||[]).filter(withinOrderRetention);
       renderDates();renderOrders();menuSelect();syncWorkspaceReportScope();
-      // Sheets status updates and reports are supported; editing, deletion
-      // and manual creation remain disabled until their server routes exist.
+      // The server authorizes staff edits and reports. Manual creation and
+      // permanent deletion stay disabled until separate server routes exist.
       for(const id of ["createManualOrder"])if($(id))$(id).disabled=true;
       window.dispatchEvent(new CustomEvent("bali:admin:orders",{detail:{
         ownerUid:user.uid,orders:orders.map(({id,status,orderNumber})=>({id,status,orderNumber})),
         count:orders.length,pending:orders.filter(o=>o.status==="pending"&&!o.archived).length
       }}));
       setStatus("Google Таблицы · "+orders.length+
-        " последних предзаказов. Подтверждение, отмена и отчёты доступны; редактирование пока заблокировано.");
+        " последних предзаказов. Редактирование, подтверждение и отчёты доступны.");
       let refreshing=false,lastRefreshAt=Date.now();
       const refresh=async()=>{
         if(refreshing||Date.now()-lastRefreshAt<15000)return;
