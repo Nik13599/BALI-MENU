@@ -271,20 +271,40 @@ $("closeOrderDetails")?.addEventListener("click",()=>$("orderDetailsDialog").clo
 $("orderDetailsClose")?.addEventListener("click",()=>$("orderDetailsDialog").close());
 function compactOrderRow(o){
   const row=node("article","","preorder-compact-row");
+  const primary=node("div","","preorder-primary");
   const ref=node("div","","preorder-cell reference");
-  ref.append(node("strong",eventTitle(o)+" №"+(Number.isInteger(o.orderNumber)?o.orderNumber:o.id)));
-  const reference=bookingReference(o);
-  ref.append(node("small",o.eventDate+(reference?" · "+reference:"")));
+  const headline=node("div","","preorder-queue-headline");
+  const serial=Number(o.orderNumber);
+  headline.append(node("strong",eventTitle(o)+" №"+
+    (Number.isSafeInteger(serial)&&serial>0?serial:"—")));
+  if(String(o.tableNumber||"").trim())
+    headline.append(node("span","Столик №"+String(o.tableNumber).trim(),"preorder-queue-reference"));
+  if(String(o.bookingId||"").trim())
+    headline.append(node("span","ID "+String(o.bookingId).trim(),"preorder-queue-reference"));
+  ref.append(headline);
+  const date=node("time",readableOrderDate(o.eventDate),"preorder-queue-date");
+  date.dateTime=o.eventDate||"";
+  ref.append(date);
+
   const guest=node("div","","preorder-cell guest");
-  guest.append(node("strong",o.customerName||"Гость BALI"));
-  const phone=node("small",o.customerPhone||"Без телефона");
-  guest.append(phone);
+  const identity=node("div","","preorder-queue-identity");
+  identity.append(node("strong",o.customerName||"Гость BALI"));
+  const phone=String(o.customerPhone||"").trim();
+  const dial=phone.replace(/[^+\d]/g,"");
+  if(dial){
+    const call=node("a",phone,"preorder-queue-phone");
+    call.href="tel:"+dial;
+    call.setAttribute("aria-label","Позвонить гостю "+(o.customerName||"BALI"));
+    identity.append(call);
+  }else identity.append(node("span","Без телефона","preorder-queue-phone"));
+  guest.append(identity);
   const dishes=node("div","","preorder-cell dishes");
-  const count=o.items.reduce((sum,x)=>sum+Number(x.quantity||0),0);
-  dishes.append(node("strong",o.items.length+" поз. · "+count+" порц."));
-  const preview=o.items.map(x=>x.name+" × "+x.quantity).join(", ");
-  const previewEl=node("small",preview||"Блюда отсутствуют");previewEl.title=preview;
-  dishes.append(previewEl);
+  const items=Array.isArray(o.items)?o.items:[];
+  const portions=items.reduce((sum,item)=>sum+(Number(item.quantity)||0),0);
+  dishes.append(node("strong",items.length+" поз. · "+portions+" порц."));
+  guest.append(dishes);
+  primary.append(ref,guest);
+
   const amount=node("div","","preorder-cell amount");
   amount.append(node("strong",fmt(o.total)));
   const statusBox=node("div","","preorder-status-cell");
@@ -312,7 +332,7 @@ function compactOrderRow(o){
     menu.append(menuButton("Удалить навсегда",()=>void deleteOrder(o),"danger-action"));
   }
   dropdown.append(trigger,menu);actions.append(dropdown);
-  row.append(ref,guest,dishes,amount,statusBox,actions);
+  row.append(primary,amount,statusBox,actions);
   return row;
 }
 const reportActionIds=[
@@ -503,7 +523,7 @@ function renderOrders(){
   }
   if(compactWorkspace){
     const header=node("div","","preorder-table-header");
-    ["Предзаказ","Гость","Состав","Сумма","Статус","Действия"].forEach(name=>header.append(node("span",name)));
+    ["Предзаказ","Сумма","Статус","Действия"].forEach(name=>header.append(node("span",name)));
     container.append(header);
     for(const o of shown)container.append(compactOrderRow(o));
     return;
