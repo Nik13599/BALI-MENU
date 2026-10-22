@@ -737,3 +737,50 @@ body.bali-preorders-workspace{
 .bali-preorders-workspace .preorder-compact-row .preorder-state-queued{
   outline:2px dashed #fff9;outline-offset:3px;
 }
+
+/* Published-calendar date shortcuts, always visible above the orders. */
+.bali-preorders-workspace .preorder-calendar-strip{
+  display:flex;align-items:center;gap:9px;min-width:0;
+  margin:8px 0 0;padding:6px 9px;
+  border:1px solid #2b4030;border-radius:9px;
+  background:#111913;
+}
+.bali-preorders-workspace .preorder-calendar-strip-title{
+  flex:none;font-size:10px;font-weight:750;color:#b8cbb8;
+}
+.bali-preorders-workspace .preorder-calendar-chips{
+  display:flex;gap:5px;overflow-x:auto;overflow-y:hidden;
+  overscroll-behavior-inline:contain;scrollbar-width:thin;
+  flex:1;min-width:0;padding:1px 0 3px;
+}
+.bali-preorders-workspace .preorder-calendar-chips button.preorder-calendar-chip{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  flex:none;max-width:260px;min-height:29px;height:29px;
+  padding:4px 9px;font-size:11px;line-height:1.2;
+  border:1px solid #426045;border-radius:7px;
+  background:#202d22;color:#ebf7e8;white-space:nowrap;
+}
+.bali-preorders-workspace .preorder-calendar-chips button.preorder-calendar-chip[aria-pressed="true"]{
+  color:#101b12;background:#b9ff51;border-color:#b9ff51;
+}
+.bali-preorders-workspace .preorder-calendar-placeholder,
+.bali-preorders-workspace .preorder-calendar-sync{
+  font-size:10px;line-height:1.25;color:#aebead;white-space:nowrap;
+}
+.bali-preorders-workspace .preorder-calendar-sync:empty{display:none}
+.bali-preorders-workspace #orderEditDialog .edit-order-event-grid select{
+  min-width:0;text-overflow:ellipsis;
+}
+@media(max-width:700px){
+  .bali-preorders-workspace .preorder-calendar-strip{
+    flex-wrap:wrap;gap:5px;padding:6px 7px;
+  }
+  .bali-preorders-workspace .preorder-calendar-strip-title{font-size:10px}
+  .bali-preorders-workspace .preorder-calendar-chips{
+    flex:1 1 100%;order:2;width:100%;
+  }
+  .bali-preorders-workspace .preorder-calendar-sync{
+    margin-left:auto;max-width:65%;text-align:right;
+    overflow:hidden;text-overflow:ellipsis;
+  }
+}
