@@ -10,8 +10,10 @@ test("dedicated preorder page contains no general admin editors",async({page})=>
   await expect(page.locator("#loginView")).toBeVisible();
   await expect(page.locator("#adminView")).toBeHidden();
   for(const id of ["ordersDateFilter","ordersEventFilter","createManualOrder",
-    "clearExpiredOrders","preorderReportOrder",
-    "preorderReportPdf","preorderReportPng","preorderReportTg",
+    "clearExpiredOrders","preorderReportDate","preorderReportEvent",
+    "preorderReportOrdersPdf","preorderReportOrdersPng","preorderReportOrdersTg",
+    "preorderReportDishesView","preorderReportDishesPdf","preorderReportDishesPng",
+    "preorderReportDishesTg","preorderReportIncludeCancelled","preorderDishesOnline",
     "orderEditDialog","editOrderGuestEmail","editOrderAddProduct"]) {
     await expect(page.locator("#"+id)).toHaveCount(1);
   }
@@ -36,14 +38,17 @@ test("dedicated preorder page contains no general admin editors",async({page})=>
   await expect(page.locator('a[href="admin.html"]')).toHaveCount(0);
   await expect(page.locator("#orderDetailsDialog")).toHaveCount(1);
   await expect(page.locator("#orderDetailsContent")).toHaveCount(1);
-  await expect(page.locator(".preorder-report-single")).toHaveCount(1);
-  await expect(page.locator("#preorderReportPdf")).toBeDisabled();
-  await expect(page.locator("#preorderReportPng")).toBeDisabled();
-  await expect(page.locator("#preorderReportTg")).toBeDisabled();
-  await expect(page.locator(".preorder-tools")).toContainText("Отчёт по предзаказу");
-  await expect(page.locator(".preorder-tools")).not.toContainText("Отчёт по мероприятию");
+  await expect(page.locator(".preorder-report-row")).toHaveCount(2);
+  await expect(page.locator("#preorderReportDate")).toHaveAttribute("type","date");
+  await expect(page.locator("#preorderReportEvent option")).toHaveText(["Все мероприятия за день"]);
+  await expect(page.locator("#preorderReportOrdersPdf")).toBeDisabled();
+  await expect(page.locator("#preorderReportDishesView")).toBeDisabled();
+  await expect(page.locator("#preorderDishesOnline")).toBeHidden();
+  await expect(page.locator(".preorder-tools")).toContainText("Отчёты по предзаказам");
+  await expect(page.locator(".preorder-tools")).toContainText("Общий список предзаказов");
+  await expect(page.locator(".preorder-tools")).toContainText("Сводка по блюдам");
   await expect(page.locator(".preorder-tools")).toHaveAttribute("open", "");
-  await expect(page.locator(".preorder-tools")).toContainText("Дату и мероприятие для отчёта выбирать не нужно");
+  await expect(page.locator(".preorder-tools")).toContainText("Все мероприятия");
   await expect(page.locator(".preorder-tools")).not.toContainText("CSV");
 });
 test("general admin links to the dedicated preorder workspace",async({page})=>{
@@ -147,4 +152,23 @@ test("new preorder button fits mobile compactly",async({page})=>{
   expect(bounds.height).toBeLessThanOrEqual(42);
   const size=await button.evaluate(el=>Number.parseFloat(getComputedStyle(el).fontSize));
   expect(size).toBeLessThanOrEqual(14);
+});
+
+test("staff summary offers a day or specific event and online kitchen view",async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto("/preorders.html");
+  await page.evaluate(()=>{
+    document.getElementById("loginView").hidden=true;
+    document.getElementById("adminView").hidden=false;
+    document.querySelector(".preorder-tools").open=true;
+  });
+  const date=page.locator("#preorderReportDate");
+  await expect(date).toBeVisible();
+  await expect(page.locator("#preorderReportEvent")).toBeDisabled();
+  await expect(page.locator("#preorderReportDishesView")).toBeDisabled();
+  await expect(page.locator("#preorderReportIncludeCancelled")).not.toBeChecked();
+  await expect(page.locator("#preorderReportOrdersPdf")).toHaveCount(1);
+  await expect(page.locator("#preorderReportDishesPng")).toHaveCount(1);
+  const control=await date.boundingBox();
+  expect(control.width).toBeGreaterThan(95);
 });
