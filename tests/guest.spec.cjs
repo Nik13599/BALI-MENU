@@ -65,6 +65,37 @@ test('cart quantities, keyboard focus and dismissal', async ({page}) => {
   await expect(page.locator('#cartSidebar')).toBeHidden();
 });
 
+test('order database is loaded only when the final preorder submit button is clicked',async({page})=>{
+  await menu(page);
+  let moduleLoads=0;
+  await page.route('**/orders-firestore.js*',route=>{
+    moduleLoads++;
+    return route.fulfill({contentType:'text/javascript',body:`
+      window.BaliOrders={
+        maxItems:12,errorText:error=>error.message,
+        save:async()=>({success:true,order_id:'test-lazy-order',order_number:1})
+      };
+    `});
+  });
+  await page.evaluate(()=>{
+    delete window.BaliOrders;
+    addToCart(1);
+  });
+  await cartTrigger(page).click();
+  await expect(page.locator('#cartSidebar')).toBeVisible();
+  expect(moduleLoads).toBe(0);
+  await page.locator('#checkoutBtn').click();
+  await expect(page.locator('#checkoutModal')).toBeVisible();
+  expect(moduleLoads).toBe(0);
+  await page.locator('#eventDateSelect').selectOption('2099-10-24');
+  await page.locator('#eventSelect').selectOption('2099-10-24');
+  await page.locator('#tableNumber').fill('12');
+  expect(moduleLoads).toBe(0);
+  await page.locator('.submit-order-btn').click();
+  await expect(page.locator('#successModal')).toHaveClass(/active/);
+  expect(moduleLoads).toBe(1);
+});
+
 test('storage failure does not break the cart or a successful checkout', async ({page}) => {
   await page.addInitScript(() => {Storage.prototype.setItem = () => {throw new DOMException('Storage unavailable', 'QuotaExceededError')};});
   const errors = [];
