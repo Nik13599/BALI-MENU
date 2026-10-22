@@ -10,7 +10,7 @@ test("dedicated preorder page contains no general admin editors",async({page})=>
   await expect(page.locator("#loginView")).toBeVisible();
   await expect(page.locator("#adminView")).toBeHidden();
   for(const id of ["ordersDateFilter","ordersEventFilter","createManualOrder",
-    "clearExpiredOrders","preorderReportDate","preorderReportEvent",
+    "clearExpiredOrders","preorderReportScope",
     "preorderReportOrdersPdf","preorderReportOrdersPng","preorderReportOrdersTg",
     "preorderReportDishesView","preorderReportDishesPdf","preorderReportDishesPng",
     "preorderReportDishesTg","preorderReportIncludeCancelled","preorderDishesOnline",
@@ -39,8 +39,8 @@ test("dedicated preorder page contains no general admin editors",async({page})=>
   await expect(page.locator("#orderDetailsDialog")).toHaveCount(1);
   await expect(page.locator("#orderDetailsContent")).toHaveCount(1);
   await expect(page.locator(".preorder-report-row")).toHaveCount(2);
-  await expect(page.locator("#preorderReportDate")).toHaveAttribute("type","date");
-  await expect(page.locator("#preorderReportEvent option")).toHaveText(["Все мероприятия за день"]);
+  await expect(page.locator("#preorderReportDate, #preorderReportEvent")).toHaveCount(0);
+  await expect(page.locator("#preorderReportScope")).toContainText("Выберите дату");
   await expect(page.locator("#preorderReportOrdersPdf")).toBeDisabled();
   await expect(page.locator("#preorderReportDishesView")).toBeDisabled();
   await expect(page.locator("#preorderDishesOnline")).toBeHidden();
@@ -48,7 +48,7 @@ test("dedicated preorder page contains no general admin editors",async({page})=>
   await expect(page.locator(".preorder-tools")).toContainText("Общий список предзаказов");
   await expect(page.locator(".preorder-tools")).toContainText("Сводка по блюдам");
   await expect(page.locator(".preorder-tools")).toHaveAttribute("open", "");
-  await expect(page.locator(".preorder-tools")).toContainText("Все мероприятия");
+  await expect(page.locator(".preorder-tools")).toContainText("Период отчёта определяется фильтрами");
   await expect(page.locator(".preorder-tools")).not.toContainText("CSV");
 });
 test("general admin links to the dedicated preorder workspace",async({page})=>{
@@ -154,7 +154,7 @@ test("new preorder button fits mobile compactly",async({page})=>{
   expect(size).toBeLessThanOrEqual(14);
 });
 
-test("staff summary offers a day or specific event and online kitchen view",async({page})=>{
+test("report reuses the top date and event selection without duplicate inputs",async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.goto("/preorders.html");
   await page.evaluate(()=>{
@@ -162,13 +162,25 @@ test("staff summary offers a day or specific event and online kitchen view",asyn
     document.getElementById("adminView").hidden=false;
     document.querySelector(".preorder-tools").open=true;
   });
-  const date=page.locator("#preorderReportDate");
-  await expect(date).toBeVisible();
-  await expect(page.locator("#preorderReportEvent")).toBeDisabled();
+  await expect(page.locator("#ordersDateFilter")).toHaveCount(1);
+  await expect(page.locator("#ordersEventFilter")).toHaveCount(1);
+  await expect(page.locator("#preorderReportDate, #preorderReportEvent")).toHaveCount(0);
+  await expect(page.locator("#preorderReportScope")).toContainText("Выберите дату");
+  await expect(page.locator("#preorderReportOrdersPdf")).toBeDisabled();
   await expect(page.locator("#preorderReportDishesView")).toBeDisabled();
   await expect(page.locator("#preorderReportIncludeCancelled")).not.toBeChecked();
-  await expect(page.locator("#preorderReportOrdersPdf")).toHaveCount(1);
-  await expect(page.locator("#preorderReportDishesPng")).toHaveCount(1);
-  const control=await date.boundingBox();
-  expect(control.width).toBeGreaterThan(95);
+  await expect(page.locator("#preorderReportOrdersPng")).toHaveCount(1);
+  await expect(page.locator("#preorderReportDishesTg")).toHaveCount(1);
+});
+
+test("report implementation reads the same filters as the staff queue",async()=>{
+  const {readFileSync}=require("node:fs");
+  const source=readFileSync("admin-orders.js","utf8");
+  const extract=source.slice(source.indexOf("async function fetchWorkspaceReport(kind)"),
+    source.indexOf("function renderDishOnline(report)"));
+  expect(extract).toContain('const date=$("ordersDateFilter").value;');
+  expect(extract).toContain('const id=$("ordersEventFilter").value;');
+  expect(source).toContain("function syncWorkspaceReportScope()");
+  expect(source).not.toContain('$("preorderReportDate")');
+  expect(source).not.toContain('$("preorderReportEvent")');
 });
