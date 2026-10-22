@@ -5,7 +5,7 @@
 <title>BALI | Предзаказы · Сотрудники</title>
 <link rel="icon" href="assets/bali-favicon.svg">
 <link rel="stylesheet" href="generated/admin.css?v=faac21ed7332">
-<link rel="stylesheet" href="preorders-workspace.css?v=20261023-mobile-stack3">
+<link rel="stylesheet" href="preorders-workspace.css?v=20261023-compact-editor4">
 </head><body class="bali-preorders-workspace">
 <header class="topbar" role="banner">
 <span class="brand">BALI <span>STAFF</span></span>
@@ -111,28 +111,36 @@
       <button type="button" id="closeOrderEdit" class="dialog-close" aria-label="Закрыть">✕</button>
     </div>
     <form id="orderEditForm" class="dialog-form">
-      <div class="double">
-        <label>Дата мероприятия<input type="date" id="editOrderDate" required></label>
-        <label>Статус
-          <select id="editOrderStatus">
-            <option value="pending">Ожидает подтверждения</option>
-            <option value="confirmed">Подтверждён</option>
-            <option value="cancelled">Отменён</option>
+      <div class="edit-order-event-grid">
+        <label>Мероприятие
+          <select id="editOrderEvent" required>
+            <option value="">Выберите мероприятие из календаря</option>
           </select>
         </label>
+        <label>Дата мероприятия<input type="date" id="editOrderDate" required></label>
       </div>
-      <label>Название мероприятия
-        <select id="editOrderEvent" required>
-          <option value="">Сначала выберите дату мероприятия</option>
-        </select>
-      </label>
-      <div class="double">
-        <label>Имя гостя<input id="editOrderName" minlength="2" maxlength="100" required></label>
-        <label>Контактный телефон<input id="editOrderPhone" type="tel" placeholder="+375291234567" required></label>
-      </div>
-      <label id="manualOrderGuestLink" hidden>Email аккаунта гостя (необязательно, для отображения предзаказа в личном кабинете)<input id="editOrderGuestEmail" type="email" autocomplete="off" placeholder="guest@example.com"><small>Без email заказ остаётся в административной очереди, но не привязывается к аккаунту.</small></label>
-      <label>ID брони / номер стола *<input id="editOrderReference" maxlength="100" required placeholder="Например, BALI-456 или 12" autocomplete="off"></label>
-      <label>Пожелания к заказу<textarea id="editOrderNotes" maxlength="500"></textarea></label>
+      <small id="editOrderCalendarHint" class="edit-order-calendar-hint" role="status" aria-live="polite">Мероприятия загружаются с основного сайта BALI.</small>
+      <details id="editOrderExtra" class="edit-order-extra">
+        <summary>Данные гостя, столик и статус <span>⌄</span></summary>
+        <div class="edit-order-extra-content">
+          <div class="double">
+            <label>Имя гостя<input id="editOrderName" minlength="2" maxlength="100" required></label>
+            <label>Телефон<input id="editOrderPhone" type="tel" placeholder="+375291234567" required></label>
+          </div>
+          <div class="double">
+            <label>Столик / ID брони<input id="editOrderReference" maxlength="100" required placeholder="Например, 12"></label>
+            <label>Статус
+              <select id="editOrderStatus">
+                <option value="pending">Ожидает подтверждения</option>
+                <option value="confirmed">Подтверждён</option>
+                <option value="cancelled">Отменён</option>
+              </select>
+            </label>
+          </div>
+          <label id="manualOrderGuestLink" hidden>Email аккаунта гостя (необязательно)<input id="editOrderGuestEmail" type="email" autocomplete="off" placeholder="guest@example.com"></label>
+          <label>Пожелания<textarea id="editOrderNotes" maxlength="500" rows="2"></textarea></label>
+        </div>
+      </details>
       <div class="card-heading"><h3>Состав заказа</h3><span class="hint">Добавьте блюда из каталога</span></div>
       <div class="order-edit-add">
         <select id="editOrderAddProduct"><option value="">Выберите блюдо</option></select>
@@ -152,5 +160,5 @@
 <script>if(window.BALI_GUEST_PREORDER_ENABLED===true)window.BALI_SHEETS_API_ENABLED=true;</script>
 <script src="firebase-config.js?v=20261020-2"></script>
 <script type="module" src="preorders-access.js?v=20261023-auth-light1"></script>
-<script type="module" src="admin-orders.js?v=20261023-status-dots1"></script>
+<script type="module" src="admin-orders.js?v=20261023-live-calendar4"></script>
 </body></html>
