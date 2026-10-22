@@ -104,6 +104,7 @@ jobs:
           node scripts/verify-bali-transfers.mjs
           node scripts/test-bali-backend.mjs
           node scripts/test-bali-sheets-backend.mjs
+          node scripts/test-staff-status-queue.mjs
           node scripts/test-preorders.mjs
           node --test scripts/test-order-snapshots.mjs
 
