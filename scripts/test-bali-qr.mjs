@@ -47,6 +47,7 @@ function harness(){
     where:(field,op,value)=>{assert.equal(op,"==");return query(path,[...filters,[field,value]],sort,limit);},
     orderBy:(field,direction)=>query(path,filters,[field,direction],limit),
     limit:value=>query(path,filters,sort,value),
+    count:()=>({get:async()=>{const rows=await query(path,filters,sort,limit).get();return {data:()=>({count:rows.size})};}}),
     get:async()=>{
       let docs=[...memory.keys()].filter(key=>key.startsWith(path+"/")&&key.split("/").length===2).map(snapshot);
       docs=docs.filter(d=>filters.every(([field,value])=>d.data()[field]===value));
@@ -179,7 +180,11 @@ await test("repeat-code cooldown is per guest, honours elapsed time, and credits
   const [{code:small}]=await h.batch({mode:"repeat",quantity:1});
   assert.equal((await h.apply(small,"e")).receipt.balanceAfter,501);
   h.advance(30000);assert.equal((await h.apply(small,"f")).receipt.balanceAfter,502);
-  assert.equal(h.memory.get("baliBonusQRCodes/"+small).uses,2);
+  assert.equal(h.memory.get("baliBonusQRCodes/"+small).uses,0,
+    "multi-use redemptions must never update the shared QR document");
+  const listed=await h.call("listBaliQrCodes",{},staff);
+  assert.equal(listed.codes.find(row=>row.code===small).uses,2,
+    "admin counts real committed receipts without a hot counter");
 });
 
 await test("invalid, unknown and revoked vouchers fail without writes; custom bonus kinds remain usable",async()=>{
