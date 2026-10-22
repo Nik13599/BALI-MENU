@@ -83,4 +83,17 @@ edge.clear();
 const refreshed=await onRequestGet(ctx(url));
 assert.equal((await refreshed.json()).sources.menu[0].fields.title.stringValue,"Обновлённое меню");
 assert(kvWrites>=2,"Bundle and published content must persist in KV");
-console.log("BALI bundle: one edge request, one warm KV read, complete public allowlist, admin publish refresh PASS");
+// One missing optional public setting must not multiply KV reads forever.
+store.delete("bali:public:bundle:v1");
+store.delete("bali:public:v1:settings/appearance");
+edge.clear();
+const partial=await onRequestGet(ctx(url));
+assert.equal(partial.status,200);
+assert.equal((await partial.json()).sources.menu[0].fields.title.stringValue,"Обновлённое меню");
+assert.equal(store.has("bali:public:bundle:v1"),true);
+const beforeFallbackFetch=fetchCount;
+edge.clear();
+const partialCached=await onRequestGet(ctx(url));
+assert.equal(partialCached.status,200);
+assert.equal(fetchCount,beforeFallbackFetch,"Partial public bundle must be cached, not refetched");
+console.log("BALI bundle: public allowlist, revisions, missing-source cache fallback PASS");
