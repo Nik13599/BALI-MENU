@@ -30,15 +30,30 @@ export async function onRequestPost({request,env}){
       headers:{"Content-Type":"text/plain;charset=UTF-8"},
       body:JSON.stringify({action:input.action,payload:input.payload||{},
         token:input.token||"",bridgeKey:env.BALI_BRIDGE_KEY})});
-    if(!res.ok)throw Error("upstream");
-    const body=await res.json();
-    if(typeof body?.ok!=="boolean")throw Error("format");
+    if(!res.ok){
+      if(input.action==="health")return json({ok:false,error:{code:"upstream",stage:"google-http",status:res.status}},502);
+      throw Error("upstream");
+    }
+    let body;
+    try{body=await res.json();}
+    catch{
+      if(input.action==="health")return json({ok:false,error:{code:"upstream",stage:"google-not-json",status:res.status,
+        mime:(res.headers.get("content-type")||"").slice(0,60)}},502);
+      throw Error("format");
+    }
+    if(typeof body?.ok!=="boolean"){
+      if(input.action==="health")return json({ok:false,error:{code:"upstream",stage:"google-json-shape"}},502);
+      throw Error("format");
+    }
     const status=body.ok?200:{"unauthenticated":401,"permission-denied":403,
       "not-found":404,"invalid-argument":400,"failed-precondition":409,
       "resource-exhausted":429,"busy":429}[body.error?.code]||500;
     return json(body,status);
-  }catch{
-    return json({ok:false,error:{code:"upstream",message:"База BALI временно недоступна."}},502);
+  }catch(error){
+    return json({ok:false,error:{code:"upstream",
+      message:"База BALI временно недоступна.",
+      ...(input.action==="health"?{stage:"fetch-error",kind:error?.name==="TypeError"?"network":"other"}:{})
+    }},502);
   }
 }
 export async function onRequestGet(){return json({ok:false,error:{code:"method-not-allowed"}},405)}
