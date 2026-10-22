@@ -364,7 +364,7 @@ function syncWorkspaceReportScope(){
   const scope=$("preorderReportScope");
   if(scope){
     scope.textContent=date
-      ?"Отчёт: "+readableOrderDate(date)+" · "+(eventId?selected.selectedOptions[0]?.textContent||"Все мероприятия за день")
+      ?"Отчёт: "+readableOrderDate(date)+" · "+(eventId?(selected.selectedOptions[0]?.textContent||eventId):"Все мероприятия за день")
       :"Выберите дату в верхнем фильтре. Отчёт за все даты сразу не формируется.";
   }
   setWorkspaceReportEnabled();
