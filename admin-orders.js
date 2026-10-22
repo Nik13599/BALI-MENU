@@ -60,7 +60,7 @@ function printOrder(o){
     ["p","Дата: "+o.eventDate+" · Мероприятие: "+eventTitle(o)],
     ["p","Статус: "+(statuses[normalizedOrderStatus(o.status)]||o.status)],
     ["p","Столик: "+(o.tableNumber||"—")+" · Бронь: "+(o.bookingId||"—")],
-    ["p","Гость: "+o.customerName+" · "+o.customerPhone],["p",o.email||"Создан сотрудником · без аккаунта"]
+    ["p","Гость: "+o.customerName+" · "+o.customerPhone],["p",o.email||"Предзаказ без личного кабинета"]
   ])area.append(node(tag,line));
   const table=node("table"),head=node("tr");
   ["Позиция","Кол-во","Цена","Сумма"].forEach(x=>head.append(node("th",x)));
