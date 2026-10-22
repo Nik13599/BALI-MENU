@@ -254,6 +254,75 @@ function baliPublishedCalendarEvent(eventId,date){
   return {id:eventId,date,title,closesAt:String(baliPublishedValue(fields.closesAt)||""),
     preorderEnabled:baliPublishedValue(fields.preorderEnabled)===true};
 }
+/**
+ * Manual BALI STAFF preorder. The authenticated staff UID is used only for
+ * auditing, never as the guest/owner UID of an order created for somebody else.
+ * requestId is stable across retries and makes submitting idempotent.
+ */
+function baliStaffCreateOrder(user,data){
+  baliStaff(user,false);
+  const date=BALI_TEXT(data.eventDate,10),eventId=BALI_TEXT(data.eventId,80),
+    name=BALI_TEXT(data.customerName,100),phone=BALI_TEXT(data.customerPhone,22),
+    table=BALI_TEXT(data.tableNumber,20),booking=BALI_TEXT(data.bookingId,60),
+    notes=BALI_TEXT(data.notes,500),status=BALI_TEXT(data.status,20)||"pending",
+    requestId=BALI_TEXT(data.requestId,80);
+  if(!BALI_DATE(date)||!eventId||name.length<2||name.length>100||
+    !/^\\+[1-9][0-9]{7,14}$/.test(phone)||(!table&&!booking)||
+    !["pending","confirmed"].includes(status)||
+    !/^[-_a-zA-Z0-9]{12,80}$/.test(requestId)||
+    !Array.isArray(data.items)||data.items.length<1||data.items.length>12)
+    BALI_FAIL("invalid-argument","Заполните мероприятие, гостя, телефон, столик и блюда.");
+  return baliLock(()=>{
+    const digest=Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,
+      "staff-create:"+user.uid+":"+requestId);
+    const id="o_"+Utilities.base64EncodeWebSafe(digest).replace(/=+$/,"").slice(0,36);
+    const orders=BALI_ROWS("orders");
+    const existing=orders.find(r=>String(r[0])===id);
+    if(existing){
+      const old=baliOrder(existing);
+      // Never silently replace an existing order with a different draft.
+      if(old.eventId!==eventId||old.eventDate!==date||
+         old.customerPhone!==phone||old.customerName!==name)
+        BALI_FAIL("failed-precondition","Этот предзаказ уже был создан. Обновите список.");
+      return {...old,items:baliItems().filter(it=>it.orderId===id),alreadyCreated:true};
+    }
+    // Only the published BALI Calendar is authoritative for a new manual order.
+    const event=baliPublishedCalendarEvent(eventId,date);
+    if(!event.preorderEnabled||!event.closesAt||
+       !Number.isFinite(Date.parse(event.closesAt))||
+       Date.parse(event.closesAt)<=Date.now())
+      BALI_FAIL("failed-precondition","Приём предзаказов на выбранное мероприятие завершён.");
+    const menu=new Map(baliMenu().map(item=>[item.id,item])),seen=new Set();
+    const lines=data.items.map(entry=>{
+      const product=menu.get(String(entry.id)),quantity=Number(entry.quantity);
+      if(!product||!Number.isInteger(quantity)||quantity<1||quantity>50||
+         seen.has(product.id)||!Number.isFinite(product.price)||product.price<0)
+        BALI_FAIL("invalid-argument","Недоступное блюдо или неверное количество.");
+      seen.add(product.id);
+      return {...product,quantity,total:Math.round(product.price*quantity*100)/100};
+    });
+    const orderNumber=Math.max(0,...orders.filter(r=>BALI_SHEET_KEY(r[2])===eventId)
+      .map(r=>Number(r[15])||0))+1;
+    if(!Number.isSafeInteger(orderNumber)||orderNumber<1||orderNumber>999999)
+      BALI_FAIL("failed-precondition","Не удалось назначить номер предзаказа.");
+    const total=Math.round(lines.reduce((sum,item)=>sum+item.total,0)*100)/100;
+    const now=BALI_NOW(),expiresAt=
+      new Date(Date.parse(event.closesAt)+30*86400000).toISOString();
+    const itemRows=lines.map(x=>[id,x.id,x.name,x.quantity,x.price,x.total,now,eventId]);
+    const itemSheet=BALI_SHEET("items");
+    itemSheet.getRange(itemSheet.getLastRow()+1,1,itemRows.length,8).setValues(itemRows);
+    const orderRow=[id,date,eventId,event.title,now,now,"",BALI_SAFE_CELL(name),"",
+      phone,BALI_SAFE_CELL(table),BALI_SAFE_CELL(booking),BALI_SAFE_CELL(notes),
+      status,total,orderNumber,false,expiresAt];
+    BALI_SHEET("orders").appendRow(orderRow);
+    BALI_SHEET("audit").appendRow([now,id,user.uid,"staff-create",1,
+      "manual-order:"+requestId]);
+    return {...baliOrder(orderRow),items:lines.map(x=>({
+      orderId:id,id:x.id,name:x.name,quantity:x.quantity,unitPrice:x.price,total:x.total
+    }))};
+  });
+}
+
 function baliStaffEditOrder(user,data){
   baliStaff(user,false);
   const id=BALI_TEXT(data.id,80),date=BALI_TEXT(data.eventDate,10),
@@ -366,7 +435,7 @@ function baliStaffRecentOrders(user){
   const latest=all.slice(0,100),ids=new Set(latest.map(o=>o.id));
   const lineItems=baliItems().filter(item=>ids.has(item.orderId));
   return {orders:latest.map(o=>({...o,items:lineItems.filter(i=>i.orderId===o.id)})),
-    count:latest.length,canEditOrders:true};
+    count:latest.length,canEditOrders:true,canCreateOrders:true};
 }
 function baliReport(orders,kind,includeCancelled){
   const filtered=kind==="dishes"&&!includeCancelled
@@ -847,6 +916,7 @@ function baliDispatch(user,action,data){
     if(!BALI_DATE(date))BALI_FAIL("invalid-argument","Выберите дату мероприятия.");
     return {orders:baliOrdersFor(user,true,date,eventId)};
   }
+  if(action==="staffCreateOrder")return {order:baliStaffCreateOrder(user,data)};
   if(action==="staffEditOrder")return {order:baliStaffEditOrder(user,data)};
   if(action==="staffStatus"){baliStaff(user,false);return {result:baliStatus(user,data)};}
   if(action==="staffReport"){
