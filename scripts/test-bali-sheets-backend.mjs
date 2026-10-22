@@ -68,6 +68,7 @@ const sandbox={
     return {value,setMimeType(){return this}};
   }},
   Utilities:{getUuid:()=>String(++sandbox.serial).padStart(36,"0"),
+    formatDate:(value,timezone,pattern)=>{assert.equal(timezone,"Europe/Minsk");assert.equal(pattern,"yyyy-MM-dd");return new Date(value.getTime()+3*3600000).toISOString().slice(0,10)},
     base64EncodeWebSafe:x=>Buffer.from(x).toString("base64url"),
     computeDigest:(algo,x)=>Array.from(Buffer.from(x)).slice(0,32),
     DigestAlgorithm:{SHA_256:"SHA_256"}},
@@ -181,6 +182,24 @@ assert.equal(ok("staff","me").role,"staff");
 assert.equal(ok("staff","staffOrders",{date:eventDate,eventId:eventDate}).orders.length,1);
 assert.equal(ok("staff","staffRecentOrders").orders.length,1);
 assert.equal(ok("staff","staffRecentOrders").canEditOrders,true);
+// Google Sheets may automatically coerce date-looking text into Date objects.
+// Staff responses and event IDs must remain exactly YYYY-MM-DD.
+const formattedCells=sheets.get("Заказы")[1];
+const originalCells=[formattedCells[1],formattedCells[2]];
+formattedCells[1]=new Date(eventDate+"T00:00:00+03:00");
+formattedCells[2]=new Date(eventDate+"T00:00:00+03:00");
+const fromTypedDate=ok("staff","staffRecentOrders").orders.find(o=>o.id===firstGuest.id);
+assert.equal(fromTypedDate.eventDate,eventDate);
+assert.equal(fromTypedDate.eventId,eventDate);
+const inEventReport=ok("staff","staffOrders",{date:eventDate,eventId:eventDate}).orders;
+assert.equal(inEventReport.some(o=>o.id===firstGuest.id),true);
+[formattedCells[1],formattedCells[2]]=originalCells;
+const eventCells=sheets.get("Мероприятия")[1];
+const originalEventCells=[eventCells[0],eventCells[1]];
+[eventCells[0],eventCells[1]]=[new Date(eventDate+"T00:00:00+03:00"),new Date(eventDate+"T00:00:00+03:00")];
+assert.equal(sandbox.baliEvents()[0].id,eventDate);
+assert.equal(sandbox.baliEvents()[0].date,eventDate);
+[eventCells[0],eventCells[1]]=originalEventCells;
 ok("staff","staffReport",{date:eventDate,eventId:eventDate,kind:"orders"});
 
  // Both guest checkout and logged-in checkout share one event-wide serial.
