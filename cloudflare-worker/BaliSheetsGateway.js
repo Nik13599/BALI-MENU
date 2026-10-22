@@ -9,7 +9,7 @@
 const ACTIONS=new Set(["health","me","profileSave","menu","myOrders","createOrder",
   "staffOrders","staffStatus","staffReport","staffList","staffManage",
   "adminGuests","adminGuestOrders","card","activateCard","adminCard",
-  "consentAccept","coinHistory","coinChange","privilegeAssign","bonusGrant","bonusHistory",
+  "consentAccept","coinHistory","coinChange","privilegeAssign","privilegeRules","privilegeRulesSave","bonusGrant","bonusHistory",
   "bonusRecipient","bonusTransfer","plans"]);
 function reply(body,status=200){
   return new Response(JSON.stringify(body),{status,headers:{
