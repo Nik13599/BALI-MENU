@@ -227,7 +227,7 @@ function baliCardData(user){
     number:card?String(card[1]).padStart(6,"0"):"",tier,benefits,
     coinBalance:Number.isSafeInteger(balance)&&balance>=0?balance:null,
     bonuses,agreed:baliConsentState(user,"bali-id:privilege"),
-    profile:baliGuestProfile(user)};
+    profile:baliGuestProfile(user),tierRules:baliGetTierRules().levels};
 }
 function baliCardActivate(user,data){
   if(data.accepted!==true||!baliConsentState(user,"privacy"))
@@ -293,6 +293,38 @@ function baliCoinChange(user,data){
     if(idx<0)sh.appendRow([uid,next,now,version]);
     else sh.getRange(idx+2,1,1,4).setValues([[uid,next,now,version]]);
     return {ok:true,balance:next,operationId:id};
+  });
+}
+function baliGetTierRules(){
+  const row=(SpreadsheetApp.openById(BALI_BOOK).getSheetByName("Настройки").getLastRow()<2?[]:
+    SpreadsheetApp.openById(BALI_BOOK).getSheetByName("Настройки").getRange(2,1,
+      SpreadsheetApp.openById(BALI_BOOK).getSheetByName("Настройки").getLastRow()-1,2).getValues()).find(r=>String(r[0])==="privilegeRules");
+  if(!row)return {levels:{}};
+  try{return {levels:JSON.parse(String(row[1]))};}
+  catch(_){return {levels:{}};}
+}
+function baliSaveTierRules(user,data){
+  baliStaff(user,true);
+  const levels=data.levels;
+  if(!levels||typeof levels!=="object"||Array.isArray(levels))
+    BALI_FAIL("invalid-argument","Некорректные уровни.");
+  const safe={};
+  for(const name of BALI_TIERS){
+    const item=levels[name];
+    if(!item)continue;
+    const benefits=Array.isArray(item.benefits)?item.benefits.map(v=>BALI_TEXT(v,180)):[];
+    if(benefits.length>5||benefits.some(v=>!v))
+      BALI_FAIL("invalid-argument","Не более пяти привилегий в каждом уровне.");
+    safe[name]={description:BALI_TEXT(item.description,450),criteria:BALI_TEXT(item.criteria,350),benefits};
+  }
+  return baliLock(()=>{
+    const sh=SpreadsheetApp.openById(BALI_BOOK).getSheetByName("Настройки");
+    const rows=sh.getLastRow()<2?[]:sh.getRange(2,1,sh.getLastRow()-1,2).getValues();
+    const index=rows.findIndex(r=>String(r[0])==="privilegeRules");
+    const entry=["privilegeRules",JSON.stringify(safe),"Настройки шести уровней BALI ID"];
+    if(index<0)sh.appendRow(entry);else sh.getRange(index+2,1,1,3).setValues([entry]);
+    BALI_SHEET("audit").appendRow([BALI_NOW(),"",user.uid,"privilege-rules",1,"updated"]);
+    return {ok:true};
   });
 }
 function baliAssignPrivilege(user,data){
@@ -439,6 +471,8 @@ function baliDispatch(user,action,data){
   if(action==="coinHistory")return baliCoinHistory(user);
   if(action==="coinChange")return {result:baliCoinChange(user,data)};
   if(action==="privilegeAssign")return {result:baliAssignPrivilege(user,data)};
+  if(action==="privilegeRules")return baliGetTierRules();
+  if(action==="privilegeRulesSave")return {result:baliSaveTierRules(user,data)};
   if(action==="bonusGrant")return {result:baliBonusGrant(user,data)};
   if(action==="bonusHistory")return baliBonusHistory(user);
   if(action==="bonusRecipient")return {recipient:baliBonusRecipient(user,data)};
