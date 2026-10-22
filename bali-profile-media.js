@@ -2,6 +2,7 @@
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,onSnapshot,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
 
 const button=document.getElementById("baliAvatarButton");
 const input=document.getElementById("baliAvatarUpload");
@@ -75,7 +76,8 @@ input?.addEventListener("change",async()=>{
     notify("Подготавливаем фотографию…");
     const image=await compressAvatar(file);
     if(!readyToEdit()||activeUser.uid!==uid)return;
-    await setDoc(avatarDocument(uid),{image,updatedAt:serverTimestamp()});
+    if(sheetsEnabled())await sheetsRequest("avatarSave",{image});
+    else await setDoc(avatarDocument(uid),{image,updatedAt:serverTimestamp()});
     if(activeUser.uid===uid){showImage(image);notify("Фотография профиля сохранена.");}
   }catch(error){
     const msg=["unsupported","dimensions","oversize"].includes(error?.message)
@@ -111,6 +113,13 @@ async function syncAvatar(user){
     if(run!==session||!profileIsOpen()||auth.currentUser?.uid!==user.uid)return;
     if(!window.BaliAuth?.getProfile?.())return;
     activeUser=user;
+    if(sheetsEnabled()){
+      unsubscribe=()=>{};
+      const result=await sheetsRequest("avatarGet");
+      if(run===session&&profileIsOpen()&&auth.currentUser?.uid===user.uid)
+        showImage(result.image);
+      return;
+    }
     unsubscribe=onSnapshot(avatarDocument(user.uid),snapshot=>{
       if(run!==session||!profileIsOpen())return;
       showImage(snapshot.exists()?snapshot.data()?.image:null);
