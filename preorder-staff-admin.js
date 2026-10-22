@@ -6,8 +6,19 @@ const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,"europe-west1");
 const manage=httpsCallable(functions,"manageBaliPreorderStaff");
 const $=id=>document.getElementById(id);
-let generation=0,allowed=false,busy=false;
+let generation=0,allowed=false,busy=false,serviceReady=false;
 const status=(s)=>{$("preorderStaffAdminStatus").textContent=s;};
+const setupHelp=$("preorderStaffSetupHelp");
+function setServiceReady(value){
+  serviceReady=value===true;
+  const create=$("preorderStaffCreate");
+  if(create)create.disabled=!serviceReady||!allowed||busy;
+  if(setupHelp){
+    setupHelp.hidden=serviceReady;
+    if(!serviceReady)setupHelp.open=true;
+    else setupHelp.open=false;
+  }
+}
 const staffError=(error)=>{
   const code=String(error?.code||"").replace(/^functions\//,"");
   switch(code){
@@ -31,9 +42,12 @@ const entry=(placeholder,type="text")=>{
 };
 async function refresh(){
   if(!allowed)return;
-  const output=$("preorderStaffList");output.replaceChildren(item("p","Загружаем сотрудников..."));
+  setServiceReady(false);
+  const output=$("preorderStaffList");output.replaceChildren(item("p","Проверяем подключение к серверу сотрудников..."));
   try{
     const {data}=await manage({action:"list"});
+    if(!Array.isArray(data?.staff))throw new Error("Некорректный ответ сервера сотрудников.");
+    setServiceReady(true);
     output.replaceChildren();
     if(!data.staff.length)output.append(item("p","Сотрудников пока нет.","hint"));
     for(const row of data.staff){
@@ -72,10 +86,16 @@ async function refresh(){
       });
       actions.append(reset,toggle);section.append(details,actions);output.append(section);
     }
-  }catch(e){output.replaceChildren();status("Список сотрудников недоступен: "+staffError(e));}
+  }catch(e){
+    setServiceReady(false);
+    output.replaceChildren(item("p","Регистрация недоступна: проверьте настройку серверной части Firebase.","hint"));
+    status("Список сотрудников недоступен: "+staffError(e));
+  }
 }
 $("preorderStaffCreateForm").addEventListener("submit",async e=>{
-  e.preventDefault();if(!allowed||busy)return;
+  e.preventDefault();if(!allowed||busy||!serviceReady){
+    status("Сначала проверьте серверную часть через кнопку «Обновить».");return;
+  }
   const login=$("preorderStaffLogin").value.trim().toLowerCase();
   const name=$("preorderStaffName").value.trim(),password=$("preorderStaffPassword").value;
   if(!/^[a-z][a-z0-9_-]{2,31}$/.test(login)||name.length<2||password.length<12||password.length>72){
@@ -87,12 +107,16 @@ $("preorderStaffCreateForm").addEventListener("submit",async e=>{
     $("preorderStaffPassword").value="";$("preorderStaffCreateForm").reset();
     status("Аккаунт сотрудника «"+login+"» создан. Передайте логин и пароль лично.");
     await refresh();
-  }catch(e){status("Аккаунт не создан: "+staffError(e));}
+  }catch(e){
+    status("Аккаунт не создан: "+staffError(e));
+    if(["functions/internal","functions/not-found","functions/unavailable"].includes(e?.code))setServiceReady(false);
+  }
   finally{busy=false;btn.disabled=false;}
 });
 $("preorderStaffRefresh").addEventListener("click",refresh);
 onAuthStateChanged(auth,async user=>{
   const seq=++generation;allowed=false;
+  setServiceReady(false);
   $("preorderStaffManagement").hidden=true;
   if(!user?.emailVerified)return;
   try{
