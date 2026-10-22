@@ -197,7 +197,7 @@ assert.equal(updated.items[0].quantity,3);
 assert.equal(updated.ownerUid,original.ownerUid);
 assert.equal(updated.email,original.email);
 assert.equal(updated.createdAt,original.createdAt);
-assert.equal(ok("staff","staffReport",{date:eventDate,eventId:eventDate,kind:"dishes"}).portions,3);
+assert.equal(ok("staff","staffReport",{date:eventDate,eventId:eventDate,kind:"dishes"}).portions,5); // 3 edited + 2 active; cancelled excluded
 fail("staff","staffEditOrder",{
   id:original.id,expectedUpdatedAt:"2000-01-01T00:00:00.000Z",
   eventDate,eventId:eventDate,customerName:"Старое",customerPhone:"+375291234570",
