@@ -10,7 +10,7 @@ const ACTIONS=new Set(["health","me","profileSave","menu","myOrders","createOrde
   "staffOrders","staffStatus","staffReport","staffList","staffManage",
   "adminGuests","adminGuestOrders","card","activateCard","adminCard",
   "consentAccept","coinHistory","coinChange","privilegeAssign","privilegeRules","privilegeRulesSave","bonusGrant","bonusHistory",
-  "bonusRecipient","bonusTransfer","plans"]);
+  "bonusRecipient","bonusTransfer","plans", "avatarGet","avatarSave"]);
 function reply(body,status=200){
   return new Response(JSON.stringify(body),{status,headers:{
     "Content-Type":"application/json;charset=utf-8",
@@ -24,7 +24,7 @@ export default {
     if(request.method!=="POST")return reply({ok:false,error:{code:"method-not-allowed",message:"POST required."}},405);
     const origin=request.headers.get("Origin");
     if(origin&&origin!==url.origin)return reply({ok:false,error:{code:"origin",message:"Forbidden origin."}},403);
-    if((Number(request.headers.get("Content-Length"))||0)>28000)
+    if((Number(request.headers.get("Content-Length"))||0)>110000)
       return reply({ok:false,error:{code:"too-large",message:"Request too large."}},413);
     if(!env.SHEETS_SCRIPT_URL||!env.BALI_BRIDGE_KEY)
       return reply({ok:false,error:{code:"not-configured",message:"Сервис ещё не подключён."}},503);
@@ -34,7 +34,7 @@ export default {
       return reply({ok:false,error:{code:"invalid-action",message:"Недоступная операция."}},400);
     if(data.action!=="health"&&(!data.token||typeof data.token!=="string"))
       return reply({ok:false,error:{code:"unauthenticated",message:"Войдите в BALI."}},401);
-    if(JSON.stringify(data).length>28000)
+    if(JSON.stringify(data).length>(data.action==="avatarSave"?110000:28000))
       return reply({ok:false,error:{code:"too-large",message:"Слишком большой запрос."}},413);
     try{
       const response=await fetch(env.SHEETS_SCRIPT_URL,{
