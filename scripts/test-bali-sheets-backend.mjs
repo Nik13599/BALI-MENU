@@ -30,9 +30,13 @@ const SpreadsheetApp={openById:()=>({getSheetByName(name){
 const accounts=new Map([
   ["owner",{localId:"owner_UID_002",email:"owner@example.com",emailVerified:true}],
   ["guestA",{localId:"guestUID_0001",email:"guest-a@example.com",emailVerified:true}],
+  ["staff",{localId:"staff_UID_001",email:"staff+staff01@staff.baliminsk.by",emailVerified:true}],
+  ["unverifiedStaff",{localId:"staff_UID_001",email:"staff+staff01@staff.baliminsk.by",emailVerified:false}],
+  ["impostorStaff",{localId:"other_UID_001",email:"staff+staff01@staff.baliminsk.by",emailVerified:true}],
   ["guestB",{localId:"guestUID_0002",email:"guest-b@example.com",emailVerified:true}]
 ]);
 sheets.get("Администраторы").push(["owner_UID_002","owner@example.com","admin",true,"Администратор"]);
+sheets.get("Администраторы").push(["staff_UID_001","staff+staff01@staff.baliminsk.by","staff",true,"Сотрудник BALI"]);
 const sandbox={
   SpreadsheetApp,LockService:{getScriptLock:()=>({tryLock:()=>true,releaseLock(){}})},
   PropertiesService:{getScriptProperties:()=>({getProperty:x=>x==="BALI_BRIDGE_KEY"?"test-bridge":null})},
@@ -153,4 +157,20 @@ fail("","guestCreateOrder",{...guestOrder,tableNumber:"",requestId:"guest_reques
 fail("","guestCreateOrder",{...guestOrder,eventId:"unlisted",requestId:"guest_request_new222222"},"failed-precondition");
 fail("","card",{},"unauthenticated"); // BALI ID remains account-only
 fail("","staffOrders",{date:eventDate},"unauthenticated");
+
+assert.equal(ok("staff","me").role,"staff");
+assert.equal(ok("staff","staffOrders",{date:eventDate,eventId:eventDate}).orders.length,1);
+assert.equal(ok("staff","staffRecentOrders").orders.length,1);
+ok("staff","staffReport",{date:eventDate,eventId:eventDate,kind:"orders"});
+for(const action of ["adminGuests","adminGuestOrders","adminCard","staffList","staffManage",
+  "coinChange","privilegeAssign","privilegeRulesSave","bonusGrant","catalogSync"])
+  fail("staff",action,{uid:"guestUID_0001"},"permission-denied");
+fail("unverifiedStaff","staffRecentOrders",{},"unauthenticated");
+assert.equal(ok("impostorStaff","me").role,"guest");
+fail("impostorStaff","staffRecentOrders",{},"permission-denied");
+const limitedRole=sheets.get("Администраторы").find(r=>r[0]==="staff_UID_001");
+limitedRole[3]=false;
+fail("staff","staffRecentOrders",{},"permission-denied");
+console.log("Staff scope PASS: orders/reports allowed; admin, BALI ID, coins, role management, unverified/revoked/impostor identities denied.");
+
 console.log("BALI Sheets: anonymous preorder validation, idempotency, staff visibility, guest isolation, BALI ID and coins PASS");
