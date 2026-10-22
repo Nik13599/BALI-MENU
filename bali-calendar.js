@@ -31,6 +31,8 @@
  let selected=current.date,year=Number(selected.slice(0,4)),
    month=Number(selected.slice(5,7));
  let hasInteracted=false;
+ // Date outlines for posters appear only after the visitor actually browses.
+ let posterBrowsing=false,activePosterId="",activePosterStatus="";
  let lastEventDate=null,expanded=false;
  let plannedDates=new Set(),eventSnapshot=[];
  const planDates=values=>new Set((Array.isArray(values)?values:[])
@@ -92,9 +94,12 @@
    btn.type="button";btn.className="bali-calendar-day";
    btn.dataset.date=s;
    const active=s===selected;
-   // One date ring at a time: active poster status takes priority,
-   // while today's date stays white when another poster is selected.
-   const ring=active&&published?(past?"past":"event"):(today||active?"today":"none");
+   // Today always keeps a white ring. Event rings are limited to the poster
+   // actively browsed by the visitor; no permanent borders on other dates.
+   const chosenPoster=posterBrowsing&&active&&published;
+   const poster=chosenPoster?items.find(item=>item.id===activePosterId):null;
+   const posterStatus=poster?.status||activePosterStatus;
+   const ring=today?"today":(chosenPoster?(posterStatus==="past"?"past":"event"):"none");
    btn.dataset.selected=String(active);
    btn.dataset.ring=ring;
    btn.dataset.today=String(today);
@@ -179,6 +184,8 @@
  }
  function goToDate(s){
    if(!valid(s))return;
+   // Clicking a calendar cell is not browsing a poster.
+   posterBrowsing=false;activePosterId="";activePosterStatus="";
    selected=s;[year,month]=stamp(s);hasInteracted=false;
    render();
    const cards=eventCards();
@@ -230,9 +237,16 @@
  window.addEventListener("bali:calendar:active-event",event=>{
    const date=event.detail?.date;
    if(!valid(date)||document.body.dataset.baliPage!=="events")return;
-   if(!hasInteracted&&!event.detail?.forced)return;
-   if(date===lastEventDate&&date===selected)return;
-   lastEventDate=date;selected=date;
+   // Data refresh and initial coverflow alignment do not activate colored rings.
+   const userInitiated=event.detail?.userInitiated===true;
+   if(!userInitiated&&!posterBrowsing)return;
+   const previousId=activePosterId,wasBrowsing=posterBrowsing;
+   if(userInitiated)posterBrowsing=true;
+   activePosterId=String(event.detail?.eventId||"");
+   activePosterStatus=event.detail?.status==="past"?"past":"upcoming";
+   if(date===lastEventDate&&date===selected&&
+       wasBrowsing===posterBrowsing&&previousId===activePosterId)return;
+   lastEventDate=date;selected=date;hasInteracted=true;
    const visible=lifecycle.monthRange(year,month);
    if(date<visible.start||date>visible.end)[year,month]=stamp(date);
    render();
@@ -254,14 +268,11 @@
  const mutation=new MutationObserver(()=>render());
  mutation.observe(grid,{childList:true});
  window.addEventListener("bali:calendar:open",()=>{
-   // Opening the calendar must describe the actually visible centre poster.
-   // With no published poster, simply mark the current day in white.
-   const active=grid.querySelector(".event-card.is-active[data-event-date]");
-   const now=getNow();
-   selected=active&&valid(active.dataset.eventDate)?active.dataset.eventDate:now.date;
-   [year,month]=stamp(selected);
-   lastEventDate=active?.dataset.eventDate||null;
-   hasInteracted=false;
+   // Opening always starts with today's white outline, not the first event's
+   // green/red ring. User poster navigation turns on the colored date marker.
+   selected=getNow().date;[year,month]=stamp(selected);
+   posterBrowsing=false;activePosterId="";activePosterStatus="";
+   lastEventDate=null;hasInteracted=false;
    expanded=false;render();setLabel();
  });
  setLabel();render();
