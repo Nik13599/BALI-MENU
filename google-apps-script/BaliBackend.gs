@@ -310,7 +310,7 @@ function baliStaffRecentOrders(user){
   const latest=all.slice(0,100),ids=new Set(latest.map(o=>o.id));
   const lineItems=baliItems().filter(item=>ids.has(item.orderId));
   return {orders:latest.map(o=>({...o,items:lineItems.filter(i=>i.orderId===o.id)})),
-    count:latest.length};
+    count:latest.length,canEditOrders:true};
 }
 function baliReport(orders,kind,includeCancelled){
   const filtered=kind==="dishes"&&!includeCancelled
