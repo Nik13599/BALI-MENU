@@ -842,38 +842,51 @@ $("showArchivedOrders")?.addEventListener("click",()=>{
   toggle.textContent=next?"Скрыть архив":"Показать архив";
   renderOrders();
 });
+function fillOrderDateOptions(preferredDate=""){
+  const select=$("editOrderDate");
+  const chosen=preferredDate||select.value;
+  const dates=[...new Set([...events.values()].filter(event=>
+    !compactWorkspace||activeCalendarEvent(event)).map(event=>event.date))]
+    .filter(date=>/^\d{4}-\d{2}-\d{2}$/.test(date)).sort();
+  // The original date is still available if the corresponding poster ended.
+  if(!creatingOrder&&editOrder?.eventDate&&!dates.includes(editOrder.eventDate))
+    dates.unshift(editOrder.eventDate);
+  select.replaceChildren(new Option("Выберите дату",""));
+  for(const date of dates)select.add(new Option(readableOrderDate(date),date));
+  if(dates.includes(chosen))select.value=chosen;
+}
 function fillOrderEventOptions(preferredId=""){
   const select=$("editOrderEvent");
   const previous=preferredId||select.value;
-  const existingId=!creatingOrder&&editOrder?(editOrder.eventId||editOrder.eventDate):"";
+  const originalId=!creatingOrder&&editOrder?(editOrder.eventId||editOrder.eventDate):"";
   select.replaceChildren(new Option("Выберите мероприятие",""));
-  const today=minskToday();
   const available=[...events].filter(([id,event])=>
-    compactWorkspace?activeCalendarEvent(event):event.date>=today||id===existingId)
+    !compactWorkspace||activeCalendarEvent(event))
     .sort((a,b)=>a[1].date.localeCompare(b[1].date)||
       (a[1].startTime||"").localeCompare(b[1].startTime||"")||
       a[1].title.localeCompare(b[1].title,"ru"));
-  for(const [id,event] of available){
+  for(const [id,event] of available)
     select.add(new Option(readableOrderDate(event.date)+" · "+event.title+
       (event.startTime?" · "+event.startTime:""),id));
-  }
-  // Historical orders stay editable even after a poster has left the website.
-  if(existingId&&![...select.options].some(option=>option.value===existingId)){
+  // The old event remains listed for already existing orders.
+  if(originalId&&![...select.options].some(option=>option.value===originalId))
     select.add(new Option(readableOrderDate(editOrder.eventDate)+" · "+
-      eventTitle(editOrder)+" (из заказа)",existingId));
-  }
+      eventTitle(editOrder)+" (из заказа)",originalId));
   if([...select.options].some(option=>option.value===previous))select.value=previous;
 }
 $("editOrderEvent").addEventListener("change",()=>{
   const selected=events.get($("editOrderEvent").value);
-  if(selected?.date)$("editOrderDate").value=selected.date;
+  if(selected?.date){
+    fillOrderDateOptions(selected.date);
+    $("editOrderDate").value=selected.date;
+  }
 });
 $("editOrderDate").addEventListener("change",()=>{
   const date=$("editOrderDate").value;
   const select=$("editOrderEvent");
-  const matches=[...events.values()].filter(event=>event.date===date&&
+  const matching=[...events.values()].filter(event=>event.date===date&&
     (!compactWorkspace||activeCalendarEvent(event)));
-  if(matches.length===1)select.value=matches[0].id;
+  if(matching.length===1)select.value=matching[0].id;
   else if(events.get(select.value)?.date!==date)select.value="";
 });
 function openCreateOrder(){
@@ -882,8 +895,8 @@ function openCreateOrder(){
   $("orderEditTitle").textContent="Новый предзаказ · по телефону";
   $("manualOrderGuestLink").hidden=preorderOnlyStaff;
   $("editOrderGuestEmail").value="";
-  $("editOrderDate").value=$("ordersDateFilter").value||
-    [...events.values()].find(x=>!compactWorkspace||activeCalendarEvent(x))?.date||"";
+  fillOrderDateOptions($("ordersDateFilter").value||
+    [...events.values()].find(x=>!compactWorkspace||activeCalendarEvent(x))?.date||"");
   fillOrderEventOptions();
   $("editOrderStatus").value="pending";
   for(const id of ["editOrderName","editOrderPhone","editOrderReference","editOrderNotes"])$(id).value="";
@@ -961,7 +974,7 @@ async function openEditor(id){
     editLines=o.items.map(x=>({...x,id:Number(x.id)}));
     originalIds=new Set(o.items.map(x=>String(x.id)));
     $("orderEditTitle").textContent="Заказ "+orderLabel(o);
-    $("editOrderDate").value=o.eventDate;
+    fillOrderDateOptions(o.eventDate);
     fillOrderEventOptions(o.eventId||o.eventDate);
     $("editOrderStatus").value=normalizedOrderStatus(o.status);
     $("editOrderName").value=o.customerName;
