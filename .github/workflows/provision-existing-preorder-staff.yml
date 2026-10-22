@@ -18,6 +18,7 @@ jobs:
     timeout-minutes: 8
     environment: firebase-production
     env:
+      BALI_DEPLOY_SERVICE_ACCOUNT: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
       BALI_STAFF_LOGIN: staff01
       BALI_STAFF_EXPECTED_UID: PpentrythOSBDg9ShRmiucXfK7G3
     steps:
@@ -33,7 +34,9 @@ jobs:
           service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
       - run: npm install --prefix functions --no-audit --no-fund
       - run: node --check scripts/provision-existing-preorder-staff.cjs
-      - name: Inspect exact existing identity and reject wider or revoked roles
+      - name: Inspect the exact existing Firebase employee identity
         run: node scripts/provision-existing-preorder-staff.cjs
-      - name: Assign and verify only the dedicated preorder role
+      - name: Verify the existing dedicated Firebase staff account
         run: node scripts/provision-existing-preorder-staff.cjs --apply
+      - name: Verify limited staff access against the existing order backend
+        run: node scripts/provision-existing-preorder-staff.cjs --verify-backend
