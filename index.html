@@ -1151,18 +1151,18 @@ body.bali-guest-theme #baliIdSection .bali-id-bottom .bali-id-coin output{
             </div>
 
             <form class="checkout-form" id="checkoutForm">
-                <p class="auth-help">Имя, телефон и email берутся из вашего зарегистрированного профиля.</p>
+                <p id="baliCheckoutGuestHint" class="auth-help">Для оформления предзаказа достаточно имени и телефона. Вход в личный кабинет не обязателен.</p>
                 <div class="form-group">
                     <label for="customerName">Имя *</label>
-                    <input type="text" id="customerName" autocomplete="name" readonly required>
+                    <input type="text" id="customerName" minlength="2" maxlength="100" autocomplete="name" required placeholder="Как к вам обращаться">
                 </div>
                 <div class="form-group">
                     <label for="customerPhone">Номер телефона *</label>
-                    <input type="tel" id="customerPhone" autocomplete="tel" readonly required>
+                    <input type="tel" id="customerPhone" autocomplete="tel" inputmode="tel" pattern="\\+[1-9][0-9]{7,14}" required placeholder="+375291234567">
                 </div>
-                <div class="form-group">
-                    <label for="customerEmail">Подтверждённый email *</label>
-                    <input type="email" id="customerEmail" autocomplete="email" readonly required>
+                <div class="form-group" id="baliCheckoutEmailRow">
+                    <label for="customerEmail">Email профиля</label>
+                    <input type="email" id="customerEmail" autocomplete="email" readonly>
                 </div>
                 <div class="form-group">
                     <label for="eventDateSelect">Дата посещения *</label>
@@ -1202,6 +1202,12 @@ body.bali-guest-theme #baliIdSection .bali-id-bottom .bali-id-coin output{
                     </div>
                 </div>
 
+                <div id="baliGuestCheckoutConsent" class="bali-guest-checkout-consent" hidden>
+                  <label><input id="baliGuestPrivacyConsent" type="checkbox"> Даю согласие на обработку имени, телефона и данных предзаказа для связи со мной и выполнения заявки. <a href="privacy.html" target="_blank" rel="noopener noreferrer">Политика обработки данных</a>.</label>
+                  <label><input id="baliGuestInternationalConsent" type="checkbox"> Даю отдельное согласие на передачу этих данных используемым зарубежным сервисам.</label>
+                  <div id="baliCheckoutTurnstile" hidden aria-label="Проверка безопасности Cloudflare"></div>
+                  <p class="auth-help">Google-аккаунт не требуется. После отправки администрация BALI подтвердит предзаказ по телефону.</p>
+                </div>
                 <p id="checkoutOrderError" class="checkout-order-error" role="alert" aria-live="assertive" hidden></p>
                 <button type="submit" class="submit-order-btn">
                     <span>Отправить предзаказ</span>
@@ -1217,6 +1223,13 @@ body.bali-guest-theme #baliIdSection .bali-id-bottom .bali-id-coin output{
         background:#321f22;color:#ffe3e4;border:1px solid #a7545b;border-radius:10px;
         font:500 13px/1.5 system-ui,-apple-system,sans-serif;overflow-wrap:anywhere}
       #checkoutOrderError[hidden]{display:none!important}
+      .bali-guest-checkout-consent{display:grid;gap:9px;margin:10px 0;padding:11px;border:1px solid #445439;border-radius:10px;background:#151c15}
+      .bali-guest-checkout-consent[hidden]{display:none!important}
+      .bali-guest-checkout-consent label{display:flex;align-items:flex-start;gap:8px;font-size:11px;line-height:1.45;color:#d7e1d3}
+      .bali-guest-checkout-consent input[type=checkbox]{flex:0 0 auto;margin-top:2px;accent-color:#b6ed67}
+      .bali-guest-checkout-consent a{color:#b5e777;text-decoration:underline}
+      #baliCheckoutTurnstile{min-height:64px}
+      #baliCheckoutTurnstile[hidden]{display:none!important}
     </style>
 
     <!-- Личные предзаказы -->
@@ -1321,7 +1334,8 @@ body.bali-guest-theme #baliIdSection .bali-id-bottom .bali-id-coin output{
     <script src="bali-dialogs.js?v=20261021-privacy-fix2"></script>
     <script type="module" src="bali-age-gate.js?v=20261021-fast1"></script>
     <script src="bali-event-lifecycle.js?v=20261021-home-plus60m"></script>
-    <script src="app.js?v=20261022-localplans1"></script>
+    <script src="bali-guest-preorder-config.js?v=20261022-guest-stage1"></script>
+    <script src="app.js?v=20261022-anonymous-preorders1"></script>
     <script src="bali-calendar.js?v=20261021-ui1"></script>
     <script src="bali-calendar-coverflow.js?v=20261021-details-toggle1"></script>
     <script src="bali-pc-reference.js?v=20261021-anchored-home1"></script>
