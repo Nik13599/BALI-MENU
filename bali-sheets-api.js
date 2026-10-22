@@ -22,7 +22,8 @@ export async function sheetsRequest(action,payload={},options={}){
 async function sendSheetsRequest(action,payload,options,token){
   const response=await fetch(API,{method:"POST",credentials:"same-origin",redirect:"follow",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({action,token,payload}),signal:options.signal});
+    body:JSON.stringify({action,token,payload}),signal:options.signal,
+    ...(options.keepalive?{keepalive:true}:{})});
   let body;
   try{body=await response.json();}catch{throw Object.assign(new Error("Не удалось получить ответ BALI API."),{code:"upstream"});}
   if(!response.ok||body?.ok!==true){
