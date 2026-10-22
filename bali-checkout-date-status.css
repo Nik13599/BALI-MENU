@@ -1,0 +1,18 @@
+/* Guest checkout, never a public calendar archive.
+   Today's open preorder date is gold; future open dates are lime.
+   Closed or past dates are not included in the dropdown at all. */
+:root[data-bali-theme] body.bali-guest-theme #checkoutModal select#eventDateSelect[data-date-state="today"],
+:root[data-bali-theme] body.bali-guest-theme #checkoutModal select#eventSelect[data-date-state="today"]{
+  border-color:#f4c84b!important;
+  box-shadow:inset 3px 0 0 #f4c84b!important;
+  color:#ffe08b!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #checkoutModal select#eventDateSelect[data-date-state="upcoming"],
+:root[data-bali-theme] body.bali-guest-theme #checkoutModal select#eventSelect[data-date-state="upcoming"]{
+  border-color:#9fdd57!important;
+  box-shadow:inset 3px 0 0 #b9ff51!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #checkoutModal select#eventDateSelect[data-date-state="today"] option,
+:root[data-bali-theme] body.bali-guest-theme #checkoutModal select#eventSelect[data-date-state="today"] option{
+  color:initial;
+}
