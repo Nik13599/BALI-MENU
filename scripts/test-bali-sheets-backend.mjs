@@ -17,7 +17,8 @@ function range(name,row,col,height=1,width=1){
       while(arr.length<row+i)arr.push([]);
       arr[row+i-1][col+j-1]=value;
     }));return this;},
-    setValue(value){this.setValues([[value]]);return this}
+    setValue(value){this.setValues([[value]]);return this},
+    clearContent(){this.setValues([Array.from({length:width},()=> "")]);return this}
   };
 }
 const SpreadsheetApp={openById:()=>({getSheetByName(name){
@@ -111,4 +112,16 @@ assert.equal(ok("guestB","plans",{}).plans.length,0);
 ok("guestB","consentAccept",{type:"privacy-withdrawal",accepted:true});
 fail("guestB","card",{},"permission-denied");
 assert.equal(ok("guestB","me").privacyWithdrawn,true);
+const bootstrapKey="a".repeat(64);
+sheets.get("Настройки").push(["BALI_BRIDGE_KEY",bootstrapKey,"temporary bootstrap"]);
+const props=new Map();
+sandbox.PropertiesService={getScriptProperties:()=>({
+  getProperty:key=>props.get(key)||null,
+  setProperty:(key,value)=>props.set(key,value)
+})};
+assert.match(sandbox.baliCheckSetup(),/configured/);
+assert.equal(props.get("BALI_BRIDGE_KEY"),bootstrapKey);
+assert.equal(sheets.get("Настройки")[1][1],""); // never retain the bridge secret in guest-data spreadsheet
+assert.equal(sheets.get("Настройки")[1][0],"BALI_BRIDGE_KEY_MIGRATED");
+assert.equal(request("guestA","me").ok,true); // migrated secret authorizes the same bridge
 console.log("BALI Sheets: guest isolation, privilege tiers, BALI COIN ledger, bonus ownership, privacy and plans PASS");
