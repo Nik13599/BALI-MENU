@@ -37,10 +37,28 @@ const accounts=new Map([
 ]);
 sheets.get("Администраторы").push(["owner_UID_002","owner@example.com","admin",true,"Администратор"]);
 sheets.get("Администраторы").push(["staff_UID_001","staff+staff01@staff.baliminsk.by","staff",true,"Сотрудник BALI"]);
+const publishedOnlyEvents=[];
 const sandbox={
   SpreadsheetApp,LockService:{getScriptLock:()=>({tryLock:()=>true,releaseLock(){}})},
   PropertiesService:{getScriptProperties:()=>({getProperty:x=>x==="BALI_BRIDGE_KEY"?"test-bridge":null})},
-  UrlFetchApp:{fetch:(_url,options)=>({getResponseCode:()=>200,getContentText:()=>{
+  UrlFetchApp:{fetch:(url,options)=>({getResponseCode:()=>200,getContentText:()=>{
+    if(url.includes("/api/public-data?path=events")){
+      const all=[
+        ...sheets.get("Мероприятия").slice(1).map(row=>({
+          id:String(row[0]),date:String(row[1]),title:String(row[2]),
+          closesAt:String(row[4])
+        })),
+        ...publishedOnlyEvents
+      ];
+      return JSON.stringify({documents:all.map(event=>({
+        name:"projects/test/databases/(default)/documents/events/"+event.id,
+        fields:{
+          date:{stringValue:event.date},
+          title:{stringValue:event.title},
+          closesAt:{stringValue:event.closesAt}
+        }
+      }))});
+    }
     const token=JSON.parse(options.payload).idToken;
     const user=accounts.get(String(token).replace(/^test-/,"").replace(/_+$/,""));
     return JSON.stringify({users:user?[user]:[]});
@@ -223,6 +241,29 @@ assert.equal(ok("staff","staffOrders",{date:eventDate,eventId:eventDate}).orders
 assert.equal(ok("staff","staffOrders",{date:eventDate,eventId:secondEventId}).orders.some(o=>o.id===moved.id),true);
 assert.equal(sheets.get("Позиции заказов").filter(r=>r[0]===moved.id).length,1);
 assert.equal(sheets.get("История изменений").some(r=>r[1]===moved.id&&r[3]==="staff-edit"),true);
+
+// Newly published events are selectable without a separate catalogSync call.
+const liveDate=new Date(Date.now()+8*86400000).toISOString().slice(0,10);
+const liveClose=new Date(Date.now()+9*86400000).toISOString();
+publishedOnlyEvents.push({id:liveDate,date:liveDate,title:"BALI Live Website Event",
+  closesAt:liveClose});
+assert.equal(sheets.get("Мероприятия").some(r=>r[0]===liveDate),false);
+const movedToWebsite=ok("staff","staffEditOrder",{
+  id:moved.id,expectedUpdatedAt:moved.updatedAt,eventDate:liveDate,eventId:liveDate,
+  customerName:moved.customerName,customerPhone:moved.customerPhone,tableNumber:"42",
+  bookingId:"",notes:"",status:"confirmed",items:[{id:101,quantity:1}]
+}).order;
+assert.equal(movedToWebsite.eventTitle,"BALI Live Website Event");
+assert.equal(movedToWebsite.eventDate,liveDate);
+assert.equal(movedToWebsite.orderNumber,1);
+assert.equal(ok("staff","staffReport",{date:liveDate,eventId:liveDate,kind:"orders"}).orderCount,1);
+// An event cannot be invented by editing the request payload.
+fail("staff","staffEditOrder",{
+  id:movedToWebsite.id,expectedUpdatedAt:movedToWebsite.updatedAt,
+  eventDate:liveDate,eventId:"nonexistent",customerName:movedToWebsite.customerName,
+  customerPhone:movedToWebsite.customerPhone,tableNumber:"42",bookingId:"",
+  notes:"",status:"confirmed",items:[{id:101,quantity:1}]
+},"failed-precondition");
 
 const followingDate=new Date(Date.now()+6*86400000).toISOString().slice(0,10);
 const followingClose=new Date(Date.now()+7*86400000).toISOString();
