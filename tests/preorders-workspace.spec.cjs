@@ -219,7 +219,15 @@ test("compact order keeps full details and pins color status at top right on all
       const cardRect=card.getBoundingClientRect(),dotRect=dot.getBoundingClientRect();
       const mainRect=main.getBoundingClientRect(),topRect=top.getBoundingClientRect();
       const telRect=tel.getBoundingClientRect();
+      const dateRect=card.querySelector(".preorder-queue-date").getBoundingClientRect();
+      const eventRect=card.querySelector(".preorder-queue-headline").getBoundingClientRect();
+      const guestRect=card.querySelector(".preorder-queue-identity").getBoundingClientRect();
+      const dishesRect=card.querySelector(".preorder-cell.dishes").getBoundingClientRect();
       return {cardRight:cardRect.right,cardTop:cardRect.top,
+        mainDisplay:getComputedStyle(main).display,
+        dateBottom:dateRect.bottom,eventTop:eventRect.top,eventBottom:eventRect.bottom,
+        guestTop:guestRect.top,guestBottom:guestRect.bottom,dishesTop:dishesRect.top,
+        dateLeft:dateRect.left,eventLeft:eventRect.left,guestLeft:guestRect.left,
         dotRight:dotRect.right,dotTop:dotRect.top,dotWidth:dotRect.width,
         mainWidth:mainRect.width,cardWidth:cardRect.width,
         headlineWidth:topRect.width,phoneWidth:telRect.width,
@@ -240,6 +248,14 @@ test("compact order keeps full details and pins color status at top right on all
     expect(box.headlineWidth).toBeGreaterThan(75);
     expect(box.phoneWidth).toBeGreaterThan(85);
     expect(box.phoneTop).toBeGreaterThanOrEqual(box.mainTop);
+    if(width<=900){
+      expect(box.mainDisplay).toBe("flex");
+      expect(box.eventTop).toBeGreaterThanOrEqual(box.dateBottom-1);
+      expect(box.guestTop).toBeGreaterThanOrEqual(box.eventBottom-1);
+      expect(box.dishesTop).toBeGreaterThanOrEqual(box.guestBottom-1);
+      expect(Math.abs(box.dateLeft-box.eventLeft)).toBeLessThanOrEqual(2);
+      expect(Math.abs(box.eventLeft-box.guestLeft)).toBeLessThanOrEqual(2);
+    }
     await expect(page.locator(".preorder-compact-row .preorder-queue-date")).toHaveText("30.10.26");
     await expect(page.locator(".preorder-compact-row .preorder-edit-button")).toBeVisible();
   }
