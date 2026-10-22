@@ -6,6 +6,10 @@ const html=readFileSync("admin.html","utf8").replace(
   tag=>/src="(?:firebase-config|preorder-staff-admin)\.js/.test(tag)?tag:""
 );
 async function staffPage(page,backend){
+  await page.route("**/*",r=>{
+    const u=new URL(r.request().url());
+    return u.hostname==="127.0.0.1"?r.continue():r.abort();
+  });
   await page.addInitScript(v=>{window.__staffBackend=v;window.__staffCalls=[];},backend);
   await page.route("**/admin.html",r=>r.fulfill({contentType:"text/html",body:html}));
   await page.route("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js",r=>
@@ -29,16 +33,13 @@ async function staffPage(page,backend){
         throw new Error("Unknown test call");
       });
     `}));
-  await page.route("**/*",r=>{
-    const u=new URL(r.request().url());
-    return u.hostname==="127.0.0.1"?r.continue():r.abort();
-  });
   await page.goto("/admin.html",{waitUntil:"domcontentloaded"});
   await page.evaluate(()=>{
     document.getElementById("loginView").hidden=true;
     document.getElementById("adminView").hidden=false;
   });
   await expect(page.locator("#preorderStaffManagement")).toBeVisible();
+  await page.locator("#preorderStaffManagement > summary").click();
 }
 test("staff create is disabled when server callable returns internal",async({page})=>{
   await staffPage(page,"down");
@@ -47,7 +48,7 @@ test("staff create is disabled when server callable returns internal",async({pag
   await expect(page.locator("#preorderStaffSetupHelp")).toHaveAttribute("open","");
   await expect(page.locator("#preorderStaffAdminStatus")).toContainText("internal");
   await expect(page.locator("#preorderStaffList")).toContainText("Регистрация недоступна");
-  await expect(page.locator("#preorderStaffSetupHelp a")).toHaveCount(5);
+  await expect(page.locator("#preorderStaffSetupHelp a")).toHaveCount(6);
   const calls=await page.evaluate(()=>window.__staffCalls);
   expect(calls.map(x=>x.action)).toEqual(["list"]);
 });
