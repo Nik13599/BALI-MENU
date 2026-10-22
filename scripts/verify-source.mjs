@@ -21,7 +21,7 @@ const ids = [
   "accountBtn", "authModal", "closeAuth", "authGoogleBtn",
   "authProfileForm", "authName", "authPhone", "authEmail",
   "authMessage", "authSignOutBtn", "customerName",
-  "customerPhone", "customerEmail", "eventDate", "tableNumber"
+  "customerPhone", "customerEmail", "eventDate", "orderReference"
 ];
 for (const id of ids) {
   assert(html.includes('id="' + id + '"'), "HTML missing " + id);
@@ -909,8 +909,11 @@ assert(customIconJs.includes('"book":') &&
 const menuClient = source("menu-firestore.js");
 // adminClient was initialized above the menu-detail assertions.
 assert(html.includes('id="eventSelect"'), "Preorder event selection missing");
-assert(html.includes('id="bookingId"'), "Booking ID input missing");
-assert(html.includes('id="tableNumber"'), "Table number input missing");
+assert(html.includes('id="orderReference"'), "Unified booking/table field missing");
+assert(!html.includes('id="bookingId"') && !html.includes('id="tableNumber"'),
+  "Booking ID and table number must not appear as separate fields");
+assert(admin.includes('id="editOrderReference"') && !admin.includes('id="editOrderBooking"') &&
+  !admin.includes('id="editOrderTable"'), "Admin must use one booking reference field");
 assert(html.includes('menu-firestore.js?v='), "Firestore public catalog module missing");
 assert(admin.includes('admin-firestore.js?v='), "Secure admin module missing");
 assert(!admin.includes('id="adminPassword"'), "Legacy admin password form must be removed");
