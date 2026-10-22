@@ -7,12 +7,14 @@ on:
       - "admin.html"
       - "admin-dashboard.js"
       - "tests/admin-density.spec.cjs"
+      - "tests/preorder-staff-availability.spec.cjs"
       - ".github/workflows/admin-density.yml"
   pull_request:
     paths:
       - "admin.html"
       - "admin-dashboard.js"
       - "tests/admin-density.spec.cjs"
+      - "tests/preorder-staff-availability.spec.cjs"
       - ".github/workflows/admin-density.yml"
   workflow_dispatch:
 
@@ -32,4 +34,4 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run check:styles
       - run: npx playwright install --with-deps chromium
-      - run: npx playwright test tests/admin-density.spec.cjs
+      - run: npx playwright test tests/admin-density.spec.cjs tests/preorder-staff-availability.spec.cjs
