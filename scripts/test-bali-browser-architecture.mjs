@@ -25,6 +25,12 @@ assert(!staff.includes('href="admin.html"'),"Staff has no navigation to private 
 assert(admin.includes("baliPublicPublishAll"),"Public content manual publication missing");
 assert(admin.includes("bali-public-publisher.js"),"Public content publish bridge missing");
 assert(reader.includes("/api/public-data?path="),"Public data must use the Cloudflare reader");
+const visibilityGuest=await load("bali-menu-visibility-guest.js");
+assert(visibilityGuest.includes("./bali-public-reader.js")&&!visibilityGuest.includes("firebasejs"),
+  "Public menu tabs should not require the Firebase client SDK");
+assert(guest.includes("bali-menu-visibility-guest.js"),
+  "Guest menu visibility should come from Cloudflare");
+
 assert(publisher.includes("administrator")&&publisher.includes("BALI_PUBLIC_CONTENT"));
 assert(!publisher.includes("guestWallets")&&!publisher.includes("preorder_orders"));
 assert(api.includes('migration?.status!=="complete"'),"Do not show empty D1 as active queue");

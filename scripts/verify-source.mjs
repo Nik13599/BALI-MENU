@@ -530,7 +530,8 @@ assert(["kitchen","bar","hookah","tea"].every(key=>
   admin.includes('id="baliCatalogVisibilityTitle"') &&
   admin.includes('id="baliVisibilityStatus"') &&
   admin.includes('bali-menu-visibility.js?v=') &&
-  html.includes('bali-menu-visibility.js?v=') &&
+  html.includes('bali-menu-visibility-guest.js?v=') &&
+  source("bali-menu-visibility-guest.js").includes('from "./bali-public-reader.js') &&
   visibilitySource.includes('doc(db,"settings","menuVisibility")') &&
   visibilitySource.includes('onSnapshot(configRef') &&
   visibilitySource.includes('onAuthStateChanged(auth') &&
