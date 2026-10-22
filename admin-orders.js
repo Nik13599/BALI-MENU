@@ -8,6 +8,7 @@ import {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBat
 import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1";
 import {withinOrderRetention,ORDER_RETENTION_MS} from "./bali-order-retention.js";
 import {createBaliStaffPreorder} from "./bali-staff-preorder-create.js?v=20261021-1";
+import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
 import {composeBaliPreorderReport,composeBaliSinglePreorder,downloadBaliPreorderReport,showBaliPreorderTelegram} from "./bali-preorder-reports.js?v=20261022-aggregate-report3";
 const readOrderLines=async row=>{
   const lines=await getDocs(collection(row.ref,"items"));
@@ -41,6 +42,11 @@ function ensureAdmin(){if(!authorized||!auth.currentUser)throw new Error("Дос
 function total(items){return items.reduce((sum,x)=>sum+Number(x.unitPrice||0)*Number(x.quantity||0),0);}
 async function fetchComplete(id) {
   ensureAdmin();
+  if(sheetsEnabled()){
+    const found=[...dateOrders,...orders].find(o=>o.id===id);
+    if(!found)throw new Error("Заказ не найден в загруженной очереди.");
+    return found;
+  }
   const ref=doc(db,"orders",id),snapshot=await getDoc(ref);
   if(!snapshot.exists())throw new Error("Заказ не найден.");
   const lines=await getDocs(collection(ref,"items"));
@@ -78,7 +84,11 @@ async function setOrderStatus(o,status) {
   if(!confirm("Изменить статус заказа "+orderLabel(o)+" на «"+statuses[status]+"»?"))return;
   setStatus("Сохраняем статус...");
   try {
-    await updateDoc(doc(db,"orders",o.id),{status,updatedAt:serverTimestamp()});
+    if(sheetsEnabled()){
+      await sheetsRequest("staffStatus",{id:o.id,status});
+      for(const entry of [...orders,...dateOrders])if(entry.id===o.id)entry.status=status;
+      renderOrders();
+    }else await updateDoc(doc(db,"orders",o.id),{status,updatedAt:serverTimestamp()});
     setStatus("Статус изменён.");
   }catch(e){setStatus("Не удалось изменить статус: "+(e.code||e.message));}
 }
@@ -328,6 +338,17 @@ async function fetchWorkspaceReport(kind){
   const date=$("ordersDateFilter").value;
   const id=$("ordersEventFilter").value;
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error("Выберите дату отчёта.");
+  if(sheetsEnabled()){
+    const {orders:loaded}=await sheetsRequest("staffOrders",{date,eventId:id});
+    const included=$("preorderReportIncludeCancelled").checked;
+    const filtered=(loaded||[]).filter(o=>withinOrderRetention(o)&&
+      (!id||o.eventId===id)).filter(o=>kind==="orders"||included||
+      (!o.archived&&o.status!=="cancelled"));
+    const allEvents=!id;
+    const title=allEvents?"Все мероприятия":events.get(id)?.title||filtered[0]?.eventTitle||id;
+    return {...composeBaliPreorderReport({kind,date,eventTitle:title,
+      orders:filtered,includeCancelled:included,allEvents}),allEvents};
+  }
   const source=await getDocs(query(collection(db,"orders"),where("eventDate","==",date)));
   const matching=source.docs.filter(entry=>withinOrderRetention(entry.data())&&
     (!id||(entry.data().eventId||entry.data().eventDate)===id));
@@ -537,6 +558,16 @@ function watchDateOrders(){
   renderEventFilter();
   if(!date){renderOrders();return;}
   if(!authorized)return;
+  if(sheetsEnabled()){
+    renderOrders();
+    void sheetsRequest("staffOrders",{date}).then(({orders:received})=>{
+      if(revision!==dateRevision)return;
+      dateOrders=received||[];loadedDate=date;
+      renderEventFilter();renderOrders();
+      setStatus("За "+date+" загружено "+dateOrders.length+" предзаказов.");
+    }).catch(e=>{if(revision===dateRevision)setStatus("Ошибка предзаказов за дату: "+(e.message||e.code));});
+    return;
+  }
   const readOrders=createOrderSnapshotReader(readOrderLines);
   let snapshotRevision=0;
   renderOrders();
@@ -807,6 +838,46 @@ async function subscribe(user) {
   $("ordersAdminList").textContent="Проверяем права...";
   if(!user||!user.emailVerified)return;
   try{
+    if(sheetsEnabled()){
+      const [me,available,recent]=await Promise.all([
+        sheetsRequest("me"),sheetsRequest("menu"),sheetsRequest("staffRecentOrders")
+      ]);
+      if(current!==generation)return;
+      const role=me.role;
+      if(role!=="admin"&&role!=="staff"){
+        $("ordersAdminList").textContent="Нет доступа к предзаказам.";return;
+      }
+      preorderOnlyStaff=role==="staff";
+      authorized=true;
+      events=new Map((available.events||[]).map(e=>[e.id,e]));
+      catalog=(available.menu||[]).map(item=>({...item,id:Number(item.id)}))
+        .filter(item=>Number.isSafeInteger(item.id)&&Number.isFinite(item.price));
+      orders=(recent.orders||[]).filter(withinOrderRetention);
+      renderDates();renderOrders();menuSelect();syncWorkspaceReportScope();
+      // Sheets status updates and reports are supported; editing, deletion
+      // and manual creation remain disabled until their server routes exist.
+      for(const id of ["createManualOrder"])if($(id))$(id).disabled=true;
+      window.dispatchEvent(new CustomEvent("bali:admin:orders",{detail:{
+        ownerUid:user.uid,orders:orders.map(({id,status,orderNumber})=>({id,status,orderNumber})),
+        count:orders.length,pending:orders.filter(o=>o.status==="pending"&&!o.archived).length
+      }}));
+      setStatus("Google Таблицы · "+orders.length+
+        " последних предзаказов. Подтверждение, отмена и отчёты доступны; редактирование пока заблокировано.");
+      const refresh=async()=>{
+        try{
+          const {orders:incoming}=await sheetsRequest("staffRecentOrders");
+          if(current!==generation)return;
+          orders=(incoming||[]).filter(withinOrderRetention);
+          renderDates();renderOrders();
+        }catch(e){if(current===generation)setStatus("Не удалось обновить очередь: "+(e.message||e.code));}
+      };
+      const timer=setInterval(()=>{if(document.visibilityState==="visible")void refresh()},60000);
+      unsubOrders=()=>clearInterval(timer);
+      const focus=()=>void refresh();
+      window.addEventListener("focus",focus);
+      unsubEvents=()=>window.removeEventListener("focus",focus);
+      return;
+    }
     const adminRole=await getDoc(doc(db,"admins",user.uid));
     if(current!==generation)return;
     const isOwner=adminRole.exists()&&adminRole.data().active===true;
