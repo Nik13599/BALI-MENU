@@ -24,6 +24,11 @@ const BALI_ROWS=name=>{const sh=BALI_SHEET(name),last=sh.getLastRow();
   return last<2?[]:sh.getRange(2,1,last-1,sh.getLastColumn()).getValues();};
 const BALI_TRUE=v=>v===true||v===1||String(v).toLowerCase()==="true"||String(v).toLowerCase()==="да";
 const BALI_ISO=v=>v instanceof Date?v.toISOString():String(v||"");
+// Never serialize date-shaped Sheets cells with String(Date): it produces
+// verbose locale-dependent text and silently hides valid staff orders.
+// Always preserve the Minsk calendar day for order/event identifiers.
+const BALI_SHEET_KEY=v=>v instanceof Date
+  ?Utilities.formatDate(v,"Europe/Minsk","yyyy-MM-dd"):String(v??"");
 const BALI_DATE=v=>/^\d{4}-\d{2}-\d{2}$/.test(String(v||""));
 function baliLock(fn){
   const lock=LockService.getScriptLock();
@@ -77,10 +82,10 @@ function baliMenu(){return BALI_ROWS("menu").filter(r=>BALI_TRUE(r[6])).map(r=>
   ({id:String(r[0]),category:String(r[1]),name:String(r[2]),price:Number(r[4])||0,
     imageUrl:String(r[5]||"")}));}
 function baliEvents(){return BALI_ROWS("events").map(r=>
-  ({id:String(r[0]||""),date:BALI_ISO(r[1]).slice(0,10),title:String(r[2]||""),
+  ({id:BALI_SHEET_KEY(r[0]),date:BALI_SHEET_KEY(r[1]).slice(0,10),title:String(r[2]||""),
     preorderEnabled:BALI_TRUE(r[3]),closesAt:BALI_ISO(r[4]),bannerUrl:String(r[5]||"")}));}
 function baliOrder(row){
-  return {id:String(row[0]),eventDate:String(row[1]),eventId:String(row[2]),
+  return {id:String(row[0]),eventDate:BALI_SHEET_KEY(row[1]).slice(0,10),eventId:BALI_SHEET_KEY(row[2]),
     eventTitle:String(row[3]),createdAt:BALI_ISO(row[4]),updatedAt:BALI_ISO(row[5]),
     ownerUid:String(row[6]),customerName:String(row[7]),email:String(row[8]),
     customerPhone:String(row[9]),tableNumber:String(row[10]),bookingId:String(row[11]),
@@ -133,7 +138,7 @@ function baliOrderCreate(user,data){
       if(recent.length>=3)BALI_FAIL("resource-exhausted",
         "По этому номеру уже отправлено три гостевых предзаказа за час. Свяжитесь с клубом.");
     }
-    const orderNumber=Math.max(0,...orders.filter(r=>String(r[2])===eventId)
+    const orderNumber=Math.max(0,...orders.filter(r=>BALI_SHEET_KEY(r[2])===eventId)
       .map(r=>Number(r[15])||0))+1;
     const total=Math.round(lines.reduce((acc,x)=>acc+x.total,0)*100)/100;
     const now=BALI_NOW(),expires=new Date(Date.parse(event.closesAt)+30*86400000).toISOString();
@@ -293,7 +298,7 @@ function baliStaffEditOrder(user,data){
     // For the same event, never alter the existing serial; changing event
     // assigns the next unused sequence, even after a cancellation.
     const number=sameEvent?old.orderNumber:
-      Math.max(0,...orders.filter(r=>String(r[2])===eventId)
+      Math.max(0,...orders.filter(r=>BALI_SHEET_KEY(r[2])===eventId)
         .map(r=>Number(r[15])||0))+1;
     if(!Number.isSafeInteger(number)||number<1||number>999999)
       BALI_FAIL("failed-precondition","Не удалось назначить номер предзаказа.");
