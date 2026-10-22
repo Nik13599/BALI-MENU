@@ -497,6 +497,46 @@ function baliAdminGuestOrders(user,data){
   if(!existing)BALI_FAIL("not-found","Гость не найден.");
   return {orders:baliOrdersFor({uid},false,"","").slice(-50)};
 }
+
+/* Private avatars live in Google Drive, NOT inside Google Sheets cells.
+ * The folder is private and only Apps Script (executing as owner) opens files.
+ * Binary data is never served by a public Drive link. */
+const BALI_AVATAR_FOLDER="1HF_or0qy4wc1vAqsYLr46h0Wyl-80BkL";
+function baliAvatarFile(uid){
+  const files=DriveApp.getFolderById(BALI_AVATAR_FOLDER).getFilesByName(uid+".webp");
+  return files.hasNext()?files.next():null;
+}
+function baliAvatarGet(user){
+  if(!baliConsentState(user,"privacy"))BALI_FAIL("permission-denied","Не подтверждено согласие.");
+  const image=baliAvatarFile(user.uid);
+  if(!image)return {image:null};
+  const bytes=image.getBlob().getBytes();
+  if(bytes.length>80000)BALI_FAIL("failed-precondition","Фотография слишком большая.");
+  return {image:"data:image/webp;base64,"+Utilities.base64Encode(bytes)};
+}
+function baliAvatarSave(user,data){
+  if(!baliConsentState(user,"privacy"))BALI_FAIL("permission-denied","Не подтверждено согласие.");
+  const image=data.image;
+  if(typeof image!=="string"||!/^data:image\/webp;base64,[A-Za-z0-9+/=]+$/.test(image)||
+    image.length>94000||image.length<40)
+    BALI_FAIL("invalid-argument","Поддерживается только компактная фотография WebP.");
+  const cache=CacheService.getScriptCache(),key="bali-avatar:"+user.uid;
+  if(cache.get(key))BALI_FAIL("resource-exhausted","Обновлять фото можно не чаще одного раза в две минуты.");
+  const bytes=Utilities.base64Decode(image.slice("data:image/webp;base64,".length));
+  if(bytes.length>80000)BALI_FAIL("invalid-argument","Фотография превышает лимит.");
+  // WebP magic bytes: RIFF .... WEBP. Disallow non-image binaries.
+  const magic=bytes.slice(0,4).map(x=>String.fromCharCode(x)).join("");
+  const webp=bytes.slice(8,12).map(x=>String.fromCharCode(x)).join("");
+  if(magic!=="RIFF"||webp!=="WEBP")BALI_FAIL("invalid-argument","Некорректный файл WebP.");
+  return baliLock(()=>{
+    const folder=DriveApp.getFolderById(BALI_AVATAR_FOLDER);
+    const previous=baliAvatarFile(user.uid);
+    const next=folder.createFile(Utilities.newBlob(bytes,"image/webp",user.uid+".webp"));
+    if(previous)previous.setTrashed(true);
+    cache.put(key,"1",120);
+    return {ok:true};
+  });
+}
 function baliDispatch(user,action,data){
   if(baliWithdrawn(user)&&action!=="me")
     BALI_FAIL("permission-denied","Согласие отозвано. Обратитесь к администрации BALI.");
@@ -524,6 +564,8 @@ function baliDispatch(user,action,data){
   if(action==="bonusRecipient")return {recipient:baliBonusRecipient(user,data)};
   if(action==="bonusTransfer")return {result:baliBonusTransfer(user,data)};
   if(action==="plans")return baliGuestPlans(user,data);
+  if(action==="avatarGet")return baliAvatarGet(user);
+  if(action==="avatarSave")return {result:baliAvatarSave(user,data)};
   if(action==="profileSave"){
     if(!baliConsentState(user,"privacy")||baliWithdrawn(user))
       BALI_FAIL("permission-denied","Подтвердите согласие на обработку данных.");
@@ -556,8 +598,10 @@ function baliDispatch(user,action,data){
 function doPost(e){
   try{
     const body=e&&e.postData&&e.postData.contents||"";
-    if(body.length>28000)BALI_FAIL("invalid-argument","Слишком большой запрос.");
+    if(body.length>110000)BALI_FAIL("invalid-argument","Слишком большой запрос.");
     const input=JSON.parse(body);
+    if(input.action!=="avatarSave"&&body.length>28000)
+      BALI_FAIL("invalid-argument","Слишком большой запрос.");
     const expected=PropertiesService.getScriptProperties().getProperty("BALI_BRIDGE_KEY");
     if(!expected||String(input.bridgeKey||"")!==expected)
       BALI_FAIL("permission-denied","Запрос должен проходить через BALI API.");
