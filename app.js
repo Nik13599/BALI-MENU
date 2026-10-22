@@ -1816,6 +1816,12 @@ async function handleCheckout(e) {
             (bookingReference?' · ID брони / номер стола: '+bookingReference:'');
 
         try { localStorage.setItem('last_order_id', result.order_id); } catch (_) {}
+        const successHistory=document.getElementById("successMyOrders");
+        const successHint=document.getElementById("successOrderHint");
+        if(successHistory)successHistory.hidden=guestCheckout;
+        if(successHint)successHint.textContent=guestCheckout
+          ?"Предзаказ сохранён в BALI. Сохраните номер: сотрудники свяжутся с вами по указанному телефону. Без личного кабинета история заказов недоступна."
+          :"Сохраните номер и следите за статусом во вкладке «Мои заказы».";
         closeCheckout();
         showSuccess();
         clearCart();
