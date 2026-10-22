@@ -213,7 +213,10 @@ function baliCardData(user){
   try{const value=JSON.parse(String(record?.[2]||"[]"));if(Array.isArray(value))benefits=value.filter(x=>typeof x==="string").slice(0,5);}
   catch(_){}
   const coins=BALI_ROWS("coins").find(r=>String(r[0])===user.uid);
-  const balance=coins===undefined?null:Number(coins[1]);
+  const journal=BALI_ROWS("coinHistory").filter(r=>String(r[2])===user.uid);
+  // Last confirmed journal entry is authoritative if a cached balance write was interrupted.
+  const last=journal.length?journal[journal.length-1]:null;
+  const balance=last?Number(last[5]):coins===undefined?null:Number(coins[1]);
   const bonuses=BALI_ROWS("bonuses").filter(r=>String(r[1])===user.uid)
     .map(r=>({id:String(r[0]),kind:String(r[2]),originalCount:Number(r[3])||0,
       remaining:Number(r[4])||0,unlimited:BALI_TRUE(r[5]),transferable:BALI_TRUE(r[6]),
@@ -268,7 +271,8 @@ function baliCoinChange(user,data){
     !/^[-_a-zA-Z0-9]{12,80}$/.test(requestId))
     BALI_FAIL("invalid-argument","Укажите карту, количество BALI COIN и основание операции.");
   return baliLock(()=>{
-    const prior=BALI_ROWS("coinHistory").find(r=>String(r[8])===requestId);
+    const ledger=BALI_ROWS("coinHistory");
+    const prior=ledger.find(r=>String(r[8])===requestId);
     if(prior){
       if(String(prior[2])!==uid||String(prior[3])!==op||Number(prior[4])!==amount)
         BALI_FAIL("already-exists","Идентификатор запроса уже использован.");
@@ -277,7 +281,8 @@ function baliCoinChange(user,data){
     if(!BALI_ROWS("cards").some(r=>String(r[0])===uid&&String(r[2])==="active"))
       BALI_FAIL("not-found","Активная BALI ID не найдена.");
     const sh=BALI_SHEET("coins"),rows=BALI_ROWS("coins"),idx=rows.findIndex(r=>String(r[0])===uid);
-    const old=idx<0?0:Number(rows[idx][1]);
+    const last=ledger.filter(r=>String(r[2])===uid).at(-1);
+    const old=last?Number(last[5]):idx<0?0:Number(rows[idx][1]);
     if(!Number.isSafeInteger(old)||old<0)BALI_FAIL("failed-precondition","Некорректный остаток.");
     const next=old+(op==="credit"?amount:-amount);
     if(next<0||next>999999999)BALI_FAIL("failed-precondition","Недостаточно BALI COIN или превышен лимит.");
@@ -361,7 +366,8 @@ function baliBonusTransfer(user,data){
         BALI_FAIL("failed-precondition","Бонус недоступен для перевода.");
       changes.push({idx,row,qty,kind});
     }
-    const previous=BALI_ROWS("bonusHistory").find(r=>String(r[0])==="transfer_"+requestId+"_out");
+    const previous=BALI_ROWS("bonusHistory").find(r=>
+      String(r[0]).startsWith("transfer_"+requestId+"_out_"));
     if(previous)return {ok:true,alreadyProcessed:true};
     const sh=BALI_SHEET("bonuses"),now=BALI_NOW();
     for(const c of changes){
@@ -399,6 +405,13 @@ function baliDispatch(user,action,data){
     privacyAccepted:baliConsentState(user,"privacy"),privacyWithdrawn:baliWithdrawn(user)};
   if(action==="consentAccept")return {consent:baliConsent(user,data)};
   if(action==="card")return {card:baliCardData(user)};
+  if(action==="adminCard"){
+    baliStaff(user,true);
+    const uid=BALI_TEXT(data.uid,128);
+    if(!/^[a-zA-Z0-9_-]{8,128}$/.test(uid))BALI_FAIL("invalid-argument","Неизвестный ID гостя.");
+    const guest=BALI_ROWS("guests").find(r=>String(r[0])===uid);
+    return {card:baliCardData({uid,email:String(guest?.[1]||""),name:String(guest?.[2]||"")})};
+  }
   if(action==="activateCard")return {card:baliCardActivate(user,data)};
   if(action==="coinHistory")return baliCoinHistory(user);
   if(action==="coinChange")return {result:baliCoinChange(user,data)};
