@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090909"><meta name="robots" content="noindex,nofollow">
+<title>BALI CARD · BRSM | КОНТАКТ</title>
+<link rel="icon" href="assets/bali-favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="bali-brsm.css?v=20261023-1">
+<script src="firebase-config.js"></script>
+</head><body>
+<header class="brsm-header"><a href="index.html">← BALI</a><strong>BALI CARD <span>· BRSM</span></strong><a href="index.html">Меню</a></header>
+<main class="brsm-main">
+<div class="brsm-heading"><span>КОНТАКТ × BALI × БРСМ</span><h1>ТВОЯ КАРТА. ТВОИ 3 ВЕЧЕРИНКИ.</h1><p>Отмечай посещения КОНТАКТ и участвуй в розыгрыше iPhone 18 Pro.</p></div>
+<div id="brsmAuthGate" class="brsm-gate" hidden><p>Войди в личный кабинет BALI, чтобы получить карту БРСМ.</p><button id="brsmLogin" type="button">Войти через Google</button></div>
+<div id="brsmPromoGate" class="brsm-gate" hidden>
+<h2>Получи BALI CARD · BRSM</h2><p>Карту назначает директор BALI, либо её можно активировать промокодом БРСМ.</p>
+<form id="brsmPromoForm"><label for="brsmPromoInput">Промокод БРСМ</label><input id="brsmPromoInput" placeholder="14 символов" maxlength="18" autocomplete="off" required><button type="submit">Активировать карту</button></form>
+</div>
+<section id="brsmCardArea" class="brsm-card-area" hidden aria-label="BALI CARD BRSM">
+<div class="brsm-cards">
+<article class="brsm-card brsm-front" aria-label="Лицевая сторона BALI CARD BRSM">
+<div class="brsm-label"><span>BALI CARD</span><strong>BRSM</strong></div>
+<div class="brsm-brand"><img src="assets/bali-id-card-readable.svg" alt="BALI" draggable="false"></div>
+<div class="brsm-identity"><strong id="brsmName">ГОСТЬ BALI</strong><span id="brsmNumber">000000</span></div>
+</article>
+<article class="brsm-card brsm-back" aria-label="Оборотная сторона с посещениями и числами">
+<div class="brsm-label"><span>BALI CARD</span><strong>BRSM</strong></div>
+<h2>3 ВЕЧЕРИНКИ · 10 ЧИСЕЛ</h2><p class="brsm-tagline">Посети 3 разные вечеринки КОНТАКТ</p>
+<div class="brsm-back-body">
+<div class="brsm-visits" id="brsmVisits" aria-label="Три посещения"></div>
+<div class="brsm-ticket"><span>ТВОИ 10 ЧИСЕЛ</span><div id="brsmNumbers" class="brsm-numbers"></div></div>
+</div>
+<div class="brsm-card-footer"><span>QR при входе · 1 отметка за вечер</span><span>РОЗЫГРЫШ · КОНТАКТ</span></div>
+</article>
+</div>
+<button type="button" class="brsm-toggle" id="brsmFlip">Перевернуть карту ↻</button>
+<p id="brsmProgress" class="brsm-progress"></p>
+<section class="brsm-redeem"><h2>Подтвердить посещение</h2>
+<p>Введи одноразовый код с вечеринки или открой QR-код, полученный на входе.</p>
+<form id="brsmQrForm"><label for="brsmQrInput">QR-код посещения</label><div class="brsm-inline"><input id="brsmQrInput" placeholder="Код с билета" autocomplete="off" required><button type="submit">Подтвердить</button></div></form>
+<button id="brsmScan" type="button" class="brsm-secondary">Сканировать камерой</button>
+<video id="brsmCamera" playsinline muted hidden></video>
+</section>
+<section class="brsm-live"><h2>КОНТАКТ · LIVE LOTTO</h2><p id="brsmDrawStatus">Розыгрыш ещё не начался.</p><div class="brsm-called" id="brsmCalled"></div><p>Названные ведущим числа автоматически зачёркиваются прямо на карте.</p></section>
+</section>
+<p id="brsmStatus" role="status" aria-live="polite"></p>
+<footer>Для совершеннолетних гостей, допущенных к посещению клуба. Условия акции и допуск определяются утверждёнными правилами.</footer>
+</main>
+<script type="module" src="bali-brsm.js?v=20261023-1"></script>
+</body></html>
