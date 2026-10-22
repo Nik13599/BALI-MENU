@@ -1,0 +1,30 @@
+name: BALI Sheets private backend tests
+on:
+  push:
+    branches: [main]
+    paths:
+      - "google-apps-script/**"
+      - "scripts/test-bali-sheets-backend.mjs"
+      - "bali-sheets-api.js"
+      - "bali-id.js"
+      - "bali-id-bank.js"
+      - "bali-id-coin.js"
+      - "bali-coin-admin.js"
+      - "cloudflare-pages/functions/api/bali-v3.js"
+      - ".github/workflows/bali-sheets-backend.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node --check < google-apps-script/BaliBackend.gs
+      - run: node scripts/test-bali-sheets-backend.mjs
+      - run: node --input-type=module --check < bali-sheets-api.js
+      - run: node --input-type=module --check < cloudflare-pages/functions/api/bali-v3.js
