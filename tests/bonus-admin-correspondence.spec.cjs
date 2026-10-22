@@ -1,7 +1,13 @@
 const {test,expect}=require('@playwright/test');
 const fs=require('node:fs');
 const cleanHtml=file=>fs.readFileSync(file,'utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'').replace(/<link\b[^>]*>/g,'');
-const source=file=>fs.readFileSync(file,'utf8').replace(/^import .*;$/gm,'');
+const source=file=>{
+  const raw=fs.readFileSync(file,'utf8');
+  const mockSheets=raw.includes('from "./bali-sheets-api.js"')
+    ?'\nconst sheetsEnabled=()=>false; const sheetsRequest=async()=>{throw Error("Sheets disabled in legacy Firebase mock");};'
+    :'';
+  return raw.replace(/^import .*;$/gm,'')+mockSheets;
+};
 
 async function mount(page,file,modules,{admin=true,custom=true,delayKinds=false}={}){
   // Execute the real forms/modules; all Firebase calls are local fixtures.
