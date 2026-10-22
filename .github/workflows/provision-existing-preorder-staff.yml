@@ -1,0 +1,40 @@
+name: BALI — Provision existing staff01 account
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provision-existing-preorder-staff.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: bali-provision-existing-staff01
+  cancel-in-progress: false
+jobs:
+  provision:
+    if: github.event_name == 'workflow_dispatch' || github.event.head_commit.message == 'Provision existing BALI staff01 account'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment: firebase-production
+    env:
+      BALI_STAFF_LOGIN: staff01
+      BALI_STAFF_EXPECTED_UID: PpentrythOSBDg9ShRmiucXfK7G3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+      - name: Authenticate using the existing project deployment identity
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.FIREBASE_WIF_PROVIDER || 'projects/855889005555/locations/global/workloadIdentityPools/bali-github-pool/providers/bali-github' }}
+          service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      - run: npm ci --prefix functions --no-audit --no-fund
+      - run: node --check scripts/provision-existing-preorder-staff.cjs
+      - name: Inspect exact existing identity and reject wider or revoked roles
+        run: node scripts/provision-existing-preorder-staff.cjs
+      - name: Assign and verify only the dedicated preorder role
+        run: node scripts/provision-existing-preorder-staff.cjs --apply
