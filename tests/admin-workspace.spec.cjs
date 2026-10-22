@@ -29,6 +29,9 @@ async function open(page,{ready=true}={}){
 async function design(page){
  await page.locator('[data-admin-tab="design"]').click();
  await expect(page.frameLocator('#baliDesignLiveFrame').locator('#baliPcAboutTitle')).toBeAttached();
+ // The iframe may have painted its markup before the builder's document
+ // listeners are installed. Wait for the actual edit-ready signal.
+ await expect(page.frameLocator('#baliDesignLiveFrame').locator('html')).toHaveAttribute('data-bali-builder-ready','true');
 }
 async function edit(page,text){
  await page.locator('#baliBuilderHomeBlock').selectOption('#baliPcAboutTitle');

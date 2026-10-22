@@ -1031,8 +1031,14 @@ function attachEventListeners() {
         if(mode==="bar"||mode==="hookah"){
             // NEVER activate restricted lists before an explicit YES.
             let permitted=false;
-            try{permitted=Boolean(await window.BaliAgeGate?.confirm?.());}
-            catch(error){console.warn("BALI age gate:",error);}
+            try{
+                // A fast tap can precede evaluation of the async age-gate module.
+                // Import the same module on demand instead of silently denying
+                // the restricted list and leaving the 18+ dialog hidden.
+                if(!window.BaliAgeGate?.confirm)
+                    await import("./bali-age-gate.js?v=20261021-fast1");
+                permitted=Boolean(await window.BaliAgeGate?.confirm?.());
+            }catch(error){console.warn("BALI age gate:",error);}
             if(!permitted){switchBaliMenuMode("kitchen");return;}
         }
         switchBaliMenuMode(mode);

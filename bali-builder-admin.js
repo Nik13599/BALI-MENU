@@ -596,6 +596,7 @@ function attachInteractions(d){
   if(enabled){event.preventDefault();event.stopImmediatePropagation();}
  },true);
  d.addEventListener("keydown",onBuilderShortcut,true);
+ d.documentElement.dataset.baliBuilderReady="true";
 }
 function attachFrame(){
  const d=frameDoc();if(!d?.body)return;
