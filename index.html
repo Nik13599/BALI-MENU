@@ -23,7 +23,39 @@
   <link rel="icon" href="assets/bali-favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/manrope-variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" data-bali-bundle="index" href="generated/index.css?v=e8025f61f0a7">
-  <link rel="stylesheet" href="bali-id-coin.css?v=20261022-coin1">
+<style id="bali-id-coin-style">
+/* BALI COIN is an informational loyalty-point balance, not money. */
+body.bali-guest-theme #baliIdSection .bali-id-bottom .bali-id-coin{
+  display:grid;align-items:end;gap:2px;flex:0 0 auto;min-width:0;
+  text-align:center;margin:0 auto 0 0;position:relative;z-index:2;
+  font-variant-numeric:tabular-nums;color:var(--bali-card-ink,#e8fde0);
+}
+body.bali-guest-theme #baliIdSection .bali-id-bottom .bali-id-coin small{
+  white-space:nowrap;letter-spacing:.07em;font:750 clamp(8px,1.4vw,10px)/1.25 Manrope,Inter,sans-serif!important;
+  color:inherit!important;opacity:.76;text-align:center;
+}
+body.bali-guest-theme #baliIdSection .bali-id-bottom .bali-id-coin output{
+  font:850 clamp(14px,2.5vw,21px)/1.08 Inter,Manrope,sans-serif;
+  letter-spacing:-.03em;white-space:nowrap;text-align:center;
+}
+@media(max-width:430px){
+  body.bali-guest-theme #baliIdSection .bali-id-bottom{gap:5px!important}
+  body.bali-guest-theme #baliIdSection .bali-id-bottom strong{max-width:37%!important;font-size:clamp(11px,2.7vw,14px)!important}
+  body.bali-guest-theme #baliIdSection .bali-id-number{font-size:clamp(15px,3.6vw,19px)!important;letter-spacing:.025em!important}
+  body.bali-guest-theme #baliIdSection .bali-id-coin{margin-left:auto!important}
+}
+
+.bali-id-coin-history{display:grid;gap:7px;padding:8px 0 11px;margin:0 0 10px;border-bottom:1px solid rgba(190,235,175,.25)}
+.bali-id-coin-history[hidden]{display:none!important}
+.bali-id-coin-history>strong{color:#baff69;font:800 12px Manrope,Inter,sans-serif}
+.bali-id-coin-history-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:7px 4px;border-bottom:1px solid rgba(190,235,175,.11)}
+.bali-id-coin-history-caption{display:grid;gap:3px}
+.bali-id-coin-history-caption strong{font-size:11px}
+.bali-id-coin-history-caption small{font-size:10px;color:#b0c6b2}
+.bali-id-coin-history-count{font-size:12px;font-variant-numeric:tabular-nums;color:#caff8e}
+.bali-id-coin-history-entry p{grid-column:1/-1;color:#bdcdbd;font-size:10px;margin:0}
+
+</style>
   <style>
     /* Date, event time and action buttons remain visible without scrolling.
        Use the same dialog width after opening the caption to prevent jumps. */
