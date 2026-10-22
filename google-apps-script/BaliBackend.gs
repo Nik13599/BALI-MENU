@@ -13,6 +13,7 @@ const BALI_TABS={orders:"Заказы",items:"Позиции заказов",men
   coins:"BALI COIN",coinHistory:"История BALI COIN",consents:"Согласия",plans:"Планы гостя",checkins:"Посещения"};
 const BALI_NOW=()=>new Date().toISOString();
 const BALI_TEXT=(v,n=120)=>String(v==null?"":v).trim().slice(0,n);
+const BALI_SAFE_CELL=value=>/^[=+@\-\t\r]/.test(String(value||""))?"\u0027"+value:value;
 const BALI_FAIL=(code,message)=>{throw {code,message};};
 const BALI_JSON=value=>ContentService.createTextOutput(JSON.stringify(value))
   .setMimeType(ContentService.MimeType.JSON);
@@ -120,6 +121,13 @@ function baliOrderCreate(user,data){
       dedup.add(item.id);return {...item,quantity:qty,total:Math.round(item.price*qty*100)/100};
     });
     const orders=BALI_ROWS("orders");
+    if(!user.uid){
+      const cutoff=Date.now()-3600000;
+      const recent=orders.filter(r=>String(r[9])===phone&&
+        Date.parse(BALI_ISO(r[4]))>cutoff);
+      if(recent.length>=3)BALI_FAIL("resource-exhausted",
+        "По этому номеру уже отправлено три гостевых предзаказа за час. Свяжитесь с клубом.");
+    }
     const orderNumber=Math.max(0,...orders.filter(r=>String(r[2])===eventId)
       .map(r=>Number(r[15])||0))+1;
     const total=Math.round(lines.reduce((acc,x)=>acc+x.total,0)*100)/100;
@@ -128,8 +136,9 @@ function baliOrderCreate(user,data){
     const sheetItems=BALI_SHEET("items");
     const rows=lines.map(x=>[id,x.id,x.name,x.quantity,x.price,x.total,now,eventId]);
     sheetItems.getRange(sheetItems.getLastRow()+1,1,rows.length,8).setValues(rows);
-    BALI_SHEET("orders").appendRow([id,date,eventId,event.title,now,now,user.uid,name,user.email,
-      phone,table,booking,notes,"pending",total,orderNumber,false,expires]);
+    BALI_SHEET("orders").appendRow([id,date,eventId,event.title,now,now,user.uid,BALI_SAFE_CELL(name),user.email,
+      phone,BALI_SAFE_CELL(table),BALI_SAFE_CELL(booking),BALI_SAFE_CELL(notes),
+      "pending",total,orderNumber,false,expires]);
     BALI_SHEET("audit").appendRow([now,id,user.uid,"create",1,"new-order"]);
     return {id,orderNumber,eventId,eventDate:date,status:"pending",total};
   });
