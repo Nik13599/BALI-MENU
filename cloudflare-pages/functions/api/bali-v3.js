@@ -3,7 +3,7 @@
  * Calls are verified again by Apps Script against Firebase Auth, not by a claimed UID. */
 const actions=new Set(["health","me","consentAccept","profileSave","menu",
   "myOrders","createOrder","editOrder","cancelOrder","staffOrders","staffStatus","staffReport",
-  "staffList","staffManage","adminGuests","adminGuestOrders","card","activateCard","adminCard","coinHistory",
+  "staffList","staffManage","adminGuests","adminGuestOrders","catalogSync","card","activateCard","adminCard","coinHistory",
   "coinChange","privilegeAssign","privilegeRules","privilegeRulesSave","bonusGrant","bonusHistory","bonusRecipient",
   "bonusTransfer","plans","avatarGet","avatarSave"]);
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{
