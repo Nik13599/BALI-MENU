@@ -25,6 +25,23 @@ export function composeBaliPreorderReport({kind,date,eventTitle,orders,includeCa
     includeCancelled:kind==="orders"||includeCancelled};
 }
 export function preorderTelegramText(report){
+  if(report.singleOrder){
+    const o=report.orders[0];
+    if(!o)throw new Error("Предзаказ не найден.");
+    const parts=["BALI NIGHT CLUB","ПРЕДЗАКАЗ · "+report.eventTitle+" №"+(o.orderNumber??o.id),
+      "Дата: "+report.date,"Статус: "+(labels[normalizedStatus(o.status)]||o.status)];
+    if(o.tableNumber)parts.push("Столик: "+o.tableNumber);
+    if(o.bookingId)parts.push("ID бронирования: "+o.bookingId);
+    parts.push("Гость: "+(o.customerName||"—"),"Телефон: "+(o.customerPhone||"—"));
+    if(o.email)parts.push("Email: "+o.email);
+    parts.push("","Состав предзаказа:");
+    for(const item of o.items||[])parts.push("• "+item.name+" × "+item.quantity+
+      " ("+fmt(item.unitPrice)+"/шт.) = "+fmt(lineTotal(item)));
+    if(!(o.items||[]).length)parts.push("Нет позиций.");
+    if(o.notes)parts.push("Пожелания: "+o.notes);
+    parts.push("","ИТОГО: "+fmt(orderTotal(o)));
+    return parts.join("\n");
+  }
   const result=["BALI NIGHT CLUB",report.kind==="orders"?"ОТЧЁТ ПО ПРЕДЗАКАЗАМ":"ОТЧЁТ ПО БЛЮДАМ",
     "Мероприятие: "+report.eventTitle,"Дата: "+report.date,""];
   if(report.kind==="orders"){
@@ -81,7 +98,7 @@ function reportPages(report){
     ctx.fillStyle=color.ink;ctx.fillRect(0,0,W,19);ctx.fillStyle=color.lime;ctx.fillRect(0,19,W,7);
     setFont(35,800);ctx.fillStyle=color.ink;ctx.fillText("BALI",L,88);
     setFont(15,700);ctx.fillStyle="#68796b";ctx.fillText("NIGHT CLUB  /  ПРЕДЗАКАЗЫ",L+127,86);
-    setFont(27,800);ctx.fillStyle=color.ink;ctx.fillText(report.kind==="orders"?"ОТЧЁТ ПО ЗАКАЗАМ":"ОТЧЁТ ПО БЛЮДАМ",L,139);
+    setFont(27,800);ctx.fillStyle=color.ink;ctx.fillText(report.singleOrder?"КАРТОЧКА ПРЕДЗАКАЗА":report.kind==="orders"?"ОТЧЁТ ПО ЗАКАЗАМ":"ОТЧЁТ ПО БЛЮДАМ",L,139);
     setFont(20,400);ctx.fillStyle=color.muted;
     const description=report.eventTitle+"  ·  "+report.date;
     const nameLines=wrap(ctx,description,W-2*L).slice(0,2);
@@ -109,7 +126,7 @@ function reportPages(report){
       text("№ "+(o.orderNumber??o.id)+"  ·  "+(o.customerName||"Гость"),L+18,y+31,22,800);
       text(fmt(orderTotal(o)),R-220,y+31,22,800);
       y+=62;
-      const ref=[o.customerPhone,o.tableNumber&&"Столик "+o.tableNumber,o.bookingId&&"Бронь "+o.bookingId].filter(Boolean).join(" · ");
+      const ref=[o.customerPhone,o.tableNumber&&"Столик "+o.tableNumber,o.bookingId&&"Бронь "+o.bookingId,report.singleOrder&&o.email&&"Email: "+o.email].filter(Boolean).join(" · ");
       multiline(ref,L+14,W-2*L-20,18,25);
       text("Статус: "+(labels[normalizedStatus(o.status)]||"Подтверждён")+(o.archived?" · Архив":""),L+14,y+18,17,400,color.muted);y+=33;
       for(const item of items){
@@ -218,24 +235,42 @@ function zipPng(files){
   return new Blob(parts,{type:"application/zip"});
 }
 const namePart=x=>String(x).normalize("NFKC").replace(/[^\p{L}\p{N}]+/gu,"_").slice(0,44);
-export async function downloadBaliPreorderReport(report,type){
+export function composeBaliSinglePreorder(order){
+  if(!order||!Array.isArray(order.items))throw new Error("Не загружен состав предзаказа.");
+  return {...composeBaliPreorderReport({
+    kind:"orders",date:order.eventDate||"",eventTitle:order.eventTitle||"Мероприятие",
+    orders:[order]
+  }),singleOrder:true};
+}
+async function deliverReportFile(blob,filename,preferNativeShare){
+  if(preferNativeShare&&typeof File==="function"&&
+     typeof navigator.share==="function"&&typeof navigator.canShare==="function"){
+    const file=new File([blob],filename,{type:blob.type});
+    if(navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:"BALI · Предзаказ"});
+      return;
+    }
+  }
+  download(blob,filename);
+}
+export async function downloadBaliPreorderReport(report,type,{preferNativeShare=false}={}){
   if(!["pdf","png"].includes(type))throw new Error("Формат отчёта не поддерживается.");
   const pages=reportPages(report);
-  const base="BALI_"+report.date+"_"+namePart(report.eventTitle)+"_"+report.kind;
+  const base="BALI_"+report.date+"_"+namePart(report.eventTitle)+"_"+(report.singleOrder?"preorder_"+namePart(report.orders[0]?.orderNumber??report.orders[0]?.id??"1"):report.kind);
   if(type==="pdf"){
     const jpegs=[];for(const canvas of pages){
       const blob=await toBlob(canvas,"image/jpeg",.87);
       jpegs.push(new Uint8Array(await blob.arrayBuffer()));
     }
-    download(new Blob([packPdfJpeg(jpegs,pages[0].width,pages[0].height)],{type:"application/pdf"}),base+".pdf");
+    await deliverReportFile(new Blob([packPdfJpeg(jpegs,pages[0].width,pages[0].height)],{type:"application/pdf"}),base+".pdf",preferNativeShare);
   }else if(pages.length===1){
-    download(await toBlob(pages[0],"image/png"),base+".png");
+    await deliverReportFile(await toBlob(pages[0],"image/png"),base+".png",preferNativeShare);
   }else{
     const files=[];for(let i=0;i<pages.length;i++){
       const blob=await toBlob(pages[i],"image/png");
       files.push({name:"page_"+String(i+1).padStart(3,"0")+".png",data:new Uint8Array(await blob.arrayBuffer())});
     }
-    download(zipPng(files),base+"_PNG_pages.zip");
+    await deliverReportFile(zipPng(files),base+"_PNG_pages.zip",preferNativeShare);
   }
   return pages.length;
 }
@@ -246,7 +281,7 @@ export function showBaliPreorderTelegram(report){
   old?.remove();
   const dialog=document.createElement("dialog");
   dialog.id="baliTelegramReportDialog";dialog.className="bali-telegram-report-dialog";
-  const heading=document.createElement("h2");heading.textContent="Отчёт для Telegram";
+  const heading=document.createElement("h2");heading.textContent=report.singleOrder?"Предзаказ для Telegram":"Отчёт для Telegram";
   const caption=document.createElement("p");
   const body=document.createElement("textarea");body.readOnly=true;body.rows=15;
   body.setAttribute("aria-label","Текст отчёта для Telegram");
