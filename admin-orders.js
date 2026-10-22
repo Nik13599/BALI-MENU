@@ -22,6 +22,7 @@ const auth=getAuth(app),db=sheetsEnabled()?null:getFirestore(app),$=id=>document
 let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=false,orders=[],catalog=[];
 let events=new Map(),dateOrders=[],loadedDate="",unsubDateOrders=null,dateRevision=0;
 let calendarSourceLoaded=false,calendarLastRead=0,calendarReadPromise=null;
+let calendarAutoDatePending=true,calendarAutoEventPending=true;
 let preorderOnlyStaff=false,sheetsCanEditOrders=false;
 let editOrder=null,editLines=[],originalIds=new Set(),creatingOrder=false;
 const statuses={pending:"Ожидает подтверждения",confirmed:"Подтверждён",cancelled:"Отменён"};
@@ -96,9 +97,14 @@ const eventTitle=o=>o.eventTitle||events.get(o.eventId||o.eventDate)?.title||"Н
  * guest site's BALI Calendar. The private Sheets catalog is only a fallback
  * while this public snapshot is unavailable. */
 const minskToday=()=>new Date(Date.now()+3*3600000).toISOString().slice(0,10);
-const activeCalendarEvent=event=>Boolean(event&&event.preorderEnabled===true&&
-  /^\d{4}-\d{2}-\d{2}$/.test(event.date)&&event.date>=minskToday()&&
-  Date.parse(event.closesAt)>Date.now());
+const activeCalendarEvent=event=>{
+  if(!event||!/^\d{4}-\d{2}-\d{2}$/.test(event.date))return false;
+  const today=minskToday();
+  if(event.date>today)return true;
+  if(event.date!==today)return false;
+  const closes=Date.parse(event.closesAt);
+  return !Number.isFinite(closes)||closes>Date.now();
+};
 function activePreorderEvent(id,date){
   if(date<minskToday())return false;
   const event=events.get(id||date);
@@ -137,14 +143,21 @@ async function refreshCalendarEvents({force=false,quiet=false}={}){
       }
       calendarSourceLoaded=true;calendarLastRead=Date.now();
       events=next;
+      const count=[...next.values()].filter(activeCalendarEvent).length;
+      const sync=$("staffCalendarSyncStatus");
+      if(sync)sync.textContent=count?"С сайта: "+count:"На сайте нет будущих событий";
       renderDates();renderOrders();syncWorkspaceReportScope();
       if($("orderEditDialog").open){
+        fillOrderDateOptions($("editOrderDate").value);
         fillOrderEventOptions($("editOrderEvent").value);
         $("editOrderCalendarHint").textContent="Мероприятия обновлены с календаря сайта BALI.";
       }
     }catch(error){
+      const sync=$("staffCalendarSyncStatus");
+      if(sync)sync.textContent="Ошибка загрузки с сайта";
       if(!quiet&&$("orderEditDialog").open)
         $("editOrderCalendarHint").textContent="Календарь недоступен. Показаны последние загруженные мероприятия.";
+      renderCalendarShortcuts();
       throw error;
     }finally{clearTimeout(timeout);}
   })();
@@ -695,25 +708,70 @@ function renderOrders(){
     container.append(card);
   }
 }
+/* Always display the nearest published events without waiting for a
+ * blank "All dates" selection or the private catalog synchronisation. */
+function renderCalendarShortcuts(){
+  const strip=$("staffUpcomingEvents");if(!strip)return;
+  strip.replaceChildren();
+  const upcoming=[...events.values()].filter(activeCalendarEvent)
+    .sort((a,b)=>a.date.localeCompare(b.date)||
+      (a.startTime||"").localeCompare(b.startTime||"")||
+      a.title.localeCompare(b.title,"ru"));
+  if(!upcoming.length){
+    strip.append(node("span",calendarSourceLoaded?
+      "Нет ближайших мероприятий.":"Загружаем календарь BALI…","preorder-calendar-placeholder"));
+    strip.append(button("↻ Обновить",()=>{
+      void refreshCalendarEvents({force:true}).catch(()=>{});
+    },"preorder-calendar-chip"));
+    return;
+  }
+  const date=$("ordersDateFilter").value,id=$("ordersEventFilter").value;
+  for(const event of upcoming){
+    const title=readableOrderDate(event.date)+" · "+event.title+
+      (event.startTime?" "+event.startTime:"");
+    const chip=button(title,()=>{
+      const dates=$("ordersDateFilter"),options=$("ordersEventFilter");
+      const dateChanged=dates.value!==event.date;
+      calendarAutoDatePending=false;calendarAutoEventPending=false;
+      if(dateChanged){
+        dates.value=event.date;
+        renderEventFilter();
+        options.value=event.id;
+        watchDateOrders();
+      }else{
+        options.value=event.id;
+        renderEventFilter();renderOrders();
+      }
+      renderCalendarShortcuts();
+    },"preorder-calendar-chip");
+    chip.setAttribute("aria-pressed",String(date===event.date&&id===event.id));
+    chip.title="Показать предзаказы: "+title;strip.append(chip);
+  }
+}
 function renderDates(){
   const el=$("ordersDateFilter"),old=el.value;
   el.replaceChildren(new Option("Все даты",""));
   const upcoming=compactWorkspace;
-  // Only active and future dates are selectable in BALI STAFF.
-  // Old orders stay stored for history and audit, not in the active queue.
   const dates=[...new Set([
-    ...[...events.values()].filter(event=>!upcoming||activeCalendarEvent(event)).map(x=>x.date),
-    ...orders.filter(withinOrderRetention).filter(x=>!upcoming||activePreorderEvent(x.eventId,x.eventDate)).map(x=>x.eventDate),
-    ...dateOrders.filter(withinOrderRetention).filter(x=>!upcoming||activePreorderEvent(x.eventId,x.eventDate)).map(x=>x.eventDate)
-  ])].filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&(!upcoming||x>=minskToday()))
-    .sort(upcoming?undefined:(a,b)=>b.localeCompare(a));
-  if(upcoming)dates.sort();
+    ...[...events.values()].filter(e=>!upcoming||activeCalendarEvent(e)).map(e=>e.date),
+    ...orders.filter(withinOrderRetention).filter(o=>!upcoming||activePreorderEvent(o.eventId,o.eventDate)).map(o=>o.eventDate),
+    ...dateOrders.filter(withinOrderRetention).filter(o=>!upcoming||activePreorderEvent(o.eventId,o.eventDate)).map(o=>o.eventDate)
+  ])].filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&(!upcoming||d>=minskToday()))
+    .sort(upcoming?(a,b)=>a.localeCompare(b):(a,b)=>b.localeCompare(a));
   for(const date of dates)el.add(new Option(readableOrderDate(date),date));
-  if(dates.includes(old))el.value=old;
-  else if(old){
-    dateRevision++;dateOrders=[];loadedDate="";
-  }
+  const valid=dates.includes(old);
+  const choose=compactWorkspace&&dates.length&&(calendarAutoDatePending||Boolean(old&&!valid));
+  if(valid&&!calendarAutoDatePending)el.value=old;
+  else if(choose){el.value=dates[0];calendarAutoDatePending=false;calendarAutoEventPending=true;}
+  if(old&&!valid){dateRevision++;dateOrders=[];loadedDate="";}
   renderEventFilter();
+  if(el.value&&authorized&&el.value!==loadedDate&&(choose||old!==el.value)){
+    const selectedDate=el.value;
+    queueMicrotask(()=>{
+      if(authorized&&$("ordersDateFilter").value===selectedDate&&loadedDate!==selectedDate)
+        watchDateOrders();
+    });
+  }
 }
 function renderEventFilter(){
   const select=$("ordersEventFilter"),date=$("ordersDateFilter").value,old=select.value;
@@ -724,13 +782,15 @@ function renderEventFilter(){
       found.set(id,event.title);
   for(const o of [...orders,...dateOrders].filter(withinOrderRetention))
     if((!date||o.eventDate===date)&&
-       (!compactWorkspace||activePreorderEvent(o.eventId,o.eventDate)))
+      (!compactWorkspace||activePreorderEvent(o.eventId,o.eventDate)))
       found.set(o.eventId||o.eventDate,eventTitle(o));
-  for(const [id,title] of [...found].sort((a,b)=>a[1].localeCompare(b[1],"ru")))
-    select.add(new Option(title,id));
-  if([...select.options].some(x=>x.value===old))select.value=old;
-  select.disabled=!date;
-  syncWorkspaceReportScope();
+  const ordered=[...found].sort((a,b)=>a[1].localeCompare(b[1],"ru"));
+  for(const [id,title] of ordered)select.add(new Option(title,id));
+  if(!calendarAutoEventPending&&ordered.some(([id])=>id===old))select.value=old;
+  else if(compactWorkspace&&date&&ordered.length===1){
+    select.value=ordered[0][0];calendarAutoEventPending=false;
+  }
+  select.disabled=!date;syncWorkspaceReportScope();renderCalendarShortcuts();
   const canExport=Boolean(date&&select.value);
   for(const id of ["exportEventOrders","exportEventDishes","exportEventOrdersPng",
     "exportEventDishesPng","exportEventOrdersTg","exportEventDishesTg"]){
@@ -768,8 +828,13 @@ function watchDateOrders(){
     }catch(e){if(revision===dateRevision&&run===snapshotRevision)setStatus("Ошибка загрузки даты: "+(e.code||e.message));}
   },e=>{if(revision===dateRevision){snapshotRevision++;setStatus("Ошибка списка даты: "+(e.code||e.message));}});
 }
-$("ordersDateFilter").addEventListener("change",watchDateOrders);
-$("ordersEventFilter").addEventListener("change",()=>{renderEventFilter();renderOrders();});
+$("ordersDateFilter").addEventListener("change",()=>{
+  calendarAutoDatePending=false;calendarAutoEventPending=true;
+  watchDateOrders();renderCalendarShortcuts();
+});
+$("ordersEventFilter").addEventListener("change",()=>{
+  calendarAutoEventPending=false;renderEventFilter();renderOrders();
+});
 $("showArchivedOrders")?.addEventListener("click",()=>{
   const toggle=$("showArchivedOrders");
   const next=toggle.getAttribute("aria-pressed")!=="true";
@@ -1061,7 +1126,9 @@ async function subscribe(user) {
   reportScopeKey="";clearDishOnlinePreview();
   const current=++generation;
   statusOutbox.deactivate();
-  orders=[];catalog=[];events=new Map();calendarSourceLoaded=false;calendarLastRead=0;authorized=false;preorderOnlyStaff=false;sheetsCanEditOrders=false;
+  orders=[];catalog=[];events=new Map();calendarSourceLoaded=false;calendarLastRead=0;
+  calendarAutoDatePending=true;calendarAutoEventPending=true;
+  authorized=false;preorderOnlyStaff=false;sheetsCanEditOrders=false;
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
   $("ordersAdminList").textContent="Проверяем права...";
   if(!user||!user.emailVerified)return;
