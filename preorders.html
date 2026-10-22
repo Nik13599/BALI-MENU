@@ -5,7 +5,7 @@
 <title>BALI | Предзаказы · Сотрудники</title>
 <link rel="icon" href="assets/bali-favicon.svg">
 <link rel="stylesheet" href="generated/admin.css?v=faac21ed7332">
-<link rel="stylesheet" href="preorders-workspace.css?v=20261022-single-report2">
+<link rel="stylesheet" href="preorders-workspace.css?v=20261022-aggregate-report3">
 </head><body class="bali-preorders-workspace">
 <header class="topbar" role="banner">
 <span class="brand">BALI <span>STAFF</span></span>
@@ -44,21 +44,38 @@
 </div>
 <div id="ordersStats" class="preorder-stats" aria-live="polite"></div>
 <details class="preorder-tools">
-<summary>Отчёт по предзаказу <span>PDF · PNG · Telegram ⌄</span></summary>
+<summary>Отчёты по предзаказам <span>PDF · PNG · Telegram ⌄</span></summary>
 <div class="preorder-tools-body">
-  <p class="preorder-report-note">Выберите конкретный предзаказ из загруженной истории. Дату и мероприятие для отчёта выбирать не нужно. Доступен любой статус, включая архив, пока заказ хранится в системе (до 30 дней).</p>
-  <div class="preorder-report-single">
-    <label for="preorderReportOrder">Предзаказ
-      <select id="preorderReportOrder" aria-label="Выберите предзаказ для отчёта">
-        <option value="">Выберите предзаказ</option>
+  <p class="preorder-report-note">Укажите дату. «Все мероприятия» создаст отчёт за весь день, либо выберите одно мероприятие. Отчёты доступны в любой момент, пока предзаказы хранятся в истории (30 дней).</p>
+  <div class="preorder-report-filters">
+    <label for="preorderReportDate">Дата отчёта
+      <input id="preorderReportDate" type="date" aria-label="Дата для отчёта">
+    </label>
+    <label for="preorderReportEvent">Мероприятие
+      <select id="preorderReportEvent" aria-label="Мероприятие для отчёта" disabled>
+        <option value="">Все мероприятия за день</option>
       </select>
     </label>
+  </div>
+  <div class="preorder-report-row">
+    <div class="preorder-report-description"><strong>Общий список предзаказов</strong><small>Все предзаказы выбранной даты или мероприятия: номера, гости, контакты, позиции, количество, цены, суммы и статусы, включая отменённые.</small></div>
     <div class="preorder-report-actions">
-      <button id="preorderReportPdf" type="button" disabled>↓ PDF</button>
-      <button id="preorderReportPng" type="button" disabled>↓ PNG</button>
-      <button id="preorderReportTg" type="button" disabled>↗ Telegram</button>
+      <button id="preorderReportOrdersPdf" type="button" disabled>↓ PDF</button>
+      <button id="preorderReportOrdersPng" type="button" disabled>↓ PNG</button>
+      <button id="preorderReportOrdersTg" type="button" disabled>↗ Telegram</button>
     </div>
   </div>
+  <div class="preorder-report-row">
+    <div class="preorder-report-description"><strong>Сводка по блюдам</strong><small>Общее количество порций по каждому блюду и сумма для кухни. Отменённые и архивные не учитываются по умолчанию.</small></div>
+    <div class="preorder-report-actions">
+      <button id="preorderReportDishesView" type="button" disabled>◉ Онлайн</button>
+      <button id="preorderReportDishesPdf" type="button" disabled>↓ PDF</button>
+      <button id="preorderReportDishesPng" type="button" disabled>↓ PNG</button>
+      <button id="preorderReportDishesTg" type="button" disabled>↗ Telegram</button>
+    </div>
+  </div>
+  <label class="check"><input id="preorderReportIncludeCancelled" type="checkbox"> Включать отменённые и архивные в сводку по блюдам</label>
+  <section id="preorderDishesOnline" class="preorder-dishes-online" aria-live="polite" hidden></section>
   <div class="preorder-history-controls"><button type="button" id="showArchivedOrders" aria-pressed="false">Показать архив</button><span>История предзаказов хранится 30 дней</span><button type="button" id="clearExpiredOrders">Удалить историю старше 30 дней</button></div>
 </div>
 </details>
@@ -144,5 +161,5 @@
 </main>
 <script src="firebase-config.js?v=20261020-2"></script>
 <script type="module" src="preorders-access.js?v=20261021-fixed1"></script>
-<script type="module" src="admin-orders.js?v=20261022-single-report2"></script>
+<script type="module" src="admin-orders.js?v=20261022-aggregate-report3"></script>
 </body></html>
