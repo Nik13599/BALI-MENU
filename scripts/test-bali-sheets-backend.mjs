@@ -256,7 +256,7 @@ const movedToWebsite=ok("staff","staffEditOrder",{
 assert.equal(movedToWebsite.eventTitle,"BALI Live Website Event");
 assert.equal(movedToWebsite.eventDate,liveDate);
 assert.equal(movedToWebsite.orderNumber,1);
-assert.equal(ok("staff","staffReport",{date:liveDate,eventId:liveDate,kind:"orders"}).orderCount,1);
+assert.equal(ok("staff","staffReport",{date:liveDate,eventId:liveDate,kind:"orders"}).count,1);
 // An event cannot be invented by editing the request payload.
 fail("staff","staffEditOrder",{
   id:movedToWebsite.id,expectedUpdatedAt:movedToWebsite.updatedAt,
