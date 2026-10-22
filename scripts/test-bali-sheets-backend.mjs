@@ -54,7 +54,7 @@ vm.createContext(sandbox);
 vm.runInContext(readFileSync("google-apps-script/BaliBackend.gs","utf8"),sandbox,{filename:"BaliBackend.gs"});
 let bridgeKey="test-bridge";
 const request=(token,action,payload={})=>{
-  const body={bridgeKey,token:"test-"+token.padEnd(80,"_"),action,payload};
+  const body={bridgeKey,token:token?"test-"+token.padEnd(80,"_"):"",action,payload};
   const res=sandbox.doPost({postData:{contents:JSON.stringify(body)}}).value;
   return JSON.parse(res);
 };
@@ -127,4 +127,30 @@ assert.equal(sheets.get("Настройки")[1][0],"BALI_BRIDGE_KEY_MIGRATED");
 assert.equal(request("guestA","me").ok,false); // previous bridge secret rejected
 bridgeKey=bootstrapKey;
 assert.equal(request("guestA","me").ok,true); // migrated secret authorizes the new bridge
-console.log("BALI Sheets: guest isolation, privilege tiers, BALI COIN ledger, bonus ownership, privacy and plans PASS");
+const eventDate=new Date(Date.now()+4*86400000).toISOString().slice(0,10);
+const closesAt=new Date(Date.now()+5*86400000).toISOString();
+sheets.get("Меню").push([101,"Кухня","Тестовое блюдо","Проверка блюда",15,"",true,1]);
+sheets.get("Мероприятия").push([eventDate,eventDate,"BALI Test Event",true,closesAt,""]);
+const guestOrder={guestVerified:true,privacyConsent:true,internationalConsent:true,
+  eventDate,eventId:eventDate,customerName:"Тестовый посетитель",
+  customerPhone:"+375291234567",tableNumber:"12",bookingId:"",
+  notes:"",requestId:"guest_request_1234567890",
+  items:[{id:101,quantity:2}]};
+const firstGuest=ok("","guestCreateOrder",guestOrder).order;
+assert.equal(firstGuest.total,30);
+assert.equal(firstGuest.orderNumber,1);
+assert.equal(firstGuest.status,"pending");
+assert.equal(ok("","guestCreateOrder",guestOrder).order.id,firstGuest.id);
+assert.equal(sheets.get("Заказы").length,2); // one row despite duplicate submission
+assert.equal(sheets.get("Заказы")[1][6],""); // no fabricated personal account
+assert.equal(ok("owner","staffOrders",{date:eventDate,eventId:eventDate}).orders.length,1);
+assert.equal(ok("guestA","myOrders").orders.length,0); // unrelated logged-in guest
+assert.equal(ok("guestB","myOrders").orders.length,0);
+fail("","guestCreateOrder",{...guestOrder,guestVerified:false},"permission-denied");
+fail("","guestCreateOrder",{...guestOrder,privacyConsent:false},"permission-denied");
+fail("","guestCreateOrder",{...guestOrder,customerPhone:"5555",requestId:"guest_request_new000000"},"invalid-argument");
+fail("","guestCreateOrder",{...guestOrder,tableNumber:"",requestId:"guest_request_new111111"},"invalid-argument");
+fail("","guestCreateOrder",{...guestOrder,eventId:"unlisted",requestId:"guest_request_new222222"},"failed-precondition");
+fail("","card",{},"unauthenticated"); // BALI ID remains account-only
+fail("","staffOrders",{date:eventDate},"unauthenticated");
+console.log("BALI Sheets: anonymous preorder validation, idempotency, staff visibility, guest isolation, BALI ID and coins PASS");
