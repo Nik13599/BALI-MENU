@@ -3,6 +3,7 @@ import {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signInWith
 import {getFirestore,doc,getDoc} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
+window.BaliSheetsToken=()=>auth.currentUser?.getIdToken()||null;
 let seq=0;
 const status=text=>{$("loginStatus").textContent=text;};
 $("preorderStaffLogin").addEventListener("submit",async e=>{
