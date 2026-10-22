@@ -12,7 +12,7 @@ let seq=0;
 const status=text=>{
   $("loginStatus").textContent=text;
   $("staffSessionLoading").hidden=true;
-  if(text)$("loginView").hidden=false;
+  if(text){$("loginView").hidden=false;$("adminView").hidden=true;$("staffHeaderAccount").hidden=true;}
 };
 if(sheetsEnabled()){
   $("loginIdentity").textContent="Доступ к предзаказам проверяется по назначенной сотруднику роли на сервере.";
@@ -53,7 +53,10 @@ onAuthStateChanged(auth,async user=>{
   if(!user){status("Введите логин и пароль сотрудника или используйте вход через Google.");return;}
   if(!user.emailVerified){status("Нет подтверждённого доступа к предзаказам.");return;}
   // Keep the login form hidden while the restored session is authorized.
-  $("staffSessionLoading").textContent="Загружаем рабочую панель…";
+  $("staffSessionLoading").hidden=true;
+  $("adminView").hidden=false;
+  $("staffHeaderAccount").hidden=false;
+  $("adminEmail").textContent=user.displayName||user.email||"Сотрудник BALI";
   try{
     if(sheetsEnabled()){
       const {role}=await sheetsRequest("me");
