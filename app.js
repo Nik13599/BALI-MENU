@@ -1724,7 +1724,7 @@ async function handleCheckout(e) {
     const customer=guestCheckout?{
       uid:window.BaliAuth?.getProfile?.()?.uid||"",
       name:document.getElementById("customerName").value.trim(),
-      phone:document.getElementById("customerPhone").value.replace(/[\\s()\\-]/g,""),
+      phone:document.getElementById("customerPhone").value.replace(/[\s()\-]/g,""),
       email:window.BaliAuth?.getProfile?.()?.email||""
     }:window.BaliAuth.getProfile();
     if(!customer)return;
@@ -1745,7 +1745,7 @@ async function handleCheckout(e) {
 
     if(guestCheckout){
         const feedback=document.getElementById("checkoutOrderError");
-        if(customer.name.length<2||!/^\\+[1-9][0-9]{7,14}$/.test(customer.phone)){
+        if(customer.name.length<2||!/^\+[1-9][0-9]{7,14}$/.test(customer.phone)){
             if(feedback){feedback.textContent="Введите имя и номер телефона в формате +375291234567.";feedback.hidden=false;}
             return;
         }
