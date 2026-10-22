@@ -11,6 +11,11 @@ const DOCUMENTS=new Set(["settings/homeDesign","settings/homeInterface",
 const PATHS=[...COLLECTIONS,...DOCUMENTS];
 const FILTERED=new Set(["promotions","mobileAboutBackgrounds"]);
 const CACHE_SECONDS=120;
+const BUNDLE_KEY="bali:public:bundle:v1";
+const MAX_BUNDLE_BYTES=18000000;
+const validBundle=record=>record&&typeof record==="object"&&
+  record.sources&&typeof record.sources==="object"&&
+  PATHS.every(path=>Array.isArray(record.sources[path]));
 function json(value,status=200,extra={}){
   return new Response(JSON.stringify(value),{status,headers:{
     "Content-Type":"application/json; charset=utf-8",
@@ -55,26 +60,34 @@ export async function onRequestGet({request,env,waitUntil}){
     if(saved)return saved;
   }catch(_){/* Read-through KV is still safe if a cache colo is unavailable. */}
   try{
-    const sources={};
-    await Promise.all(PATHS.map(async path=>{
-      const storageKey="bali:public:v1:"+path;
-      let record=null;
-      try{record=await kv.get(storageKey,"json");}catch(_){/* Recover from Firestore below. */}
-      // Existing published KV records are authoritative even when old.
-      // Never re-read sensitive collections or republish arbitrary browser data.
-      if(record&&Array.isArray(record.documents)&&Number.isFinite(record.cachedAt)
-         &&record.cachedAt<=Date.now()){
-        sources[path]=record.documents;
-        return;
+    // The aggregated KV object avoids thirteen KV reads on every cold colo.
+    // Only trusted server-side publication may update the bundle.
+    let aggregate=null;
+    try{aggregate=await kv.get(BUNDLE_KEY,"json");}catch(_){}
+    let sources;
+    if(validBundle(aggregate))sources=aggregate.sources;
+    else{
+      const loaded=await Promise.allSettled(PATHS.map(async path=>{
+        const storageKey="bali:public:v1:"+path;
+        let record=null;
+        try{record=await kv.get(storageKey,"json");}catch(_){/* Recover below. */}
+        if(record&&Array.isArray(record.documents)&&Number.isFinite(record.cachedAt)
+           &&record.cachedAt<=Date.now())return [path,record.documents];
+        const documents=await fromFirestore(path);
+        const encoded=JSON.stringify({documents,cachedAt:Date.now()});
+        if(encoded.length<16000000)await kv.put(storageKey,encoded).catch(()=>{});
+        return [path,documents];
+      }));
+      sources=Object.fromEntries(loaded.filter(row=>row.status==="fulfilled")
+        .map(row=>row.value));
+      // A partial bundle is safe; the browser falls back for missing paths.
+      // Only complete, verified snapshots may be persisted as a shared bundle.
+      if(PATHS.every(path=>Array.isArray(sources[path]))){
+        const encoded=JSON.stringify({sources,cachedAt:Date.now()});
+        if(encoded.length<MAX_BUNDLE_BYTES)await kv.put(BUNDLE_KEY,encoded).catch(()=>{});
       }
-      const documents=await fromFirestore(path);
-      sources[path]=documents;
-      const encoded=JSON.stringify({documents,cachedAt:Date.now()});
-      if(encoded.length<16000000){
-        // A failed KV write must not hide an otherwise valid public snapshot.
-        await kv.put(storageKey,encoded).catch(()=>{});
-      }
-    }));
+      if(!Object.keys(sources).length)throw Error("no-public-sources");
+    }
     const response=json({sources},200,{
       "Cache-Control":"public, max-age=0, s-maxage="+CACHE_SECONDS,
       "X-BALI-Public":"bundle-v1"
