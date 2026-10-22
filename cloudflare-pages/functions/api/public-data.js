@@ -18,14 +18,6 @@ const DOCUMENTS=new Set([
 const PUBLISHED_ONLY=new Set(["promotions","mobileAboutBackgrounds"]);
 const TTL=path=>path==="events"||path==="promotions"?20:
   path==="menu"?30:path.startsWith("settings/")?30:60;
-// Bounded KV age prevents permanent staleness if an administrator updates
-// Firestore from an old browser that does not publish to Cloudflare.
-// Historical images and events are retained; only public reads are cached.
-// Refresh hot events less frequently to stay well inside the free KV
-// write quota. Administrator publishing still refreshes immediately via KV;
-// the edge cache TTL above bounds when new content becomes visible.
-const MAX_KV_AGE_MS=path=>path==="events"||path==="promotions"?20*60*1000:
-  path==="menu"?60*60*1000:6*60*60*1000;
 const json=(body,status,headers={})=>new Response(JSON.stringify(body),{
   status,headers:{"Content-Type":"application/json; charset=utf-8",
     "X-Content-Type-Options":"nosniff",...headers}
@@ -47,25 +39,33 @@ export async function onRequestGet({request,waitUntil,env}){
     headers.set("X-BALI-Cache","HIT");
     return new Response(cached.body,{status:cached.status,headers});
   }
-  // Strong separation: guests read published snapshots from Cloudflare KV.
-  // Only a cold cache/migration miss may read Firestore; no private path exists
-  // in this allowlist. Admin updates explicitly publish new snapshots.
+
+  // Keep the last successfully published snapshot in durable Cloudflare KV.
+  // Never write an empty response on an upstream outage, and never expose
+  // users, orders, bonuses or administrator documents through this allowlist.
+  const kv=env?.BALI_PUBLIC_CONTENT;
   const kvKey="bali:public:v1:"+path;
-  if(env?.BALI_PUBLIC_CONTENT){
+  let backup=null;
+  if(kv){
     try{
-      const mirror=await env.BALI_PUBLIC_CONTENT.get(kvKey,"json");
-      if(mirror&&Array.isArray(mirror.documents)&&
-         Number.isFinite(mirror.cachedAt)&&mirror.cachedAt<=Date.now()&&
-         Date.now()-mirror.cachedAt<MAX_KV_AGE_MS(path)){
-        const answer=json({documents:mirror.documents},200,{
-          "Cache-Control":"public, max-age=0, s-maxage="+ttl,
-          "X-BALI-Cache":"KV"
-        });
-        waitUntil(cache.put(key,answer.clone()));
-        return answer;
-      }
-    }catch(_error){ /* Fall through safely when KV is unavailable. */ }
+      const record=await kv.get(kvKey,"json");
+      if(record&&Array.isArray(record.documents))backup=record;
+    }catch(_){ /* KV outage must not prevent primary public reads. */ }
   }
+  const maxAgeMs=path==="events"||path==="promotions"?20*60*1000:
+    path==="menu"?60*60*1000:6*60*60*1000;
+  const usable=backup&&Number.isFinite(backup.cachedAt)&&
+    backup.cachedAt<=Date.now()&&Date.now()-backup.cachedAt<maxAgeMs;
+  function fromBackup(stale=false){
+    const response=json({documents:backup.documents},200,{
+      "Cache-Control":"public, max-age=0, s-maxage="+(stale?120:ttl),
+      "X-BALI-Cache":stale?"STALE":"KV"
+    });
+    waitUntil(cache.put(key,response.clone()));
+    return response;
+  }
+  if(usable)return fromBackup();
+
   const base="https://firestore.googleapis.com/v1/projects/"+PROJECT+
     "/databases/(default)/documents";
   const coll=COLLECTIONS.has(path);
@@ -88,6 +88,8 @@ export async function onRequestGet({request,waitUntil,env}){
     if(!coll&&upstream.status===404){
       payload={documents:[]};
     }else if(!upstream.ok){
+      // Preserve known real events/menu/banner data on Firestore quota errors.
+      if(backup)return fromBackup(true);
       const status=upstream.status===429?503:upstream.status===403?503:502;
       return json({error:"Public content is temporarily unavailable",code:upstream.status===429?"resource-exhausted":"unavailable"},
         status,{"Cache-Control":"no-store","Retry-After":"30"});
@@ -102,12 +104,14 @@ export async function onRequestGet({request,waitUntil,env}){
       "X-BALI-Cache":"MISS"
     });
     waitUntil(cache.put(key,response.clone()));
-    if(env?.BALI_PUBLIC_CONTENT)waitUntil(
-      env.BALI_PUBLIC_CONTENT.put(kvKey,JSON.stringify({...payload,cachedAt:Date.now()}))
-        .catch(()=>{}) // A cache-write failure must not hide approved content.
-    );
+    if(kv){
+      const contents=JSON.stringify({...payload,cachedAt:Date.now()});
+      // One KV value can hold up to 25 MiB. Avoid unbounded quota usage.
+      if(contents.length<20000000)waitUntil(kv.put(kvKey,contents).catch(()=>{}));
+    }
     return response;
   }catch(_error){
+    if(backup)return fromBackup(true);
     return json({error:"Public content is temporarily unavailable",code:"unavailable"},503,
       {"Cache-Control":"no-store","Retry-After":"30"});
   }finally{clearTimeout(timeout);}

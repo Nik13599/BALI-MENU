@@ -57,11 +57,12 @@ function checked(ref){
   return !restricted||ref.filters?.some(f=>f.field==="published"&&f.op==="=="&&f.value===true);
 }
 const cacheKey=ref=>"bali-public-v2:"+config()?.projectId+":"+ref.path;
-function cached(ref){
+function cached(ref,{allowStale=false}={}){
   if(!cachedCollections.has(ref.path))return null;
   try{
     const entry=JSON.parse(localStorage.getItem(cacheKey(ref))||"null");
-    if(!entry||Date.now()-entry.at>120000||Date.now()<entry.at||
+    const maxAge=allowStale?7*24*60*60*1000:120000;
+    if(!entry||Date.now()-entry.at>maxAge||Date.now()<entry.at||
       !Array.isArray(entry.rows))return null;
     const docs=entry.rows.map(row=>({id:row.id,data:()=>row.record}));
     return {docs,metadata:{fromCache:true,hasPendingWrites:false}};
@@ -154,7 +155,15 @@ export function onSnapshot(ref,...args){
     }catch(error){
       if(!active)return;
       if(error.code==="edge-missing")await fallbackSdk();
-      else onError?.(error);
+      else {
+        // During a public-data quota outage preserve the guest's last real
+        // kitchen/bar catalog; never replace it with fake default content.
+        const backup=cached(ref,{allowStale:true});
+        if(backup&&!lastVersion){send(backup);lastVersion="saved-public-catalog";}
+        else if(!backup&&!lastVersion)onError?.(error);
+        // A temporary polling failure must never erase a successfully
+        // displayed real poster, banner or menu catalog.
+      }
     }finally{busy=false;}
   }
   void poll(true);

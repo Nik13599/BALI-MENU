@@ -25,7 +25,6 @@ globalThis.fetch=async(url,opts)=>{
   return new Response(JSON.stringify({name:"settings/homeDesign",fields:{aboutTitle:{stringValue:"BALI"}}}),{
     status:200,headers:{"Content-Type":"application/json"}});
 };
-const workingFetch=globalThis.fetch;
 const make=(path,extra="")=>({
   request:new Request("https://baliminsk.by/api/public-data?path="+encodeURIComponent(path)+extra),
   waitUntil
@@ -66,30 +65,49 @@ assert(publicReader.includes('if(error.code==="edge-missing")await fallbackSdk()
 assert(publicReader.includes('["settings/homeDesign"'));
 console.log("BALI public edge cache: approved reads, CDN hit, filtered promotions, 403/429 safety, private data isolation PASS.");
 
-// Restore successful mocked upstream after the intentional quota failure.
-globalThis.fetch=workingFetch;
-// Bound persistent snapshots: they must not stay stale after later admin edits.
+// Durable KV snapshots must be reused when Firestore refuses reads.
 stored.clear();pending.length=0;
-const kvMap=new Map();
-const kv={get:async key=>kvMap.get(key)||null,put:async (key,data)=>kvMap.set(key,JSON.parse(data))};
-await onRequestGet({...make("events"),env:{BALI_PUBLIC_CONTENT:kv}});
+const kvRows=new Map();
+const kv={get:async key=>kvRows.get(key)||null,
+  put:async(key,data)=>{kvRows.set(key,JSON.parse(data));}};
+globalThis.fetch=async()=>new Response(JSON.stringify([{document:{
+  name:"projects/bali-menu-5a48b/databases/(default)/documents/events/real_event",
+  fields:{title:{stringValue:"Настоящая афиша"}}
+}}]),{status:200});
+const context=(path)=>({...make(path),env:{BALI_PUBLIC_CONTENT:kv}});
+const first=await onRequestGet(context("events"));
+assert.equal(first.status,200);
 await Promise.all(pending.splice(0));
-const fresh=await onRequestGet({...make("events"),env:{BALI_PUBLIC_CONTENT:kv}});
-assert.equal(fresh.headers.get("X-BALI-Cache"),"HIT"); // edge cache first
+assert.equal(kvRows.get("bali:public:v1:events").documents.length,1);
 stored.clear();
-const kvFresh=await onRequestGet({...make("events"),env:{BALI_PUBLIC_CONTENT:kv}});
-assert.equal(kvFresh.headers.get("X-BALI-Cache"),"KV");
+globalThis.fetch=async()=>new Response("quota",{status:429});
+const second=await onRequestGet(context("events"));
+assert.equal(second.status,200);
+assert.equal(second.headers.get("X-BALI-Cache"),"KV");
 await Promise.all(pending.splice(0));
-const kvKey="bali:public:v1:events";
-kvMap.get(kvKey).cachedAt=Date.now()-22*60*1000;
+kvRows.get("bali:public:v1:events").cachedAt=Date.now()-24*60*60*1000;
 stored.clear();
-const upstreamBefore=upstreamCalls;
-globalThis.fetch=async(url,opts)=>{
- upstreamCalls++;
- return new Response(JSON.stringify([{document:{name:"events/new",fields:{title:{stringValue:"New event"}}}}]),{status:200});
+const stale=await onRequestGet(context("events"));
+assert.equal(stale.status,200);
+assert.equal(stale.headers.get("X-BALI-Cache"),"STALE");
+assert.equal((await stale.json()).documents[0].fields.title.stringValue,"Настоящая афиша");
+await Promise.all(pending.splice(0));
+console.log("Last real public content survives Firestore quota exhaustion PASS.");
+
+ 
+// A stale KV entry must refresh from Firestore if Firestore is available.
+kvRows.get("bali:public:v1:events").cachedAt=Date.now()-22*60*1000;
+stored.clear();
+let refreshed=0;
+globalThis.fetch=async()=>{
+  refreshed++;
+  return new Response(JSON.stringify([{document:{
+    name:"projects/bali-menu-5a48b/databases/(default)/documents/events/new_event",
+    fields:{title:{stringValue:"Следующая афиша"}}
+  }}]),{status:200});
 };
-const afterExpiry=await onRequestGet({...make("events"),env:{BALI_PUBLIC_CONTENT:kv}});
-assert.equal(afterExpiry.headers.get("X-BALI-Cache"),"MISS");
-assert.equal(upstreamCalls,upstreamBefore+1);
+const refreshedSnapshot=await onRequestGet(context("events"));
+assert.equal(refreshedSnapshot.headers.get("X-BALI-Cache"),"MISS");
+assert.equal(refreshed,1);
 await Promise.all(pending.splice(0));
-console.log("BALI bounded Cloudflare KV freshness: fresh mirror uses no Firestore; expired mirror refreshes PASS.");
+console.log("Stale KV refreshes from the authoritative source when available PASS.");
