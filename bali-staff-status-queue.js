@@ -5,7 +5,6 @@
  */
 const PREFIX="bali-staff-status-queue-v1:";
 const ALLOWED=new Set(["pending","confirmed","cancelled"]);
-const RETRYABLE=new Set(["upstream","busy","unavailable","deadline-exceeded","network-request-failed","resource-exhausted","aborted","timeout"]);
 const VALID_ID=/^[a-zA-Z0-9_-]{1,100}$/;
 const waitDelay=attempt=>Math.min(30000,Math.round(1500*Math.pow(2,Math.min(attempt,5))));
 export function createDurableStaffStatusQueue({storage,send,onChange=()=>{},onSynced=()=>{},onConflict=()=>{},onDeferred=()=>{}}){
@@ -79,13 +78,15 @@ export function createDurableStaffStatusQueue({storage,send,onChange=()=>{},onSy
           const result=await send({...op});
           if(owner!==uid||revision!==run)break;
           if(get(op.id)?.requestId!==op.requestId)continue;
-          queued.delete(op.id);persist();attempt=0;
+          queued.delete(op.id);
+          try{persist();}catch(e){queued.set(op.id,op);throw e;}
+          attempt=0;
           onSynced(op,result);onChange();
         }catch(error){
           if(owner!==uid||revision!==run)break;
           const code=String(error?.code||"");
           // 401, stale data or revoked permissions must never be retried blindly.
-          const permanent=["permission-denied","unauthenticated","invalid-argument","not-found","failed-precondition"].includes(code);
+          const permanent=["permission-denied","unauthenticated","invalid-argument","not-found","failed-precondition","aborted"].includes(code);
           if(permanent){
             queued.delete(op.id);
             try{persist()}catch(_){}
@@ -97,7 +98,12 @@ export function createDurableStaffStatusQueue({storage,send,onChange=()=>{},onSy
           retry();break;
         }
       }
-    }finally{running=false;}
+    }finally{
+      running=false;
+      // If an earlier session's in-flight fetch ended after switching accounts,
+      // resume the new account's pending actions rather than leaving them idle.
+      if(uid&&queued.size&&revision!==run&&timer===null)queueMicrotask(()=>void flush());
+    }
   }
   function resume(){if(uid&&queued.size)void flush();}
   return {activate,deactivate,enqueue,get,all,flush:resume};
