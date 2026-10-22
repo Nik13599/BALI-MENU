@@ -8,6 +8,31 @@ const collections=new Set(["promotions","events","menu","bar_menu","hookah_menu"
 const documents=new Set(["settings/homeDesign","settings/homeInterface","settings/homeEventPlaceholder","settings/siteBuilderPublished","settings/menuVisibility","settings/appearance"]);
 const cachedCollections=new Set(["menu","bar_menu","hookah_menu","tea_menu"]);
 const inFlight=new Map();
+// All public readers share ONE HTTP request per visible guest every 5 minutes.
+// Existing per-path endpoint remains the safe fallback during staged rollout.
+const BUNDLE_REFRESH_MS=5*60*1000;
+let bundleAt=0,bundlePending=null;
+async function publicBundle(){
+  if(bundlePending&&Date.now()-bundleAt<BUNDLE_REFRESH_MS)return bundlePending;
+  bundleAt=Date.now();
+  bundlePending=(async()=>{
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),11000);
+    try{
+      const response=await fetch("/api/public-bundle",{
+        method:"GET",credentials:"omit",signal:controller.signal,
+        headers:{Accept:"application/json"}
+      });
+      if(!response.ok||!response.headers.get("content-type")?.includes("application/json"))
+        throw Error("Public bundle unavailable");
+      const data=await response.json();
+      if(!data||typeof data.sources!=="object"||!data.sources)
+        throw Error("Invalid public bundle");
+      return data.sources;
+    }finally{clearTimeout(timeout);}
+  })();
+  return bundlePending;
+}
 const config=()=>window.BALI_FIREBASE_CONFIG;
 let sdkPromise;
 const sdk=()=>sdkPromise??=Promise.all([
@@ -87,6 +112,12 @@ async function read(ref,{fresh=false}={}){
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),11000);
     try{
+      // A bundle makes initial public loading and each refresh a single
+      // Function invocation, regardless of how many UI components subscribe.
+      try{
+        const sources=await publicBundle();
+        if(Array.isArray(sources[ref.path]))return snapshot(ref,sources[ref.path]);
+      }catch(_){/* Older deployments may lack the bundle; preserve the old route. */}
       const response=await fetch("/api/public-data?path="+encodeURIComponent(ref.path),{
         method:"GET",credentials:"omit",signal:controller.signal,
         headers:{Accept:"application/json"}
@@ -122,8 +153,9 @@ export function onSnapshot(ref,...args){
   let active=true,busy=false,unsubSdk=null,usingSdk=false,lastVersion="";
   const original=cached(ref);
   if(original)queueMicrotask(()=>{if(active&&!usingSdk)send(original);});
-  const interval=ref.path==="events"||ref.path==="promotions"?45000:
-    ref.path==="menu"?90000:120000;
+  // A single bundle clock supersedes per-collection 45/90/120s polling.
+  // Every source refreshes together; hidden tabs do not poll.
+  const interval=BUNDLE_REFRESH_MS;
   async function fallbackSdk(){
     if(!active||usingSdk)return;
     usingSdk=true;
