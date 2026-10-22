@@ -408,3 +408,81 @@ body.bali-preorders-workspace{
     flex:1 1 auto;min-width:0;padding:6px 7px;
   }
 }
+
+/* 2026-10-23: one compact order layout for desktop and mobile staff.
+   Keep the current status, price and actions; only regroup order metadata. */
+.bali-preorders-workspace .preorder-table-header,
+.bali-preorders-workspace .preorder-compact-row{
+  grid-template-columns:minmax(0,1fr) 96px 136px minmax(165px,max-content);
+  grid-template-areas:none;gap:10px;align-items:center;
+}
+.bali-preorders-workspace .preorder-compact-row{
+  min-height:0;padding:9px 12px;
+}
+.bali-preorders-workspace .preorder-primary{min-width:0;display:grid;gap:3px}
+.bali-preorders-workspace .preorder-queue-headline{
+  display:flex;align-items:baseline;gap:8px;min-width:0;white-space:nowrap;
+}
+.bali-preorders-workspace .preorder-queue-headline strong{
+  display:block;flex:0 1 auto;min-width:0;max-width:100%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:#dafbb1;font-size:13px;font-weight:800;
+}
+.bali-preorders-workspace .preorder-queue-reference{
+  color:#83c9fb;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  font-size:11px;font-weight:700;white-space:nowrap;
+}
+.bali-preorders-workspace .preorder-queue-date{
+  display:block;color:#a6b6a8;font-size:10px;font-weight:550;
+  font-variant-numeric:tabular-nums;line-height:1.3;
+}
+.bali-preorders-workspace .preorder-queue-identity{
+  display:flex;align-items:baseline;gap:9px;min-width:0;white-space:nowrap;
+}
+.bali-preorders-workspace .preorder-queue-identity strong{
+  flex:0 1 auto;min-width:0;max-width:50%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:#f0f5ed;font-size:12px;font-weight:750;
+}
+.bali-preorders-workspace .preorder-queue-phone{
+  flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:#c0e5ff!important;text-decoration:underline!important;
+  text-decoration-color:#567c94!important;text-underline-offset:3px;
+  font-size:12px!important;font-variant-numeric:tabular-nums;
+}
+.bali-preorders-workspace .preorder-cell.dishes{margin-top:2px}
+.bali-preorders-workspace .preorder-cell.dishes strong{
+  display:block;color:#a9bba8;font-size:10px;font-weight:650;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-cell.amount{min-width:0}
+.bali-preorders-workspace .preorder-compact-row .preorder-cell.amount strong{
+  font-variant-numeric:tabular-nums;
+}
+@media(max-width:1080px){
+  .bali-preorders-workspace .preorder-compact-row{
+    grid-template-columns:minmax(0,1fr) 100px minmax(120px,max-content);
+    grid-template-areas:"primary amount status" "actions actions actions";
+    gap:6px 10px;
+  }
+  .bali-preorders-workspace .preorder-primary{grid-area:primary}
+  .bali-preorders-workspace .preorder-cell.amount{grid-area:amount}
+  .bali-preorders-workspace .preorder-status-cell{grid-area:status}
+  .bali-preorders-workspace .preorder-actions{
+    grid-area:actions;justify-content:flex-end;padding-top:5px;
+    border-top:1px solid #2b3b2d;
+  }
+  .bali-preorders-workspace .preorder-table-header{display:none}
+}
+@media(max-width:700px){
+  .bali-preorders-workspace .preorder-compact-row{
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:"primary primary" "status amount" "actions actions";
+    gap:6px 8px;padding:9px 10px;
+  }
+  .bali-preorders-workspace .preorder-queue-headline strong{font-size:12px}
+  .bali-preorders-workspace .preorder-queue-reference{font-size:10px}
+  .bali-preorders-workspace .preorder-queue-identity strong{max-width:55%}
+  .bali-preorders-workspace .preorder-status-cell{justify-content:flex-start}
+  .bali-preorders-workspace .preorder-cell.amount strong{text-align:right}
+  .bali-preorders-workspace .preorder-actions{padding-top:5px}
+}
