@@ -349,3 +349,48 @@ body.bali-preorders-workspace{
   .bali-preorders-workspace .preorder-details-actions #orderDetailsEdit[hidden]{display:none}
   .bali-preorders-workspace .preorder-details-actions:has(#orderDetailsEdit[hidden]){grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+
+/* 2026-10-22: compact primary action and report for one preorder. */
+.bali-preorders-workspace .preorder-controls #createManualOrder{
+  box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;
+  gap:7px;flex:0 0 auto;width:auto;min-width:0;max-width:100%;
+  min-height:36px;height:36px;padding:0 14px;margin:0;
+  border-radius:8px;font-size:13px!important;line-height:1.15;
+  letter-spacing:0;font-weight:800;white-space:nowrap;
+  box-shadow:none;text-transform:none;
+}
+.bali-preorders-workspace .preorder-create-icon{
+  font-size:18px;line-height:1;font-weight:550;display:inline-block;
+}
+.bali-preorders-workspace .preorder-report-single{
+  display:grid;grid-template-columns:minmax(220px,1fr) auto;
+  align-items:end;gap:12px;padding:6px 0 4px;
+}
+.bali-preorders-workspace .preorder-report-single label{
+  color:#b3c4af;font-size:12px;display:grid;gap:6px;min-width:0;
+}
+.bali-preorders-workspace .preorder-report-single select{
+  box-sizing:border-box;width:100%;min-width:0;height:39px;
+  padding:7px 11px;border:1px solid #48624b;border-radius:8px;
+  background:#202b22;color:#f4f8f1;font-size:12px;
+}
+.bali-preorders-workspace .preorder-report-single .preorder-report-actions{
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+}
+.bali-preorders-workspace .preorder-report-single .preorder-report-actions button{
+  min-height:39px;padding:7px 12px;font-size:12px;white-space:nowrap;
+}
+.bali-preorders-workspace .preorder-report-single .preorder-report-actions button:disabled{
+  opacity:.44;cursor:not-allowed;
+}
+@media(max-width:700px){
+  .bali-preorders-workspace .preorder-controls #createManualOrder{
+    display:flex;width:max-content;margin:8px 0 0 auto;
+    min-height:36px;height:36px;padding:0 13px;font-size:12px!important;
+  }
+  .bali-preorders-workspace .preorder-report-single{grid-template-columns:minmax(0,1fr);gap:9px}
+  .bali-preorders-workspace .preorder-report-single select{font-size:12px}
+  .bali-preorders-workspace .preorder-report-single .preorder-report-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:6px}
+  .bali-preorders-workspace .preorder-report-single .preorder-report-actions button{min-width:0;padding:7px 5px}
+}
