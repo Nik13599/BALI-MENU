@@ -39,7 +39,7 @@ async function loadList(){
   host.replaceChildren();
   for(const x of out.codes||[]){
    const row=create("div","bali-qr-manage-row"),meta=create("div"),desc=create("strong",null,(x.name||kinds.get(x.kind)||x.kind)+" · "+labels[x.action]+" · "+labels[x.mode]);
-   const extra=create("small",null,(x.active?"АКТИВЕН":"ОТКЛЮЧЁН")+(x.used?" · ИСПОЛЬЗОВАН":"")+" · ×"+x.quantity+" · использований: "+(x.uses||0));
+   const extra=create("small",null,(x.active?"АКТИВЕН":"ОТКЛЮЧЁН")+(x.used?" · ИСПОЛЬЗОВАН":"")+" · ×"+x.quantity+" · использований: "+(Number.isInteger(x.uses)?x.uses:"данные временно недоступны"));
    meta.append(desc,extra);row.append(meta);
    if(x.active&&!x.used){
     const revoke=create("button",null,"Отключить");revoke.type="button";revoke.addEventListener("click",async()=>{
