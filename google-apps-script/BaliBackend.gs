@@ -8,7 +8,9 @@
 const BALI_BOOK = "1QxY-WgMwTT_5F3tdHxZICVbdUo4XOvgqI_7endBhOe0";
 const BALI_FB_KEY = "AIzaSyAiGyt5O6x2V0pBNIJ2pOlXxXBgaYqzzUA"; // Firebase web key (public)
 const BALI_TABS={orders:"Заказы",items:"Позиции заказов",menu:"Меню",events:"Мероприятия",
-  roles:"Администраторы",audit:"История изменений",guests:"Гости"};
+  roles:"Администраторы",audit:"История изменений",guests:"Гости",
+  cards:"BALI ID",privileges:"Привилегии",bonuses:"Бонусы",bonusHistory:"История бонусов",
+  coins:"BALI COIN",coinHistory:"История BALI COIN",consents:"Согласия",plans:"Планы гостя"};
 const BALI_NOW=()=>new Date().toISOString();
 const BALI_TEXT=(v,n=120)=>String(v==null?"":v).trim().slice(0,n);
 const BALI_FAIL=(code,message)=>{throw {code,message};};
@@ -176,9 +178,241 @@ function baliManageStaff(user,input){
     return {ok:true,email};
   });
 }
+
+/* ── BALI ID, individual privileges, bonus balances and BALI COIN ledger ── */
+const BALI_TIERS=["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ"];
+const BALI_BONUS_KINDS=["entry","shot","cocktail","hookah"];
+const BALI_CONSENT_VERSION="2026-10-21";
+function baliConsentState(user,kind){
+  return BALI_ROWS("consents").some(r=>String(r[0])===user.uid&&String(r[1])===kind&&
+    BALI_TRUE(r[3])&&String(r[2])===(kind==="privacy"?BALI_CONSENT_VERSION:"1"));
+}
+function baliWithdrawn(user){
+  return BALI_ROWS("consents").some(r=>String(r[0])===user.uid&&String(r[1])==="privacy-withdrawal"&&BALI_TRUE(r[3]));
+}
+function baliConsent(user,data){
+  const type=String(data.type||"");
+  if(!["privacy","bali-id:privilege","privacy-withdrawal"].includes(type))
+    BALI_FAIL("invalid-argument","Неизвестный тип согласия.");
+  if(data.accepted!==true)BALI_FAIL("invalid-argument","Необходимо явное подтверждение.");
+  return baliLock(()=>{
+    const rows=BALI_ROWS("consents");
+    if(rows.some(r=>String(r[0])===user.uid&&String(r[1])===type&&BALI_TRUE(r[3])))
+      return {accepted:true,type,alreadyAccepted:true};
+    if(type!=="privacy-withdrawal"&&baliWithdrawn(user))
+      BALI_FAIL("permission-denied","Согласие отозвано. Обратитесь в клуб.");
+    BALI_SHEET("consents").appendRow([user.uid,type,type==="privacy"?BALI_CONSENT_VERSION:"1",true,BALI_NOW(),"bali-online"]);
+    return {accepted:true,type};
+  });
+}
+function baliCardData(user){
+  const card=BALI_ROWS("cards").find(r=>String(r[0])===user.uid);
+  const record=BALI_ROWS("privileges").find(r=>String(r[0])===user.uid);
+  const tier=BALI_TIERS.includes(String(record?.[1]))?String(record[1]):"Member";
+  let benefits=[];
+  try{const value=JSON.parse(String(record?.[2]||"[]"));if(Array.isArray(value))benefits=value.filter(x=>typeof x==="string").slice(0,5);}
+  catch(_){}
+  const coins=BALI_ROWS("coins").find(r=>String(r[0])===user.uid);
+  const balance=coins===undefined?null:Number(coins[1]);
+  const bonuses=BALI_ROWS("bonuses").filter(r=>String(r[1])===user.uid)
+    .map(r=>({id:String(r[0]),kind:String(r[2]),originalCount:Number(r[3])||0,
+      remaining:Number(r[4])||0,unlimited:BALI_TRUE(r[5]),transferable:BALI_TRUE(r[6]),
+      expiresAt:BALI_ISO(r[7]),source:String(r[8]||""),createdAt:BALI_ISO(r[9]),
+      note:String(r[11]||"")}))
+    .filter(x=>(x.unlimited||x.remaining>0)&&(!x.expiresAt||Date.parse(x.expiresAt)>Date.now()));
+  return {activated:!!card&&String(card[2])==="active",
+    number:card?String(card[1]).padStart(6,"0"):"",tier,benefits,
+    coinBalance:Number.isSafeInteger(balance)&&balance>=0?balance:null,
+    bonuses,agreed:baliConsentState(user,"bali-id:privilege"),
+    profile:baliGuestProfile(user)};
+}
+function baliCardActivate(user,data){
+  if(data.accepted!==true||!baliConsentState(user,"privacy"))
+    BALI_FAIL("failed-precondition","Подтвердите условия BALI ID и согласие на обработку данных.");
+  const guest=BALI_ROWS("guests").find(r=>String(r[0])===user.uid);
+  if(!guest||String(guest[2]||"").trim().length<2||
+    !/^\+[1-9][0-9]{7,14}$/.test(String(guest[3]||"")))
+    BALI_FAIL("failed-precondition","Сначала завершите регистрацию гостя.");
+  return baliLock(()=>{
+    if(!baliConsentState(user,"bali-id:privilege"))
+      BALI_SHEET("consents").appendRow([user.uid,"bali-id:privilege","1",true,BALI_NOW(),"card-onboarding"]);
+    const existing=BALI_ROWS("cards").find(r=>String(r[0])===user.uid);
+    if(!existing){
+      const used=BALI_ROWS("cards").map(r=>Number(r[1])||0);
+      const number=Math.max(0,...used)+1;
+      if(number>999999)BALI_FAIL("resource-exhausted","Достигнут предел шестизначных карт.");
+      BALI_SHEET("cards").appendRow([user.uid,number,"active",BALI_NOW(),BALI_NOW(),1]);
+    }
+    if(!BALI_ROWS("privileges").some(r=>String(r[0])===user.uid))
+      BALI_SHEET("privileges").appendRow([user.uid,"Member","[]",BALI_NOW(),user.uid,"active"]);
+    if(!BALI_ROWS("coins").some(r=>String(r[0])===user.uid))
+      BALI_SHEET("coins").appendRow([user.uid,0,BALI_NOW(),1]);
+    return baliCardData(user);
+  });
+}
+function baliCoinHistory(user,targetUid){
+  const uid=targetUid||user.uid;
+  if(uid!==user.uid)baliStaff(user,true);
+  return {items:BALI_ROWS("coinHistory").filter(r=>String(r[2])===uid)
+    .map(r=>({id:String(r[0]),createdAt:BALI_ISO(r[1]),type:String(r[3]),
+      count:Number(r[4]),balanceAfter:Number(r[5]),reason:String(r[7]||"")}))
+    .slice(-60).reverse()};
+}
+function baliCoinChange(user,data){
+  baliStaff(user,true);
+  const uid=BALI_TEXT(data.uid,128),op=BALI_TEXT(data.operation,12),
+    amount=Number(data.amount),reason=BALI_TEXT(data.reason,160),
+    requestId=BALI_TEXT(data.requestId,80);
+  if(!/^[a-zA-Z0-9_-]{8,128}$/.test(uid)||!["credit","debit"].includes(op)||
+    !Number.isSafeInteger(amount)||amount<=0||amount>1000000||reason.length<5||
+    !/^[-_a-zA-Z0-9]{12,80}$/.test(requestId))
+    BALI_FAIL("invalid-argument","Укажите карту, количество BALI COIN и основание операции.");
+  return baliLock(()=>{
+    const prior=BALI_ROWS("coinHistory").find(r=>String(r[8])===requestId);
+    if(prior){
+      if(String(prior[2])!==uid||String(prior[3])!==op||Number(prior[4])!==amount)
+        BALI_FAIL("already-exists","Идентификатор запроса уже использован.");
+      return {ok:true,alreadyProcessed:true,balance:Number(prior[5])};
+    }
+    if(!BALI_ROWS("cards").some(r=>String(r[0])===uid&&String(r[2])==="active"))
+      BALI_FAIL("not-found","Активная BALI ID не найдена.");
+    const sh=BALI_SHEET("coins"),rows=BALI_ROWS("coins"),idx=rows.findIndex(r=>String(r[0])===uid);
+    const old=idx<0?0:Number(rows[idx][1]);
+    if(!Number.isSafeInteger(old)||old<0)BALI_FAIL("failed-precondition","Некорректный остаток.");
+    const next=old+(op==="credit"?amount:-amount);
+    if(next<0||next>999999999)BALI_FAIL("failed-precondition","Недостаточно BALI COIN или превышен лимит.");
+    const id="coin_"+Utilities.getUuid(),now=BALI_NOW();
+    // Journal first, then balance. Reconciliation can replay the journal if write fails.
+    BALI_SHEET("coinHistory").appendRow([id,now,uid,op,amount,next,user.uid,reason,requestId]);
+    const version=idx<0?1:(Number(rows[idx][3])||0)+1;
+    if(idx<0)sh.appendRow([uid,next,now,version]);
+    else sh.getRange(idx+2,1,1,4).setValues([[uid,next,now,version]]);
+    return {ok:true,balance:next,operationId:id};
+  });
+}
+function baliAssignPrivilege(user,data){
+  baliStaff(user,true);
+  const uid=BALI_TEXT(data.uid,128),tier=BALI_TEXT(data.tier,30);
+  const benefits=Array.isArray(data.benefits)?data.benefits.map(x=>BALI_TEXT(x,180)):[];
+  if(!/^[a-zA-Z0-9_-]{8,128}$/.test(uid)||!BALI_TIERS.includes(tier)||
+    benefits.length>5||benefits.some(x=>x.length<1))
+    BALI_FAIL("invalid-argument","Укажите карту, допустимый уровень и не более пяти привилегий.");
+  return baliLock(()=>{
+    if(!BALI_ROWS("cards").some(r=>String(r[0])===uid&&String(r[2])==="active"))
+      BALI_FAIL("not-found","Активная карта гостя не найдена.");
+    const sh=BALI_SHEET("privileges"),rows=BALI_ROWS("privileges");
+    const idx=rows.findIndex(r=>String(r[0])===uid);
+    const entry=[uid,tier,JSON.stringify(benefits),BALI_NOW(),user.uid,"active"];
+    if(idx<0)sh.appendRow(entry);else sh.getRange(idx+2,1,1,entry.length).setValues([entry]);
+    BALI_SHEET("audit").appendRow([BALI_NOW(),"",user.uid,"privilege-assign",1,uid+":"+tier]);
+    return {ok:true,tier,benefits};
+  });
+}
+function baliBonusGrant(user,data){
+  baliStaff(user,true);
+  const uid=BALI_TEXT(data.uid,128),kind=BALI_TEXT(data.kind,30),
+    count=Number(data.quantity),reason=BALI_TEXT(data.reason,160);
+  if(!/^[a-zA-Z0-9_-]{8,128}$/.test(uid)||!BALI_BONUS_KINDS.includes(kind)||
+    !Number.isInteger(count)||count<1||count>999||reason.length<5)
+    BALI_FAIL("invalid-argument","Некорректные данные начисления бонусов.");
+  return baliLock(()=>{
+    if(!BALI_ROWS("cards").some(r=>String(r[0])===uid&&String(r[2])==="active"))
+      BALI_FAIL("not-found","Активная карта гостя не найдена.");
+    const now=BALI_NOW(),id="bonus_"+Utilities.getUuid();
+    BALI_SHEET("bonuses").appendRow([id,uid,kind,count,count,false,data.transferable===true,
+      BALI_TEXT(data.expiresAt,32),"admin",now,user.uid,reason]);
+    BALI_SHEET("bonusHistory").appendRow(["bh_"+Utilities.getUuid(),now,uid,"grant",kind,count,id,"",count,reason]);
+    return {ok:true,id,quantity:count};
+  });
+}
+function baliBonusHistory(user){
+  return {items:BALI_ROWS("bonusHistory").filter(r=>String(r[2])===user.uid)
+    .map(r=>({id:String(r[0]),createdAt:BALI_ISO(r[1]),type:String(r[3]),kind:String(r[4]),
+      count:Number(r[5]),balanceAfter:Number(r[8]),note:String(r[9]||"")}))
+    .slice(-60).reverse()};
+}
+function baliBonusRecipient(user,data){
+  const number=BALI_TEXT(data.number,6);
+  if(!/^\d{6}$/.test(number))BALI_FAIL("invalid-argument","Введите 6 цифр BALI ID.");
+  const card=BALI_ROWS("cards").find(r=>String(r[1]).padStart(6,"0")===number&&String(r[2])==="active");
+  if(!card||String(card[0])===user.uid)BALI_FAIL("not-found","Получатель BALI ID не найден.");
+  const guest=BALI_ROWS("guests").find(r=>String(r[0])===String(card[0]));
+  return {number,name:guest?BALI_TEXT(guest[2],80):"Гость BALI"};
+}
+function baliBonusTransfer(user,data){
+  const number=BALI_TEXT(data.number,6),requestId=BALI_TEXT(data.requestId,80),note=BALI_TEXT(data.comment,160);
+  if(!/^\d{6}$/.test(number)||!/^[-_a-zA-Z0-9]{12,80}$/.test(requestId)||
+    !Array.isArray(data.items)||!data.items.length||data.items.length>12)
+    BALI_FAIL("invalid-argument","Проверьте номер карты и количество бонусов.");
+  return baliLock(()=>{
+    const receiver=BALI_ROWS("cards").find(r=>String(r[1]).padStart(6,"0")===number&&String(r[2])==="active");
+    if(!receiver||String(receiver[0])===user.uid)BALI_FAIL("not-found","Получатель недоступен.");
+    const receiverUid=String(receiver[0]),all=BALI_ROWS("bonuses");
+    const requested=new Set(),changes=[];
+    for(const part of data.items){
+      const id=BALI_TEXT(part.grantId,80),qty=Number(part.quantity);
+      const idx=all.findIndex(r=>String(r[0])===id&&String(r[1])===user.uid);
+      if(idx<0||requested.has(id)||!Number.isInteger(qty)||qty<1||qty>100)
+        BALI_FAIL("invalid-argument","Недопустимая бонусная позиция.");
+      requested.add(id);
+      const row=all[idx],kind=String(row[2]),expires=BALI_ISO(row[7]);
+      if(!BALI_BONUS_KINDS.includes(kind)||!BALI_TRUE(row[6])||BALI_TRUE(row[5])||
+        Number(row[4])<qty||(expires&&Date.parse(expires)<=Date.now()))
+        BALI_FAIL("failed-precondition","Бонус недоступен для перевода.");
+      changes.push({idx,row,qty,kind});
+    }
+    const previous=BALI_ROWS("bonusHistory").find(r=>String(r[0])==="transfer_"+requestId+"_out");
+    if(previous)return {ok:true,alreadyProcessed:true};
+    const sh=BALI_SHEET("bonuses"),now=BALI_NOW();
+    for(const c of changes){
+      sh.getRange(c.idx+2,5).setValue(Number(c.row[4])-c.qty);
+      const newId="bonus_"+Utilities.getUuid();
+      sh.appendRow([newId,receiverUid,c.kind,c.qty,c.qty,false,true,
+        BALI_ISO(c.row[7]),"transfer",now,user.uid,note]);
+      BALI_SHEET("bonusHistory").appendRow(["transfer_"+requestId+"_in_"+newId,now,receiverUid,"transfer-in",
+        c.kind,c.qty,newId,user.uid,c.qty,note]);
+      BALI_SHEET("bonusHistory").appendRow(["transfer_"+requestId+"_out_"+newId,now,user.uid,"transfer-out",
+        c.kind,c.qty,String(c.row[0]),receiverUid,Number(c.row[4])-c.qty,note]);
+    }
+    return {ok:true};
+  });
+}
+function baliGuestPlans(user,data){
+  if(data&&data.operation){
+    const eventId=BALI_TEXT(data.eventId,80),operation=BALI_TEXT(data.operation,20);
+    if(!eventId||!["add","remove"].includes(operation))
+      BALI_FAIL("invalid-argument","Некорректный запрос планов.");
+    baliLock(()=>{
+      const rows=BALI_ROWS("plans"),index=rows.findIndex(r=>String(r[0])===user.uid&&String(r[1])===eventId);
+      if(index>=0)BALI_SHEET("plans").getRange(index+2,4,1,3).setValues([[
+        operation==="add"?"going":"removed",String(rows[index][4]),BALI_NOW()]]);
+      else if(operation==="add")BALI_SHEET("plans").appendRow([user.uid,eventId,
+        BALI_TEXT(data.date,10),"going",BALI_NOW(),BALI_NOW()]);
+    });
+  }
+  return {plans:BALI_ROWS("plans").filter(r=>String(r[0])===user.uid&&String(r[3])==="going")
+    .map(r=>({eventId:String(r[1]),date:String(r[2]),status:String(r[3])}))};
+}
+
 function baliDispatch(user,action,data){
-  if(action==="me")return {profile:baliGuestProfile(user),role:baliRole(user)};
-  if(action==="profileSave")return {profile:baliSaveProfile(user,data)};
+  if(action==="me")return {profile:baliGuestProfile(user),role:baliRole(user),
+    privacyAccepted:baliConsentState(user,"privacy"),privacyWithdrawn:baliWithdrawn(user)};
+  if(action==="consentAccept")return {consent:baliConsent(user,data)};
+  if(action==="card")return {card:baliCardData(user)};
+  if(action==="activateCard")return {card:baliCardActivate(user,data)};
+  if(action==="coinHistory")return baliCoinHistory(user);
+  if(action==="coinChange")return {result:baliCoinChange(user,data)};
+  if(action==="privilegeAssign")return {result:baliAssignPrivilege(user,data)};
+  if(action==="bonusGrant")return {result:baliBonusGrant(user,data)};
+  if(action==="bonusHistory")return baliBonusHistory(user);
+  if(action==="bonusRecipient")return {recipient:baliBonusRecipient(user,data)};
+  if(action==="bonusTransfer")return {result:baliBonusTransfer(user,data)};
+  if(action==="plans")return baliGuestPlans(user,data);
+  if(action==="profileSave"){
+    if(!baliConsentState(user,"privacy")||baliWithdrawn(user))
+      BALI_FAIL("permission-denied","Подтвердите согласие на обработку данных.");
+    return {profile:baliSaveProfile(user,data)};
+  }
   if(action==="menu")return {menu:baliMenu(),events:baliEvents()};
   if(action==="myOrders")return {orders:baliOrdersFor(user,false,"","")};
   if(action==="createOrder")return {order:baliOrderCreate(user,data)};
@@ -224,7 +458,7 @@ function doPost(e){
 function baliCheckSetup(){
   if(!PropertiesService.getScriptProperties().getProperty("BALI_BRIDGE_KEY"))
     throw Error("Set BALI_BRIDGE_KEY in Project Settings → Script Properties.");
-  ["orders","items","menu","events","roles","audit","guests"].forEach(k=>{
+  Object.keys(BALI_TABS).forEach(k=>{
     if(!BALI_SHEET(k))throw Error("Missing sheet "+k);
   });
   return "BALI v3 server configured. Deploy a new Web App version.";
