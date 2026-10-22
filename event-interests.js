@@ -16,8 +16,10 @@
  let selected;
  try{selected=parse(localStorage.getItem(KEY));}
  catch{selected=new Set();}
+ let synced=false;
+ const connected=()=>window.BaliSheets?.enabled?.()&&window.BaliAuth?.isRegistered?.();
  const publish=()=>window.dispatchEvent(new CustomEvent("bali:interests",{
-   detail:{ids:[...selected],dates:[...new Set([...selected].map(id=>id.slice(0,10)))],ready:true,localOnly:true}
+   detail:{ids:[...selected],dates:[...new Set([...selected].map(id=>id.slice(0,10)))],ready:true,localOnly:!synced}
  }));
  const todayInMinsk=()=>{
    const parts=Object.fromEntries(new Intl.DateTimeFormat("en-GB",{
@@ -29,6 +31,13 @@
    if(typeof eventId!=="string"||!VALID.test(eventId))
      throw Error("Некорректный номер мероприятия.");
    const next=new Set(selected),had=next.has(eventId);
+   if(connected()){
+     const {plans}=await window.BaliSheets.request("plans",{
+       operation:had?"remove":"add",eventId,date:eventId.slice(0,10)});
+     selected=new Set((plans||[]).map(x=>x.eventId).filter(x=>VALID.test(x)));
+     synced=true;publish();
+     return {selected:!had};
+   }
    if(had)next.delete(eventId);else next.add(eventId);
    // A blocked storage write must not falsely display a saved choice.
    try{
@@ -46,7 +55,23 @@
    catch{selected=new Set();}
    publish();
  });
- window.BaliInterests=Object.freeze({
+ async function syncPlans(){
+   if(!connected())return;
+   try{
+     const {plans}=await window.BaliSheets.request("plans");
+     if(!connected())return;
+     selected=new Set((plans||[]).map(x=>x.eventId).filter(x=>VALID.test(x)));
+     synced=true;publish();
+   }catch{synced=false;/* Offline local plans remain visible; do not overwrite. */}
+ }
+ window.addEventListener("bali:auth-state",event=>{
+   if(event.detail?.registered)void syncPlans();
+   else synced=false;
+ });
+ window.addEventListener("bali:guest-page",event=>{
+   if(event.detail?.page==="profile"||event.detail?.page==="events")void syncPlans();
+ });
+  window.BaliInterests=Object.freeze({
    toggle,getSelected:()=>new Set(selected),isReady:()=>true,todayInMinsk
  });
  publish();
