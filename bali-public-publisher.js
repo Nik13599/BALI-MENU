@@ -5,6 +5,7 @@
  */
 import {getApp,getApps,initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
 const PATHS=Object.freeze([
   "events","promotions","menu","bar_menu","hookah_menu","tea_menu",
   "mobileAboutBackgrounds","settings/homeDesign","settings/homeInterface",
@@ -34,13 +35,24 @@ async function flush(){
   flushing=true;
   const todo=[...pending];pending.clear();
   let updated=0;
+  const mirrorErrors=[];
   try{
     for(const path of todo){
-      try{await send(path);updated++;}
-      catch(error){message("Публичная копия не обновилась: "+error.message+
+      try{
+        await send(path);updated++;
+        // Only once per admin publication. Guest page views never trigger Sheets writes.
+        if(sheetsEnabled()&&(path==="menu"||path==="events")){
+          try{await sheetsRequest("catalogSync",{kind:path});}
+          catch(error){mirrorErrors.push(path+": "+(error.message||error.code||"ошибка"));}
+        }
+      }catch(error){message("Публичная копия не обновилась: "+error.message+
         ". Изменения в админке сохранены. Повторите публикацию.");}
     }
-    if(updated===todo.length&&updated>0)message("Опубликовано в Cloudflare: "+updated+" разделов.");
+    if(mirrorErrors.length)message("Cloudflare опубликован, но Google Таблица не обновилась: "+mirrorErrors.join("; ")+
+      ". Повторите публикацию после восстановления сервера.");
+    else if(updated===todo.length&&updated>0)
+      message("Опубликовано в Cloudflare: "+updated+" разделов."+
+        (sheetsEnabled()?" Каталог Google Таблиц синхронизирован.":""));
   }finally{flushing=false;if(pending.size)timer=setTimeout(flush,1200);}
 }
 function queue(path){
