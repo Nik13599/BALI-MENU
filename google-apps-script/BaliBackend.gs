@@ -555,10 +555,79 @@ function baliCheckins(user,data){
     return {selected:true,checkins:read()};
   });
 }
+/**
+ * Copy only public menu/events snapshots from Cloudflare KV into the PRIVATE
+ * Sheets catalog. Called after an admin explicitly republishes public content.
+ * No guest request ever triggers synchronization, minimizing Apps Script quota.
+ */
+function baliPublishedValue(v){
+  return v?.stringValue??v?.integerValue??v?.doubleValue??v?.booleanValue??
+    v?.timestampValue??"";
+}
+function baliPublishedText(v,max){
+  const str=String(v??"").slice(0,max);
+  // Never allow imported public content to become an executable Sheets formula.
+  return /^[=+@\-\t\r]/.test(str)?"'"+str:str;
+}
+function baliSyncPublicCatalog(kind){
+  if(kind!=="menu"&&kind!=="events")BALI_FAIL("invalid-argument","Невозможно синхронизировать этот раздел.");
+  const url="https://baliminsk.by/api/public-data?path="+kind;
+  const response=UrlFetchApp.fetch(url,{muteHttpExceptions:true,followRedirects:true});
+  if(response.getResponseCode()!==200)BALI_FAIL("unavailable","Публичный каталог временно недоступен.");
+  const body=response.getContentText();
+  if(body.length>1200000)BALI_FAIL("resource-exhausted","Публичный каталог слишком велик.");
+  let documents;
+  try{documents=JSON.parse(body).documents;}catch(_){BALI_FAIL("invalid-argument","Неверный формат публичного каталога.");}
+  if(!Array.isArray(documents)||!documents.length||documents.length>700)
+    BALI_FAIL("failed-precondition","Пустой или слишком большой каталог не перезаписывается.");
+  const today=Utilities.formatDate(new Date(),"Europe/Minsk","yyyy-MM-dd");
+  const rows=[];
+  for(const document of documents){
+    const fields=Object.fromEntries(Object.entries(document.fields||{}).map(([k,v])=>[k,baliPublishedValue(v)]));
+    const id=String((document.name||"").split("/").pop()||"");
+    if(kind==="menu"){
+      const productId=String(fields.id||id),price=Number(fields.price);
+      if(!/^\d{1,8}$/.test(productId)||!fields.name||!Number.isFinite(price)||price<0)
+        BALI_FAIL("failed-precondition","Опубликованное меню содержит некорректный товар.");
+      rows.push([productId,baliPublishedText(fields.category,100),baliPublishedText(fields.name,150),
+        baliPublishedText(fields.description,500),price,
+        /^https:\/\//.test(String(fields.image_url||""))?String(fields.image_url).slice(0,500):"",
+        fields.available===true,Number(fields.sort)||0]);
+    }else{
+      const date=String(fields.date||"");
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{4}-\d{2}-\d{2}(?:__\d+)?$/.test(id))
+        BALI_FAIL("failed-precondition","Опубликованное мероприятие содержит некорректную дату.");
+      if(date<today)continue;
+      rows.push([id,date,baliPublishedText(fields.title,150),fields.preorderEnabled===true,
+        String(fields.closesAt||"").slice(0,45),
+        /^https:\/\//.test(String(fields.poster_url||""))?String(fields.poster_url).slice(0,500):""]);
+    }
+  }
+  if(!rows.length&&kind==="menu")BALI_FAIL("failed-precondition","Нельзя сохранить пустое меню.");
+  return baliLock(()=>{
+    const sh=BALI_SHEET(kind),columns=kind==="menu"?8:6;
+    const existing=sh.getLastRow()-1;
+    if(existing>0)sh.getRange(2,1,existing,columns).clearContent();
+    if(rows.length)sh.getRange(2,1,rows.length,columns).setValues(rows);
+    BALI_SHEET("audit").appendRow([BALI_NOW(),"","system","sync-"+kind,3,
+      "Cloudflare published KV: "+rows.length+" records"]);
+    return {ok:true,kind,count:rows.length,synchronizedAt:BALI_NOW()};
+  });
+}
+function baliSyncPublishedForAdmin(user,data){
+  baliStaff(user,true);
+  return baliSyncPublicCatalog(String(data.kind||""));
+}
+function baliSyncBothPublicCatalogs(){
+  // Convenience function for the owner from the Apps Script editor.
+  return {menu:baliSyncPublicCatalog("menu"),events:baliSyncPublicCatalog("events")};
+}
+
 function baliDispatch(user,action,data){
   if(baliWithdrawn(user)&&action!=="me")
     BALI_FAIL("permission-denied","Согласие отозвано. Обратитесь к администрации BALI.");
   if(action==="adminGuests")return baliAdminGuests(user,data);
+  if(action==="catalogSync")return {result:baliSyncPublishedForAdmin(user,data)};
   if(action==="adminGuestOrders")return baliAdminGuestOrders(user,data);
   if(action==="me")return {profile:baliGuestProfile(user),role:baliRole(user),
     privacyAccepted:baliConsentState(user,"privacy"),privacyWithdrawn:baliWithdrawn(user)};
