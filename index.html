@@ -10,7 +10,7 @@
   <script src="bali-monitor.js?v=20261020-2"></script>
   <script src="bali-notifications.js?v=20261021-orderstates2"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>if("scrollRestoration" in history)history.scrollRestoration="manual";</script>
+    <script>if("scrollRestoration" in history)history.scrollRestoration="manual";document.documentElement.classList.add("bali-booting");</script>
     <meta name="theme-color" content="#080b11">
     <title>BALI NIGHTCLUB · Минск</title>
     <meta name="description"
@@ -300,9 +300,151 @@ body.bali-guest-theme #baliIdSection .bali-id-bottom .bali-id-coin output{
       }
     }
   </style>
+
+<style id="bali-calendar-outline-only">
+/* No date-cell fills or residual borders. The ring follows the chosen poster;
+   today retains a white marker until its event is chosen. */
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarPanel
+.bali-calendar-day[data-date][data-ring] {
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+  border:1px solid transparent!important;
+  border-radius:5px!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+  filter:none!important;
+  color:#edf4ea!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarPanel
+.bali-calendar-day[data-ring="today"],
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarPanel
+.bali-calendar-day[data-ring="today"]:hover {border-color:#fff!important}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarPanel
+.bali-calendar-day[data-ring="event"],
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarPanel
+.bali-calendar-day[data-ring="event"]:hover {border-color:#b9ff51!important}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarPanel
+.bali-calendar-day[data-ring="past"],
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarPanel
+.bali-calendar-day[data-ring="past"]:hover {border-color:#fa6070!important}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarPanel
+.bali-calendar-day[data-ring="none"],
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarPanel
+.bali-calendar-day[data-ring="none"]:hover {border-color:transparent!important}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarPanel
+.bali-calendar-day[data-date][data-ring]:hover {
+  background:transparent!important;background-color:transparent!important;
+  box-shadow:none!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarPanel
+.bali-calendar-day[data-date][data-ring] .bali-calendar-event-dot {
+  background-color:#b9ff51!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarPanel
+.bali-calendar-day[data-date][data-ring] .bali-calendar-event-dot[data-status="past"] {
+  background-color:#fa6070!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #eventsSection #baliCalendarPanel
+.bali-calendar-day[data-date]:focus-visible {
+  outline:2px solid #fff!important;
+  outline-offset:2px!important;
+}
+</style>
+<style id="bali-startup-splash-style">
+.bali-startup-splash {
+  position:fixed;inset:0;z-index:2147483000;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;box-sizing:border-box;
+  color:#eff8ed;background:#080c0b;
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .24s ease,visibility .24s ease;
+}
+html.bali-booting .bali-startup-splash {
+  opacity:1;visibility:visible;pointer-events:auto;
+}
+.bali-startup-splash[hidden]{display:none!important}
+.bali-startup-splash-inner{
+  width:min(420px,100%);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:23px;text-align:center;
+}
+.bali-startup-splash-logo {
+  display:block;width:min(280px,70vw);height:auto;object-fit:contain;
+}
+.bali-startup-spinner {
+  width:35px;height:35px;box-sizing:border-box;border-radius:50%;
+  border:2px solid rgba(185,255,81,.17);
+  border-top-color:#b9ff51;
+  animation:bali-startup-turn .85s linear infinite;
+}
+.bali-startup-splash-message{
+  margin:0;font:600 clamp(12px,3vw,14px)/1.6 Manrope,Arial,sans-serif;
+  letter-spacing:.02em;color:#cbd7cc;
+}
+@keyframes bali-startup-turn {to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce) {
+  .bali-startup-spinner{animation:none;border-top-color:#b9ff51}
+  .bali-startup-splash{transition:none}
+}
+</style>
 </head>
 
 <body class="bali-guest-theme">
+
+  <div id="baliStartupSplash" class="bali-startup-splash" role="status" aria-live="polite">
+    <div class="bali-startup-splash-inner">
+      <img class="bali-startup-splash-logo" src="assets/bali-nightclub-logo.png?v=20261018-original" width="938" height="264" alt="BALI Nightclub" fetchpriority="high" decoding="async">
+      <span class="bali-startup-spinner" aria-hidden="true"></span>
+      <p class="bali-startup-splash-message">Обновляем актуальную информацию клуба</p>
+    </div>
+  </div>
+  <script>
+  (() => {
+    "use strict";
+    const root=document.documentElement;
+    const splash=document.getElementById("baliStartupSplash");
+    if(!splash)return;
+    const started=performance.now();
+    let domReady=document.readyState!=="loading",eventsReady=false,menuReady=false;
+    let timedOut=false,showing=true,firstOpen=true;
+    const currentPage=()=>document.body.dataset.baliPage||
+      (location.hash||"").replace(/^#/,"")||"home";
+    const needsData=()=>{
+      const page=currentPage();
+      if(page==="home"||page==="events")return eventsReady;
+      if(page==="menu")return menuReady;
+      return true; // Profile, ID and static pages may load personal data separately.
+    };
+    const sync=()=>{
+      if(!domReady||(!timedOut&&!needsData())){
+        showing=true;
+        splash.hidden=false;
+        root.classList.add("bali-booting");
+        return;
+      }
+      if(!showing)return;
+      showing=false;
+      const minimum=firstOpen?Math.max(0,300-(performance.now()-started)):0;
+      setTimeout(()=>{
+        if(showing)return;
+        root.classList.remove("bali-booting");
+        setTimeout(()=>{
+          if(!showing)splash.hidden=true;
+          firstOpen=false;
+        },280);
+      },minimum);
+    };
+    window.addEventListener("bali:events",()=>{eventsReady=true;sync();});
+    window.addEventListener("bali:events-error",()=>{eventsReady=true;sync();});
+    window.addEventListener("bali:menu",()=>{menuReady=true;sync();});
+    window.addEventListener("bali:menu-error",()=>{menuReady=true;sync();});
+    window.addEventListener("bali:guest-page",sync);
+    document.addEventListener("DOMContentLoaded",()=>{domReady=true;sync();},{once:true});
+    // Public snapshots have their own timeout/fallback. Never strand the user.
+    setTimeout(()=>{timedOut=true;sync();},14000);
+    if(domReady)sync();
+  })();
+  </script>
     <div class="bali-preview-banner" role="status">
       Предзаказ подтверждает администратор. Оплата — в клубе.
     </div>
