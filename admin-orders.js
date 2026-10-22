@@ -1092,10 +1092,11 @@ async function subscribe(user) {
       // permanent deletion stay disabled until separate server routes exist.
       for(const id of ["createManualOrder"])if($(id))$(id).disabled=true;
       window.dispatchEvent(new CustomEvent("bali:admin:orders",{detail:{
-        ownerUid:user.uid,orders:orders.map(({id,status,orderNumber})=>({id,status,orderNumber})),
+        ownerUid:user.uid,orders:orders.filter(o=>activePreorderEvent(o.eventId,o.eventDate)).map(({id,status,orderNumber})=>({id,status,orderNumber})),
         count:orders.length,pending:orders.filter(o=>o.status==="pending"&&!o.archived).length
       }}));
-      setStatus("Google Таблицы · "+orders.length+" последних предзаказов. "+
+      setStatus("Google Таблицы · "+orders.filter(o=>activePreorderEvent(o.eventId,o.eventDate)).length+
+        " актуальных предзаказов. "+
         (sheetsCanEditOrders?"Редактирование, подтверждение и отчёты доступны.":
           "Отчёты доступны. Для редактирования необходимо опубликовать новую версию Apps Script."));
       let refreshing=false,lastRefreshAt=Date.now();
