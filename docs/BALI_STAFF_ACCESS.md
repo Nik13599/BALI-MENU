@@ -71,3 +71,39 @@ backend по UID/email из проверенного Firebase ID token; не п�
 
 Пароль не сохранять в Google Таблицах, репозитории, документации, логах
 или браузерном localStorage. Не отправлять его через мессенджер в открытом виде.
+
+
+## Автоматическая выдача логина/пароля (подготовлена утилита)
+В репозитории есть `scripts/manage-staff-access.cjs`, её запускает **только владелец**
+на доверенном компьютере. Скрипт не открывает публичную регистрацию сотрудников
+и не выводит пароль в консоль.
+
+Подготовка: Firebase Console → Authentication → Sign-in method → включить
+Email/Password. В локальном терминале выполнить:
+```bash
+npm ci --prefix functions
+gcloud auth application-default login
+```
+Далее установить переменную окружения `BALI_FIREBASE_PROJECT_ID` в реальный
+Firebase Project ID, полученный из Firebase Console. Скрипт использует
+Application Default Credentials, поэтому на учётной записи должны быть права
+Firebase Authentication Admin и Firestore write. Не загружайте service account
+JSON в GitHub.
+
+```bash
+node scripts/manage-staff-access.cjs create staff01 "Сотрудник BALI"
+node scripts/manage-staff-access.cjs revoke staff01
+node scripts/manage-staff-access.cjs activate staff01
+```
+При `create` пароль вводится интерактивно, без отображения; создаётся
+Firebase Auth пользователь (технический email) и закрытая роль
+`preorderStaff/{uid}`. Если создание роли сорвалось, учётная запись
+останется заблокированной. `revoke` блокирует аккаунт и снимает активную
+роль; `activate` возвращает обе.
+
+**Ограничение:** в режиме Google Sheets на `/api/bali-v3` необходима
+дополнительная роль `staff` на стороне сервера. Без неё `me` вернёт
+отказ даже с верными логином и паролем. Публикация GitHub не равна
+публикации Firebase или Cloudflare. Сквозной вход в production не
+считается проверенным, пока не созданы пользователь, роль и не выполнено
+тестирование.
