@@ -134,6 +134,52 @@ function baliOrderCreate(user,data){
     return {id,orderNumber,eventId,eventDate:date,status:"pending",total};
   });
 }
+function baliGuestCancelOrder(user,data){
+  const id=BALI_TEXT(data.id,80);
+  return baliLock(()=>{
+    const sh=BALI_SHEET("orders"),rows=BALI_ROWS("orders");
+    const idx=rows.findIndex(r=>String(r[0])===id&&String(r[6])===user.uid);
+    if(idx<0)BALI_FAIL("not-found","Предзаказ не найден.");
+    if(String(rows[idx][13])!=="pending")BALI_FAIL("failed-precondition","Этот предзаказ уже обработан.");
+    sh.getRange(idx+2,14).setValue("cancelled");
+    sh.getRange(idx+2,6).setValue(BALI_NOW());
+    BALI_SHEET("audit").appendRow([BALI_NOW(),id,user.uid,"guest-cancel",2,"cancelled"]);
+    return {id,status:"cancelled"};
+  });
+}
+function baliGuestEditOrder(user,data){
+  const id=BALI_TEXT(data.id,80),table=BALI_TEXT(data.tableNumber,20),
+    booking=BALI_TEXT(data.bookingId,60),notes=BALI_TEXT(data.notes,500);
+  if(!id||(!table&&!booking)||!Array.isArray(data.items)||!data.items.length||data.items.length>12)
+    BALI_FAIL("invalid-argument","Неверные данные предзаказа.");
+  return baliLock(()=>{
+    const sh=BALI_SHEET("orders"),rows=BALI_ROWS("orders");
+    const idx=rows.findIndex(r=>String(r[0])===id&&String(r[6])===user.uid);
+    if(idx<0)BALI_FAIL("not-found","Предзаказ не найден.");
+    const original=baliOrder(rows[idx]);
+    if(original.status!=="pending")BALI_FAIL("failed-precondition","Можно менять только ожидающий предзаказ.");
+    const event=baliEvents().find(e=>e.id===original.eventId&&e.preorderEnabled&&
+      Date.parse(e.closesAt)>Date.now());
+    if(!event)BALI_FAIL("failed-precondition","Приём предзаказов на это мероприятие закрыт.");
+    const menu=new Map(baliMenu().map(x=>[x.id,x])),seen=new Set();
+    const lines=data.items.map(it=>{
+      const item=menu.get(String(it.id)),qty=Number(it.quantity);
+      if(!item||!Number.isInteger(qty)||qty<1||qty>50||seen.has(item.id))
+        BALI_FAIL("invalid-argument","Проверьте состав заказа.");
+      seen.add(item.id);return {...item,quantity:qty,total:Math.round(item.price*qty*100)/100};
+    });
+    const total=Math.round(lines.reduce((sum,x)=>sum+x.total,0)*100)/100,now=BALI_NOW();
+    const oldItems=BALI_ROWS("items").map((r,i)=>({r,i})).filter(x=>String(x.r[0])===id);
+    const itemSheet=BALI_SHEET("items");
+    const newRows=lines.map(x=>[id,x.id,x.name,x.quantity,x.price,x.total,now,original.eventId]);
+    itemSheet.getRange(itemSheet.getLastRow()+1,1,newRows.length,8).setValues(newRows);
+    for(const x of oldItems)itemSheet.getRange(x.i+2,1,1,8).setValues([Array(8).fill("")]);
+    sh.getRange(idx+2,6).setValue(now);
+    sh.getRange(idx+2,11,1,5).setValues([[table,booking,notes,"pending",total]]);
+    BALI_SHEET("audit").appendRow([now,id,user.uid,"guest-edit",2,"updated"]);
+    return {id,orderNumber:original.orderNumber,total,status:"pending"};
+  });
+}
 function baliStatus(user,data){
   const id=BALI_TEXT(data.id,80),status=BALI_TEXT(data.status,20);
   if(!["pending","confirmed","cancelled"].includes(status))BALI_FAIL("invalid-argument","Неверный статус.");
@@ -486,6 +532,8 @@ function baliDispatch(user,action,data){
   if(action==="menu")return {menu:baliMenu(),events:baliEvents()};
   if(action==="myOrders")return {orders:baliOrdersFor(user,false,"","")};
   if(action==="createOrder")return {order:baliOrderCreate(user,data)};
+  if(action==="editOrder")return {order:baliGuestEditOrder(user,data)};
+  if(action==="cancelOrder")return {result:baliGuestCancelOrder(user,data)};
   if(action==="staffOrders"){
     baliStaff(user,false);
     const date=BALI_TEXT(data.date,10),eventId=BALI_TEXT(data.eventId,80);
