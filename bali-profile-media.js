@@ -83,34 +83,52 @@ input?.addEventListener("change",async()=>{
     if(activeUser?.uid===uid)notify(msg);
   }finally{saving=false;button.disabled=false;}
 });
-onAuthStateChanged(auth,async user=>{
+// Private profile avatar is relevant only to the "Мой BALI" page.
+// A restored Google session alone must not start a Firestore listener.
+let pendingUid=null;
+const profileIsOpen=()=>document.body.dataset.baliPage==="profile";
+function stopAvatar({clear=true}={}){
+  ++session;
+  pendingUid=null;
+  unsubscribe?.();
+  unsubscribe=null;
+  activeUser=null;
+  if(clear)showImage(null);
+}
+async function syncAvatar(user){
+  if(!profileIsOpen()||!user?.emailVerified){
+    if(unsubscribe||activeUser||pendingUid)stopAvatar();
+    return;
+  }
+  if(user.uid===activeUser?.uid&&unsubscribe)return;
+  if(user.uid===pendingUid)return;
   const run=++session;
   unsubscribe?.();unsubscribe=null;
-  activeUser=null;
+  pendingUid=user.uid;activeUser=null;
   showImage(null);
-  if(!user?.emailVerified)return;
   try{
     await window.BaliAuth?.ready;
-    if(run!==session||auth.currentUser?.uid!==user.uid)return;
+    if(run!==session||!profileIsOpen()||auth.currentUser?.uid!==user.uid)return;
     if(!window.BaliAuth?.getProfile?.())return;
     activeUser=user;
-    unsubscribe=onSnapshot(avatarDocument(user.uid),snap=>{
-      if(run!==session)return;
-      showImage(snap.exists()?snap.data()?.image:null);
+    unsubscribe=onSnapshot(avatarDocument(user.uid),snapshot=>{
+      if(run!==session||!profileIsOpen())return;
+      showImage(snapshot.exists()?snapshot.data()?.image:null);
     },()=>{
-      if(run===session)notify("Не удалось получить фото. Повторите попытку позже.");
+      if(run===session&&profileIsOpen())notify("Не удалось получить фото. Повторите попытку позже.");
     });
-  }catch(_){if(run===session)notify("Не удалось загрузить фотографию.");}
-});
+  }catch(_){
+    if(run===session&&profileIsOpen())notify("Не удалось загрузить фотографию.");
+  }finally{
+    if(run===session)pendingUid=null;
+  }
+}
+onAuthStateChanged(auth,user=>void syncAvatar(user));
+window.addEventListener("bali:guest-page",()=>void syncAvatar(auth.currentUser));
 window.addEventListener("bali:auth-state",event=>{
-  if(!event.detail?.registered){unsubscribe?.();unsubscribe=null;activeUser=null;showImage(null);}
-  else if(auth.currentUser?.emailVerified&&activeUser?.uid!==auth.currentUser.uid){
-    // Registration can finish after the initial auth observer fires.
-    const run=++session,user=auth.currentUser;
-    unsubscribe?.();unsubscribe=null;
-    activeUser=user;
-    unsubscribe=onSnapshot(avatarDocument(user.uid),snap=>{
-      if(run===session)showImage(snap.exists()?snap.data()?.image:null);
-    },()=>{if(run===session)notify("Не удалось получить фото. Повторите попытку позже.");});
+  if(!event.detail?.registered){
+    if(unsubscribe||activeUser||pendingUid)stopAvatar();
+  }else if(profileIsOpen()){
+    void syncAvatar(auth.currentUser);
   }
 });
