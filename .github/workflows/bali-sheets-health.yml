@@ -36,3 +36,20 @@ jobs:
           JS
           done
           exit "$failed"
+
+      - name: Verify unauthenticated requests are blocked
+        shell: bash
+        run: |
+          set -euo pipefail
+          for url in https://bali-nightclub-menu.pages.dev/api/bali-v3 https://baliminsk.by/api/bali-v3; do
+            status=$(curl --silent --show-error --location --max-time 45 \
+              --output denied.json --write-out "%{http_code}" -H 'Content-Type: application/json' \
+              --data '{"action":"card","payload":{}}' "$url")
+            echo "Missing session: HTTP ${status}"
+            if [[ "$status" != "401" ]]; then exit 1; fi
+            status=$(curl --silent --show-error --location --max-time 45 \
+              --output denied.json --write-out "%{http_code}" -H 'Content-Type: application/json' \
+              -H 'Origin: https://not-bali.example' --data '{"action":"health"}' "$url")
+            echo "Foreign origin: HTTP ${status}"
+            if [[ "$status" != "403" ]]; then exit 1; fi
+          done
