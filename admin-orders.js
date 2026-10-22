@@ -22,9 +22,6 @@ const auth=getAuth(app),db=sheetsEnabled()?null:getFirestore(app),$=id=>document
 let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=false,orders=[],catalog=[];
 let events=new Map(),dateOrders=[],loadedDate="",unsubDateOrders=null,dateRevision=0;
 let calendarSourceLoaded=false,calendarLastRead=0,calendarReadPromise=null;
-// Calendar updates never change staff's selected order filters.
-// The queue opens unfiltered so recent orders stay on screen.
-let calendarFilterTouched=false;
 let preorderOnlyStaff=false,sheetsCanEditOrders=false;
 let editOrder=null,editLines=[],originalIds=new Set(),creatingOrder=false;
 const statuses={pending:"Ожидает подтверждения",confirmed:"Подтверждён",cancelled:"Отменён"};
@@ -161,9 +158,6 @@ async function refreshCalendarEvents({force=false,quiet=false}={}){
       }
       calendarSourceLoaded=true;calendarLastRead=Date.now();
       events=next;
-      const count=[...next.values()].filter(activeCalendarEvent).length;
-      const sync=$("staffCalendarSyncStatus");
-      if(sync)sync.textContent=count?"С сайта: "+count:"На сайте нет будущих событий";
       renderDates();renderOrders();syncWorkspaceReportScope();
       if($("orderEditDialog").open){
         fillOrderDateOptions($("editOrderDate").value);
@@ -171,11 +165,8 @@ async function refreshCalendarEvents({force=false,quiet=false}={}){
         $("editOrderCalendarHint").textContent="Мероприятия обновлены с календаря сайта BALI.";
       }
     }catch(error){
-      const sync=$("staffCalendarSyncStatus");
-      if(sync)sync.textContent="Ошибка загрузки с сайта";
       if(!quiet&&$("orderEditDialog").open)
         $("editOrderCalendarHint").textContent="Календарь недоступен. Показаны последние загруженные мероприятия.";
-      renderCalendarShortcuts();
       throw error;
     }finally{clearTimeout(timeout);}
   })();
@@ -732,48 +723,6 @@ function renderOrders(){
     container.append(card);
   }
 }
-/* Always display the nearest published events without waiting for a
- * blank "All dates" selection or the private catalog synchronisation. */
-function renderCalendarShortcuts(){
-  const strip=$("staffUpcomingEvents");if(!strip)return;
-  strip.replaceChildren();
-  const upcoming=[...events.values()].filter(activeCalendarEvent)
-    .sort((a,b)=>a.date.localeCompare(b.date)||
-      (a.startTime||"").localeCompare(b.startTime||"")||
-      a.title.localeCompare(b.title,"ru"));
-  if(!upcoming.length){
-    strip.append(node("span",calendarSourceLoaded?
-      "Нет ближайших мероприятий.":"Загружаем календарь BALI…","preorder-calendar-placeholder"));
-    strip.append(button("↻ Обновить",()=>{
-      void refreshCalendarEvents({force:true}).catch(()=>{});
-    },"preorder-calendar-chip"));
-    return;
-  }
-  const date=$("ordersDateFilter").value,id=$("ordersEventFilter").value;
-  for(const event of upcoming){
-    const title=readableOrderDate(event.date)+" · "+event.title+
-      (event.startTime?" "+event.startTime:"");
-    const chip=button(title,()=>{
-      const dates=$("ordersDateFilter"),options=$("ordersEventFilter");
-      const dateChanged=dates.value!==event.date;
-      calendarFilterTouched=true;
-      if(dateChanged){
-        dates.value=event.date;
-        renderEventFilter();
-        options.value=event.id;
-        watchDateOrders();
-      }else{
-        options.value=event.id;
-        renderEventFilter();renderOrders();
-      }
-      renderCalendarShortcuts();
-    },"preorder-calendar-chip");
-    chip.setAttribute("aria-pressed",String(date===event.date&&id===event.id));
-    chip.dataset.dateState=event.date===minskToday()?"today":"upcoming";
-    if(event.date===minskToday())chip.setAttribute("aria-label","Сегодня. "+title);
-    chip.title="Показать предзаказы: "+title;strip.append(chip);
-  }
-}
 function renderDates(){
   const el=$("ordersDateFilter"),previous=el.value;
   el.replaceChildren(new Option("Все даты",""));
@@ -816,7 +765,7 @@ function renderEventFilter(){
   // Keep an explicitly chosen event; never silently narrow the queue.
   if(ordered.some(([id])=>id===old))select.value=old;
   select.disabled=!date;
-  syncWorkspaceReportScope();renderCalendarShortcuts();
+  syncWorkspaceReportScope();
   const canExport=Boolean(date&&select.value);
   for(const id of ["exportEventOrders","exportEventDishes","exportEventOrdersPng",
     "exportEventDishesPng","exportEventOrdersTg","exportEventDishesTg"]){
@@ -862,11 +811,10 @@ function watchDateOrders(){
   },e=>{if(revision===dateRevision){snapshotRevision++;setStatus("Ошибка списка даты: "+(e.code||e.message));}});
 }
 $("ordersDateFilter").addEventListener("change",()=>{
-  calendarFilterTouched=true;
-  watchDateOrders();renderCalendarShortcuts();
+  watchDateOrders();
 });
 $("ordersEventFilter").addEventListener("change",()=>{
-  calendarFilterTouched=true;renderEventFilter();renderOrders();
+  renderEventFilter();renderOrders();
 });
 $("showArchivedOrders")?.addEventListener("click",()=>{
   const toggle=$("showArchivedOrders");
@@ -1173,7 +1121,6 @@ async function subscribe(user) {
   const current=++generation;
   statusOutbox.deactivate();
   orders=[];catalog=[];events=new Map();calendarSourceLoaded=false;calendarLastRead=0;
-  calendarFilterTouched=false;
   authorized=false;preorderOnlyStaff=false;sheetsCanEditOrders=false;
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
   $("ordersAdminList").textContent="Проверяем права...";
