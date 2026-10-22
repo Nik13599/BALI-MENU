@@ -63,4 +63,6 @@ test("guest can fill compulsory contact, date, event and table without Google lo
   expect(requestData.payload.privacyConsent).toBe(true);
   expect(requestData.payload.items).toEqual([{id:1,quantity:1}]);
   await expect(page.locator("#successModal")).toHaveClass(/active/);
+  await expect(page.locator("#successMyOrders")).toBeHidden();
+  await expect(page.locator("#successOrderHint")).toContainText("по указанному телефону");
 });
