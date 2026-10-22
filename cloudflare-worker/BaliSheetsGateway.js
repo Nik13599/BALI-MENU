@@ -6,7 +6,7 @@
  * All data remains in a PRIVATE Google Sheet. Credentials never reach the browser.
  * The Apps Script backend independently verifies each Firebase ID token.
  */
-const ACTIONS=new Set(["health","me","profileSave","menu","myOrders","createOrder",
+const ACTIONS=new Set(["health","me","profileSave","menu","myOrders","createOrder","editOrder","cancelOrder",
   "staffOrders","staffStatus","staffReport","staffList","staffManage",
   "adminGuests","adminGuestOrders","card","activateCard","adminCard",
   "consentAccept","coinHistory","coinChange","privilegeAssign","privilegeRules","privilegeRulesSave","bonusGrant","bonusHistory",
