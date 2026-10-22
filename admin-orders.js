@@ -94,6 +94,7 @@ async function setOrderStatus(o,status) {
 }
 async function archiveOrder(o,archive=true) {
   ensureAdmin();
+  if(sheetsEnabled())throw new Error("Архивация будет подключена к новому серверу отдельно.");
   if(!confirm(archive
     ?"Убрать заказ "+orderLabel(o)+" в архив? Заказ отменится, но история гостя сохранится."
     :"Вернуть заказ "+orderLabel(o)+" из архива? Его статус останется «Отменён»."))return;
@@ -111,6 +112,7 @@ async function deleteOrder(o) {
   if(answer!=="УДАЛИТЬ")return;
   setStatus("Удаляем заказ и все его блюда...");
   try{
+    if(sheetsEnabled())throw new Error("Безвозвратное удаление в Google Таблицах отключено.");
     const ref=doc(db,"orders",o.id),lines=await getDocs(collection(ref,"items"));
     if(lines.size>400)throw new Error("Слишком много позиций для безопасного удаления.");
     const batch=writeBatch(db);
@@ -223,7 +225,7 @@ async function openOrderDetails(id){
     totalRow.append(node("span","Итого"),node("strong",fmt(total(o.items))));
     content.append(totalRow);
     if(o.notes)content.append(orderDetailsField("Пожелания к заказу",o.notes));
-    $("orderDetailsEdit").hidden=Boolean(o.archived);
+    $("orderDetailsEdit").hidden=Boolean(o.archived)||sheetsEnabled();
     $("orderDetailsEdit").onclick=()=>{dialog.close();void openEditor(id);};
     $("orderDetailsPrint").disabled=false;
     $("orderDetailsPrint").onclick=()=>printOrder(o);
@@ -285,7 +287,7 @@ function compactOrderRow(o){
   view.setAttribute("data-preorder-view",o.id);
   actions.append(view);
   if(!o.archived){
-    actions.append(button("Изменить",()=>void openEditor(o.id)));
+    if(!sheetsEnabled())actions.append(button("Изменить",()=>void openEditor(o.id)));
     if(state==="pending")actions.append(button("Подтвердить",()=>void setOrderStatus(o,"confirmed"),"confirm"));
   }
   const dropdown=node("details","","preorder-action-menu");
@@ -294,10 +296,12 @@ function compactOrderRow(o){
   const menuButton=(label,fn,cls="")=>button(label,()=>{dropdown.open=false;fn();},cls);
   if(!o.archived&&state!=="cancelled")menu.append(menuButton("Отменить заказ",()=>void setOrderStatus(o,"cancelled")));
   menu.append(menuButton("Печать",()=>printOrder(o)));
-  menu.append(o.archived
-    ?menuButton("Вернуть из архива",()=>void archiveOrder(o,false))
-    :menuButton("В архив",()=>void archiveOrder(o,true)));
-  menu.append(menuButton("Удалить навсегда",()=>void deleteOrder(o),"danger-action"));
+  if(!sheetsEnabled()){
+    menu.append(o.archived
+      ?menuButton("Вернуть из архива",()=>void archiveOrder(o,false))
+      :menuButton("В архив",()=>void archiveOrder(o,true)));
+    menu.append(menuButton("Удалить навсегда",()=>void deleteOrder(o),"danger-action"));
+  }
   dropdown.append(trigger,menu);actions.append(dropdown);
   row.append(ref,guest,dishes,amount,statusBox,actions);
   return row;
