@@ -53,7 +53,12 @@ test("BRSM cards, limited promos, QR claims and live lotto remain server-control
  const fail=(code,message)=>{const e=Error(message);e.code=code;throw e;};
  const verified=req=>{if(!req.auth?.uid)fail("unauthenticated","Login required");return req.auth.uid;};
  const privileged=uid=>Promise.resolve(uid==="director");
- const funcs=require(path.resolve(__dirname,"../functions/brsm.js"))({
+ const Module=require("node:module");
+ const realLoad=Module._load;
+ Module._load=function(request,parent,isMain){if(request==="qrcode")return {toDataURL:async()=> "data:image/png;base64,dGVzdA=="};return realLoad.apply(this,arguments);};
+ const moduleFactory=require(path.resolve(__dirname,"../functions/brsm.js"));
+ Module._load=realLoad;
+ const funcs=moduleFactory({
    api:(name,handler)=>handler,admin,db,TS,verified,privileged,fail
  });
  db.store.set("users/aliceuid123456",{name:"Alice"});
