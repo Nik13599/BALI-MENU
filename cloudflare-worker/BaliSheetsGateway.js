@@ -7,7 +7,7 @@
  * The Apps Script backend independently verifies each Firebase ID token.
  */
 const ACTIONS=new Set(["health","me","profileSave","menu","myOrders","createOrder","editOrder","cancelOrder",
-  "staffOrders","staffStatus","staffReport","staffList","staffManage",
+  "staffOrders","staffEditOrder","staffStatus","staffReport","staffList","staffManage",
   "adminGuests","adminGuestOrders","catalogSync","card","activateCard","adminCard",
   "consentAccept","coinHistory","coinChange","privilegeAssign","privilegeRules","privilegeRulesSave","bonusGrant","bonusHistory",
   "bonusRecipient","bonusTransfer","plans", "avatarGet","avatarSave"]);
