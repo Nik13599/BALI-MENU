@@ -1159,7 +1159,7 @@ let editingOrderId = null;
 let orderServiceLoading=null;
 async function ensureOrdersService(){
     if(window.BaliOrders)return window.BaliOrders;
-    orderServiceLoading??=import("./orders-firestore.js?v=20261022-submit-only1")
+    orderServiceLoading??=import("./orders-firestore.js?v=20261022-sheets-stage1")
       .then(()=>{
         if(!window.BaliOrders)throw Error("Не удалось подключить приём предзаказов.");
         return window.BaliOrders;
