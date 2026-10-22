@@ -74,7 +74,7 @@ const statusOutbox=createDurableStaffStatusQueue({
       ". Обновите заказ по данным сервера.");
     void sheetsRequest("staffRecentOrders").then(({orders:incoming})=>{
       if(!authorized||!sheetsEnabled())return;
-      orders=(incoming||[]).filter(withinOrderRetention);
+      orders=staffOrdersFromApi(incoming);
       renderOrders();
     }).catch(()=>{});
   },
@@ -94,6 +94,25 @@ if(sheetsEnabled()){
   });
 }
 const eventTitle=o=>o.eventTitle||events.get(o.eventId||o.eventDate)?.title||"Название мероприятия не сохранено";
+// Sheets may auto-convert ISO event dates (and date-shaped event IDs) into
+// Date cells. Older deployed backends then serialize them with Date.toString().
+const baliDateKey=value=>{
+  const raw=String(value??"").trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(raw))return raw;
+  const monthNames={Jan:"01",Feb:"02",Mar:"03",Apr:"04",May:"05",Jun:"06",
+    Jul:"07",Aug:"08",Sep:"09",Oct:"10",Nov:"11",Dec:"12"};
+  const match=raw.match(/\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})\s+(\d{4})\b/);
+  if(match)return match[3]+"-"+monthNames[match[1]]+"-"+match[2].padStart(2,"0");
+  const parsed=Date.parse(raw);
+  return Number.isFinite(parsed)?new Date(parsed+3*3600000).toISOString().slice(0,10):raw;
+};
+const normalizeStaffOrder=order=>{
+  const date=baliDateKey(order.eventDate);
+  const id=String(order.eventId??"");
+  return {...order,eventDate:date,eventId:id===order.eventDate?date:baliDateKey(id)};
+};
+const staffOrdersFromApi=rows=>(Array.isArray(rows)?rows:[])
+  .map(normalizeStaffOrder).filter(withinOrderRetention);
 
 /* The staff editor uses exactly the same published events snapshot as the
  * guest site's BALI Calendar. The private Sheets catalog is only a fallback
@@ -523,7 +542,7 @@ async function fetchWorkspaceReport(kind){
   if(sheetsEnabled()){
     const {orders:loaded}=await sheetsRequest("staffOrders",{date,eventId:id});
     const included=$("preorderReportIncludeCancelled").checked;
-    const filtered=(loaded||[]).filter(o=>withinOrderRetention(o)&&
+    const filtered=staffOrdersFromApi(loaded).filter(o=>
       (!id||o.eventId===id)).filter(o=>kind==="orders"||included||
       (!o.archived&&o.status!=="cancelled"));
     const allEvents=!id;
@@ -817,7 +836,7 @@ function watchDateOrders(){
     renderOrders();
     void sheetsRequest("staffOrders",{date}).then(({orders:received})=>{
       if(revision!==dateRevision)return;
-      dateOrders=received||[];loadedDate=date;
+      dateOrders=staffOrdersFromApi(received);loadedDate=date;
       renderEventFilter();renderOrders();
       setStatus("За "+date+" загружено "+dateOrders.length+" предзаказов.");
     }).catch(e=>{
@@ -1071,8 +1090,8 @@ $("orderEditForm").addEventListener("submit",async event=>{
       });
       if(!saved?.id)throw new Error("Сервер не подтвердил изменение заказа.");
       // Keep both cached queues coherent without waiting for the next refresh.
-      orders=orders.map(row=>row.id===saved.id?saved:row);
-      dateOrders=dateOrders.map(row=>row.id===saved.id?saved:row);
+      orders=orders.map(row=>row.id===saved.id?normalizeStaffOrder(saved):row);
+      dateOrders=dateOrders.map(row=>row.id===saved.id?normalizeStaffOrder(saved):row);
       $("orderEditDialog").close();
       renderDates();renderOrders();
       setStatus("Заказ "+orderLabel(saved)+" сохранён. Сумма: "+fmt(saved.total));
@@ -1180,7 +1199,7 @@ async function subscribe(user) {
         renderDates();menuSelect();syncWorkspaceReportScope();
       });
       void refreshCalendarEvents({force:true,quiet:true}).catch(()=>{});
-      orders=(recent.orders||[]).filter(withinOrderRetention);
+      orders=staffOrdersFromApi(recent.orders);
       renderDates();renderOrders();menuSelect();syncWorkspaceReportScope();
       // The server authorizes staff edits and reports. Manual creation and
       // permanent deletion stay disabled until separate server routes exist.
