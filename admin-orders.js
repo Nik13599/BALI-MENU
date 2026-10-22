@@ -296,9 +296,9 @@ const reportActionIds=[
   "preorderReportOrdersPdf","preorderReportOrdersPng","preorderReportOrdersTg",
   "preorderReportDishesView","preorderReportDishesPdf","preorderReportDishesPng","preorderReportDishesTg"
 ];
-let reportScopeRevision=0,reportBusy=false;
+let reportScopeRevision=0,reportBusy=false,reportEventLoading=false;
 function setWorkspaceReportEnabled(){
-  const ready=Boolean($("preorderReportDate")?.value)&&!reportBusy&&authorized;
+  const ready=Boolean($("preorderReportDate")?.value)&&!reportBusy&&!reportEventLoading&&authorized;
   for(const id of reportActionIds)if($(id))$(id).disabled=!ready;
 }
 function clearDishOnlinePreview(){
@@ -309,6 +309,7 @@ async function updateReportEventOptions(){
   if(!compactWorkspace)return;
   const select=$("preorderReportEvent"),date=$("preorderReportDate").value;
   const revision=++reportScopeRevision,previous=select.value;
+  reportEventLoading=Boolean(date&&authorized);
   clearDishOnlinePreview();
   select.replaceChildren(new Option("Все мероприятия за день",""));
   select.disabled=true;setWorkspaceReportEnabled();
@@ -330,6 +331,12 @@ async function updateReportEventOptions(){
     select.disabled=false;
   }catch(e){
     if(revision===reportScopeRevision)setStatus("Не удалось загрузить мероприятия для отчёта: "+(e.code||e.message));
+  }finally{
+    if(revision===reportScopeRevision){
+      reportEventLoading=false;
+      if(date)select.disabled=false;
+      setWorkspaceReportEnabled();
+    }
   }
 }
 async function fetchWorkspaceReport(kind){
@@ -340,7 +347,6 @@ async function fetchWorkspaceReport(kind){
   const source=await getDocs(query(collection(db,"orders"),where("eventDate","==",date)));
   const matching=source.docs.filter(entry=>withinOrderRetention(entry.data())&&
     (!id||(entry.data().eventId||entry.data().eventDate)===id));
-  if(matching.length>300)throw new Error("Для отчёта больше 300 заказов выберите конкретное мероприятие.");
   const included=$("preorderReportIncludeCancelled").checked;
   const selected=kind==="orders"?matching:matching.filter(entry=>
     included||(!entry.data().archived&&entry.data().status!=="cancelled"));
@@ -807,7 +813,7 @@ async function subscribe(user) {
   if(unsubEvents){unsubEvents();unsubEvents=null;}
   if(unsubDateOrders){unsubDateOrders();unsubDateOrders=null;}
   dateRevision++;dateOrders=[];loadedDate="";
-  reportScopeRevision++;clearDishOnlinePreview();setWorkspaceReportEnabled();
+  reportScopeRevision++;reportEventLoading=false;clearDishOnlinePreview();setWorkspaceReportEnabled();
   const current=++generation;
   orders=[];catalog=[];events=new Map();authorized=false;preorderOnlyStaff=false;
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
