@@ -184,3 +184,63 @@ test("report implementation reads the same filters as the staff queue",async()=>
   expect(source).not.toContain('$("preorderReportDate")');
   expect(source).not.toContain('$("preorderReportEvent")');
 });
+
+
+test("compact order keeps full details and pins color status at top right on all screens",async({page})=>{
+  for(const width of [320,390,900,1366]){
+    await page.setViewportSize({width,height:820});
+    await page.goto("/preorders.html");
+    await page.evaluate(()=>{
+      document.getElementById("loginView").hidden=true;
+      document.getElementById("adminView").hidden=false;
+      document.getElementById("ordersAdminList").innerHTML=[
+        '<article class="preorder-compact-row">',
+        '<div class="preorder-primary">',
+        '<div class="preorder-cell reference"><time class="preorder-queue-date">30.10.26</time>',
+        '<div class="preorder-queue-headline"><strong>МУЗЛОТО №18</strong>',
+        '<span class="preorder-queue-reference">Столик №12</span></div></div>',
+        '<div class="preorder-cell guest"><div class="preorder-queue-identity">',
+        '<strong>Александр</strong><a class="preorder-queue-phone" href="tel:+375291234567">+375291234567</a></div>',
+        '<div class="preorder-cell dishes"><strong>3 поз. · 5 порц.</strong></div></div></div>',
+        '<div class="preorder-cell amount"><strong>120.00 BYN</strong></div>',
+        '<div class="preorder-status-cell"><span role="img" aria-label="Ожидает подтверждения" ',
+        'title="Ожидает подтверждения" class="preorder-state preorder-state-pending"></span></div>',
+        '<div class="preorder-actions"><button>Посмотреть заказ</button>',
+        '<button class="preorder-edit-button">Редактировать</button><button>Подтвердить</button>',
+        '</div></article>'
+      ].join("");
+    });
+    const box=await page.evaluate(()=>{
+      const card=document.querySelector(".preorder-compact-row");
+      const dot=card.querySelector(".preorder-state");
+      const main=card.querySelector(".preorder-primary");
+      const top=card.querySelector(".preorder-queue-headline strong");
+      const tel=card.querySelector(".preorder-queue-phone");
+      const cardRect=card.getBoundingClientRect(),dotRect=dot.getBoundingClientRect();
+      const mainRect=main.getBoundingClientRect(),topRect=top.getBoundingClientRect();
+      const telRect=tel.getBoundingClientRect();
+      return {cardRight:cardRect.right,cardTop:cardRect.top,
+        dotRight:dotRect.right,dotTop:dotRect.top,dotWidth:dotRect.width,
+        mainWidth:mainRect.width,cardWidth:cardRect.width,
+        headlineWidth:topRect.width,phoneWidth:telRect.width,
+        mainTop:mainRect.top,phoneTop:telRect.top,
+        bg:getComputedStyle(dot).backgroundColor,
+        statusPosition:getComputedStyle(dot.parentElement).position,
+        statusText:dot.textContent};
+    });
+    expect(box.statusPosition).toBe("absolute");
+    expect(box.dotRight).toBeLessThanOrEqual(box.cardRight);
+    expect(box.cardRight-box.dotRight).toBeLessThan(25);
+    expect(box.dotTop-box.cardTop).toBeGreaterThanOrEqual(0);
+    expect(box.dotTop-box.cardTop).toBeLessThan(20);
+    expect(box.dotWidth).toBe(18);
+    expect(box.bg).toBe("rgb(255, 153, 26)");
+    expect(box.statusText).toBe("");
+    expect(box.mainWidth).toBeGreaterThan(box.cardWidth*.57);
+    expect(box.headlineWidth).toBeGreaterThan(75);
+    expect(box.phoneWidth).toBeGreaterThan(85);
+    expect(box.phoneTop).toBeGreaterThanOrEqual(box.mainTop);
+    await expect(page.locator(".preorder-compact-row .preorder-queue-date")).toHaveText("30.10.26");
+    await expect(page.locator(".preorder-compact-row .preorder-edit-button")).toBeVisible();
+  }
+});
