@@ -83,7 +83,18 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,wallet})=>{
     listBaliQrCodes:api("listBaliQrCodes",async req=>{
       await staff(req);
       const snap=await db.collection("baliBonusQRCodes").orderBy("createdAt","desc").limit(50).get();
-      return {codes:snap.docs.map(output)};
+      // Multi-use QR redemption receipts are independent per guest. Counting
+      // immutable receipts avoids a write hotspot on the shared QR document.
+      const codes=await Promise.all(snap.docs.map(async row=>{
+        const item=output(row);
+        if(item.mode!=="repeat")return item;
+        try{
+          const aggregate=await db.collection("walletOperations")
+            .where("qrCodeHash","==",digest(row.id)).count().get();
+          return {...item,uses:aggregate.data().count};
+        }catch(_){return {...item,uses:null};}
+      }));
+      return {codes};
     }),
     revokeBaliQrCode:api("revokeBaliQrCode",async req=>{
       const uid=await staff(req),code=req.data?.code;
@@ -162,7 +173,8 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,wallet})=>{
         }
         const after=before+(q.action==="credit"?quantity:-quantity);
         if(q.mode==="once")tx.update(qrRef,{used:true,usedBy:uid,usedAt:at,uses:1});
-        else tx.update(qrRef,{uses:admin.firestore.FieldValue.increment(1),lastUsedAt:at});
+        // Repeat codes are read-only in transactions. Each guest updates only
+        // their wallet/lock/receipt so hundreds of scans cannot contend on qrRef.
         tx.set(lockRef,{lastUsedAt:at,uid,codeHash:digest(code)});
         tx.set(walletRef,{...w,updatedAt:at});
         const type=q.action==="credit"?"grant":"redeem";
