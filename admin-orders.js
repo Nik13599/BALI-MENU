@@ -7,6 +7,7 @@ import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1"
 import {withinOrderRetention,ORDER_RETENTION_MS} from "./bali-order-retention.js";
 import {createBaliStaffPreorder} from "./bali-staff-preorder-create.js?v=20261021-1";
 import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
+import {createDurableStaffStatusQueue} from "./bali-staff-status-queue.js?v=20261023-durable1";
 // The Sheets workspace uses Firebase Auth only; load Firestore for its legacy mode.
 const {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBatch,
   serverTimestamp,runTransaction,query,limit,orderBy,where,Timestamp}=sheetsEnabled()?{}:await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
@@ -42,6 +43,53 @@ const orderLabel = o => {
   return eventTitle(o)+" №"+number+(reference?" · "+reference:"");
 };
 const setStatus=text=>{$("ordersAdminStatus").textContent=text;};
+const statusOutbox=createDurableStaffStatusQueue({
+  storage:{getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value)},
+  send:async op=>{
+    const options={keepalive:true};
+    if(typeof AbortSignal!=="undefined"&&typeof AbortSignal.timeout==="function")
+      options.signal=AbortSignal.timeout(14000);
+    const reply=await sheetsRequest("staffStatus",{
+      id:op.id,status:op.status,requestId:op.requestId,
+      expectedUpdatedAt:op.expectedUpdatedAt
+    },options);
+    if(reply?.result?.id!==op.id||reply?.result?.status!==op.status)
+      throw Object.assign(new Error("Сервер не подтвердил статус заказа."),{code:"upstream"});
+    return reply.result;
+  },
+  onChange:()=>{if(authorized)renderOrders();},
+  onSynced:(op,result)=>{
+    for(const row of [...orders,...dateOrders])if(row.id===op.id){
+      row.status=result.status;
+      if(result.updatedAt)row.updatedAt=result.updatedAt;
+    }
+    if(authorized)setStatus("Статус заказа "+op.id+" сохранён на сервере.");
+  },
+  onConflict:(op,error)=>{
+    if(!authorized)return;
+    setStatus("Не удалось сохранить статус заказа "+op.id+": "+(error.message||error.code)+
+      ". Обновите заказ по данным сервера.");
+    void sheetsRequest("staffRecentOrders").then(({orders:incoming})=>{
+      if(!authorized||!sheetsEnabled())return;
+      orders=(incoming||[]).filter(withinOrderRetention);
+      renderOrders();
+    }).catch(()=>{});
+  },
+  onDeferred:()=>{
+    if(authorized)setStatus("Сервер пока не ответил. Изменение сохранено в браузере и будет отправлено повторно.");
+  }
+});
+const effectiveOrder=o=>{
+  const op=sheetsEnabled()?statusOutbox.get(o.id):null;
+  return op?{...o,status:op.status,_statusQueued:true}:o;
+};
+if(sheetsEnabled()){
+  window.addEventListener("online",()=>statusOutbox.flush());
+  window.addEventListener("focus",()=>statusOutbox.flush());
+  document.addEventListener("visibilitychange",()=>{
+    if(document.visibilityState==="visible")statusOutbox.flush();
+  });
+}
 const eventTitle=o=>o.eventTitle||events.get(o.eventId||o.eventDate)?.title||"Название мероприятия не сохранено";
 
 /* The staff editor uses exactly the same published events snapshot as the
@@ -106,7 +154,7 @@ async function fetchComplete(id) {
   if(sheetsEnabled()){
     const found=[...dateOrders,...orders].find(o=>o.id===id);
     if(!found)throw new Error("Заказ не найден в загруженной очереди.");
-    return found;
+    return effectiveOrder(found);
   }
   const ref=doc(db,"orders",id),snapshot=await getDoc(ref);
   if(!snapshot.exists())throw new Error("Заказ не найден.");
@@ -142,6 +190,18 @@ window.addEventListener("afterprint",()=>{$("orderPrintSheet").hidden=true;});
 async function setOrderStatus(o,status) {
   ensureAdmin();
   if(!["pending","confirmed","cancelled"].includes(status))throw new Error("Недопустимый статус заказа.");
+  if(sheetsEnabled()&&compactWorkspace){
+    if(statusOutbox.get(o.id)){
+      setStatus("Дождитесь синхронизации предыдущего изменения этого заказа.");return;
+    }
+    // Confirmation is one tap; cancellation still requires confirmation.
+    if(status!=="confirmed"&&!confirm("Изменить статус заказа "+orderLabel(o)+" на «"+statuses[status]+"»?"))return;
+    try{
+      statusOutbox.enqueue(o,status); // Persist locally before any UI/network activity.
+      setStatus("Статус изменён на экране. Ожидается синхронизация с сервером.");
+    }catch(e){setStatus("Не удалось сохранить действие в браузере: "+(e.message||e.code));}
+    return;
+  }
   if(!confirm("Изменить статус заказа "+orderLabel(o)+" на «"+statuses[status]+"»?"))return;
   setStatus("Сохраняем статус...");
   try {
@@ -285,7 +345,7 @@ async function openOrderDetails(id){
     totalRow.append(node("span","Итого"),node("strong",fmt(total(o.items))));
     content.append(totalRow);
     if(o.notes)content.append(orderDetailsField("Пожелания к заказу",o.notes));
-    $("orderDetailsEdit").hidden=Boolean(o.archived)||(sheetsEnabled()&&!sheetsCanEditOrders);
+    $("orderDetailsEdit").hidden=Boolean(o.archived)||Boolean(o._statusQueued)||(sheetsEnabled()&&!sheetsCanEditOrders);
     $("orderDetailsEdit").onclick=()=>{dialog.close();void openEditor(id);};
     $("orderDetailsPrint").disabled=false;
     $("orderDetailsPrint").onclick=()=>printOrder(o);
@@ -367,7 +427,11 @@ function compactOrderRow(o){
   const statusLabel=statuses[state]||"Неизвестный статус";
   statusDot.setAttribute("role","img");
   statusDot.setAttribute("aria-label",statusLabel);
-  statusDot.title=statusLabel;
+  statusDot.title=statusLabel+(o._statusQueued?" · ожидает синхронизации":"");
+  if(o._statusQueued){
+    statusDot.classList.add("preorder-state-queued");
+    statusDot.setAttribute("aria-label",statusLabel+". Ожидает синхронизации с сервером.");
+  }
   statusBox.append(statusDot);
   if(o.archived)statusBox.append(node("small","Архив"));
   const actions=node("div","","preorder-actions");
@@ -375,15 +439,17 @@ function compactOrderRow(o){
   view.setAttribute("data-preorder-view",o.id);
   actions.append(view);
   if(!o.archived){
-    if(!sheetsEnabled()||sheetsCanEditOrders)
-      actions.append(button("Редактировать",()=>void openEditor(o.id),"preorder-edit-button"));
-    if(state==="pending")actions.append(button("Подтвердить",()=>void setOrderStatus(o,"confirmed"),"confirm"));
+    if(!o._statusQueued){
+      if(!sheetsEnabled()||sheetsCanEditOrders)
+        actions.append(button("Редактировать",()=>void openEditor(o.id),"preorder-edit-button"));
+      if(state==="pending")actions.append(button("Подтвердить",()=>void setOrderStatus(o,"confirmed"),"confirm"));
+    }
   }
   const dropdown=node("details","","preorder-action-menu");
   const trigger=node("summary","⋯");trigger.setAttribute("aria-label","Дополнительные действия с заказом");
   const menu=node("div","","preorder-dropdown");
   const menuButton=(label,fn,cls="")=>button(label,()=>{dropdown.open=false;fn();},cls);
-  if(!o.archived&&state!=="cancelled")menu.append(menuButton("Отменить заказ",()=>void setOrderStatus(o,"cancelled")));
+  if(!o.archived&&!o._statusQueued&&state!=="cancelled")menu.append(menuButton("Отменить заказ",()=>void setOrderStatus(o,"cancelled")));
   menu.append(menuButton("Печать",()=>printOrder(o)));
   if(!sheetsEnabled()){
     menu.append(o.archived
@@ -543,7 +609,7 @@ function renderOrders(){
   const source=date?dateOrders:orders;
   const shown=source.filter(o=>withinOrderRetention(o)&&(!date||o.eventDate===date)&&
     (!selectedEvent||(o.eventId||o.eventDate)===selectedEvent)&&
-    (showArchive||!o.archived)).sort((a,b)=>
+    (showArchive||!o.archived)).map(effectiveOrder).sort((a,b)=>
       b.eventDate.localeCompare(a.eventDate)||
       eventTitle(a).localeCompare(eventTitle(b),"ru")||
       (Number(a.orderNumber)||0)-(Number(b.orderNumber)||0));
@@ -969,6 +1035,7 @@ async function subscribe(user) {
   dateRevision++;dateOrders=[];loadedDate="";
   reportScopeKey="";clearDishOnlinePreview();
   const current=++generation;
+  statusOutbox.deactivate();
   orders=[];catalog=[];events=new Map();calendarSourceLoaded=false;calendarLastRead=0;authorized=false;preorderOnlyStaff=false;sheetsCanEditOrders=false;
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
   $("ordersAdminList").textContent="Проверяем права...";
@@ -985,6 +1052,7 @@ async function subscribe(user) {
       sheetsCanEditOrders=recent.canEditOrders===true;
       preorderOnlyStaff=true;
       authorized=true;
+      statusOutbox.activate(user.uid);
       void menuReady.then(({data:available})=>{
         if(current!==generation||!available)return;
         if(!calendarSourceLoaded)events=new Map((available.events||[]).map(e=>[e.id,e]));
