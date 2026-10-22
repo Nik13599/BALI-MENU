@@ -400,7 +400,27 @@ function baliGuestPlans(user,data){
     .map(r=>({eventId:String(r[1]),date:String(r[2]),status:String(r[3])}))};
 }
 
+function baliAdminGuests(user,data){
+  baliStaff(user,true);
+  const q=BALI_TEXT(data.search,100).toLowerCase(),max=100;
+  const rows=BALI_ROWS("guests").filter(r=>(String(r[2])+" "+String(r[1])+" "+String(r[3]))
+    .toLowerCase().includes(q)).slice(0,max);
+  return {clients:rows.map(r=>({uid:String(r[0]),email:String(r[1]),name:String(r[2]),
+    phone:String(r[3]),createdAt:BALI_ISO(r[4])})),limit:max};
+}
+function baliAdminGuestOrders(user,data){
+  baliStaff(user,true);
+  const uid=BALI_TEXT(data.uid,128);
+  if(!/^[a-zA-Z0-9_-]{8,128}$/.test(uid))BALI_FAIL("invalid-argument","Неизвестный ID гостя.");
+  const existing=BALI_ROWS("guests").some(r=>String(r[0])===uid);
+  if(!existing)BALI_FAIL("not-found","Гость не найден.");
+  return {orders:baliOrdersFor({uid},false,"","").slice(-50)};
+}
 function baliDispatch(user,action,data){
+  if(baliWithdrawn(user)&&action!=="me")
+    BALI_FAIL("permission-denied","Согласие отозвано. Обратитесь к администрации BALI.");
+  if(action==="adminGuests")return baliAdminGuests(user,data);
+  if(action==="adminGuestOrders")return baliAdminGuestOrders(user,data);
   if(action==="me")return {profile:baliGuestProfile(user),role:baliRole(user),
     privacyAccepted:baliConsentState(user,"privacy"),privacyWithdrawn:baliWithdrawn(user)};
   if(action==="consentAccept")return {consent:baliConsent(user,data)};
