@@ -17,7 +17,9 @@ const BALI_SAFE_CELL=value=>/^[=+@\-\t\r]/.test(String(value||""))?"\u0027"+valu
 const BALI_FAIL=(code,message)=>{throw {code,message};};
 const BALI_JSON=value=>ContentService.createTextOutput(JSON.stringify(value))
   .setMimeType(ContentService.MimeType.JSON);
-const BALI_SHEET=name=>SpreadsheetApp.openById(BALI_BOOK).getSheetByName(BALI_TABS[name]);
+// Reuse the spreadsheet handle within this execution; role checks remain fresh.
+let BALI_OPEN_BOOK;
+const BALI_SHEET=name=>(BALI_OPEN_BOOK||(BALI_OPEN_BOOK=SpreadsheetApp.openById(BALI_BOOK))).getSheetByName(BALI_TABS[name]);
 const BALI_ROWS=name=>{const sh=BALI_SHEET(name),last=sh.getLastRow();
   return last<2?[]:sh.getRange(2,1,last-1,sh.getLastColumn()).getValues();};
 const BALI_TRUE=v=>v===true||v===1||String(v).toLowerCase()==="true"||String(v).toLowerCase()==="да";
