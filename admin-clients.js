@@ -4,13 +4,15 @@ import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.
 import {getFirestore,collection,doc,getDoc,getDocs,query,orderBy,where,limit,startAfter}
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {withinOrderRetention} from "./bali-order-retention.js";
+import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 let authorized=false,clients=[],lastClient=null,loadedAll=false,selected=null,lastOrder=null,history=[],token=0;
 const PAGE=80;
 function status(id,text){$(id).textContent=text;}
 function el(tag,text="",className=""){const element=document.createElement(tag);element.textContent=text;if(className)element.className=className;return element;}
-function stamp(ts){return ts?.toDate?.()?.toLocaleDateString("ru-RU")||"—";}
+function stamp(ts){return ts?.toDate?.()?.toLocaleDateString("ru-RU")||
+  (typeof ts==="string"&&Number.isFinite(Date.parse(ts))?new Date(ts).toLocaleDateString("ru-RU"):"—");}
 function currency(n){return Number(n||0).toFixed(2)+" BYN";}
 function renderClients(){
   const list=$("clientList");list.replaceChildren();
@@ -39,6 +41,16 @@ async function loadClients(){
   if(!authorized||loadedAll)return;
   status("clientsAdminStatus","Загружаем базу...");
   try {
+    if(sheetsEnabled()){
+      const result=await sheetsRequest("adminGuests",{offset:clients.length});
+      const seen=new Set(clients.map(c=>c.uid));
+      for(const item of result.clients||[])if(item.uid&&!seen.has(item.uid))clients.push(item);
+      loadedAll=result.hasMore!==true;
+      clients.sort((a,b)=>String(a.name).localeCompare(String(b.name),"ru"));
+      renderClients();
+      status("clientsAdminStatus","Загружено клиентов: "+clients.length+(loadedAll?".":" (есть следующие страницы)."));
+      return;
+    }
     const parts=[collection(db,"users"),orderBy("name"),limit(PAGE)];
     const q=lastClient?query(parts[0],parts[1],startAfter(lastClient),parts[2]):query(...parts);
     const snapshot=await getDocs(q);
@@ -67,8 +79,10 @@ function orderCard(o){
   if(o.archived)card.append(el("small","Архивный заказ"));
   const edit=el("button","Открыть заказ");
   edit.type="button";
-  edit.addEventListener("click",()=>window.dispatchEvent(new CustomEvent("bali:admin:open-order",{detail:{id:o.id}})));
-  card.append(edit);
+  if(!sheetsEnabled()){
+    edit.addEventListener("click",()=>window.dispatchEvent(new CustomEvent("bali:admin:open-order",{detail:{id:o.id}})));
+    card.append(edit);
+  }
   return card;
 }
 async function loadHistory(){
@@ -76,6 +90,17 @@ async function loadHistory(){
   const sequence=++token;
   status("clientHistoryStatus","Загружаем историю...");
   try {
+    if(sheetsEnabled()){
+      const {orders}=await sheetsRequest("adminGuestOrders",{uid:selected.uid});
+      if(sequence!==token)return;
+      history=(orders||[]).filter(withinOrderRetention);
+      history.sort((a,b)=>Date.parse(b.createdAt||0)-Date.parse(a.createdAt||0));
+      const panel=$("clientHistoryList");panel.replaceChildren();
+      for(const o of history)panel.append(orderCard(o));
+      if(!history.length)panel.append(el("p","У этого гостя ещё нет предзаказов."));
+      status("clientHistoryStatus","Загружено заказов: "+history.length+".");
+      return;
+    }
     const q=lastOrder
       ?query(collection(db,"orders"),where("ownerUid","==",selected.uid),startAfter(lastOrder),limit(50))
       :query(collection(db,"orders"),where("ownerUid","==",selected.uid),limit(50));
@@ -124,9 +149,16 @@ onAuthStateChanged(auth,async user=>{
   $("clientList").textContent="Проверяем права...";
   if(!user||!user.emailVerified)return;
   try {
-    const role=await getDoc(doc(db,"admins",user.uid));
-    if(auth.currentUser?.uid!==user.uid||!role.exists()||role.data().active!==true){
-      status("clientsAdminStatus","Требуются права администратора.");return;
+    if(sheetsEnabled()){
+      const {role}=await sheetsRequest("me");
+      if(auth.currentUser?.uid!==user.uid||role!=="admin"){
+        status("clientsAdminStatus","Требуются права администратора.");return;
+      }
+    }else{
+      const role=await getDoc(doc(db,"admins",user.uid));
+      if(auth.currentUser?.uid!==user.uid||!role.exists()||role.data().active!==true){
+        status("clientsAdminStatus","Требуются права администратора.");return;
+      }
     }
     authorized=true;
     void loadClients();
