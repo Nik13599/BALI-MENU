@@ -1,11 +1,19 @@
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 window.BaliSheetsToken=()=>auth.currentUser?.getIdToken()||null;
 let seq=0;
 const status=text=>{$("loginStatus").textContent=text;};
+if(sheetsEnabled()){
+  $("preorderStaffLogin").hidden=true;
+  const entry=document.querySelector(".preorder-admin-owner-entry");
+  if(entry){entry.open=true;entry.querySelector("summary").textContent="Вход сотрудника через Google";}
+  $("adminSignIn").textContent="Войти через Google";
+  $("loginIdentity").textContent="Доступ сотрудникам и руководителю назначается по подтверждённому Google-аккаунту. Отдельная регистрация и платные функции не нужны.";
+}
 $("preorderStaffLogin").addEventListener("submit",async e=>{
   e.preventDefault();
   const login=$("staffLoginName").value.trim().toLowerCase();
@@ -37,10 +45,19 @@ onAuthStateChanged(auth,async user=>{
   $("adminView").hidden=true;$("loginView").hidden=false;
   $("staffHeaderAccount").hidden=true;
   $("adminSwitchAccount").hidden=!user;
-  if(!user){status("Введите логин и пароль сотрудника.");return;}
+  if(!user){status(sheetsEnabled()?"Нажмите «Войти через Google».":"Введите логин и пароль сотрудника.");return;}
   if(!user.emailVerified){status("Нет подтверждённого доступа к предзаказам.");return;}
   status("Проверка прав...");
   try{
+    if(sheetsEnabled()){
+      const {role}=await sheetsRequest("me");
+      if(current!==seq)return;
+      if(role!=="admin"&&role!=="staff"){status("У этого Google-аккаунта нет доступа к предзаказам.");return;}
+      $("adminEmail").textContent=user.displayName||user.email||"Сотрудник BALI";
+      $("adminView").hidden=false;$("loginView").hidden=true;
+      $("staffHeaderAccount").hidden=false;status("");
+      return;
+    }
     const adminRole=await getDoc(doc(db,"admins",user.uid));
     if(current!==seq)return;
     const owner=adminRole.exists()&&adminRole.data().active===true;
