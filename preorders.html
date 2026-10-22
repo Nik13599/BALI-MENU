@@ -46,6 +46,22 @@
 <details class="preorder-tools">
 <summary>Отчёт по предзаказу <span>PDF · PNG · Telegram ⌄</span></summary>
 <div class="preorder-tools-body">
+  <div class="bali-scope-report">
+    <strong>Сводный отчёт · все даты / дата / мероприятие</strong>
+    <p class="preorder-report-note">Область отчёта определяется фильтрами сверху. «Все даты» — вся история за последние 30 дней; выбранная дата — все мероприятия этого дня; дата и мероприятие — только выбранное событие. Архив учитывается при включении «Показать архив». Количество и суммы рассчитываются по всем заказам, не только по видимым 100.</p>
+    <div class="preorder-report-actions">
+      <span>По заказам:</span>
+      <button id="baliScopeOrdersPdf" type="button">↓ PDF</button>
+      <button id="baliScopeOrdersPng" type="button">↓ PNG</button>
+      <button id="baliScopeOrdersTelegram" type="button">↗ Telegram</button>
+    </div>
+    <div class="preorder-report-actions">
+      <span>По блюдам (без отменённых):</span>
+      <button id="baliScopeDishesPdf" type="button">↓ PDF</button>
+      <button id="baliScopeDishesPng" type="button">↓ PNG</button>
+      <button id="baliScopeDishesTelegram" type="button">↗ Telegram</button>
+    </div>
+  </div>
   <p class="preorder-report-note">Выберите конкретный предзаказ из загруженной истории. Дату и мероприятие для отчёта выбирать не нужно. Доступен любой статус, включая архив, пока заказ хранится в системе (до 30 дней).</p>
   <div class="preorder-report-single">
     <label for="preorderReportOrder">Предзаказ
@@ -144,5 +160,6 @@
 </main>
 <script src="firebase-config.js?v=20261020-2"></script>
 <script type="module" src="preorders-access.js?v=20261021-fixed1"></script>
-<script type="module" src="admin-orders.js?v=20261022-single-report2"></script>
+<script type="module" src="bali-staff-guest-inbox.js?v=20261022-guest1"></script>
+<script type="module" src="admin-orders.js?v=20261022-guest-report1"></script>
 </body></html>
