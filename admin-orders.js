@@ -285,10 +285,9 @@ function compactOrderRow(o){
     headline.append(node("span","Столик №"+String(o.tableNumber).trim(),"preorder-queue-reference"));
   if(String(o.bookingId||"").trim())
     headline.append(node("span","ID "+String(o.bookingId).trim(),"preorder-queue-reference"));
-  ref.append(headline);
   const date=node("time",compactOrderDate(o.eventDate),"preorder-queue-date");
   date.dateTime=o.eventDate||"";
-  ref.append(date);
+  ref.append(date,headline);
 
   const guest=node("div","","preorder-cell guest");
   const identity=node("div","","preorder-queue-identity");
