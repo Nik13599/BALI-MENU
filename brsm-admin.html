@@ -1,0 +1,61 @@
+<!doctype html><html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#100d0f">
+<title>BALI · БРСМ АДМИНКА</title><link rel="icon" href="assets/bali-favicon.svg">
+<link rel="stylesheet" href="bali-director-id.css?v=20261019-1">
+<link rel="stylesheet" href="bali-brsm-admin.css?v=20261023-1">
+<script src="firebase-config.js"></script></head><body>
+<header class="director-header"><a href="admin.html">← Админка BALI</a><strong>BALI CARD · BRSM</strong><a href="director-id.html">BALI ID</a></header>
+<main class="brsm-admin-main">
+<section id="brsmAdminLogin" class="director-card">
+<p class="director-eyebrow">БРСМ · DIRECTOR CONTROL</p><h1>УПРАВЛЕНИЕ КАРТАМИ И ЛОТО</h1>
+<p>Доступен директору или администратору BALI. Все операции проверяются сервером.</p>
+<button id="brsmAdminLoginButton" class="director-primary">Войти через Google</button>
+<p id="brsmAdminAuthStatus" role="status"></p>
+</section>
+<div id="brsmAdminWorkspace" hidden>
+<div class="brsm-admin-top"><div><p class="director-eyebrow">BALI × КОНТАКТ × БРСМ</p><h1>БРСМ · КАРТЫ И РОЗЫГРЫШ</h1></div><button id="brsmAdminLogout" class="director-ghost">Выйти</button></div>
+<nav class="brsm-admin-tabs" aria-label="Разделы БРСМ">
+<button data-panel="card" class="selected">Карты</button><button data-panel="promo">Промокоды</button>
+<button data-panel="qr">Входы · QR</button><button data-panel="lotto">Сценическое лото</button>
+</nav>
+<section class="director-card brsm-panel" data-content="card">
+<h2>Выдать или отключить BALI CARD · BRSM</h2>
+<p>Введите персональный шестизначный BALI ID гостя. Карта БРСМ дополнительная и не меняет уровень BALI PRIVILEGE.</p>
+<form id="brsmAssignForm"><label>Номер гостя<input name="number" inputmode="numeric" pattern="[0-9]{1,9}" placeholder="000001" required></label>
+<label>Действие<select name="active"><option value="true">Назначить карту</option><option value="false">Отключить карту</option></select></label>
+<button class="director-primary">Применить</button></form><p data-status="card" role="status"></p>
+</section>
+<section class="director-card brsm-panel" data-content="promo" hidden>
+<h2>Промокоды БРСМ</h2><p>Гость активирует карту сам. Новый код показывается только один раз после создания; храните его безопасно.</p>
+<form id="brsmPromoCreate"><label>Максимум активаций<input type="number" name="maxUses" min="1" max="2000" value="1" required></label>
+<label>Срок в днях<input type="number" name="days" min="1" max="120" value="30" required></label><button class="director-primary">Создать промокод</button></form>
+<div class="brsm-created" id="brsmCreatedPromo" hidden><strong>НОВЫЙ ПРОМОКОД</strong><output id="brsmPromoResult"></output><button type="button" id="brsmCopyPromo" class="director-ghost">Копировать</button></div>
+<form id="brsmPromoRevoke"><label>Отключить промокод<input name="code" placeholder="14 символов" required></label><button class="director-ghost">Отключить</button></form><p data-status="promo" role="status"></p>
+</section>
+<section class="director-card brsm-panel" data-content="qr" hidden>
+<h2>Одноразовые QR-коды посещений</h2>
+<p>Каждый QR выдаётся гостю вместе с браслетом, используется один раз и подходит только для выбранного мероприятия КОНТАКТ из календаря.</p>
+<form id="brsmQrCreate">
+<label>Мероприятие<select name="eventId" id="brsmEventSelect" required><option value="">Загрузка календаря...</option></select></label>
+<label>Количество QR-кодов (1–30)<input type="number" name="count" value="10" min="1" max="30" required></label>
+<button class="director-primary">Сгенерировать разовые QR</button></form>
+<div id="brsmQrList" class="brsm-qr-grid"></div>
+<button type="button" id="brsmPrintQr" class="director-ghost" hidden>Распечатать QR-коды</button>
+<p data-status="qr" role="status"></p>
+</section>
+<section class="director-card brsm-panel" data-content="lotto" hidden>
+<h2>КОНТАКТ · LIVE LOTTO</h2>
+<p>Ведущий вытягивает бочонок физически и вводит его число. Сервер обновляет билеты всех гостей и проверяет совпадения.</p>
+<div class="brsm-draw-state"><div><small>Билетов в розыгрыше</small><strong id="brsmTicketCount">—</strong></div><div><small>Текущий порог</small><strong id="brsmTarget">5</strong></div><div><small>Статус</small><strong id="brsmDrawMode">Не начат</strong></div></div>
+<button type="button" id="brsmDrawStart" class="director-primary">Закрыть регистрацию и начать розыгрыш</button>
+<form id="brsmDrawCall"><label>Номер бочонка (1–90)<input name="number" type="number" min="1" max="90" required></label><button class="director-primary">Зафиксировать число</button></form>
+<div id="brsmDrawNumbers" class="brsm-admin-called"></div>
+<p id="brsmWinner" class="brsm-winner"></p>
+<button type="button" id="brsmDrawTie" class="director-ghost" hidden>Дополнительная жеребьёвка при полной ничьей</button>
+<button type="button" id="brsmRefresh" class="director-ghost">Обновить состояние</button>
+<p data-status="lotto" role="status"></p>
+<p class="director-note">При нескольких участниках с 5 совпадениями порог повышается до 6 и далее. Если полная ничья сохраняется даже после 10 совпадений, предусмотрена отдельная серверная жеребьёвка; её правило должно быть утверждено заранее.</p>
+</section>
+</div></main>
+<script type="module" src="bali-brsm-admin.js?v=20261023-1"></script></body></html>
