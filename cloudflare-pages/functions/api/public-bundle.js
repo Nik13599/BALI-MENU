@@ -62,10 +62,16 @@ export async function onRequestGet({request,env,waitUntil}){
   try{
     // The aggregated KV object avoids thirteen KV reads on every cold colo.
     // Only trusted server-side publication may update the bundle.
-    let aggregate=null;
-    try{aggregate=await kv.get(BUNDLE_KEY,"json");}catch(_){}
+    let aggregate=null,publishedRevision=0;
+    try{
+      [aggregate,publishedRevision]=await Promise.all([
+        kv.get(BUNDLE_KEY,"json"),
+        kv.get("bali:public:bundle:published:v1").then(value=>Number(value)||0)
+      ]);
+    }catch(_){/* Rebuild safely from published per-path snapshots. */}
     let sources;
-    if(validBundle(aggregate))sources=aggregate.sources;
+    if(validBundle(aggregate)&&
+       Number(aggregate.cachedAt||0)>=publishedRevision)sources=aggregate.sources;
     else{
       const loaded=await Promise.allSettled(PATHS.map(async path=>{
         const storageKey="bali:public:v1:"+path;
