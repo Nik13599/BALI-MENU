@@ -296,53 +296,37 @@ const reportActionIds=[
   "preorderReportOrdersPdf","preorderReportOrdersPng","preorderReportOrdersTg",
   "preorderReportDishesView","preorderReportDishesPdf","preorderReportDishesPng","preorderReportDishesTg"
 ];
-let reportScopeRevision=0,reportBusy=false,reportEventLoading=false;
+let reportBusy=false,reportScopeKey="";
 function setWorkspaceReportEnabled(){
-  const ready=Boolean($("preorderReportDate")?.value)&&!reportBusy&&!reportEventLoading&&authorized;
+  const ready=Boolean($("ordersDateFilter")?.value)&&!reportBusy&&authorized;
   for(const id of reportActionIds)if($(id))$(id).disabled=!ready;
 }
 function clearDishOnlinePreview(){
   const panel=$("preorderDishesOnline");
   if(panel){panel.hidden=true;panel.replaceChildren();}
 }
-async function updateReportEventOptions(){
+function syncWorkspaceReportScope(){
   if(!compactWorkspace)return;
-  const select=$("preorderReportEvent"),date=$("preorderReportDate").value;
-  const revision=++reportScopeRevision,previous=select.value;
-  reportEventLoading=Boolean(date&&authorized);
-  clearDishOnlinePreview();
-  select.replaceChildren(new Option("Все мероприятия за день",""));
-  select.disabled=true;setWorkspaceReportEnabled();
-  if(!date||!authorized)return;
-  try{
-    const snapshot=await getDocs(query(collection(db,"orders"),where("eventDate","==",date)));
-    if(revision!==reportScopeRevision||date!==$("preorderReportDate").value)return;
-    const names=new Map();
-    for(const [id,event] of events)if(event.date===date)names.set(id,event.title);
-    for(const record of snapshot.docs){
-      const o=record.data();
-      if(!withinOrderRetention(o))continue;
-      const id=o.eventId||o.eventDate;
-      names.set(id,o.eventTitle||names.get(id)||"Мероприятие "+id);
-    }
-    for(const [id,title] of [...names].sort((a,b)=>a[1].localeCompare(b[1],"ru")))
-      select.add(new Option(title,id));
-    if([...select.options].some(x=>x.value===previous))select.value=previous;
-    select.disabled=false;
-  }catch(e){
-    if(revision===reportScopeRevision)setStatus("Не удалось загрузить мероприятия для отчёта: "+(e.code||e.message));
-  }finally{
-    if(revision===reportScopeRevision){
-      reportEventLoading=false;
-      if(date)select.disabled=false;
-      setWorkspaceReportEnabled();
-    }
+  const date=$("ordersDateFilter").value;
+  const selected=$("ordersEventFilter");
+  const eventId=selected.value;
+  const key=date+"|"+eventId;
+  if(key!==reportScopeKey){
+    reportScopeKey=key;
+    clearDishOnlinePreview();
   }
+  const scope=$("preorderReportScope");
+  if(scope){
+    scope.textContent=date
+      ?"Отчёт: "+date+" · "+(eventId?selected.selectedOptions[0]?.textContent||"Выбранное мероприятие":"Все мероприятия за день")
+      :"Выберите дату в верхнем фильтре. Отчёт за все даты сразу не формируется.";
+  }
+  setWorkspaceReportEnabled();
 }
 async function fetchWorkspaceReport(kind){
   ensureAdmin();
-  const date=$("preorderReportDate").value;
-  const id=$("preorderReportEvent").value;
+  const date=$("ordersDateFilter").value;
+  const id=$("ordersEventFilter").value;
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error("Выберите дату отчёта.");
   const source=await getDocs(query(collection(db,"orders"),where("eventDate","==",date)));
   const matching=source.docs.filter(entry=>withinOrderRetention(entry.data())&&
@@ -392,8 +376,6 @@ function renderDishOnline(report){
   panel.hidden=false;
 }
 if(compactWorkspace){
-  $("preorderReportDate")?.addEventListener("change",()=>void updateReportEventOptions());
-  $("preorderReportEvent")?.addEventListener("change",clearDishOnlinePreview);
   $("preorderReportIncludeCancelled")?.addEventListener("change",clearDishOnlinePreview);
   const actions=[
     ["preorderReportOrdersPdf","orders","pdf"],
@@ -406,10 +388,13 @@ if(compactWorkspace){
   ];
   for(const [id,kind,format] of actions)$(id)?.addEventListener("click",async()=>{
     if(reportBusy)return;
+    const requestedScope=$("ordersDateFilter").value+"|"+$("ordersEventFilter").value;
     reportBusy=true;setWorkspaceReportEnabled();
-    setStatus("Загружаем все предзаказы за выбранный день...");
+    setStatus("Загружаем предзаказы по выбранным фильтрам...");
     try{
       const report=await fetchWorkspaceReport(kind);
+      if(requestedScope!==$("ordersDateFilter").value+"|"+$("ordersEventFilter").value)
+        throw new Error("Фильтры изменились во время загрузки. Повторите отчёт.");
       if(format==="online"){
         renderDishOnline(report);
         setStatus("Сводка по блюдам доступна ниже в разделе отчётов.");
@@ -538,6 +523,7 @@ function renderEventFilter(){
     select.add(new Option(title,id));
   if([...select.options].some(x=>x.value===old))select.value=old;
   select.disabled=!date;
+  syncWorkspaceReportScope();
   const canExport=Boolean(date&&select.value);
   for(const id of ["exportEventOrders","exportEventDishes","exportEventOrdersPng",
     "exportEventDishesPng","exportEventOrdersTg","exportEventDishesTg"]){
@@ -548,7 +534,8 @@ function watchDateOrders(){
   unsubDateOrders?.();unsubDateOrders=null;
   const date=$("ordersDateFilter").value,revision=++dateRevision;
   dateOrders=[];loadedDate="";
-  if(!date){renderEventFilter();renderOrders();return;}
+  renderEventFilter();
+  if(!date){renderOrders();return;}
   if(!authorized)return;
   const readOrders=createOrderSnapshotReader(readOrderLines);
   let snapshotRevision=0;
@@ -813,7 +800,7 @@ async function subscribe(user) {
   if(unsubEvents){unsubEvents();unsubEvents=null;}
   if(unsubDateOrders){unsubDateOrders();unsubDateOrders=null;}
   dateRevision++;dateOrders=[];loadedDate="";
-  reportScopeRevision++;reportEventLoading=false;clearDishOnlinePreview();setWorkspaceReportEnabled();
+  reportScopeKey="";clearDishOnlinePreview();
   const current=++generation;
   orders=[];catalog=[];events=new Map();authorized=false;preorderOnlyStaff=false;
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
@@ -832,8 +819,7 @@ async function subscribe(user) {
       $("ordersAdminList").textContent="Нет доступа к предзаказам.";return;
     }
     authorized=true;
-    setWorkspaceReportEnabled();
-    if(compactWorkspace&&$("preorderReportDate")?.value)void updateReportEventOptions();
+    syncWorkspaceReportScope();
     const readOrders=createOrderSnapshotReader(readOrderLines);
     let revision=0;
     unsubEvents=onSnapshot(collection(db,"events"),snap=>{
