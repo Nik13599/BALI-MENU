@@ -1173,7 +1173,7 @@ function preorderReferenceParts(value,original=null){
 let orderServiceLoading=null;
 let guestPreorderServiceLoading=null;
 async function ensureGuestPreorderService(){
-    guestPreorderServiceLoading??=import("./bali-guest-preorder.js?v=20261022-anon-guest1")
+    guestPreorderServiceLoading??=import("./bali-guest-preorder.js?v=20261022-booking-reference1")
       .catch(error=>{guestPreorderServiceLoading=null;throw error});
     return guestPreorderServiceLoading;
 }
