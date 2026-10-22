@@ -549,3 +549,31 @@ body.bali-preorders-workspace{
     top:8px;right:10px;grid-area:auto;
   }
 }
+
+
+/* Mobile order cards: reset old child grid-areas left by the six-column design.
+   Those legacy areas created implicit columns INSIDE .preorder-primary and
+   overlapped the date, event, guest and item count on narrow screens. */
+@media(max-width:1080px){
+  .bali-preorders-workspace .preorder-compact-row .preorder-primary{
+    display:flex;flex-direction:column;align-items:stretch;
+    gap:5px;min-width:0;width:100%;
+  }
+  .bali-preorders-workspace .preorder-primary > .preorder-cell.reference,
+  .bali-preorders-workspace .preorder-primary > .preorder-cell.guest,
+  .bali-preorders-workspace .preorder-primary .preorder-cell.dishes{
+    grid-area:auto;min-width:0;width:100%;
+  }
+  .bali-preorders-workspace .preorder-primary > .preorder-cell.reference,
+  .bali-preorders-workspace .preorder-primary > .preorder-cell.guest{
+    display:flex;flex-direction:column;align-items:stretch;gap:3px;
+  }
+  .bali-preorders-workspace .preorder-primary .preorder-queue-date{
+    display:block;position:static;margin:0;line-height:1.25;
+  }
+  .bali-preorders-workspace .preorder-primary .preorder-queue-headline,
+  .bali-preorders-workspace .preorder-primary .preorder-queue-identity{
+    width:100%;max-width:100%;min-width:0;margin:0;
+  }
+  .bali-preorders-workspace .preorder-primary .preorder-cell.dishes{margin:0}
+}
