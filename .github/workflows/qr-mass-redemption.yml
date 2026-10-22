@@ -21,7 +21,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - run: npm ci --prefix functions --no-audit --no-fund
+      - run: npm install --prefix functions --no-audit --no-fund
       - name: Verify production QR code and transaction tests
         run: |
           node --check functions/bonus-qr.js
