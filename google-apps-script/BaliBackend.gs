@@ -143,7 +143,7 @@ function baliAnonymousOrder(data,token){
   if(data.guestVerified!==true||data.privacyConsent!==true||data.internationalConsent!==true)
     BALI_FAIL("permission-denied","Для отправки заявки требуется подтверждение защиты и согласия.");
   const name=BALI_TEXT(data.customerName,100),phone=BALI_TEXT(data.customerPhone,22);
-  if(name.length<2||/^[=+@]/.test(name)||name.includes("\\n")||name.includes("\\r")||
+  if(name.length<2||/^[=+@]/.test(name)||/[\n\r]/.test(name)||
     !/^\+[1-9][0-9]{7,14}$/.test(phone))
     BALI_FAIL("invalid-argument","Укажите имя и контактный номер в международном формате.");
   const principal=token?baliVerifyFirebase(token):{uid:"",email:""};
