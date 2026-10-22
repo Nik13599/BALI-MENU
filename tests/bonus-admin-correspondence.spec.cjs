@@ -7,6 +7,9 @@ async function mount(page,file,modules,{admin=true,custom=true,delayKinds=false}
   // Execute the real forms/modules; all Firebase calls are local fixtures.
   await page.route('**/*',route=>route.abort());
   await page.setContent(cleanHtml(file));
+  // The BALI ID wallet is intentionally inactive on other browser pages.
+  // Bank behavior tests enter the actual ID route first.
+  if(file==='index.html')await page.evaluate(()=>{document.body.dataset.baliPage='id';});
   await page.evaluate(({admin,custom,delayKinds})=>{
     const builtins=[{id:'shot',name:'Шоты'},{id:'cocktail',name:'Коктейли'},{id:'hookah',name:'Кальяны'},{id:'entry',name:'Бесплатные проходы'}];
     window.__kinds=custom?[...builtins,{id:'dessert',name:'Десерты'}]:builtins;
