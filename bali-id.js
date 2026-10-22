@@ -178,6 +178,6 @@ window.addEventListener("bali:id-accepted",event=>{
 });
 window.addEventListener("bali:guest-page",event=>{
   if(event.detail?.page==="id")resumeCard(auth.currentUser);
-  else if(activeUid||privilegedUnsub||rulesUnsub)void initializeForUser(null);
+  else void initializeForUser(null); // Also invalidate any asynchronous card setup in flight.
 });
 onAuthStateChanged(auth,resumeCard);
