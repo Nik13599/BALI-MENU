@@ -46,7 +46,7 @@ const sandbox={
       const all=[
         ...sheets.get("Мероприятия").slice(1).map(row=>({
           id:String(row[0]),date:String(row[1]),title:String(row[2]),
-          closesAt:String(row[4])
+          closesAt:String(row[4]),preorderEnabled:row[3]===true
         })),
         ...publishedOnlyEvents
       ];
@@ -55,7 +55,8 @@ const sandbox={
         fields:{
           date:{stringValue:event.date},
           title:{stringValue:event.title},
-          closesAt:{stringValue:event.closesAt}
+          closesAt:{stringValue:event.closesAt},
+          preorderEnabled:{booleanValue:event.preorderEnabled===true}
         }
       }))});
     }
@@ -186,7 +187,16 @@ ok("staff","staffReport",{date:eventDate,eventId:eventDate,kind:"orders"});
 const signedOrder=ok("guestA","createOrder",{...guestOrder,
   customerName:"Анна",requestId:"auth_request_1234567890"}).order;
 assert.equal(signedOrder.orderNumber,2);
-ok("staff","staffStatus",{id:signedOrder.id,status:"cancelled"});
+const statusRequestId="abcdef0123456789abcdef0123456789";
+const auditBefore=sheets.get("История изменений").length;
+const applied=ok("staff","staffStatus",{
+  id:signedOrder.id,status:"cancelled",requestId:statusRequestId
+}).result;
+assert.equal(applied.status,"cancelled");
+assert.equal(ok("staff","staffStatus",{
+  id:signedOrder.id,status:"cancelled",requestId:statusRequestId
+}).result.alreadyApplied,true);
+assert.equal(sheets.get("История изменений").length,auditBefore+1); // reload replay did not write twice
 const anonymousNext=ok("","guestCreateOrder",{...guestOrder,
   customerPhone:"+375291234568",requestId:"guest_request_9876543210"}).order;
 assert.equal(anonymousNext.orderNumber,3); // cancellation does not reuse a serial
