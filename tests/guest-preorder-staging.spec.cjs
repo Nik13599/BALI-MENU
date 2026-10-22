@@ -45,7 +45,7 @@ test("guest can fill compulsory contact, date, event and table without Google lo
   await page.locator("#customerPhone").fill("+375291234567");
   await page.locator("#eventDateSelect").selectOption("2099-10-24");
   await page.locator("#eventSelect").selectOption("2099-10-24");
-  await page.locator("#tableNumber").fill("12");
+  await page.locator("#orderReference").fill("12");
   await page.locator("#baliGuestPrivacyConsent").check();
   await page.locator("#baliGuestInternationalConsent").check();
   await expect.poll(()=>page.evaluate(()=>Boolean(window.__testTurnstileConfig?.callback))).toBe(true);
