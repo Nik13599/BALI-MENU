@@ -174,7 +174,7 @@ function readableOrderDate(iso){
   const [year,month,day]=iso.split("-");
   return day+"."+month+"."+year;
 }
-async function openOrderDetails(id){
+async function openOrderDetails(id,options={}){
   ensureAdmin();
   const dialog=$("orderDetailsDialog");
   if(!dialog)return;
@@ -260,6 +260,7 @@ async function openOrderDetails(id){
       showBaliPreorderTelegram(report);
     };
     $("orderDetailsShare").hidden=false;
+    if(options.share===true)$("orderDetailsShare").open=true;
   }catch(e){
     if(dialog.open)$("orderDetailsContent").replaceChildren(
       node("p","Не удалось открыть заказ: "+(e.message||e.code||"unknown"),"preorder-detail-error"));
@@ -268,50 +269,79 @@ async function openOrderDetails(id){
 $("closeOrderDetails")?.addEventListener("click",()=>$("orderDetailsDialog").close());
 $("orderDetailsClose")?.addEventListener("click",()=>$("orderDetailsDialog").close());
 function compactOrderRow(o){
-  const row=node("article","","preorder-compact-row");
-  const ref=node("div","","preorder-cell reference");
-  ref.append(node("strong",eventTitle(o)+" №"+(Number.isInteger(o.orderNumber)?o.orderNumber:o.id)));
-  const reference=bookingReference(o);
-  ref.append(node("small",o.eventDate+(reference?" · "+reference:"")));
-  const guest=node("div","","preorder-cell guest");
-  guest.append(node("strong",o.customerName||"Гость BALI"));
-  const phone=node("small",o.customerPhone||"Без телефона");
-  guest.append(phone);
-  const dishes=node("div","","preorder-cell dishes");
-  const count=o.items.reduce((sum,x)=>sum+Number(x.quantity||0),0);
-  dishes.append(node("strong",o.items.length+" поз. · "+count+" порц."));
-  const preview=o.items.map(x=>x.name+" × "+x.quantity).join(", ");
-  const previewEl=node("small",preview||"Блюда отсутствуют");previewEl.title=preview;
-  dishes.append(previewEl);
-  const amount=node("div","","preorder-cell amount");
-  amount.append(node("strong",fmt(o.total)));
-  const statusBox=node("div","","preorder-status-cell");
+  const card=node("article","","preorder-approved-card");
+  card.dataset.orderId=o.id;
   const state=normalizedOrderStatus(o.status);
-  statusBox.append(node("span",statuses[state]||"Подтверждён","preorder-state preorder-state-"+state));
-  if(o.archived)statusBox.append(node("small","Архив"));
-  const actions=node("div","","preorder-actions");
-  const view=button("Посмотреть заказ",()=>void openOrderDetails(o.id),"preorder-view-button");
-  view.setAttribute("data-preorder-view",o.id);
-  actions.append(view);
+  const number=Number.isInteger(o.orderNumber)?String(o.orderNumber):String(o.id||"—");
+  const title=eventTitle(o)+" №"+number;
+  const head=node("div","","preorder-approved-head");
+  const identity=node("div","","preorder-approved-identity");
+  const primary=node("div","","preorder-approved-primary");
+  primary.append(node("strong",title,"preorder-approved-title"));
+  if(o.tableNumber)primary.append(node("span","Столик №"+String(o.tableNumber),"preorder-approved-ref"));
+  if(o.bookingId)primary.append(node("span","ID "+String(o.bookingId),"preorder-approved-ref"));
+  if(!o.tableNumber&&!o.bookingId)primary.append(node("span","Без номера брони","preorder-approved-ref"));
+  identity.append(primary,node("time",readableOrderDate(o.eventDate),"preorder-approved-date"));
+  const controls=node("div","","preorder-approved-top");
+  const stateEl=node("span",({
+    pending:"Ожидает подтверждения",
+    confirmed:"Подтверждён",
+    cancelled:"Отменён"
+  })[state]||statuses[state]||"Ожидает подтверждения","preorder-state preorder-state-"+state);
+  controls.append(stateEl);
+  if(o.archived)controls.append(node("span","Архив","preorder-approved-archived"));
   if(!o.archived){
-    if(!sheetsEnabled())actions.append(button("Изменить",()=>void openEditor(o.id)));
-    if(state==="pending")actions.append(button("Подтвердить",()=>void setOrderStatus(o,"confirmed"),"confirm"));
+    if(state==="pending")controls.append(
+      button("Подтвердить",()=>void setOrderStatus(o,"confirmed"),"preorder-approved-confirm"));
+    if(state!=="cancelled")controls.append(
+      button("Отменить",()=>void setOrderStatus(o,"cancelled"),"preorder-approved-cancel"));
   }
-  const dropdown=node("details","","preorder-action-menu");
-  const trigger=node("summary","⋯");trigger.setAttribute("aria-label","Дополнительные действия с заказом");
-  const menu=node("div","","preorder-dropdown");
-  const menuButton=(label,fn,cls="")=>button(label,()=>{dropdown.open=false;fn();},cls);
-  if(!o.archived&&state!=="cancelled")menu.append(menuButton("Отменить заказ",()=>void setOrderStatus(o,"cancelled")));
-  menu.append(menuButton("Печать",()=>printOrder(o)));
-  if(!sheetsEnabled()){
-    menu.append(o.archived
-      ?menuButton("Вернуть из архива",()=>void archiveOrder(o,false))
-      :menuButton("В архив",()=>void archiveOrder(o,true)));
-    menu.append(menuButton("Удалить навсегда",()=>void deleteOrder(o),"danger-action"));
+  head.append(identity,controls);
+  const body=node("div","","preorder-approved-body");
+  const contact=node("div","","preorder-approved-guest");
+  contact.append(node("strong",o.customerName||"Гость BALI","preorder-approved-guest-name"));
+  const cleanedPhone=String(o.customerPhone||"").replace(/[^+\\d]/g,"");
+  const phoneRow=node("div","","preorder-approved-phone-row");
+  const phone=node("span",o.customerPhone||"Телефон не указан","preorder-approved-phone");
+  phoneRow.append(phone);
+  if(cleanedPhone.length>=8){
+    const call=node("a","Позвонить","preorder-approved-call");
+    call.href="tel:"+cleanedPhone;
+    call.setAttribute("aria-label","Позвонить гостю "+(o.customerName||"BALI"));
+    phoneRow.append(call);
   }
-  dropdown.append(trigger,menu);actions.append(dropdown);
-  row.append(ref,guest,dishes,amount,statusBox,actions);
-  return row;
+  contact.append(phoneRow);
+  const foods=node("div","","preorder-approved-foods");
+  const items=Array.isArray(o.items)?o.items:[];
+  const count=items.reduce((sum,x)=>sum+Number(x.quantity||0),0);
+  foods.append(node("span","Состав заказа · "+items.length+" поз. · "+count+" порц.","preorder-approved-foods-heading"));
+  const preview=items.map(x=>String(x.name||"Блюдо")+" × "+Number(x.quantity||0)).join(" · ");
+  const description=node("div",preview||"Позиции отсутствуют","preorder-approved-foods-list");
+  description.title=preview;
+  foods.append(description);
+  body.append(contact,foods);
+  const foot=node("div","","preorder-approved-foot");
+  const actions=node("div","","preorder-approved-actions");
+  actions.append(button("Открыть карточку",()=>void openOrderDetails(o.id),"preorder-approved-open"));
+  const edit=button("Редактировать",()=>void openEditor(o.id));
+  if(sheetsEnabled()){
+    edit.disabled=true;
+    edit.title="Редактирование через Google Таблицы пока недоступно";
+  }else if(o.archived)edit.disabled=true;
+  actions.append(edit);
+  actions.append(button("Распечатать",()=>printOrder(o)));
+  actions.append(button("Переслать",()=>void openOrderDetails(o.id,{share:true})));
+  const remove=button("Удалить",()=>void deleteOrder(o),"preorder-approved-remove");
+  if(sheetsEnabled()){
+    remove.disabled=true;
+    remove.title="Удаление через Google Таблицы пока недоступно";
+  }
+  actions.append(remove);
+  const sum=node("div","","preorder-approved-total");
+  sum.append(node("span","Сумма заказа"),node("strong",fmt(o.total)));
+  foot.append(actions,sum);
+  card.append(head,body,foot);
+  return card;
 }
 const reportActionIds=[
   "preorderReportOrdersPdf","preorderReportOrdersPng","preorderReportOrdersTg",
@@ -500,9 +530,7 @@ function renderOrders(){
     container.append(node("p","По этим условиям заказов пока нет."));return;
   }
   if(compactWorkspace){
-    const header=node("div","","preorder-table-header");
-    ["Предзаказ","Гость","Состав","Сумма","Статус","Действия"].forEach(name=>header.append(node("span",name)));
-    container.append(header);
+    // Approved BALI STAFF layout: individual compact order cards, not a six-column table.
     for(const o of shown)container.append(compactOrderRow(o));
     return;
   }
