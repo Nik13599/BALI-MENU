@@ -393,12 +393,16 @@ function menuRender() {
   window.dispatchEvent(new CustomEvent("bali:admin:catalog-rendered"));
 }
 
-const adminTodayMinsk=()=>new Intl.DateTimeFormat("en-CA",{
-  timeZone:"Europe/Minsk",year:"numeric",month:"2-digit",day:"2-digit"
-}).format(new Date());
+const adminTodayMinsk=()=>{
+  const parts=new Intl.DateTimeFormat("en-GB",{
+    timeZone:"Europe/Minsk",year:"numeric",month:"2-digit",day:"2-digit"
+  }).formatToParts(new Date());
+  const values=Object.fromEntries(parts.map(part=>[part.type,part.value]));
+  return values.year+"-"+values.month+"-"+values.day;
+};
 const adminDateState=(date,today=adminTodayMinsk())=>
   date===today?"today":date<today?"past":"upcoming";
-const adminReadableDate=date=>/^\\d{4}-\\d{2}-\\d{2}$/.test(date)
+const adminReadableDate=date=>/^\d{4}-\d{2}-\d{2}$/.test(date)
   ?date.slice(8,10)+"."+date.slice(5,7)+"."+date.slice(0,4):date;
 function eventRender() {
   const list = $("eventList");list.replaceChildren();
