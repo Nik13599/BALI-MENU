@@ -2,6 +2,7 @@
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFunctions,httpsCallable} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-functions.js";
+import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),fn=getFunctions(app,"europe-west1"),$=id=>document.getElementById(id);
 const calls=Object.fromEntries(["listBaliBonusKinds","createBaliBonusKind","createBaliQrBatch","listBaliQrCodes","revokeBaliQrCode","issueBaliQuantity"].map(k=>[k,httpsCallable(fn,k)]));
@@ -19,6 +20,7 @@ function fillKinds(){
  }
 }
 async function reloadKinds(){
+ if(sheetsEnabled()){fillKinds();return;}
  try{
   const out=(await calls.listBaliBonusKinds({})).data;
   if(Array.isArray(out?.kinds)){
@@ -29,7 +31,9 @@ async function reloadKinds(){
  }catch(e){$("baliQrBatchInfo").textContent="Не удалось загрузить виды бонусов: "+errorText(e);}
 }
 async function loadList(){
- const host=$("baliQrManageList");host.textContent="Загружаем…";
+ const host=$("baliQrManageList");
+ if(sheetsEnabled()){host.textContent="QR-коды ещё не перенесены в Google Таблицы. Начисления бонусов работают через BALI API.";return;}
+ host.textContent="Загружаем…";
  try{
   const out=(await calls.listBaliQrCodes({})).data;
   host.replaceChildren();
@@ -57,6 +61,10 @@ createForm?.elements.mode?.addEventListener("change",()=>{
 });
 $("baliCreateBonusKindForm")?.addEventListener("submit",async event=>{
  event.preventDefault();
+ if(sheetsEnabled()){
+   status(event.currentTarget,"QR-функция ещё не переведена на новый сервер, создание отключено.");
+   return;
+ }
  const form=event.currentTarget,data=new FormData(form),button=form.querySelector("button[type=submit]");
  button.disabled=true;status(form,"Создаём новое направление…");
  try{
@@ -66,7 +74,11 @@ $("baliCreateBonusKindForm")?.addEventListener("submit",async event=>{
  }catch(e){status(form,errorText(e));}finally{button.disabled=false}
 });
 createForm?.addEventListener("submit",async event=>{
- event.preventDefault();const form=event.currentTarget,button=form.querySelector("button[type=submit]");
+ event.preventDefault();
+ if(sheetsEnabled()){
+   status(event.currentTarget,"QR-функция ещё не переведена на новый сервер, создание отключено.");
+   return;
+ }const form=event.currentTarget,button=form.querySelector("button[type=submit]");
  if(loading)return;const data=new FormData(form);
  const mode=String(data.get("mode")||"once");
  const params={kind:String(data.get("kind")),action:String(data.get("action")),mode,
@@ -104,7 +116,9 @@ grant?.addEventListener("submit",async event=>{
  if(!uid||!kinds.has(kind)||!Number.isInteger(quantity)||quantity<1||quantity>999||reason.length<5){status(grant,"Выберите гостя, тип, количество и основание.");return;}
  if(!confirm("Начислить "+quantity+" "+kinds.get(kind)+" выбранному гостю?"))return;
  const button=grant.querySelector('button[type="submit"]');button.disabled=true;status(grant,"Начисляем…");
- try{const result=(await calls.issueBaliQuantity({uid,kind,quantity,transferable,reason})).data;
+ try{const result=sheetsEnabled()?
+  (await sheetsRequest("bonusGrant",{uid,kind,quantity,transferable,reason})).result:
+  (await calls.issueBaliQuantity({uid,kind,quantity,transferable,reason})).data;
   if(!result?.ok)throw Error("Нет подтверждения сервера");
   status(grant,"Бонусы начислены. Баланс и история гостя обновятся.");
  }catch(e){status(grant,errorText(e));}finally{button.disabled=false}
