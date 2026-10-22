@@ -25,10 +25,9 @@ https://docs.google.com/spreadsheets/d/1QxY-WgMwTT_5F3tdHxZICVbdUo4XOvgqI_7endBh
    `google-apps-script/BaliBackend.gs` из этого репозитория:
    https://github.com/Nik13599/BALI-MENU/blob/main/google-apps-script/BaliBackend.gs
 5. Нажать **Сохранить**.
-6. В меню настроек проекта (шестерёнка, **Project Settings**) открыть **Script Properties**.
-7. Добавить свойство **BALI_BRIDGE_KEY**. Значение: уникальный случайный секрет не менее 32 байт, например созданный локально менеджером паролей. **Никогда не помещать его в GitHub или HTML.**
-8. Запустить `baliCheckSetup` вручную из редактора и разрешить доступ к **этой таблице**, **закрытой папке Google Диска** и URL Fetch. Скрипт не должен запрашивать доступ на отправку писем.
-9. Проверьте, что в меню **Executions** завершился запуск без ошибок.
+6. **Ключ уже создан** в закрытой вкладке `Настройки`, ячейка **B2**. Код Apps Script считывает его непосредственно из приватной таблицы. **Не вставляйте его в GitHub и не меняйте значение.** Если нужно использовать отдельное Script Property, можно создать `BALI_BRIDGE_KEY`, но это необязательно.
+7. Выбрать функцию `baliCheckSetup`, нажать **Run / Выполнить** и разрешить доступ к этой таблице, закрытой папке фотографий и URL Fetch.
+8. В списке **Executions** убедиться, что проверка завершена без ошибок.
 
 ## 3. Опубликовать Apps Script
 
@@ -46,16 +45,18 @@ https://docs.google.com/spreadsheets/d/1QxY-WgMwTT_5F3tdHxZICVbdUo4XOvgqI_7endBh
 Проект уже содержит готовый код:
 https://github.com/Nik13599/BALI-MENU/blob/main/cloudflare-worker/BaliSheetsGateway.js
 
-1. Войти в Cloudflare для зоны `baliminsk.by`.
-2. В **Workers & Pages → Create** создать бесплатный Worker, например `bali-sheets-private-api`.
-3. Вставить в Worker указанный код и развернуть.
-4. В **Settings → Variables and Secrets** создать **два защищённых секрета**:
-   - `SHEETS_SCRIPT_URL` = полученный `https://script.google.com/macros/s/.../exec`;
-   - `BALI_BRIDGE_KEY` = точно тот же секрет, что в **Script Properties** Apps Script.
-5. В **Domains & Routes / Routes** добавить маршрут для проксируемой зоны:
-   `baliminsk.by/api/bali-v3*` → `bali-sheets-private-api`.
-   Убедиться, что DNS-запись сайта находится под **Cloudflare Proxy** (orange cloud).
-6. Проверить HTTPS по `baliminsk.by`. Не размещать приватную таблицу в публичной папке сайта и **не** открывать доступ к ней по ссылке.
+**Автоматически сделано:** Worker `bali-sheets-private-api` уже развёрнут на бесплатном тарифе. Маршрут `baliminsk.by/api/bali-v3*` подключён к нему; DNS сайта находится под Cloudflare Proxy. **Не создавайте второй Worker.**
+
+**Остались два защищённых значения в Cloudflare:**
+
+1. Откройте [Cloudflare Workers](https://dash.cloudflare.com/399972c0a0358037b0cb4d0d46ce69a3/workers-and-pages) и выберите `bali-sheets-private-api`.
+2. В **Settings → Variables and Secrets** добавьте:
+   - `SHEETS_SCRIPT_URL` как **Secret** со значением URL развёрнутого Apps Script `https://script.google.com/macros/s/.../exec`.
+   - `BALI_BRIDGE_KEY` как **Secret** со значением **ячейки B2** закрытой таблицы BALI, вкладка `Настройки`.
+3. Нажмите **Deploy / Сохранить и развернуть**, если Cloudflare попросит подтвердить изменения.
+4. Никогда не размещайте эти значения в GitHub, HTML, логах или общедоступном документе.
+
+Подключённый инструмент Cloudflare не разрешил автоматическое сохранение защищённого секрета, поэтому значения ещё нужно ввести в интерфейсе владельца. Не путайте этот шаг с публикацией самого Worker, которая уже выполнена.
 
 Альтернатива (если проект полностью переведён на Cloudflare Pages): использовать
 `cloudflare-pages/functions/api/bali-v3.js` и те же два секрета. **Обычная публикация GitHub Pages сама по себе Cloudflare Pages Functions не запускает.**
@@ -69,7 +70,7 @@ https://github.com/Nik13599/BALI-MENU/blob/main/cloudflare-worker/BaliSheetsGate
 - D = `TRUE`;
 - E = имя (необязательно).
 
-Строка должна быть создана **вручную владельцем**. Не вставляйте пароли и сервисные секреты. Сервер позволяет назначать роль только вручную владельцем или через защищённую административную операцию и **не** выдаёт права администратора из параметров браузера.
+**Строка владельца уже создана и проверена:** `kolyaselekh@gmail.com` / `admin` / `TRUE`. Не нужно добавлять её повторно. Не вставляйте пароли и сервисные секреты. Сервер позволяет назначать роль только вручную владельцем или через защищённую административную операцию и **не** выдаёт права администратора из параметров браузера.
 
 Для доступа сотрудников только к предзаказам можно добавлять строки с ролью `staff` и нужным подтверждённым Google email. В новом варианте сотрудники должны входить через **Google**, а не через неработающую платную Firebase-функцию создания паролей.
 
