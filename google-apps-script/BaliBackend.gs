@@ -8,7 +8,7 @@
 const BALI_BOOK = "1QxY-WgMwTT_5F3tdHxZICVbdUo4XOvgqI_7endBhOe0";
 const BALI_FB_KEY = "AIzaSyAiGyt5O6x2V0pBNIJ2pOlXxXBgaYqzzUA"; // Firebase web key (public)
 const BALI_TABS={orders:"Заказы",items:"Позиции заказов",menu:"Меню",events:"Мероприятия",
-  roles:"Администраторы",audit:"История изменений",guests:"Гости",
+  roles:"Администраторы",audit:"История изменений",guests:"Гости",settings:"Настройки",
   cards:"BALI ID",privileges:"Привилегии",bonuses:"Бонусы",bonusHistory:"История бонусов",
   coins:"BALI COIN",coinHistory:"История BALI COIN",consents:"Согласия",plans:"Планы гостя"};
 const BALI_NOW=()=>new Date().toISOString();
@@ -342,9 +342,7 @@ function baliCoinChange(user,data){
   });
 }
 function baliGetTierRules(){
-  const row=(SpreadsheetApp.openById(BALI_BOOK).getSheetByName("Настройки").getLastRow()<2?[]:
-    SpreadsheetApp.openById(BALI_BOOK).getSheetByName("Настройки").getRange(2,1,
-      SpreadsheetApp.openById(BALI_BOOK).getSheetByName("Настройки").getLastRow()-1,2).getValues()).find(r=>String(r[0])==="privilegeRules");
+  const row=BALI_ROWS("settings").find(r=>String(r[0])==="privilegeRules");
   if(!row)return {levels:{}};
   try{return {levels:JSON.parse(String(row[1]))};}
   catch(_){return {levels:{}};}
@@ -364,8 +362,8 @@ function baliSaveTierRules(user,data){
     safe[name]={description:BALI_TEXT(item.description,450),criteria:BALI_TEXT(item.criteria,350),benefits};
   }
   return baliLock(()=>{
-    const sh=SpreadsheetApp.openById(BALI_BOOK).getSheetByName("Настройки");
-    const rows=sh.getLastRow()<2?[]:sh.getRange(2,1,sh.getLastRow()-1,2).getValues();
+    const sh=BALI_SHEET("settings");
+    const rows=BALI_ROWS("settings");
     const index=rows.findIndex(r=>String(r[0])==="privilegeRules");
     const entry=["privilegeRules",JSON.stringify(safe),"Настройки шести уровней BALI ID"];
     if(index<0)sh.appendRow(entry);else sh.getRange(index+2,1,1,3).setValues([entry]);
