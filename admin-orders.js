@@ -269,6 +269,10 @@ async function openOrderDetails(id){
 }
 $("closeOrderDetails")?.addEventListener("click",()=>$("orderDetailsDialog").close());
 $("orderDetailsClose")?.addEventListener("click",()=>$("orderDetailsDialog").close());
+function compactOrderDate(value){
+  const match=/^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(String(value||""));
+  return match?match[3]+"."+match[2]+"."+match[1].slice(2):"—";
+}
 function compactOrderRow(o){
   const row=node("article","","preorder-compact-row");
   const primary=node("div","","preorder-primary");
@@ -282,7 +286,7 @@ function compactOrderRow(o){
   if(String(o.bookingId||"").trim())
     headline.append(node("span","ID "+String(o.bookingId).trim(),"preorder-queue-reference"));
   ref.append(headline);
-  const date=node("time",readableOrderDate(o.eventDate),"preorder-queue-date");
+  const date=node("time",compactOrderDate(o.eventDate),"preorder-queue-date");
   date.dateTime=o.eventDate||"";
   ref.append(date);
 
