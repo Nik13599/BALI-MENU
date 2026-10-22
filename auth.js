@@ -11,6 +11,7 @@ import {
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -168,7 +169,10 @@ function friendlyError(error) {
     "auth/account-exists-with-different-credential":"Почта уже связана с другим способом входа.",
     "privacy/withdrawn":"По вашему аккаунту получен отзыв согласия. Для возобновления обратитесь в клуб: Kolyaselekh@gmail.com.",
     "permission-denied":"Не удалось сохранить данные. Повторите попытку позже.",
-    "unavailable":"Сервис временно недоступен. Повторите попытку позже."
+    "unavailable":"Сервис временно недоступен. Повторите попытку позже.",
+    "upstream":"Сервер базы BALI временно недоступен. Повторите позже.",
+    "not-configured":"Google Таблицы ещё не подключены. Сообщите администрации клуба.",
+    "unauthenticated":"Войдите в аккаунт Google повторно."
   };
   return errors[code] || "Не удалось выполнить действие. Повторите попытку позже.";
 }
@@ -237,7 +241,7 @@ els.google.addEventListener("click", () => {
 
 els.form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!auth?.currentUser || !database || !user ||
+  if (!auth?.currentUser || (!sheetsEnabled()&&!database) || !user ||
       auth.currentUser.uid !== user.uid || !user.emailVerified || !user.email) {
     const info = "Сначала войдите с подтверждённой электронной почтой.";
     message(info, true);
@@ -263,19 +267,23 @@ els.form.addEventListener("submit", async (event) => {
   submit.textContent = "Сохраняем...";
   saveMessage("Сохраняем профиль...");
   try {
-    const ref = doc(database, "users", savingUser.uid);
-    const existing = await getDoc(ref);
-    if (savingGeneration !== authGeneration || auth.currentUser?.uid !== savingUser.uid) return;
-    if (existing.exists()) {
-      await updateDoc(ref, { name, phone, updatedAt: serverTimestamp() });
-    } else {
-      await setDoc(ref, {
-        uid: savingUser.uid,
-        email: savingUser.email,
-        name, phone,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
+    if(sheetsEnabled()){
+      await sheetsRequest("profileSave",{name,phone});
+    }else{
+      const ref = doc(database, "users", savingUser.uid);
+      const existing = await getDoc(ref);
+      if (savingGeneration !== authGeneration || auth.currentUser?.uid !== savingUser.uid) return;
+      if (existing.exists()) {
+        await updateDoc(ref, { name, phone, updatedAt: serverTimestamp() });
+      } else {
+        await setDoc(ref, {
+          uid: savingUser.uid,
+          email: savingUser.email,
+          name, phone,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      }
     }
     // Закрываем форму только после подтверждённой Firestore записи.
     if (savingGeneration !== authGeneration || auth.currentUser?.uid !== savingUser.uid) return;
@@ -334,6 +342,45 @@ async function handleUser(authUser) {
     }
   } else if (user) {
     try {
+      if(sheetsEnabled()){
+        let snapshot=await sheetsRequest("me");
+        if(!stillCurrent())return;
+        if(snapshot.privacyWithdrawn)throw Object.assign(new Error(),{code:"privacy/withdrawn"});
+        if(snapshot.privacyAccepted!==true){
+          const accepted=await window.BaliPrivacy?.review();
+          if(!stillCurrent())return;
+          if(accepted!==true){
+            pendingGoogleLogin=false;
+            try{sessionStorage.removeItem(redirectLoginKey);}catch(_error){}
+            await signOut(auth);hide();return;
+          }
+          await sheetsRequest("consentAccept",{type:"privacy",accepted:true});
+          if(!stillCurrent())return;
+          snapshot=await sheetsRequest("me");
+          if(!stillCurrent())return;
+          if(snapshot.privacyAccepted!==true)
+            throw Object.assign(new Error("Согласие не сохранено."),{code:"permission-denied"});
+        }
+        privacyAcceptedUid=authUser.uid;
+        const candidate=snapshot.profile;
+        profile=validProfile(candidate,authUser)?candidate:null;
+        if(!profile){
+          pendingGoogleLogin=false;
+          try{sessionStorage.removeItem(redirectLoginKey);}catch(_error){}
+          show();
+        }else{
+          if(els.dialog.classList.contains("active"))hide();
+          let redirected=false;
+          try{
+            redirected=sessionStorage.getItem(redirectLoginKey)==="1";
+            sessionStorage.removeItem(redirectLoginKey);
+          }catch(_error){}
+          if(pendingGoogleLogin||redirected){
+            pendingGoogleLogin=false;
+            window.location.hash="home";
+          }
+        }
+      }else{
       const [consent,withdrawal]=await Promise.all([getDoc(consentRef(authUser.uid)),getDoc(withdrawalRef(authUser.uid))]);
       if(!stillCurrent())return;
       if(withdrawal.exists())throw Object.assign(new Error(),{code:"privacy/withdrawn"});
@@ -382,6 +429,7 @@ async function handleUser(authUser) {
           window.location.hash="home";
         }
       }
+      }
     } catch (error) {
       if (!stillCurrent()) return;
       pendingGoogleLogin=false;
@@ -424,7 +472,8 @@ $("baliPrivacyWithdraw")?.addEventListener("click",async()=>{
   const withdrawingUser=user,button=$("baliPrivacyWithdraw"),status=$("baliPrivacyStatus");
   button.disabled=true;
   try{
-    await setDoc(withdrawalRef(withdrawingUser.uid),{version:privacyVersion,requestedAt:serverTimestamp()});
+    if(sheetsEnabled())await sheetsRequest("consentAccept",{type:"privacy-withdrawal",accepted:true});
+    else await setDoc(withdrawalRef(withdrawingUser.uid),{version:privacyVersion,requestedAt:serverTimestamp()});
     if(auth.currentUser?.uid!==withdrawingUser.uid)return;
     privacyAcceptedUid=null;profile=null;render();
     status.textContent="Отзыв согласия получен. Обработка на основании согласия будет прекращена в срок до 15 дней, если нет иных законных оснований. Контакт: Kolyaselekh@gmail.com.";
