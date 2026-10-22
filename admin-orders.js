@@ -745,6 +745,8 @@ function renderCalendarShortcuts(){
       renderCalendarShortcuts();
     },"preorder-calendar-chip");
     chip.setAttribute("aria-pressed",String(date===event.date&&id===event.id));
+    chip.dataset.dateState=event.date===minskToday()?"today":"upcoming";
+    if(event.date===minskToday())chip.setAttribute("aria-label","Сегодня. "+title);
     chip.title="Показать предзаказы: "+title;strip.append(chip);
   }
 }
@@ -758,7 +760,11 @@ function renderDates(){
     ...dateOrders.filter(withinOrderRetention).filter(o=>!upcoming||activePreorderEvent(o.eventId,o.eventDate)).map(o=>o.eventDate)
   ])].filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&(!upcoming||d>=minskToday()))
     .sort(upcoming?(a,b)=>a.localeCompare(b):(a,b)=>b.localeCompare(a));
-  for(const date of dates)el.add(new Option(readableOrderDate(date),date));
+  for(const date of dates){
+    const option=new Option((date===minskToday()?"Сегодня · ":"")+readableOrderDate(date),date);
+    option.dataset.dateState=date===minskToday()?"today":date<minskToday()?"past":"upcoming";
+    el.add(option);
+  }
   const valid=dates.includes(old);
   const choose=compactWorkspace&&dates.length&&(calendarAutoDatePending||Boolean(old&&!valid));
   if(valid&&!calendarAutoDatePending)el.value=old;
