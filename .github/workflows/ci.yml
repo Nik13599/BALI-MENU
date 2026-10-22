@@ -97,7 +97,6 @@ jobs:
           node --check scripts/verify-source.mjs
       - name: Интеграционный тест БРСМ (изолированная база)
         run: |
-          npm ci --prefix functions --no-audit --no-fund
           node scripts/test-brsm-module.cjs
       - name: Проверка интерфейса и безопасных ограничений
         run: |
