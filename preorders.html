@@ -5,7 +5,7 @@
 <title>BALI | Предзаказы · Сотрудники</title>
 <link rel="icon" href="assets/bali-favicon.svg">
 <link rel="stylesheet" href="generated/admin.css?v=faac21ed7332">
-<link rel="stylesheet" href="preorders-workspace.css?v=20261021-fixed1">
+<link rel="stylesheet" href="preorders-workspace.css?v=20261022-order-share1">
 </head><body class="bali-preorders-workspace">
 <header class="topbar" role="banner">
 <span class="brand">BALI <span>STAFF</span></span>
@@ -74,12 +74,32 @@
 <section id="orderPrintSheet" hidden aria-hidden="true"></section>
 </section>
 <dialog id="orderDetailsDialog" class="preorder-details-dialog" aria-labelledby="orderDetailsTitle">
-<div class="preorder-details-head"><div><div class="eyebrow">BALI / ДЕТАЛИ ПРЕДЗАКАЗА</div><h2 id="orderDetailsTitle">Предзаказ</h2></div>
-<button id="closeOrderDetails" type="button" aria-label="Закрыть просмотр заказа">✕</button></div>
+<div class="preorder-details-head">
+  <div class="preorder-details-heading">
+    <div class="preorder-details-state-row">
+      <time id="orderDetailsDate">Дата мероприятия</time>
+      <span id="orderDetailsStatus" class="preorder-detail-status preorder-detail-status-pending"><span class="preorder-detail-status-dot" aria-hidden="true"></span><span id="orderDetailsStatusText">Ожидание</span></span>
+    </div>
+    <div class="preorder-details-name-row">
+      <h2 id="orderDetailsTitle">Предзаказ</h2>
+      <div id="orderDetailsReferences" class="preorder-details-references" aria-label="Столик и номер бронирования"></div>
+    </div>
+  </div>
+  <button id="closeOrderDetails" type="button" aria-label="Закрыть просмотр заказа">✕</button>
+</div>
 <div id="orderDetailsContent" class="preorder-details-content"></div>
 <div class="preorder-details-actions"><button type="button" id="orderDetailsClose">Закрыть</button>
 <button type="button" id="orderDetailsPrint">Печать</button>
+<details class="preorder-detail-share" id="orderDetailsShare">
+  <summary>↗ Поделиться</summary>
+  <div class="preorder-detail-share-menu">
+    <button type="button" id="orderDetailsSharePng">↗ PNG</button>
+    <button type="button" id="orderDetailsSharePdf">↗ PDF</button>
+    <button type="button" id="orderDetailsShareTelegram">↗ Текст в Telegram</button>
+  </div>
+</details>
 <button type="button" id="orderDetailsEdit" class="primary" hidden>Изменить</button></div>
+<p id="orderDetailsShareFeedback" class="preorder-detail-share-feedback" role="status" aria-live="polite"></p>
 </dialog>
 <dialog id="orderEditDialog" class="admin-form-dialog order-edit-dialog" aria-labelledby="orderEditTitle">
     <div class="dialog-header">
@@ -129,5 +149,5 @@
 </main>
 <script src="firebase-config.js?v=20261020-2"></script>
 <script type="module" src="preorders-access.js?v=20261021-fixed1"></script>
-<script type="module" src="admin-orders.js?v=20261021-createfix1"></script>
+<script type="module" src="admin-orders.js?v=20261022-order-share1"></script>
 </body></html>
