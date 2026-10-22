@@ -215,6 +215,36 @@ function baliGuestEditOrder(user,data){
  * can reach this route; owner UID and account email are immutable.
  * A changed calendar event receives a new serial within that event.
  */
+/** Validate an event against the same published calendar shown on baliminsk.by.
+ * Called only when staff moves an order to another event/date, so routine
+ * order edits do not add upstream requests or exhaust a Sheets quota.
+ */
+function baliPublishedCalendarEvent(eventId,date){
+  const url="https://baliminsk.by/api/public-data?path=events";
+  let response;
+  try{
+    response=UrlFetchApp.fetch(url,{muteHttpExceptions:true,followRedirects:true});
+  }catch(_){BALI_FAIL("unavailable","Не удалось проверить календарь BALI. Повторите сохранение.");}
+  if(response.getResponseCode()!==200)
+    BALI_FAIL("unavailable","Календарь BALI временно недоступен.");
+  const body=response.getContentText();
+  if(body.length>1200000)
+    BALI_FAIL("resource-exhausted","Слишком большой ответ календаря BALI.");
+  let documents;
+  try{documents=JSON.parse(body).documents;}catch(_){
+    BALI_FAIL("unavailable","Не удалось прочитать актуальные мероприятия.");
+  }
+  if(!Array.isArray(documents)||documents.length>700)
+    BALI_FAIL("failed-precondition","Список мероприятий недоступен или некорректен.");
+  const record=documents.find(doc=>String((doc.name||"").split("/").pop())===eventId);
+  if(!record)BALI_FAIL("failed-precondition","Выбранное мероприятие удалено из календаря.");
+  const fields=record.fields||{};
+  const publishedDate=String(baliPublishedValue(fields.date)||"");
+  const title=BALI_TEXT(baliPublishedValue(fields.title),150);
+  if(!BALI_DATE(publishedDate)||publishedDate!==date||!title)
+    BALI_FAIL("failed-precondition","Дата мероприятия изменилась на сайте. Обновите список.");
+  return {id:eventId,date,title,closesAt:String(baliPublishedValue(fields.closesAt)||"")};
+}
 function baliStaffEditOrder(user,data){
   baliStaff(user,false);
   const id=BALI_TEXT(data.id,80),date=BALI_TEXT(data.eventDate,10),
@@ -238,9 +268,10 @@ function baliStaffEditOrder(user,data){
     if(old.updatedAt!==expected)
       BALI_FAIL("failed-precondition","Заказ уже изменён. Закройте редактор и откройте его заново.");
     const sameEvent=old.eventId===eventId&&old.eventDate===date;
-    const target=baliEvents().find(e=>e.id===eventId&&e.date===date);
-    if(!target&&!sameEvent)
-      BALI_FAIL("failed-precondition","Мероприятие отсутствует в календаре.");
+    // A moved order accepts a new event immediately when it appears on the
+    // public website, even if the private Sheets mirror has not been synced.
+    const target=sameEvent?baliEvents().find(e=>e.id===eventId&&e.date===date):
+      baliPublishedCalendarEvent(eventId,date);
     // The original title survives when the old event has already been archived.
     const title=target?.title||old.eventTitle;
     if(!title||title.length>150)
