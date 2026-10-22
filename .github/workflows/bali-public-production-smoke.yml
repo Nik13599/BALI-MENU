@@ -1,0 +1,67 @@
+name: Diagnose BALI public content in production
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/bali-public-production-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-data-diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read only public Firestore cache diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          for origin in https://baliminsk.by https://bali-nightclub-menu.pages.dev; do
+            echo "ORIGIN: $origin"
+            for path in events promotions menu; do
+              status=$(curl --max-time 20 -sS -w '%{http_code}' -D /tmp/bali-headers -o /tmp/bali-public-response "$origin/api/public-data?path=$path" || true)
+              echo "PATH: $path HTTP: $status"
+              grep -iE '^(content-type|x-bali-cache):' /tmp/bali-headers | tr -d '\r' || true
+              node -e 'const fs=require("fs");try{const j=JSON.parse(fs.readFileSync("/tmp/bali-public-response","utf8"));console.log("DOCUMENTS: "+(Array.isArray(j.documents)?j.documents.length:"none")+" ERROR: "+String(j.code||j.error||"none").slice(0,80));}catch{console.log("DOCUMENTS: unparseable")}'
+            done
+          done
+
+  browser-ui-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Verify real poster, kitchen menu and calendar in mobile and desktop browser
+        shell: bash
+        run: |
+          node <<'JS'
+          const {chromium}=require('@playwright/test');
+          (async()=>{
+            const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+            try{
+              for(const viewport of [{width:390,height:844},{width:1440,height:900}]){
+                const page=await browser.newPage({viewport});
+                const errors=[];
+                page.on('pageerror',e=>errors.push(e.message.slice(0,160)));
+                await page.goto('https://baliminsk.by/index.html',{waitUntil:'domcontentloaded',timeout:30000});
+                await page.waitForFunction(()=>typeof availableEvents!=='undefined'&&availableEvents.length>0&&typeof menuItems!=='undefined'&&menuItems.length>0,null,{timeout:30000});
+                const meta=await page.evaluate(()=>({
+                  events:availableEvents.length,
+                  menu:menuItems.length,
+                  homePosterNodes:document.querySelectorAll('#homeEventCarousel img').length,
+                  calendarPosterNodes:document.querySelectorAll('#eventsGrid img').length
+                }));
+                await page.goto('https://baliminsk.by/index.html#menu',{waitUntil:'domcontentloaded',timeout:30000});
+                await page.waitForFunction(()=>document.querySelectorAll('#menuGrid .menu-item').length>0,null,{timeout:30000});
+                meta.renderedMenu=await page.locator('#menuGrid .menu-item').count();
+                console.log('BALI browser '+viewport.width+'px '+JSON.stringify(meta)+' pageerrors='+JSON.stringify(errors.slice(0,4)));
+                if(meta.events<1||meta.menu<1||meta.renderedMenu<1)throw Error('BALI public content missing');
+                await page.close();
+              }
+            }finally{await browser.close()}
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
