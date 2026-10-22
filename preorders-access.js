@@ -9,7 +9,11 @@ const sessionReady=setPersistence(auth,browserLocalPersistence);
 // Attach a rejection handler immediately; sign-in also awaits this promise.
 sessionReady.catch(()=>status("Разрешите сохранение данных сайта в браузере для сохранения входа."));
 let seq=0;
-const status=text=>{$("loginStatus").textContent=text;};
+const status=text=>{
+  $("loginStatus").textContent=text;
+  $("staffSessionLoading").hidden=true;
+  if(text)$("loginView").hidden=false;
+};
 if(sheetsEnabled()){
   $("loginIdentity").textContent="Доступ к предзаказам проверяется по назначенной сотруднику роли на сервере.";
 }
@@ -42,12 +46,14 @@ $("adminSignOut").addEventListener("click",()=>void signOut(auth));
 $("adminSwitchAccount").addEventListener("click",()=>void signOut(auth));
 onAuthStateChanged(auth,async user=>{
   const current=++seq;
-  $("adminView").hidden=true;$("loginView").hidden=false;
+  $("adminView").hidden=true;$("loginView").hidden=true;
+  $("staffSessionLoading").hidden=false;
   $("staffHeaderAccount").hidden=true;
   $("adminSwitchAccount").hidden=!user;
   if(!user){status("Введите логин и пароль сотрудника или используйте вход через Google.");return;}
   if(!user.emailVerified){status("Нет подтверждённого доступа к предзаказам.");return;}
-  status("Проверка прав...");
+  // Keep the login form hidden while the restored session is authorized.
+  $("staffSessionLoading").textContent="Загружаем рабочую панель…";
   try{
     if(sheetsEnabled()){
       const {role}=await sheetsRequest("me");
