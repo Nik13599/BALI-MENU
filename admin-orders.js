@@ -319,7 +319,7 @@ function compactOrderRow(o){
   const body=node("div","","preorder-approved-body");
   const contact=node("div","","preorder-approved-guest");
   contact.append(node("strong",o.customerName||"Гость BALI","preorder-approved-guest-name"));
-  const cleanedPhone=String(o.customerPhone||"").replace(/[^+\\d]/g,"");
+  const cleanedPhone=String(o.customerPhone||"").replace(/[^+\d]/g,"");
   const phoneRow=node("div","","preorder-approved-phone-row");
   const phone=node("span",o.customerPhone||"Телефон не указан","preorder-approved-phone");
   phoneRow.append(phone);
