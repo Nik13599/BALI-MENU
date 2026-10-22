@@ -7,9 +7,11 @@ const labels={pending:"Ожидает подтверждения",confirmed:"П�
 const safeCount=x=>Number.isFinite(Number(x))?Number(x):0;
 const lineTotal=line=>safeCount(line.unitPrice)*safeCount(line.quantity);
 const orderTotal=o=>(o.items||[]).reduce((sum,item)=>sum+lineTotal(item),0);
-export function composeBaliPreorderReport({kind,date,eventTitle,orders,includeCancelled=false}){
+export function composeBaliPreorderReport({kind,date,eventTitle,orders,includeCancelled=false,allEvents=false}){
   if(!["orders","dishes"].includes(kind))throw new Error("Неизвестный тип отчёта.");
-  const all=[...(orders||[])].sort((a,b)=>(a.orderNumber||0)-(b.orderNumber||0)
+  const all=[...(orders||[])].sort((a,b)=>
+    (allEvents?String(a.eventTitle||"").localeCompare(String(b.eventTitle||""),"ru"):0)
+    ||(a.orderNumber||0)-(b.orderNumber||0)
     ||(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
   const selected=kind==="orders"?all:all.filter(o=>includeCancelled||(!o.archived&&o.status!=="cancelled"));
   const count=selected.length,portions=selected.reduce((sum,o)=>sum+(o.items||[]).reduce((v,x)=>v+safeCount(x.quantity),0),0);
@@ -22,7 +24,7 @@ export function composeBaliPreorderReport({kind,date,eventTitle,orders,includeCa
   }
   return {kind,date,eventTitle,count,portions,amount,orders:selected,
     dishes:[...tally.values()].sort((a,b)=>String(a.name).localeCompare(String(b.name),"ru")),
-    includeCancelled:kind==="orders"||includeCancelled};
+    includeCancelled:kind==="orders"||includeCancelled,allEvents};
 }
 export function preorderTelegramText(report){
   if(report.singleOrder){
@@ -48,7 +50,7 @@ export function preorderTelegramText(report){
     if(!report.orders.length)result.push("Предзаказов нет.");
     for(const o of report.orders){
       const ref=[o.tableNumber&&"столик "+o.tableNumber,o.bookingId&&"бронь "+o.bookingId].filter(Boolean).join(" · ");
-      result.push("№ "+(o.orderNumber??o.id)+" · "+(o.customerName||"Гость")+
+      result.push((report.allEvents?(o.eventTitle||"Мероприятие")+" · ":"")+"№ "+(o.orderNumber??o.id)+" · "+(o.customerName||"Гость")+
         " · "+(labels[normalizedStatus(o.status)]||"Подтверждён")+(o.archived?" · архив":""));
       result.push("Тел.: "+(o.customerPhone||"не указан")+(ref?" · "+ref:""));
       for(const item of o.items||[])result.push("• "+item.name+" × "+item.quantity+" — "+fmt(lineTotal(item)));
@@ -123,10 +125,10 @@ function reportPages(report){
       reserve(Math.min(needed,1040));
       ctx.fillStyle=color.soft;ctx.fillRect(L,y,W-L*2,47);
       ctx.fillStyle=color.lime;ctx.fillRect(L,y,7,47);
-      text("№ "+(o.orderNumber??o.id)+"  ·  "+(o.customerName||"Гость"),L+18,y+31,22,800);
+      text((report.allEvents?(String(o.eventTitle||"Мероприятие")+" · "):"")+"№ "+(o.orderNumber??o.id)+"  ·  "+(o.customerName||"Гость"),L+18,y+31,20,800);
       text(fmt(orderTotal(o)),R-220,y+31,22,800);
       y+=62;
-      const ref=[o.customerPhone,o.tableNumber&&"Столик "+o.tableNumber,o.bookingId&&"Бронь "+o.bookingId,report.singleOrder&&o.email&&"Email: "+o.email].filter(Boolean).join(" · ");
+      const ref=[o.customerPhone,o.tableNumber&&"Столик "+o.tableNumber,o.bookingId&&"Бронь "+o.bookingId,(report.singleOrder||report.kind==="orders")&&o.email&&"Email: "+o.email].filter(Boolean).join(" · ");
       multiline(ref,L+14,W-2*L-20,18,25);
       text("Статус: "+(labels[normalizedStatus(o.status)]||"Подтверждён")+(o.archived?" · Архив":""),L+14,y+18,17,400,color.muted);y+=33;
       for(const item of items){
