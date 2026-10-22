@@ -1,0 +1,33 @@
+name: BALI Sheets live connection check
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [".github/workflows/bali-sheets-health.yml"]
+permissions:
+  contents: read
+jobs:
+  health:
+    name: Validate BALI Sheets API without revealing secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Check primary domain and Pages endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          for url in https://bali-nightclub-menu.pages.dev/api/bali-v3 https://baliminsk.by/api/bali-v3; do
+            echo "Checking ${url}"
+            http=$(curl --silent --show-error --location --max-time 45 --retry 2 --retry-delay 4 --output response.json --write-out "%{http_code}" \
+              -H 'Content-Type: application/json' --data '{"action":"health"}' "$url")
+            echo "HTTP ${http}"
+            API_STATUS="${http}" node --input-type=module - <<'JS'
+          import {readFileSync} from "node:fs";
+          const raw=readFileSync("response.json","utf8");
+          let result={};
+          try{result=JSON.parse(raw)}catch{}
+          console.log("BALI API result:",result.ok===true?"ready":result.error?.code||"invalid-response");
+          if(process.env.API_STATUS!=="200"||result.ok!==true||result.data?.status!=="ready")
+            process.exit(1);
+          JS
+          done
