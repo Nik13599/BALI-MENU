@@ -72,7 +72,11 @@ function harness(){
   vm.runInNewContext(readFileSync("functions/index.js","utf8"),{...globals,exports:api,require:name=>
     name==="firebase-admin"?{apps:[{}],firestore}:
     name==="firebase-functions/v2/https"?{onCall:(_options,handler)=>handler,HttpsError}:
-    name==="./bonus-qr"?bonus.exports:name==="qrcode"?functionsRequire(name):require(name)
+    name==="./bonus-qr"?bonus.exports:
+    name==="./preorders"?()=>async()=>({}):
+    name==="./preorder-staff"?()=>({}):
+    name==="firebase-functions/v2/scheduler"?{onSchedule:(_config,handler)=>handler}:
+    name==="qrcode"?functionsRequire(name):require(name)
   },{filename:"functions/index.js"});
   const call=(name,data={},uid=guest,verified=true)=>api[name]({data,auth:uid?{uid,token:{email_verified:verified}}:null});
   const batch=async changes=>(await call("createBaliQrBatch",{kind:"shot",action:"credit",mode:"once",quantity:3,count:1,cooldownSeconds:30,...changes},staff)).codes;
