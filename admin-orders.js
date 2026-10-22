@@ -726,7 +726,7 @@ async function openEditor(id){
     editOrder=o;creatingOrder=false;
     $("manualOrderGuestLink").hidden=true;
     $("editOrderGuestEmail").value="";
-    editLines=o.items.map(x=>({...x}));
+    editLines=o.items.map(x=>({...x,id:Number(x.id)}));
     originalIds=new Set(o.items.map(x=>String(x.id)));
     $("orderEditTitle").textContent="Заказ "+orderLabel(o);
     $("editOrderDate").value=o.eventDate;
