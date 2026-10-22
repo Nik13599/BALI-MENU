@@ -12,7 +12,7 @@ const staffError=(error)=>{
   const code=String(error?.code||"").replace(/^functions\//,"");
   switch(code){
     case "not-found":return "Серверная функция регистрации сотрудников не опубликована в Firebase. Проверьте развёртывание manageBaliPreorderStaff.";
-    case "internal":return "Ошибка сервера Firebase (internal). Последнее развёртывание функции сотрудников завершилось ошибкой прав. Проверьте Cloud Functions, Cloud Build и IAM.";
+    case "internal":return "Ошибка сервера Firebase (internal). Последнее развёртывание функции сотрудников завершилось ошибкой прав. Проверьте Cloud Functions, Cloud Build, Artifact Registry и IAM.";
     case "unavailable":return "Сервис Firebase временно недоступен. Повторите после восстановления соединения.";
     case "permission-denied":return "Недостаточно прав для создания сотрудника. Проверьте права администратора и серверного аккаунта.";
     case "unauthenticated":return "Сессия администратора недействительна. Войдите в админку заново.";
