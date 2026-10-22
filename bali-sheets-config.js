@@ -1,0 +1,3 @@
+/* Production safety switch. Turn ON only after the private Google Apps Script
+ * deployment, Cloudflare Worker route and secrets have all been verified. */
+window.BALI_SHEETS_API_ENABLED = false;
