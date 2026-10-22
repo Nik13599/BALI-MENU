@@ -161,6 +161,7 @@ fail("","staffOrders",{date:eventDate},"unauthenticated");
 assert.equal(ok("staff","me").role,"staff");
 assert.equal(ok("staff","staffOrders",{date:eventDate,eventId:eventDate}).orders.length,1);
 assert.equal(ok("staff","staffRecentOrders").orders.length,1);
+assert.equal(ok("staff","staffRecentOrders").canEditOrders,true);
 ok("staff","staffReport",{date:eventDate,eventId:eventDate,kind:"orders"});
 
  // Both guest checkout and logged-in checkout share one event-wide serial.
