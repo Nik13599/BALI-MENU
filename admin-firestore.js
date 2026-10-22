@@ -393,12 +393,32 @@ function menuRender() {
   window.dispatchEvent(new CustomEvent("bali:admin:catalog-rendered"));
 }
 
+const adminTodayMinsk=()=>new Intl.DateTimeFormat("en-CA",{
+  timeZone:"Europe/Minsk",year:"numeric",month:"2-digit",day:"2-digit"
+}).format(new Date());
+const adminDateState=(date,today=adminTodayMinsk())=>
+  date===today?"today":date<today?"past":"upcoming";
+const adminReadableDate=date=>/^\\d{4}-\\d{2}-\\d{2}$/.test(date)
+  ?date.slice(8,10)+"."+date.slice(5,7)+"."+date.slice(0,4):date;
 function eventRender() {
   const list = $("eventList");list.replaceChildren();
+  const today=adminTodayMinsk();
+  const legend=document.createElement("div");
+  legend.className="bali-admin-date-legend";
+  legend.setAttribute("aria-label","Цвета дат мероприятий");
+  for(const [state,label] of [
+    ["today","Сегодня: "+adminReadableDate(today)],
+    ["upcoming","Предстоящие"],["past","Прошедшие"]]){
+    const marker=document.createElement("span");
+    marker.className="bali-admin-date-key bali-admin-date-"+state;
+    marker.textContent=label;legend.append(marker);
+  }
+  list.append(legend);
   for (const event of [...events.entries()].map(([id,data])=>({...data,id})).sort((a,b)=>a.date.localeCompare(b.date)||(a.id.localeCompare(b.id)))) {
     const slot=event.id===event.date?1:Number(event.id.slice(event.date.length+2));
-    list.append(createEntry(
-      event.date + " · №"+slot+" — " + event.title,
+    const state=adminDateState(event.date,today);
+    const row=createEntry(
+      "№"+slot+" — "+event.title,
       (event.preorderEnabled ? "Приём включён" : "Приём выключен") +
         (event.startTime && event.endTime ? " · "+event.startTime+"–"+event.endTime : "") +
         (event.cutoff ? " · Предзаказ до " + event.cutoff +
@@ -430,11 +450,27 @@ function eventRender() {
         catch(e){renderStatus("eventStatus","Ошибка: "+(e.code || "unknown"));}
       },
       event.poster_url||""
-    ));
+    );
+    row.classList.add("bali-admin-event-row","bali-admin-event-"+state);
+    row.dataset.dateState=state;
+    const date=document.createElement("time");
+    date.className="bali-admin-event-date bali-admin-date-"+state;
+    date.dateTime=event.date;
+    date.textContent=adminReadableDate(event.date);
+    date.title=state==="today"?"Сегодня":state==="past"?"Мероприятие прошло":"Предстоящая дата";
+    row.querySelector("strong")?.before(date);
+    list.append(row);
   }
-  if (!events.size) list.textContent="Мероприятия пока не добавлены.";
+  if (!events.size)list.append(document.createTextNode("Мероприятия пока не добавлены."));
 }
 
+// Update date colors when midnight arrives in Minsk without refreshing the admin.
+let adminRenderedToday=adminTodayMinsk();
+setInterval(()=>{
+  if(!authorized||document.hidden)return;
+  const today=adminTodayMinsk();
+  if(today!==adminRenderedToday){adminRenderedToday=today;eventRender();}
+},30000);
 function clearMenu() {
   pendingProductImage="";
   pendingDetailImage="";
