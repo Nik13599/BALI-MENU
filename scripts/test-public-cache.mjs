@@ -92,7 +92,7 @@ kvRows.get("bali:public:v1:events").cachedAt=Date.now()-24*60*60*1000;
 stored.clear();
 const stale=await onRequestGet(context("events"));
 assert.equal(stale.status,200);
-assert.equal(stale.headers.get("X-BALI-Cache"),"STALE");
+assert.equal(stale.headers.get("X-BALI-Cache"),"KV"); // Published snapshots stay authoritative regardless of age.
 assert.equal((await stale.json()).documents[0].fields.title.stringValue,"Настоящая афиша");
 await Promise.all(pending.splice(0));
 console.log("Last real public content survives Firestore quota exhaustion PASS.");
