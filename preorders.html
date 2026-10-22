@@ -5,7 +5,7 @@
 <title>BALI | Предзаказы · Сотрудники</title>
 <link rel="icon" href="assets/bali-favicon.svg">
 <link rel="stylesheet" href="generated/admin.css?v=faac21ed7332">
-<link rel="stylesheet" href="preorders-workspace.css?v=20261023-fast-status-calendar2">
+<link rel="stylesheet" href="preorders-workspace.css?v=20261023-live-schedule7">
 </head><body class="bali-preorders-workspace">
 <header class="topbar" role="banner">
 <span class="brand">BALI <span>STAFF</span></span>
@@ -42,6 +42,11 @@
     <label for="ordersEventFilter">Мероприятие из календаря<select id="ordersEventFilter"><option value="">Все мероприятия</option></select></label>
   </div>
   <button type="button" id="createManualOrder" class="primary"><span class="preorder-create-icon" aria-hidden="true">＋</span><span>Новый предзаказ</span></button>
+</div>
+<div class="preorder-calendar-strip" aria-label="Актуальные мероприятия BALI">
+  <span class="preorder-calendar-strip-title">Ближайшие мероприятия</span>
+  <div id="staffUpcomingEvents" class="preorder-calendar-chips" aria-live="polite"><span class="preorder-calendar-placeholder">Загружаем календарь…</span></div>
+  <span id="staffCalendarSyncStatus" class="preorder-calendar-sync" role="status" aria-live="polite"></span>
 </div>
 <div id="ordersStats" class="preorder-stats" aria-live="polite"></div>
 <details class="preorder-tools">
@@ -110,14 +115,16 @@
       <div><span class="eyebrow">РЕДАКТИРОВАНИЕ ПРЕДЗАКАЗА</span><h2 id="orderEditTitle">Заказ</h2></div>
       <button type="button" id="closeOrderEdit" class="dialog-close" aria-label="Закрыть">✕</button>
     </div>
-    <form id="orderEditForm" class="dialog-form">
+    <form id="orderEditForm" class="dialog-form" novalidate>
       <div class="edit-order-event-grid">
         <label>Мероприятие
           <select id="editOrderEvent" required>
             <option value="">Выберите мероприятие из календаря</option>
           </select>
         </label>
-        <label>Дата мероприятия<input type="date" id="editOrderDate" required></label>
+        <label>Дата мероприятия
+          <select id="editOrderDate" required><option value="">Выберите дату из календаря</option></select>
+        </label>
       </div>
       <small id="editOrderCalendarHint" class="edit-order-calendar-hint" role="status" aria-live="polite">Мероприятия загружаются с основного сайта BALI.</small>
       <details id="editOrderExtra" class="edit-order-extra">
@@ -160,5 +167,5 @@
 <script>if(window.BALI_GUEST_PREORDER_ENABLED===true)window.BALI_SHEETS_API_ENABLED=true;</script>
 <script src="firebase-config.js?v=20261020-2"></script>
 <script type="module" src="preorders-access.js?v=20261023-auth-light1"></script>
-<script type="module" src="admin-orders.js?v=20261023-fast-status-calendar2"></script>
+<script type="module" src="admin-orders.js?v=20261023-live-schedule7"></script>
 </body></html>
