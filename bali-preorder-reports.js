@@ -1,28 +1,30 @@
 /* BALI staff reports: offline PDF/PNG rendering, Telegram message preview.
  * No external libraries, uploads, billing or server-side report generation.
  */
+import {sumBaliPreorders,preorderActive} from "./bali-preorder-metrics.js";
 const fmt=value=>Number(value||0).toFixed(2).replace(".",",")+" BYN";
 const normalizedStatus=value=>value==="completed"?"confirmed":value;
 const labels={pending:"Ожидает подтверждения",confirmed:"Подтверждён",cancelled:"Отменён"};
 const safeCount=x=>Number.isFinite(Number(x))?Number(x):0;
 const lineTotal=line=>safeCount(line.unitPrice)*safeCount(line.quantity);
 const orderTotal=o=>(o.items||[]).reduce((sum,item)=>sum+lineTotal(item),0);
-export function composeBaliPreorderReport({kind,date,eventTitle,orders,includeCancelled=false}){
+export function composeBaliPreorderReport({kind,date,eventTitle,orders,includeCancelled=false,allEvents=false}){
   if(!["orders","dishes"].includes(kind))throw new Error("Неизвестный тип отчёта.");
-  const all=[...(orders||[])].sort((a,b)=>(a.orderNumber||0)-(b.orderNumber||0)
-    ||(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
-  const selected=kind==="orders"?all:all.filter(o=>includeCancelled||(!o.archived&&o.status!=="cancelled"));
-  const count=selected.length,portions=selected.reduce((sum,o)=>sum+(o.items||[]).reduce((v,x)=>v+safeCount(x.quantity),0),0);
-  const amount=selected.reduce((sum,o)=>sum+orderTotal(o),0);
-  const tally=new Map();
-  for(const o of selected)for(const item of o.items||[]){
-    const key=String(item.id)+"|"+String(item.name);
-    const old=tally.get(key)||{id:item.id,name:item.name,quantity:0,total:0};
-    old.quantity+=safeCount(item.quantity);old.total+=lineTotal(item);tally.set(key,old);
-  }
-  return {kind,date,eventTitle,count,portions,amount,orders:selected,
-    dishes:[...tally.values()].sort((a,b)=>String(a.name).localeCompare(String(b.name),"ru")),
-    includeCancelled:kind==="orders"||includeCancelled};
+  const unique=new Map();
+  for(const order of orders||[])if(order?.id)unique.set(order.id,order);
+  const all=[...unique.values()].sort((a,b)=>{
+    if((a.eventDate||"")!==(b.eventDate||""))
+      return String(a.eventDate||"").localeCompare(String(b.eventDate||""));
+    if((a.eventId||"")!==(b.eventId||""))
+      return String(a.eventId||"").localeCompare(String(b.eventId||""));
+    return (Number(a.orderNumber)||0)-(Number(b.orderNumber)||0)||
+      (a.createdAt?.seconds||0)-(b.createdAt?.seconds||0);
+  });
+  const selected=kind==="orders"?all:all.filter(o=>includeCancelled||preorderActive(o));
+  const metrics=sumBaliPreorders(selected);
+  return {kind,date,eventTitle,count:metrics.count,portions:metrics.portions,
+    amount:metrics.amount,orders:selected,dishes:metrics.dishes,
+    includeCancelled:kind==="orders"||includeCancelled,allEvents};
 }
 export function preorderTelegramText(report){
   if(report.singleOrder){
