@@ -45,6 +45,12 @@ jobs:
           node --check functions/preorder-staff.js
           node --input-type=module --check < preorders-access.js
           node --input-type=module --check < preorder-staff-admin.js
+          node --input-type=module --check < bali-sheets-api.js
+          node --input-type=module --check < bali-id-coin.js
+          node --input-type=module --check < bali-coin-admin.js
+          node --input-type=module --check < cloudflare-pages/functions/api/bali-v3.js
+          node --input-type=module --check < cloudflare-worker/BaliSheetsGateway.js
+          node --check google-apps-script/BaliBackend.gs
           node --input-type=module --check < bali-privilege-admin.js
           node --input-type=module --check < bali-director-id.js
           node --input-type=module --check < bali-bonus-transfer-scaffold.js
@@ -97,6 +103,7 @@ jobs:
         run: |
           node scripts/verify-bali-transfers.mjs
           node scripts/test-bali-backend.mjs
+          node scripts/test-bali-sheets-backend.mjs
           node scripts/test-preorders.mjs
           node --test scripts/test-order-snapshots.mjs
 
