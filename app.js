@@ -1157,6 +1157,12 @@ let editingOrderId = null;
 // Order database code is not fetched and cannot subscribe during public
 // browsing, menu selection, cart viewing or checkout field entry.
 let orderServiceLoading=null;
+let guestPreorderServiceLoading=null;
+async function ensureGuestPreorderService(){
+    guestPreorderServiceLoading??=import("./bali-guest-preorder.js?v=20261022-anon-guest1")
+      .catch(error=>{guestPreorderServiceLoading=null;throw error});
+    return guestPreorderServiceLoading;
+}
 async function ensureOrdersService(){
     if(window.BaliOrders)return window.BaliOrders;
     orderServiceLoading??=import("./orders-firestore.js?v=20261022-sheets-stage1")
@@ -1168,6 +1174,10 @@ async function ensureOrdersService(){
 }
 async function placeOrder(orderData) {
     try {
+        if(window.BALI_GUEST_PREORDER_ENABLED===true&&!editingOrderId){
+            const service=await ensureGuestPreorderService();
+            return await service.submit(orderData);
+        }
         const orders=await ensureOrdersService();
         const result = await orders.save(orderData, editingOrderId);
         editingOrderId = null;
@@ -1608,19 +1618,29 @@ function closeCart() {
 async function openCheckout() {
     if (cart.length === 0) return;
 
-    // Незарегистрированный пользователь не может попасть к оформлению.
-    if (!window.BaliAuth) {
-        alert('Модуль авторизации недоступен. Проверьте соединение и настройки Firebase.');
-        return;
+    const guestCheckout=window.BALI_GUEST_PREORDER_ENABLED===true;
+    if(!guestCheckout){
+        if(!window.BaliAuth){
+            alert("Модуль авторизации недоступен. Проверьте соединение и настройки Firebase.");
+            return;
+        }
+        if(!(await window.BaliAuth.requireProfile()))return;
     }
-    if (!(await window.BaliAuth.requireProfile())) return;
-    const customer = window.BaliAuth.getProfile();
-    if (!customer) return;
+    const customer=window.BaliAuth?.getProfile?.()||null;
     const oldError=document.getElementById("checkoutOrderError");
     if(oldError){oldError.hidden=true;oldError.textContent="";}
-    document.getElementById('customerName').value = customer.name;
-    document.getElementById('customerPhone').value = customer.phone;
-    document.getElementById('customerEmail').value = customer.email;
+    const nameField=document.getElementById("customerName");
+    const phoneField=document.getElementById("customerPhone");
+    nameField.value=customer?.name||nameField.value||"";
+    phoneField.value=customer?.phone||phoneField.value||"";
+    nameField.readOnly=!guestCheckout;
+    phoneField.readOnly=!guestCheckout;
+    document.getElementById("customerEmail").value=customer?.email||"";
+    document.getElementById("baliCheckoutEmailRow").hidden=guestCheckout;
+    document.getElementById("baliGuestCheckoutConsent").hidden=!guestCheckout;
+    document.getElementById("baliCheckoutGuestHint").textContent=guestCheckout
+        ?"Имя, телефон, дата, мероприятие и столик либо ID бронирования обязательны. Вход через Google не требуется."
+        :"Имя и телефон берутся из вашего зарегистрированного профиля.";
 
     closeCart();
 
@@ -1640,6 +1660,12 @@ async function openCheckout() {
 
     elements.checkoutModal.classList.add('active');
     elements.overlay.classList.add('active');
+    if(guestCheckout){
+        void ensureGuestPreorderService().then(service=>service.prepare()).catch(error=>{
+            const feedback=document.getElementById("checkoutOrderError");
+            if(feedback){feedback.textContent=error?.message||"Проверка безопасности недоступна.";feedback.hidden=false;}
+        });
+    }
 }
 
 function closeCheckout() {
@@ -1693,10 +1719,15 @@ function handleShareLocation() {
 async function handleCheckout(e) {
     e.preventDefault();
 
-    // Проверяем актуальную авторизацию повторно перед отправкой.
-    if (!window.BaliAuth || !(await window.BaliAuth.requireProfile())) return;
-    const customer = window.BaliAuth.getProfile();
-    if (!customer) return;
+    const guestCheckout=window.BALI_GUEST_PREORDER_ENABLED===true;
+    if(!guestCheckout && (!window.BaliAuth || !(await window.BaliAuth.requireProfile())))return;
+    const customer=guestCheckout?{
+      uid:window.BaliAuth?.getProfile?.()?.uid||"",
+      name:document.getElementById("customerName").value.trim(),
+      phone:document.getElementById("customerPhone").value.replace(/[\\s()\\-]/g,""),
+      email:window.BaliAuth?.getProfile?.()?.email||""
+    }:window.BaliAuth.getProfile();
+    if(!customer)return;
     const eventDate = document.getElementById('eventDateSelect').value;
     const eventId = document.getElementById('eventSelect').value;
     const tableNumber = document.getElementById('tableNumber').value.trim();
@@ -1712,7 +1743,21 @@ async function handleCheckout(e) {
         return;
     }
 
+    if(guestCheckout){
+        const feedback=document.getElementById("checkoutOrderError");
+        if(customer.name.length<2||!/^\\+[1-9][0-9]{7,14}$/.test(customer.phone)){
+            if(feedback){feedback.textContent="Введите имя и номер телефона в формате +375291234567.";feedback.hidden=false;}
+            return;
+        }
+        if(!document.getElementById("baliGuestPrivacyConsent").checked||
+           !document.getElementById("baliGuestInternationalConsent").checked){
+            if(feedback){feedback.textContent="Подтвердите согласие на обработку персональных данных.";feedback.hidden=false;}
+            return;
+        }
+    }
     const formData = {
+        privacyConsent:guestCheckout&&document.getElementById("baliGuestPrivacyConsent").checked,
+        internationalConsent:guestCheckout&&document.getElementById("baliGuestInternationalConsent").checked,
         customer_uid: customer.uid,
         customer_name: customer.name,
         customer_phone: customer.phone,
