@@ -8,11 +8,11 @@ window.BaliSheetsToken=()=>auth.currentUser?.getIdToken()||null;
 let seq=0;
 const status=text=>{$("loginStatus").textContent=text;};
 if(sheetsEnabled()){
-  $("preorderStaffLogin").hidden=true;
+  $("preorderStaffLogin").hidden=false;
   const entry=document.querySelector(".preorder-admin-owner-entry");
   if(entry){entry.open=true;entry.querySelector("summary").textContent="Вход сотрудника через Google";}
   $("adminSignIn").textContent="Войти через Google";
-  $("loginIdentity").textContent="Доступ сотрудникам и руководителю назначается по подтверждённому Google-аккаунту. Отдельная регистрация и платные функции не нужны.";
+  $("loginIdentity").textContent="Сотрудники входят по выданному руководителем логину и паролю. Владелец может войти через Google. Права проверяются на сервере.";
 }
 $("preorderStaffLogin").addEventListener("submit",async e=>{
   e.preventDefault();
@@ -45,7 +45,7 @@ onAuthStateChanged(auth,async user=>{
   $("adminView").hidden=true;$("loginView").hidden=false;
   $("staffHeaderAccount").hidden=true;
   $("adminSwitchAccount").hidden=!user;
-  if(!user){status(sheetsEnabled()?"Нажмите «Войти через Google».":"Введите логин и пароль сотрудника.");return;}
+  if(!user){status("Введите логин и пароль сотрудника или используйте вход владельца через Google.");return;}
   if(!user.emailVerified){status("Нет подтверждённого доступа к предзаказам.");return;}
   status("Проверка прав...");
   try{
