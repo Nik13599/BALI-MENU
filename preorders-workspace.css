@@ -495,3 +495,26 @@ body.bali-preorders-workspace{
   .bali-preorders-workspace .preorder-compact-row .preorder-actions>button{flex:1 1 110px}
   .bali-preorders-workspace .preorder-compact-row .preorder-action-menu{margin-left:auto}
 }
+
+/* Color-coded statuses for compact BALI STAFF order cards. */
+.bali-preorders-workspace .preorder-compact-row .preorder-state{
+  display:block;flex:none;box-sizing:border-box;width:18px;height:18px;
+  padding:0;border:2px solid transparent;border-radius:50%;
+  font-size:0;line-height:0;box-shadow:0 0 0 2px #071009;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-state-pending{
+  background:#ff991a;border-color:#ffcf84;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-state-confirmed{
+  background:#72dd34;border-color:#bbff93;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-state-cancelled{
+  background:#ef4b52;border-color:#ffafb4;
+}
+@media(min-width:1081px){
+  .bali-preorders-workspace .preorder-table-header,
+  .bali-preorders-workspace .preorder-compact-row{
+    grid-template-columns:minmax(0,1fr) 96px 70px minmax(165px,max-content);
+  }
+  .bali-preorders-workspace .preorder-compact-row .preorder-status-cell{justify-content:center}
+}
