@@ -855,6 +855,8 @@ function populateEventNames(preferredId=""){
     }
     select.disabled=!matching.length;
     if(matching.some(e=>(e.id||e.date)===previously))select.value=previously;
+    select.dataset.dateState=date===minskDateToday()&&matching.length?"today":
+        matching.length?"upcoming":"none";
     document.getElementById("eventDate").value=date;
     if(date&&!matching.length)select.options[0].textContent="На эту дату нет открытых предзаказов";
 }
@@ -867,8 +869,15 @@ function populateEvents(){
     const format=s=>new Intl.DateTimeFormat("ru-RU",{
         timeZone:"UTC",day:"numeric",month:"long",year:"numeric"
     }).format(new Date(s+"T12:00:00Z"));
-    for(const date of dates)dateSelect.add(new Option(format(date),date));
+    for(const date of dates){
+        const today=date===minskDateToday();
+        const option=new Option((today?"Сегодня · ":"")+format(date),date);
+        option.dataset.dateState=today?"today":"upcoming";
+        dateSelect.add(option);
+    }
     if(dates.includes(chosenDate))dateSelect.value=chosenDate;
+    dateSelect.dataset.dateState=dateSelect.value===""?"none":
+        dateSelect.value===minskDateToday()?"today":"upcoming";
     if(!dates.length)dateSelect.options[0].textContent="Нет доступных дат";
     populateEventNames(chosenEvent);
 }
@@ -1166,7 +1175,11 @@ function attachEventListeners() {
     });
 
     const dateSelect = document.getElementById('eventDateSelect');
-    if(dateSelect)dateSelect.addEventListener('change',()=>populateEventNames());
+    if(dateSelect)dateSelect.addEventListener('change',()=>{
+        populateEventNames();
+        dateSelect.dataset.dateState=dateSelect.value===""?"none":
+            dateSelect.value===minskDateToday()?"today":"upcoming";
+    });
     const eventSelect = document.getElementById('eventSelect');
     if(eventSelect)eventSelect.addEventListener('change',()=>{
         document.getElementById('eventDate').value=dateSelect?.value||"";
