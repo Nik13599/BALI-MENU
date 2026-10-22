@@ -91,7 +91,12 @@
    const btn=document.createElement("button");
    btn.type="button";btn.className="bali-calendar-day";
    btn.dataset.date=s;
-   btn.dataset.selected=String(s===selected);
+   const active=s===selected;
+   // One date ring at a time: active poster status takes priority,
+   // while today's date stays white when another poster is selected.
+   const ring=active&&published?(past?"past":"event"):(today||active?"today":"none");
+   btn.dataset.selected=String(active);
+   btn.dataset.ring=ring;
    btn.dataset.today=String(today);
    btn.dataset.event=String(published);
    btn.dataset.past=String(past);
@@ -103,12 +108,6 @@
    }
    btn.dataset.planned=String(planned);
    btn.dataset.eventCount=String(items.length);
-   // A planned day stays highlighted while the guest browses other posters.
-   // Archived events retain their red, unfilled archive state.
-   if(planned&&published&&!past){
-     btn.style.setProperty("background-color","#b9ff51","important");
-     btn.style.setProperty("color","#151910","important");
-   }
    btn.setAttribute("aria-pressed",String(s===selected));
    btn.setAttribute("aria-label",describe(s,{weekday:"long",day:"numeric",month:"long",year:"numeric"})+
      (published?". Мероприятий: "+items.length+".":"")+
@@ -130,10 +129,9 @@
        const dot=document.createElement("span");
        dot.className="bali-calendar-event-dot";
        dot.dataset.status=item.status;
-       // Respect the colour configured per event, but preserve status and contrast.
-       if(planned&&!past)dot.style.setProperty("background-color","#151910","important");
-       else if(item.status==="past")dot.style.setProperty("background-color","#fa6070","important");
-       else if(s!==selected&&item.color)dot.style.setProperty("background-color",item.color,"important");
+       // Dots distinguish multiple events, but do not fill any date cell.
+       if(item.status==="past")dot.style.setProperty("background-color","#fa6070","important");
+       else if(item.color)dot.style.setProperty("background-color",item.color,"important");
        dots.append(dot);
      }
      btn.append(dots);
@@ -256,9 +254,14 @@
  const mutation=new MutationObserver(()=>render());
  mutation.observe(grid,{childList:true});
  window.addEventListener("bali:calendar:open",()=>{
+   // Opening the calendar must describe the actually visible centre poster.
+   // With no published poster, simply mark the current day in white.
+   const active=grid.querySelector(".event-card.is-active[data-event-date]");
    const now=getNow();
-   selected=now.date;[year,month]=stamp(selected);
-   lastEventDate=null;hasInteracted=false;
+   selected=active&&valid(active.dataset.eventDate)?active.dataset.eventDate:now.date;
+   [year,month]=stamp(selected);
+   lastEventDate=active?.dataset.eventDate||null;
+   hasInteracted=false;
    expanded=false;render();setLabel();
  });
  setLabel();render();
