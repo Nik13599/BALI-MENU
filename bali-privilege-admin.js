@@ -2,6 +2,7 @@
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 const TIERS=["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ"];
@@ -50,6 +51,18 @@ window.addEventListener("bali:admin:select-privilege",async({detail})=>{
   $("baliPrivilegeTier").value="Member";
   setStatus("baliPrivilegeAssignStatus","Загружаем текущий уровень гостя...");
   try{
+    if(sheetsEnabled()){
+      const {card}=await sheetsRequest("adminCard",{uid:detail.uid});
+      if(selected!==detail.uid)return;
+      const tier=TIERS.includes(card.tier)?card.tier:"Member";
+      $("baliPrivilegeTier").value=tier;
+      $("baliPrivilegePersonal").value=(card.benefits||[]).join("\n");
+      setStatus("baliPrivilegeAssignStatus",
+        "BALI ID: "+(card.activated?card.number:"ещё не активирован")+
+        " · статус: "+tier);
+      $("baliPrivilegeAdmin").scrollIntoView({behavior:"smooth",block:"nearest"});
+      return;
+    }
     const [id,assignment]=await Promise.all([
       getDoc(doc(db,"baliIds",detail.uid)),
       getDoc(doc(db,"guestPrivileges",detail.uid))
@@ -74,10 +87,12 @@ $("baliPrivilegeAssignForm")?.addEventListener("submit",async e=>{
   const submit=e.currentTarget.querySelector('button[type="submit"]');
   submit.disabled=true;
   try{
-    await setDoc(doc(db,"guestPrivileges",selected),{
+    if(sheetsEnabled())await sheetsRequest("privilegeAssign",{uid:selected,tier,benefits});
+    else await setDoc(doc(db,"guestPrivileges",selected),{
       uid:selected,tier,benefits,updatedBy:auth.currentUser.uid,updatedAt:serverTimestamp()
     });
-    setStatus("baliPrivilegeAssignStatus","Статус "+(tier==="ResidentDJ"?"Resident Bali - DJ":tier)+" назначен и сохранён в Firebase.");
+    setStatus("baliPrivilegeAssignStatus","Статус "+(tier==="ResidentDJ"?"Resident Bali - DJ":tier)+
+      " сохранён в "+(sheetsEnabled()?"Google Таблицах.":"Firebase."));
   }catch(error){
     setStatus("baliPrivilegeAssignStatus","Не удалось сохранить: "+(error.code||"unknown")+
       ". Проверьте опубликованные firestore.rules.");
@@ -95,7 +110,8 @@ $("baliPrivilegeRulesForm")?.addEventListener("submit",async e=>{
   }
   const submit=e.currentTarget.querySelector('button[type="submit"]');submit.disabled=true;
   try{
-    await setDoc(doc(db,"privilegeRules","main"),{levels,updatedAt:serverTimestamp()});
+    if(sheetsEnabled())await sheetsRequest("privilegeRulesSave",{levels});
+    else await setDoc(doc(db,"privilegeRules","main"),{levels,updatedAt:serverTimestamp()});
     setStatus("baliPrivilegeRulesStatus","Условия и преимущества всех категорий сохранены.");
   }catch(err){
     setStatus("baliPrivilegeRulesStatus","Не удалось сохранить правила: "+(err.code||"unknown"));
@@ -105,11 +121,19 @@ onAuthStateChanged(auth,async user=>{
   authorized=false;selected=null;
   if(!user||!user.emailVerified)return;
   try{
-    const role=await getDoc(doc(db,"admins",user.uid));
-    if(auth.currentUser?.uid!==user.uid||role.data()?.active!==true)return;
-    authorized=true;
-    const rules=await getDoc(doc(db,"privilegeRules","main"));
-    if(rules.exists())renderRules({...defaults,...rules.data().levels});
-    setStatus("baliPrivilegeRulesStatus","Изменения сохраняются в Firebase. Статус назначается директором или администратором вручную.");
+    if(sheetsEnabled()){
+      const [{role},rules]=await Promise.all([sheetsRequest("me"),sheetsRequest("privilegeRules")]);
+      if(auth.currentUser?.uid!==user.uid||role!=="admin")return;
+      authorized=true;
+      renderRules({...defaults,...rules.levels});
+    }else{
+      const role=await getDoc(doc(db,"admins",user.uid));
+      if(auth.currentUser?.uid!==user.uid||role.data()?.active!==true)return;
+      authorized=true;
+      const rules=await getDoc(doc(db,"privilegeRules","main"));
+      if(rules.exists())renderRules({...defaults,...rules.data().levels});
+    }
+    setStatus("baliPrivilegeRulesStatus","Сохранение: "+(sheetsEnabled()?"Google Таблицы.":"Firebase.")+
+      " Статус назначается директором или администратором вручную.");
   }catch(err){setStatus("baliPrivilegeRulesStatus","Ошибка проверки прав: "+(err.code||"unknown"));}
 });
