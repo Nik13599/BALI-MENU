@@ -81,7 +81,7 @@ const kvFresh=await onRequestGet({...make("events"),env:{BALI_PUBLIC_CONTENT:kv}
 assert.equal(kvFresh.headers.get("X-BALI-Cache"),"KV");
 await Promise.all(pending.splice(0));
 const kvKey="bali:public:v1:events";
-kvMap.get(kvKey).cachedAt=Date.now()-20*60*1000;
+kvMap.get(kvKey).cachedAt=Date.now()-22*60*1000;
 stored.clear();
 const upstreamBefore=upstreamCalls;
 globalThis.fetch=async(url,opts)=>{

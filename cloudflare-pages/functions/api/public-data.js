@@ -21,8 +21,11 @@ const TTL=path=>path==="events"||path==="promotions"?20:
 // Bounded KV age prevents permanent staleness if an administrator updates
 // Firestore from an old browser that does not publish to Cloudflare.
 // Historical images and events are retained; only public reads are cached.
-const MAX_KV_AGE_MS=path=>path==="events"||path==="promotions"?2*60*1000:
-  path==="menu"?3*60*1000:5*60*1000;
+// Refresh hot events less frequently to stay well inside the free KV
+// write quota. Administrator publishing still refreshes immediately via KV;
+// the edge cache TTL above bounds when new content becomes visible.
+const MAX_KV_AGE_MS=path=>path==="events"||path==="promotions"?20*60*1000:
+  path==="menu"?60*60*1000:6*60*60*1000;
 const json=(body,status,headers={})=>new Response(JSON.stringify(body),{
   status,headers:{"Content-Type":"application/json; charset=utf-8",
     "X-Content-Type-Options":"nosniff",...headers}
