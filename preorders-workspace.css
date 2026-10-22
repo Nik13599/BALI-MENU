@@ -784,3 +784,18 @@ body.bali-preorders-workspace{
     overflow:hidden;text-overflow:ellipsis;
   }
 }
+
+/* Staff active-date colors: today gold, later eligible events lime.
+   Past dates are not shown in the staff's live preorder selectors. */
+.bali-preorders-workspace .preorder-calendar-chips button.preorder-calendar-chip[data-date-state="today"]{
+  border-color:#eac050;color:#ffdf86;background:#312a18;
+}
+.bali-preorders-workspace .preorder-calendar-chips button.preorder-calendar-chip[data-date-state="upcoming"]{
+  border-color:#648f3e;color:#d5ffac;background:#1a2a18;
+}
+.bali-preorders-workspace .preorder-calendar-chips button.preorder-calendar-chip[data-date-state="today"][aria-pressed="true"]{
+  border-color:#f4c84b;background:#f4c84b;color:#19160a;
+}
+.bali-preorders-workspace .preorder-calendar-chips button.preorder-calendar-chip[data-date-state="upcoming"][aria-pressed="true"]{
+  border-color:#b9ff51;background:#b9ff51;color:#101b12;
+}
