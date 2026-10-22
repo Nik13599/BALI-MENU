@@ -850,19 +850,21 @@ async function subscribe(user) {
   if(!user||!user.emailVerified)return;
   try{
     if(sheetsEnabled()){
-      const [me,available,recent]=await Promise.all([
-        sheetsRequest("me"),sheetsRequest("menu"),sheetsRequest("staffRecentOrders")
-      ]);
+      $("ordersAdminList").textContent="Загружаем предзаказы…";
+      // The queue route enforces the current staff role on the server itself.
+      // Menu metadata must not delay the independently authorized order list.
+      const menuReady=sheetsRequest("menu").then(data=>({data}),error=>({error}));
+      const recent=await sheetsRequest("staffRecentOrders");
       if(current!==generation)return;
-      const role=me.role;
-      if(role!=="admin"&&role!=="staff"){
-        $("ordersAdminList").textContent="Нет доступа к предзаказам.";return;
-      }
-      preorderOnlyStaff=role==="staff";
+      preorderOnlyStaff=true;
       authorized=true;
-      events=new Map((available.events||[]).map(e=>[e.id,e]));
-      catalog=(available.menu||[]).map(item=>({...item,id:Number(item.id)}))
-        .filter(item=>Number.isSafeInteger(item.id)&&Number.isFinite(item.price));
+      void menuReady.then(({data:available})=>{
+        if(current!==generation||!available)return;
+        events=new Map((available.events||[]).map(e=>[e.id,e]));
+        catalog=(available.menu||[]).map(item=>({...item,id:Number(item.id)}))
+          .filter(item=>Number.isSafeInteger(item.id)&&Number.isFinite(item.price));
+        renderDates();menuSelect();syncWorkspaceReportScope();
+      });
       orders=(recent.orders||[]).filter(withinOrderRetention);
       renderDates();renderOrders();menuSelect();syncWorkspaceReportScope();
       // Sheets status updates and reports are supported; editing, deletion
@@ -929,7 +931,10 @@ async function subscribe(user) {
         setStatus(compactWorkspace?"Последние "+orders.length+" предзаказов. Для полного отчёта выберите дату, затем при необходимости мероприятие.":"Последние "+orders.length+" заказов. Выберите дату, чтобы загрузить всю очередь за день, затем мероприятие для отчёта.");
       }catch(e){if(current===generation&&run===revision)setStatus("Ошибка состава заказов: "+(e.code||e.message));}
     },e=>{if(current===generation){revision++;setStatus("Не удалось загрузить заказы: "+(e.code||"unknown"));}});
-  }catch(e){if(current===generation)setStatus("Ошибка проверки роли: "+(e.code||"unknown"));}
+  }catch(e){if(current===generation){
+    $("ordersAdminList").textContent="Не удалось загрузить предзаказы. Обновите страницу для повторной попытки.";
+    setStatus("Ошибка загрузки: "+(e.code||e.message||"unknown"));
+  }}
 }
 // Полная выгрузка делается непосредственно из Firestore, а не из очереди
 // последних 100 заявок. Один день/мероприятие — отдельный отчёт.
