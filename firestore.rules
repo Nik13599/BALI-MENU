@@ -990,6 +990,35 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // BRSM digital card belongs to the existing BALI account.
+    // Only Cloud Functions can issue, revoke, check-in or set lottery numbers.
+    match /brsmCards/{uid} {
+      allow get: if signedInAs(uid) || isAdmin() || isDirector();
+      allow list, create, update, delete: if false;
+    }
+    // The public drawing state contains only called balls and the winning card number.
+    match /brsmDraws/{key} {
+      allow get: if key == 'main'
+        && request.auth != null
+        && request.auth.token.email_verified == true;
+      allow list, create, update, delete: if false;
+    }
+    match /brsmDrawAdmin/{key} {
+      allow read, write: if false;
+    }
+    match /brsmEntryQr/{codeId} {
+      allow read, write: if false;
+    }
+    match /brsmPromos/{codeHash} {
+      allow read, write: if false;
+    }
+    match /brsmPromoAttempts/{uid} {
+      allow read, write: if false;
+    }
+    match /brsmCampaign/{key} {
+      allow read, write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
