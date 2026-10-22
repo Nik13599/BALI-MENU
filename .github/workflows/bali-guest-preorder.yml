@@ -1,0 +1,34 @@
+name: BALI guest preorder without account
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app.js"
+      - "index.html"
+      - "bali-guest-preorder*.js"
+      - "bali-sheets-test*.js"
+      - "bali-sheets-test.html"
+      - "google-apps-script/BaliBackend.gs"
+      - "cloudflare-pages/functions/api/bali-v3.js"
+      - "scripts/test-bali-guest-checkout.mjs"
+      - "scripts/test-bali-sheets-backend.mjs"
+      - ".github/workflows/bali-guest-preorder.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node --check app.js
+      - run: node --check < google-apps-script/BaliBackend.gs
+      - run: node --input-type=module --check < bali-guest-preorder.js
+      - run: node --input-type=module --check < bali-sheets-test.js
+      - run: node --input-type=module --check < cloudflare-pages/functions/api/bali-v3.js
+      - run: node scripts/test-bali-guest-checkout.mjs
+      - run: node scripts/test-bali-sheets-backend.mjs
