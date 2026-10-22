@@ -49,6 +49,11 @@ jobs:
             if [[ "$status" != "401" ]]; then exit 1; fi
             status=$(curl --silent --show-error --location --max-time 45 \
               --output denied.json --write-out "%{http_code}" -H 'Content-Type: application/json' \
+              --data '{"action":"card","token":"intentionally_invalid_test_firebase_token_with_no_user_identifying_information_20261022"}' "$url")
+            echo "Invalid Firebase session: HTTP ${status}"
+            if [[ "$status" != "401" ]]; then exit 1; fi
+            status=$(curl --silent --show-error --location --max-time 45 \
+              --output denied.json --write-out "%{http_code}" -H 'Content-Type: application/json' \
               -H 'Origin: https://not-bali.example' --data '{"action":"health"}' "$url")
             echo "Foreign origin: HTTP ${status}"
             if [[ "$status" != "403" ]]; then exit 1; fi
