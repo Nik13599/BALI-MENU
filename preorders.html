@@ -5,7 +5,7 @@
 <title>BALI | Предзаказы · Сотрудники</title>
 <link rel="icon" href="assets/bali-favicon.svg">
 <link rel="stylesheet" href="generated/admin.css?v=faac21ed7332">
-<link rel="stylesheet" href="preorders-workspace.css?v=20261022-order-share1">
+<link rel="stylesheet" href="preorders-workspace.css?v=20261022-single-report2">
 </head><body class="bali-preorders-workspace">
 <header class="topbar" role="banner">
 <span class="brand">BALI <span>STAFF</span></span>
@@ -40,30 +40,25 @@
     <label for="ordersDateFilter">Дата<select id="ordersDateFilter"><option value="">Все даты</option></select></label>
     <label for="ordersEventFilter">Мероприятие<select id="ordersEventFilter"><option value="">Все мероприятия</option></select></label>
   </div>
-  <button type="button" id="createManualOrder" class="primary">＋ Новый предзаказ</button>
+  <button type="button" id="createManualOrder" class="primary"><span class="preorder-create-icon" aria-hidden="true">＋</span><span>Новый предзаказ</span></button>
 </div>
 <div id="ordersStats" class="preorder-stats" aria-live="polite"></div>
 <details class="preorder-tools">
-<summary>Отчёт по мероприятию <span>PDF · PNG · Telegram ⌄</span></summary>
+<summary>Отчёт по предзаказу <span>PDF · PNG · Telegram ⌄</span></summary>
 <div class="preorder-tools-body">
-  <p class="preorder-report-note">Выберите дату и мероприятие. Отчёты доступны и после закрытия приёма предзаказов в пределах срока хранения истории (30 дней).</p>
-  <div class="preorder-report-row">
-    <div class="preorder-report-description"><strong>По всем предзаказам</strong><small>По номерам: гость, столик, полный состав, количество, цены, суммы и статус, включая отменённые.</small></div>
+  <p class="preorder-report-note">Выберите конкретный предзаказ из загруженной истории. Дату и мероприятие для отчёта выбирать не нужно. Доступен любой статус, включая архив, пока заказ хранится в системе (до 30 дней).</p>
+  <div class="preorder-report-single">
+    <label for="preorderReportOrder">Предзаказ
+      <select id="preorderReportOrder" aria-label="Выберите предзаказ для отчёта">
+        <option value="">Выберите предзаказ</option>
+      </select>
+    </label>
     <div class="preorder-report-actions">
-      <button id="exportEventOrders" type="button" disabled>↓ PDF</button>
-      <button id="exportEventOrdersPng" type="button" disabled>↓ PNG</button>
-      <button id="exportEventOrdersTg" type="button" disabled>↗ Telegram</button>
+      <button id="preorderReportPdf" type="button" disabled>↓ PDF</button>
+      <button id="preorderReportPng" type="button" disabled>↓ PNG</button>
+      <button id="preorderReportTg" type="button" disabled>↗ Telegram</button>
     </div>
   </div>
-  <div class="preorder-report-row">
-    <div class="preorder-report-description"><strong>Общий отчёт по блюдам</strong><small>Суммарное количество каждого блюда и итоговая сумма для кухни.</small></div>
-    <div class="preorder-report-actions">
-      <button id="exportEventDishes" type="button" disabled>↓ PDF</button>
-      <button id="exportEventDishesPng" type="button" disabled>↓ PNG</button>
-      <button id="exportEventDishesTg" type="button" disabled>↗ Telegram</button>
-    </div>
-  </div>
-  <label class="check"><input id="exportIncludeCancelled" type="checkbox"> Учитывать отменённые и архивные в отчёте по блюдам</label>
   <div class="preorder-history-controls"><button type="button" id="showArchivedOrders" aria-pressed="false">Показать архив</button><span>История предзаказов хранится 30 дней</span><button type="button" id="clearExpiredOrders">Удалить историю старше 30 дней</button></div>
 </div>
 </details>
@@ -149,5 +144,5 @@
 </main>
 <script src="firebase-config.js?v=20261020-2"></script>
 <script type="module" src="preorders-access.js?v=20261021-fixed1"></script>
-<script type="module" src="admin-orders.js?v=20261022-order-share1"></script>
+<script type="module" src="admin-orders.js?v=20261022-single-report2"></script>
 </body></html>
