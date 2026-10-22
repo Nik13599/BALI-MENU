@@ -283,9 +283,6 @@ function compactOrderRow(o){
   const menu=node("div","","preorder-dropdown");
   const menuButton=(label,fn,cls="")=>button(label,()=>{dropdown.open=false;fn();},cls);
   if(!o.archived&&state!=="cancelled")menu.append(menuButton("Отменить заказ",()=>void setOrderStatus(o,"cancelled")));
-  menu.append(menuButton("Отчёт PDF",()=>void exportSinglePreorder(o.id,"pdf").catch(e=>setStatus("Ошибка отчёта: "+(e.message||e.code)))));
-  menu.append(menuButton("Отчёт PNG",()=>void exportSinglePreorder(o.id,"png").catch(e=>setStatus("Ошибка отчёта: "+(e.message||e.code)))));
-  menu.append(menuButton("Текст в Telegram",()=>void exportSinglePreorder(o.id,"telegram").catch(e=>setStatus("Ошибка отчёта: "+(e.message||e.code)))));
   menu.append(menuButton("Печать",()=>printOrder(o)));
   menu.append(o.archived
     ?menuButton("Вернуть из архива",()=>void archiveOrder(o,false))
@@ -295,64 +292,136 @@ function compactOrderRow(o){
   row.append(ref,guest,dishes,amount,statusBox,actions);
   return row;
 }
-async function exportSinglePreorder(id,format){
-  ensureAdmin();
-  if(!id)throw new Error("Сначала выберите предзаказ.");
-  const fresh=await fetchComplete(id);
-  if(!withinOrderRetention(fresh))throw new Error("Срок хранения заказа истёк. Отчёт недоступен.");
-  const report=composeBaliSinglePreorder({...fresh,eventTitle:eventTitle(fresh)});
-  if(format==="telegram"){
-    showBaliPreorderTelegram(report);
-    setStatus("Текст предзаказа «"+eventTitle(fresh)+" №"+(fresh.orderNumber??fresh.id)+"» готов для Telegram.");
-    return;
-  }
-  await downloadBaliPreorderReport(report,format,{preferNativeShare:true});
-  setStatus("Предзаказ «"+eventTitle(fresh)+" №"+(fresh.orderNumber??fresh.id)+
-    "»: "+format.toUpperCase()+" создан для отправки или сохранения.");
+const reportActionIds=[
+  "preorderReportOrdersPdf","preorderReportOrdersPng","preorderReportOrdersTg",
+  "preorderReportDishesView","preorderReportDishesPdf","preorderReportDishesPng","preorderReportDishesTg"
+];
+let reportScopeRevision=0,reportBusy=false;
+function setWorkspaceReportEnabled(){
+  const ready=Boolean($("preorderReportDate")?.value)&&!reportBusy&&authorized;
+  for(const id of reportActionIds)if($(id))$(id).disabled=!ready;
 }
-function renderSinglePreorderReportOptions(){
-  const select=$("preorderReportOrder");
-  if(!select)return;
-  const previous=select.value;
-  const distinct=new Map();
-  for(const order of [...orders,...dateOrders]){
-    if(order.id&&withinOrderRetention(order))distinct.set(order.id,order);
+function clearDishOnlinePreview(){
+  const panel=$("preorderDishesOnline");
+  if(panel){panel.hidden=true;panel.replaceChildren();}
+}
+async function updateReportEventOptions(){
+  if(!compactWorkspace)return;
+  const select=$("preorderReportEvent"),date=$("preorderReportDate").value;
+  const revision=++reportScopeRevision,previous=select.value;
+  clearDishOnlinePreview();
+  select.replaceChildren(new Option("Все мероприятия за день",""));
+  select.disabled=true;setWorkspaceReportEnabled();
+  if(!date||!authorized)return;
+  try{
+    const snapshot=await getDocs(query(collection(db,"orders"),where("eventDate","==",date)));
+    if(revision!==reportScopeRevision||date!==$("preorderReportDate").value)return;
+    const names=new Map();
+    for(const [id,event] of events)if(event.date===date)names.set(id,event.title);
+    for(const record of snapshot.docs){
+      const o=record.data();
+      if(!withinOrderRetention(o))continue;
+      const id=o.eventId||o.eventDate;
+      names.set(id,o.eventTitle||names.get(id)||"Мероприятие "+id);
+    }
+    for(const [id,title] of [...names].sort((a,b)=>a[1].localeCompare(b[1],"ru")))
+      select.add(new Option(title,id));
+    if([...select.options].some(x=>x.value===previous))select.value=previous;
+    select.disabled=false;
+  }catch(e){
+    if(revision===reportScopeRevision)setStatus("Не удалось загрузить мероприятия для отчёта: "+(e.code||e.message));
   }
-  const rows=[...distinct.values()].sort((a,b)=>
-    String(b.eventDate||"").localeCompare(String(a.eventDate||""))||
-    (Number(b.orderNumber)||0)-(Number(a.orderNumber)||0));
-  select.replaceChildren(new Option("Выберите предзаказ",""));
-  for(const o of rows){
-    const reference=o.tableNumber?"Столик "+o.tableNumber:o.bookingId?"ID "+o.bookingId:"";
-    const label=eventTitle(o)+" №"+(o.orderNumber??o.id)+" · "+(o.customerName||"Гость")+
-      " · "+(o.eventDate||"")+(reference?" · "+reference:"");
-    select.add(new Option(label,o.id));
+}
+async function fetchWorkspaceReport(kind){
+  ensureAdmin();
+  const date=$("preorderReportDate").value;
+  const id=$("preorderReportEvent").value;
+  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date))throw new Error("Выберите дату отчёта.");
+  const source=await getDocs(query(collection(db,"orders"),where("eventDate","==",date)));
+  const matching=source.docs.filter(entry=>withinOrderRetention(entry.data())&&
+    (!id||(entry.data().eventId||entry.data().eventDate)===id));
+  if(matching.length>300)throw new Error("Для отчёта больше 300 заказов выберите конкретное мероприятие.");
+  const included=$("preorderReportIncludeCancelled").checked;
+  const selected=kind==="orders"?matching:matching.filter(entry=>
+    included||(!entry.data().archived&&entry.data().status!=="cancelled"));
+  // Fetch only the chosen day's positions, not the last 100 displayed orders.
+  // Sequential bounded batches avoid an unbounded burst of Firestore reads.
+  const completed=[];
+  for(let i=0;i<selected.length;i+=20){
+    const batch=selected.slice(i,i+20);
+    completed.push(...await Promise.all(batch.map(async entry=>{
+      const lines=await getDocs(collection(entry.ref,"items"));
+      return {id:entry.id,...entry.data(),items:lines.docs.map(x=>x.data())};
+    })));
   }
-  if(distinct.has(previous))select.value=previous;
-  for(const id of ["preorderReportPdf","preorderReportPng","preorderReportTg"]){
-    const action=$(id);if(action)action.disabled=!select.value;
+  const allEvents=!id;
+  const title=allEvents?"Все мероприятия":events.get(id)?.title||
+    matching[0]?.data()?.eventTitle||id;
+  return {...composeBaliPreorderReport({kind,date,eventTitle:title,
+    orders:completed,includeCancelled:included,allEvents}),allEvents};
+}
+function renderDishOnline(report){
+  const panel=$("preorderDishesOnline");
+  if(!panel)return;
+  panel.replaceChildren();
+  panel.append(node("h3","Сводка по блюдам · "+report.date+" · "+report.eventTitle));
+  const info=node("p","Предзаказов: "+report.count+" · Порций: "+report.portions+
+    " · Итого: "+fmt(report.amount),"preorder-online-summary");
+  panel.append(info);
+  if(!report.dishes.length){
+    panel.append(node("p","Блюд в выбранном периоде нет."));
+  }else{
+    const table=node("table","","preorder-online-table");
+    const thead=node("thead"),tr=node("tr");
+    ["Блюдо","Порций","Сумма"].forEach(name=>tr.append(node("th",name)));
+    thead.append(tr);table.append(thead);
+    const tbody=node("tbody");
+    for(const dish of report.dishes){
+      const row=node("tr");
+      row.append(node("td",dish.name),node("td",String(dish.quantity)),node("td",fmt(dish.total)));
+      tbody.append(row);
+    }
+    table.append(tbody);panel.append(table);
   }
+  panel.hidden=false;
 }
 if(compactWorkspace){
-  $("preorderReportOrder")?.addEventListener("change",renderSinglePreorderReportOptions);
-  for(const [id,format] of [
-    ["preorderReportPdf","pdf"],["preorderReportPng","png"],["preorderReportTg","telegram"]
-  ]){
-    const control=$(id);
-    control?.addEventListener("click",async()=>{
-      control.disabled=true;
-      try{
-        setStatus("Формируем отчёт по выбранному предзаказу...");
-        await exportSinglePreorder($("preorderReportOrder").value,format);
-        $("preorderReportOrder").closest(".preorder-tools").open=false;
-      }catch(e){
-        setStatus(e?.name==="AbortError"?"Отправка отменена.":
-          "Ошибка отчёта: "+(e?.message||e?.code||"unknown"));
-      }finally{
-        control.disabled=!$("preorderReportOrder").value;
+  $("preorderReportDate")?.addEventListener("change",()=>void updateReportEventOptions());
+  $("preorderReportEvent")?.addEventListener("change",clearDishOnlinePreview);
+  $("preorderReportIncludeCancelled")?.addEventListener("change",clearDishOnlinePreview);
+  const actions=[
+    ["preorderReportOrdersPdf","orders","pdf"],
+    ["preorderReportOrdersPng","orders","png"],
+    ["preorderReportOrdersTg","orders","telegram"],
+    ["preorderReportDishesView","dishes","online"],
+    ["preorderReportDishesPdf","dishes","pdf"],
+    ["preorderReportDishesPng","dishes","png"],
+    ["preorderReportDishesTg","dishes","telegram"]
+  ];
+  for(const [id,kind,format] of actions)$(id)?.addEventListener("click",async()=>{
+    if(reportBusy)return;
+    reportBusy=true;setWorkspaceReportEnabled();
+    setStatus("Загружаем все предзаказы за выбранный день...");
+    try{
+      const report=await fetchWorkspaceReport(kind);
+      if(format==="online"){
+        renderDishOnline(report);
+        setStatus("Сводка по блюдам доступна ниже в разделе отчётов.");
+      }else if(format==="telegram"){
+        showBaliPreorderTelegram(report);
+        setStatus("Отчёт готов для передачи в Telegram.");
+      }else{
+        await downloadBaliPreorderReport(report,format,{preferNativeShare:true});
+        setStatus("Создан "+format.toUpperCase()+"-отчёт: "+report.count+
+          " предзаказов, "+report.portions+" порций.");
       }
-    });
-  }
+    }catch(e){
+      setStatus(e?.name==="AbortError"?"Отправка отменена.":
+        "Ошибка отчёта: "+(e?.code||e?.message||"unknown"));
+    }finally{
+      reportBusy=false;setWorkspaceReportEnabled();
+    }
+  });
 }
 function renderOrders(){
   const container=$("ordersAdminList"),date=$("ordersDateFilter").value;
@@ -388,7 +457,6 @@ function renderOrders(){
       summary.append(node("p",item.name+" × "+item.quantity,"admin-line-item"));
     if(!tally.size)summary.append(node("p","Активных блюд пока нет."));
   }
-  if(compactWorkspace)renderSinglePreorderReportOptions();
   if(compactWorkspace){
     const stats=$("ordersStats");
     if(stats){
@@ -739,6 +807,7 @@ async function subscribe(user) {
   if(unsubEvents){unsubEvents();unsubEvents=null;}
   if(unsubDateOrders){unsubDateOrders();unsubDateOrders=null;}
   dateRevision++;dateOrders=[];loadedDate="";
+  reportScopeRevision++;clearDishOnlinePreview();setWorkspaceReportEnabled();
   const current=++generation;
   orders=[];catalog=[];events=new Map();authorized=false;preorderOnlyStaff=false;
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
@@ -757,6 +826,8 @@ async function subscribe(user) {
       $("ordersAdminList").textContent="Нет доступа к предзаказам.";return;
     }
     authorized=true;
+    setWorkspaceReportEnabled();
+    if(compactWorkspace&&$("preorderReportDate")?.value)void updateReportEventOptions();
     const readOrders=createOrderSnapshotReader(readOrderLines);
     let revision=0;
     unsubEvents=onSnapshot(collection(db,"events"),snap=>{
@@ -781,7 +852,7 @@ async function subscribe(user) {
           ownerUid:user.uid,orders:orders.map(({id,status,orderNumber})=>({id,status,orderNumber})),
           count:orders.length,pending:orders.filter(x=>x.status==="pending"&&!x.archived).length
         }}));
-        setStatus(compactWorkspace?"Последние "+orders.length+" предзаказов. Отчёт можно создать по любому заказу из истории без выбора мероприятия.":"Последние "+orders.length+" заказов. Выберите дату, чтобы загрузить всю очередь за день, затем мероприятие для отчёта.");
+        setStatus(compactWorkspace?"Последние "+orders.length+" предзаказов. Для полного отчёта выберите дату, затем при необходимости мероприятие.":"Последние "+orders.length+" заказов. Выберите дату, чтобы загрузить всю очередь за день, затем мероприятие для отчёта.");
       }catch(e){if(current===generation&&run===revision)setStatus("Ошибка состава заказов: "+(e.code||e.message));}
     },e=>{if(current===generation){revision++;setStatus("Не удалось загрузить заказы: "+(e.code||"unknown"));}});
   }catch(e){if(current===generation)setStatus("Ошибка проверки роли: "+(e.code||"unknown"));}
