@@ -72,6 +72,8 @@ export async function onRequestPost({request,env}){
     const encoded=JSON.stringify({...snapshot,cachedAt:Date.now()});
     if(encoded.length>16000000)return reply({error:"Content too large for public KV snapshot"},413);
     await env.BALI_PUBLIC_CONTENT.put("bali:public:v1:"+path,encoded);
+    // Revision survives a failed aggregate update; readers can rebuild safely.
+    await env.BALI_PUBLIC_CONTENT.put("bali:public:bundle:published:v1",String(Date.now()));
     // Keep the one-read guest bundle in sync with the administrator's publish.
     // If an aggregate does not exist yet, guests assemble it from per-path KV.
     // All bundle paths remain fixed to the public allowlist above.
