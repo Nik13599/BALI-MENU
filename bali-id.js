@@ -2,6 +2,7 @@
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,onSnapshot,runTransaction,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
 const $=id=>document.getElementById(id);
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app);
@@ -121,6 +122,7 @@ async function initializeForUser(user,{force=false}={}){
   rulesUnsub?.();rulesUnsub=null;
   profile=null;privilege=null;rules=DEFAULTS;activeUid=null;
   setText("baliIdStatus","");setText("baliCardNumber","— — — — — —");
+  setText("baliIdCoinAmount","—");
   setLoading(true);
   if(!user||!user.emailVerified){render();setLoading(false);return;}
   try{
@@ -128,6 +130,23 @@ async function initializeForUser(user,{force=false}={}){
     if(run!==session||auth.currentUser?.uid!==user.uid)return;
     const profileData=window.BaliAuth?.getProfile?.();
     if(!profileData){render();setLoading(false);return;}
+    if(sheetsEnabled()){
+      const {card}=await sheetsRequest("card");
+      if(run!==session||auth.currentUser?.uid!==user.uid)return;
+      if(!card?.activated||!card?.agreed){render();setLoading(false);return;}
+      activeUid=user.uid;
+      profile=profileData;
+      privilege={tier:TIERS.includes(card.tier)?card.tier:"Member",
+        benefits:Array.isArray(card.benefits)?card.benefits:[]};
+      render();
+      setText("baliCardNumber",/^\d{6}$/.test(card.number)?card.number:"— — — — — —");
+      setText("baliIdCoinAmount",Number.isSafeInteger(card.coinBalance)&&card.coinBalance>=0?
+        new Intl.NumberFormat("ru-RU").format(card.coinBalance):"—");
+      setText("baliIdStatus","");
+      setLoading(false);
+      window.dispatchEvent(new CustomEvent("bali:sheets-card",{detail:{uid:user.uid,card}}));
+      return;
+    }
     // Check persisted acknowledgement before ANY writes (Member or ID counter).
     const consent=await getDoc(doc(db,"users",user.uid,"baliIdAgreements","privilege"));
     if(run!==session||auth.currentUser?.uid!==user.uid)return;
@@ -184,3 +203,7 @@ window.addEventListener("bali:guest-page",event=>{
   else void initializeForUser(null); // Also invalidate any asynchronous card setup in flight.
 });
 onAuthStateChanged(auth,resumeCard);
+window.addEventListener("bali:coin-updated",()=>{
+  if(sheetsEnabled()&&cardIsOpen()&&auth.currentUser?.uid)
+    void initializeForUser(auth.currentUser,{force:true});
+});
