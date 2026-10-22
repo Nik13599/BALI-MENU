@@ -3,7 +3,7 @@
  * Calls are verified again by Apps Script against Firebase Auth, not by a claimed UID. */
 const actions=new Set(["health","me","consentAccept","profileSave","menu",
   "myOrders","createOrder","guestCreateOrder","editOrder","cancelOrder","staffOrders","staffStatus","staffReport",
-  "staffList","staffManage","adminGuests","adminGuestOrders","catalogSync","card","activateCard","adminCard","coinHistory",
+  "staffRecentOrders","staffList","staffManage","adminGuests","adminGuestOrders","catalogSync","card","activateCard","adminCard","coinHistory",
   "coinChange","privilegeAssign","privilegeRules","privilegeRulesSave","bonusGrant","bonusHistory","bonusRecipient",
   "bonusTransfer","plans","avatarGet","avatarSave"]);
 const TURNSTILE_HOSTS=new Set(["baliminsk.by","www.baliminsk.by","bali-nightclub-menu.pages.dev"]);
