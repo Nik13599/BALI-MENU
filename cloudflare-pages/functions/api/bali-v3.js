@@ -2,7 +2,7 @@
  * Configure SHEETS_SCRIPT_URL and BALI_BRIDGE_KEY as encrypted runtime variables.
  * Calls are verified again by Apps Script against Firebase Auth, not by a claimed UID. */
 const actions=new Set(["health","me","consentAccept","profileSave","menu",
-  "myOrders","createOrder","staffOrders","staffStatus","staffReport",
+  "myOrders","createOrder","editOrder","cancelOrder","staffOrders","staffStatus","staffReport",
   "staffList","staffManage","adminGuests","adminGuestOrders","card","activateCard","adminCard","coinHistory",
   "coinChange","privilegeAssign","privilegeRules","privilegeRulesSave","bonusGrant","bonusHistory","bonusRecipient",
   "bonusTransfer","plans"]);
