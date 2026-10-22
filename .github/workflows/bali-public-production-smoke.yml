@@ -1,0 +1,26 @@
+name: Diagnose BALI public content in production
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/bali-public-production-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-data-diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read only public Firestore cache diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          for origin in https://baliminsk.by https://bali-nightclub-menu.pages.dev; do
+            echo "ORIGIN: $origin"
+            for path in events promotions menu; do
+              status=$(curl --max-time 20 -sS -w '%{http_code}' -D /tmp/bali-headers -o /tmp/bali-public-response "$origin/api/public-data?path=$path" || true)
+              echo "PATH: $path HTTP: $status"
+              grep -iE '^(content-type|x-bali-cache):' /tmp/bali-headers | tr -d '\r' || true
+              node -e 'const fs=require("fs");try{const j=JSON.parse(fs.readFileSync("/tmp/bali-public-response","utf8"));console.log("DOCUMENTS: "+(Array.isArray(j.documents)?j.documents.length:"none")+" ERROR: "+String(j.code||j.error||"none").slice(0,80));}catch{console.log("DOCUMENTS: unparseable")}'
+            done
+          done
