@@ -52,10 +52,12 @@ export async function onRequestGet({request,waitUntil,env}){
       if(record&&Array.isArray(record.documents))backup=record;
     }catch(_){ /* KV outage must not prevent primary public reads. */ }
   }
-  const maxAgeMs=path==="events"||path==="promotions"?20*60*1000:
-    path==="menu"?60*60*1000:6*60*60*1000;
+  // Once a verified administrator has published a snapshot to KV, public
+  // traffic must never refresh it from Firestore just because time passed.
+  // The administrator's /api/publish-public action is the only refresh path.
+  // This keeps guest page views at ZERO Firestore reads after initial publish.
   const usable=backup&&Number.isFinite(backup.cachedAt)&&
-    backup.cachedAt<=Date.now()&&Date.now()-backup.cachedAt<maxAgeMs;
+    backup.cachedAt<=Date.now();
   function fromBackup(stale=false){
     const response=json({documents:backup.documents},200,{
       "Cache-Control":"public, max-age=0, s-maxage="+(stale?120:ttl),
