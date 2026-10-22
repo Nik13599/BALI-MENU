@@ -70,7 +70,7 @@ async function refreshCalendarEvents({force=false,quiet=false}={}){
         const fields=document.fields||{};
         const date=String(calendarValue(fields.date)||"");
         const title=String(calendarValue(fields.title)||"").trim();
-        if(!id||!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||!title)continue;
+        if(!id||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!title)continue;
         next.set(id,{id,date,title,startTime:String(calendarValue(fields.startTime)||""),
           endTime:String(calendarValue(fields.endTime)||""),
           closesAt:String(calendarValue(fields.closesAt)||""),
@@ -731,7 +731,7 @@ function openCreateOrder(){
   fillOrderEventOptions();
   $("editOrderStatus").value="pending";
   for(const id of ["editOrderName","editOrderPhone","editOrderReference","editOrderNotes"])$(id).value="";
-  $("editOrderExtra").open=false;
+  if($("editOrderExtra"))$("editOrderExtra").open=false;
   $("orderEditStatus").textContent="Ручной заказ: учётная запись гостя не обязательна.";
   menuSelect();renderEditLines();
   $("orderEditDialog").showModal();
@@ -812,8 +812,8 @@ async function openEditor(id){
     $("editOrderPhone").value=o.customerPhone;
     $("editOrderReference").value=bookingReference(o);
     $("editOrderNotes").value=o.notes;
-    $("editOrderExtra").open=false;
-    $("editOrderCalendarHint").textContent="Обновляем мероприятия с основного календаря BALI…";
+    if($("editOrderExtra"))$("editOrderExtra").open=false;
+    if($("editOrderCalendarHint"))$("editOrderCalendarHint").textContent="Обновляем мероприятия с основного календаря BALI…";
     $("orderEditStatus").textContent="";
     menuSelect();renderEditLines();
     $("orderEditDialog").showModal();
