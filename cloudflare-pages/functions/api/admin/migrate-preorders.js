@@ -78,18 +78,33 @@ export async function onRequestPost({request,env}){
       const items=await firestore("orders/"+encodeURIComponent(id)+"/items?pageSize=50",bearer);
       orders.push(decode(doc,items.documents||[]));
     }
+    // A source replay is allowed during staging, never after D1 cutover.
+    const state=await db.prepare("SELECT status FROM migration_state WHERE id=?")
+      .bind("preorders").first();
+    if(state?.status==="complete")return errorJson(409,"migration-already-complete");
     const now=Date.now(),statements=[];
     for(const o of orders){
       statements.push(db.prepare(
-        "INSERT OR IGNORE INTO preorder_orders (id,firestore_id,event_id,event_date,"+
+        "INSERT INTO preorder_orders (id,firestore_id,event_id,event_date,"+
         "event_title,order_number,owner_uid,created_by_uid,customer_name,customer_phone,"+
         "table_number,booking_id,notes,status,source,created_at_ms,updated_at_ms,archived_at_ms)"+
-        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"+
+        " ON CONFLICT(id) DO UPDATE SET firestore_id=excluded.firestore_id,"+
+        "event_id=excluded.event_id,event_date=excluded.event_date,"+
+        "event_title=excluded.event_title,order_number=excluded.order_number,"+
+        "owner_uid=excluded.owner_uid,created_by_uid=excluded.created_by_uid,"+
+        "customer_name=excluded.customer_name,customer_phone=excluded.customer_phone,"+
+        "table_number=excluded.table_number,booking_id=excluded.booking_id,"+
+        "notes=excluded.notes,status=excluded.status,source=excluded.source,"+
+        "updated_at_ms=excluded.updated_at_ms,archived_at_ms=excluded.archived_at_ms"
       ).bind(o.id,o.id,o.eventId,o.date,o.eventTitle,o.number,o.ownerUid,o.createdByUid,
         o.customerName,o.customerPhone,o.tableNumber,o.bookingId,o.notes,o.status,o.source,
         o.created,o.updated,o.archived?now:null));
+      // A source order can be edited after its first staging pass. Refresh
+      // every line item in the same D1 transaction, including removals.
+      statements.push(db.prepare("DELETE FROM preorder_items WHERE order_id=?").bind(o.id));
       for(const item of o.items)statements.push(db.prepare(
-        "INSERT OR IGNORE INTO preorder_items (order_id,menu_id,item_name,unit_price_minor,quantity)"+
+        "INSERT INTO preorder_items (order_id,menu_id,item_name,unit_price_minor,quantity)"+
         " VALUES (?,?,?,?,?)").bind(o.id,item.menuId,item.name,item.minor,item.quantity));
       statements.push(db.prepare(
         "INSERT INTO preorder_counters (event_id,event_date,last_number,updated_at_ms)"+
@@ -98,8 +113,9 @@ export async function onRequestPost({request,env}){
       ).bind(o.eventId,o.date,o.number,now));
       statements.push(db.prepare(
         "INSERT INTO preorder_audit (order_id,actor_uid,action,created_at_ms,details)"+
-        " VALUES (?,?,?,?,?)"
-      ).bind(o.id,admin.uid,"source-import",now,"{}"));
+        " SELECT ?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM preorder_audit"+
+        " WHERE order_id=? AND action='source-import')"
+      ).bind(o.id,admin.uid,"source-import",now,"{}",o.id));
     }
     await db.batch(statements); // D1 batch is transactional.
     const counts=await db.prepare("SELECT COUNT(*) AS n FROM preorder_orders").first();
