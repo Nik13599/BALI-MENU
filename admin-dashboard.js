@@ -84,7 +84,15 @@
     window.dispatchEvent(new CustomEvent("bali:admin:section",{detail:{section:name}}));
     $("adminPageTitle").textContent = meta[name][0];
     $("adminPageDescription").textContent = meta[name][1];
-    if (scroll) window.scrollTo({top:0,behavior:"smooth"});
+    if (scroll) {
+      // Compact BALI admin scrolls its workspace, not the page.
+      const workspace=document.querySelector("#adminView .admin-main");
+      if(workspace&&getComputedStyle(workspace).overflowY==="auto"){
+        workspace.scrollTo({top:0,behavior:"auto"});
+      }else{
+        window.scrollTo({top:0,behavior:"smooth"});
+      }
+    }
   }
   const nav=document.querySelector(".admin-tabs");
   if(nav) nav.setAttribute("role","tablist");
