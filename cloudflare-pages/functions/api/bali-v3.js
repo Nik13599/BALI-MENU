@@ -5,7 +5,7 @@ const actions=new Set(["health","me","consentAccept","profileSave","menu",
   "myOrders","createOrder","editOrder","cancelOrder","staffOrders","staffStatus","staffReport",
   "staffList","staffManage","adminGuests","adminGuestOrders","card","activateCard","adminCard","coinHistory",
   "coinChange","privilegeAssign","privilegeRules","privilegeRulesSave","bonusGrant","bonusHistory","bonusRecipient",
-  "bonusTransfer","plans"]);
+  "bonusTransfer","plans","avatarGet","avatarSave"]);
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{
   "Content-Type":"application/json;charset=utf-8",
   "Cache-Control":"private,no-store","X-Content-Type-Options":"nosniff"
@@ -17,9 +17,9 @@ export async function onRequestPost({request,env}){
     return json({ok:false,error:{code:"not-configured",message:"BALI Sheets API пока не подключён."}},503);
   let input;
   try{
-    if(Number(request.headers.get("Content-Length"))>28000)return json({ok:false},413);
+    if(Number(request.headers.get("Content-Length"))>110000)return json({ok:false},413);
     input=await request.json();
-    if(JSON.stringify(input).length>28000)throw Error("size");
+    if(JSON.stringify(input).length>(input.action==="avatarSave"?110000:28000))throw Error("size");
   }catch{return json({ok:false,error:{code:"invalid-argument",message:"Некорректный запрос."}},400)}
   if(!input||!actions.has(input.action))
     return json({ok:false,error:{code:"invalid-argument",message:"Неизвестное действие."}},400);
