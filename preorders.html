@@ -5,7 +5,7 @@
 <title>BALI | Предзаказы · Сотрудники</title>
 <link rel="icon" href="assets/bali-favicon.svg">
 <link rel="stylesheet" href="generated/admin.css?v=faac21ed7332">
-<link rel="stylesheet" href="preorders-workspace.css?v=20261023-staff-date-colors1">
+<link rel="stylesheet" href="preorders-workspace.css?v=20261023-no-upcoming-panel1">
 </head><body class="bali-preorders-workspace">
 <header class="topbar" role="banner">
 <span class="brand">BALI <span>STAFF</span></span>
@@ -42,11 +42,6 @@
     <label for="ordersEventFilter">Мероприятие из календаря<select id="ordersEventFilter"><option value="">Все мероприятия</option></select></label>
   </div>
   <button type="button" id="createManualOrder" class="primary"><span class="preorder-create-icon" aria-hidden="true">＋</span><span>Новый предзаказ</span></button>
-</div>
-<div class="preorder-calendar-strip" aria-label="Актуальные мероприятия BALI">
-  <span class="preorder-calendar-strip-title">Ближайшие мероприятия</span>
-  <div id="staffUpcomingEvents" class="preorder-calendar-chips" aria-live="polite"><span class="preorder-calendar-placeholder">Загружаем календарь…</span></div>
-  <span id="staffCalendarSyncStatus" class="preorder-calendar-sync" role="status" aria-live="polite"></span>
 </div>
 <div id="ordersStats" class="preorder-stats" aria-live="polite"></div>
 <details class="preorder-tools">
@@ -167,5 +162,5 @@
 <script>if(window.BALI_GUEST_PREORDER_ENABLED===true)window.BALI_SHEETS_API_ENABLED=true;</script>
 <script src="firebase-config.js?v=20261020-2"></script>
 <script type="module" src="preorders-access.js?v=20261023-auth-light1"></script>
-<script type="module" src="admin-orders.js?v=20261023-fix-sheets-date-cells1"></script>
+<script type="module" src="admin-orders.js?v=20261023-no-upcoming-panel1"></script>
 </body></html>
