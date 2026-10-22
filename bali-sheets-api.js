@@ -5,7 +5,8 @@ const API="/api/bali-v3";
 export const sheetsEnabled=()=>window.BALI_SHEETS_API_ENABLED===true;
 export async function sheetsRequest(action,payload={},options={}){
   if(!sheetsEnabled())throw Object.assign(new Error("База Google Sheets ещё не активирована."),{code:"not-configured"});
-  const token=action==="health"?"":await window.BaliAuth?.getIdToken?.();
+  const provider=window.BaliAuth?.getIdToken||window.BaliSheetsToken;
+  const token=action==="health"?"":await provider?.();
   if(action!=="health"&&!token)throw Object.assign(new Error("Войдите в аккаунт BALI."),{code:"unauthenticated"});
   const response=await fetch(API,{method:"POST",credentials:"same-origin",redirect:"follow",
     headers:{"Content-Type":"application/json"},
