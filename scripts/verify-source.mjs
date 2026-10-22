@@ -1482,7 +1482,9 @@ assert(html.includes('id="baliCardNumber"') &&
   idClient.includes('runTransaction(db,async tx=>') &&
   idClient.includes('doc(db,"baliCounters","guests")') &&
   idClient.includes('doc(db,"baliIds",uid)') &&
-  idClient.includes('onAuthStateChanged(auth,initializeForUser)') &&
+  idClient.includes('onAuthStateChanged(auth,resumeCard)') &&
+  idClient.includes('cardIsOpen()') &&
+  source("bali-id-bank.js").includes('document.body.dataset.baliPage!=="id"') &&
   rules.includes('match /baliCounters/{key}') &&
   rules.includes('getAfter(baliIdPath(request.auth.uid))') &&
   rules.includes('match /guestPrivileges/{uid}') &&

@@ -17,6 +17,13 @@ for(const [name,page] of [["guest",guest],["admin",admin],["staff",staff]]){
 assert(!/manifest\.webmanifest|service-worker\.js/i.test(workflows));
 assert(app.includes("history.pushState("),"Guest SPA navigation must preserve the page");
 assert(app.includes("history.replaceState("),"Browser Back and shared links must remain supported");
+assert(app.includes('new CustomEvent("bali:guest-page"'),"Page changes must notify BALI ID modules");
+const idClient=await load("bali-id.js");
+const idWallet=await load("bali-id-bank.js");
+assert(idClient.includes('onAuthStateChanged(auth,resumeCard)')&&
+  idWallet.includes('document.body.dataset.baliPage!=="id"'),
+  "BALI ID and wallet data may only auto-load while the user is viewing the card");
+
 assert(!guest.includes('src="orders-firestore.js'),"Guest entry must not preload order database");
 assert(app.includes('ensureOrdersService()'),"Orders service should be loaded on the actual action");
 assert(app.includes('orders.startHistory?.()'),"Order history is requested on demand");

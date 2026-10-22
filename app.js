@@ -375,6 +375,8 @@ function renderGuestPage(page,{scroll=true}={}) {
         for(const dialog of document.querySelectorAll("dialog[open]"))dialog.close();
     }
     document.body.dataset.baliPage=selected;
+    // Personal card and wallet listeners activate only when BALI ID is open.
+    window.dispatchEvent(new CustomEvent("bali:guest-page",{detail:{page:selected}}));
     // BALI ID dialogs live at document root to avoid clipping.
     // Close them on any navigation away, just as the page canvas is hidden.
     if(selected!=="id"){

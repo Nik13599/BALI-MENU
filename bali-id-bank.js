@@ -325,6 +325,12 @@ async function loadKinds(user){
   }catch(_){/* Standard kinds stay available if the registry cannot be loaded. */}
 }
 function startWallet(user){
+  // Wallet reads and callable lookups must never run while the guest browses
+  // the home page, calendar, menu or simply fills out a preorder.
+  if(document.body.dataset.baliPage!=="id"){
+    if(walletStop||uid)authReset();
+    return;
+  }
   if(!user?.emailVerified||!window.BaliAuth?.isRegistered?.()||window.BaliAuth?.getProfile?.()?.uid!==user.uid){authReset();return;}
   if(uid===user.uid&&walletStop){renderBalance();return;}
   authReset();
@@ -345,6 +351,7 @@ function startWallet(user){
   });
 }
 onAuthStateChanged(auth,startWallet);
+window.addEventListener("bali:guest-page",()=>startWallet(auth.currentUser));
 window.addEventListener("bali:auth-state",event=>{
   if(!event.detail?.registered)authReset();
   else startWallet(auth.currentUser);

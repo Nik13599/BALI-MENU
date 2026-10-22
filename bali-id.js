@@ -170,7 +170,14 @@ async function initializeForUser(user,{force=false}={}){
     }
   }
 }
+const cardIsOpen=()=>document.body.dataset.baliPage==="id";
+const resumeCard=user=>void initializeForUser(cardIsOpen()?user:null);
 window.addEventListener("bali:id-accepted",event=>{
-  if(event.detail?.uid===auth.currentUser?.uid)void initializeForUser(auth.currentUser);
+  if(cardIsOpen()&&event.detail?.uid===auth.currentUser?.uid)
+    void initializeForUser(auth.currentUser);
 });
-onAuthStateChanged(auth,initializeForUser);
+window.addEventListener("bali:guest-page",event=>{
+  if(event.detail?.page==="id")resumeCard(auth.currentUser);
+  else if(activeUid||privilegedUnsub||rulesUnsub)void initializeForUser(null);
+});
+onAuthStateChanged(auth,resumeCard);
