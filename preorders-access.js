@@ -8,11 +8,13 @@ window.BaliSheetsToken=()=>auth.currentUser?.getIdToken()||null;
 let seq=0;
 const status=text=>{$("loginStatus").textContent=text;};
 if(sheetsEnabled()){
-  $("preorderStaffLogin").hidden=false;
+  // The private Sheets roles currently support verified Google identity only.
+  // Do not show a password form that this backend cannot authenticate.
+  $("preorderStaffLogin").hidden=true;
   const entry=document.querySelector(".preorder-admin-owner-entry");
   if(entry){entry.open=true;entry.querySelector("summary").textContent="Вход сотрудника через Google";}
   $("adminSignIn").textContent="Войти через Google";
-  $("loginIdentity").textContent="Сотрудники входят по выданному руководителем логину и паролю. Владелец может войти через Google. Права проверяются на сервере.";
+  $("loginIdentity").textContent="Тестовый режим Google Таблиц: войдите через Google. Доступ к предзаказам проверяется по роли admin или staff на сервере.";
 }
 $("preorderStaffLogin").addEventListener("submit",async e=>{
   e.preventDefault();
@@ -45,7 +47,7 @@ onAuthStateChanged(auth,async user=>{
   $("adminView").hidden=true;$("loginView").hidden=false;
   $("staffHeaderAccount").hidden=true;
   $("adminSwitchAccount").hidden=!user;
-  if(!user){status("Введите логин и пароль сотрудника или используйте вход владельца через Google.");return;}
+  if(!user){status(sheetsEnabled()?"Войдите через Google для проверки предзаказов в новой базе.":"Введите логин и пароль сотрудника или используйте вход владельца через Google.");return;}
   if(!user.emailVerified){status("Нет подтверждённого доступа к предзаказам.");return;}
   status("Проверка прав...");
   try{
