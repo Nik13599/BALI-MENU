@@ -1,10 +1,13 @@
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signInWithEmailAndPassword,signOut,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
-const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
+const app=getApps().find(app=>app.name==="bali-staff")||initializeApp(window.BALI_FIREBASE_CONFIG,"bali-staff");
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 window.BaliSheetsToken=()=>auth.currentUser?.getIdToken()||null;
+const sessionReady=setPersistence(auth,browserLocalPersistence);
+// Attach a rejection handler immediately; sign-in also awaits this promise.
+sessionReady.catch(()=>status("Разрешите сохранение данных сайта в браузере для сохранения входа."));
 let seq=0;
 const status=text=>{$("loginStatus").textContent=text;};
 if(sheetsEnabled()){
@@ -20,6 +23,7 @@ $("preorderStaffLogin").addEventListener("submit",async e=>{
   const button=$("staffPasswordSignIn");button.disabled=true;status("Проверяем данные...");
   try{
     // Firebase Auth manages salted password hashes; no email inbox is involved.
+    await sessionReady;
     await signInWithEmailAndPassword(auth,"staff+"+login+"@staff.baliminsk.by",password);
     $("staffLoginPassword").value="";
   }catch(error){
@@ -30,7 +34,7 @@ $("preorderStaffLogin").addEventListener("submit",async e=>{
 });
 $("adminSignIn").addEventListener("click",async()=>{
   $("adminSignIn").disabled=true;status("Вход через Google...");
-  try{await signInWithPopup(auth,new GoogleAuthProvider());}
+  try{await sessionReady;await signInWithPopup(auth,new GoogleAuthProvider());}
   catch(error){status("Вход не завершён: "+(error.code||error.message));}
   finally{$("adminSignIn").disabled=false;}
 });
