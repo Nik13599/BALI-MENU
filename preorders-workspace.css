@@ -577,3 +577,158 @@ body.bali-preorders-workspace{
   }
   .bali-preorders-workspace .preorder-primary .preorder-cell.dishes{margin:0}
 }
+
+/* BALI Staff: short, centred edit sheet on desktop and phone.
+   Only the essential event/date and dishes are expanded; guest details
+   remain editable in an optional disclosure, not a tall mandatory form. */
+.bali-preorders-workspace #orderEditDialog.order-edit-dialog{
+  box-sizing:border-box;position:fixed;inset:0;margin:auto;
+  display:none;width:min(650px,calc(100vw - 22px));max-width:calc(100vw - 22px);
+  max-height:min(700px,calc(100dvh - 20px));height:auto;
+  padding:0;border-radius:13px;border:1px solid #3b523f;
+  background:#141c15;overflow-y:auto;overflow-x:hidden;
+  overscroll-behavior:contain;box-shadow:0 16px 55px #000b;
+}
+.bali-preorders-workspace #orderEditDialog.order-edit-dialog[open]{display:block}
+.bali-preorders-workspace #orderEditDialog .dialog-header{
+  padding:10px 13px;background:#1b261d;border-bottom:1px solid #344637;
+}
+.bali-preorders-workspace #orderEditDialog .dialog-header .eyebrow{
+  font-size:9px;letter-spacing:.07em;
+}
+.bali-preorders-workspace #orderEditDialog .dialog-header h2{
+  font-size:15px;line-height:1.2;margin:2px 0 0;
+  max-width:calc(100% - 15px);overflow-wrap:anywhere;
+}
+.bali-preorders-workspace #orderEditDialog .dialog-close{
+  min-width:30px;min-height:30px;width:30px;height:30px;
+  font-size:17px;padding:0;border-radius:7px;
+}
+.bali-preorders-workspace #orderEditDialog .dialog-form{padding:11px 13px 0}
+.bali-preorders-workspace #orderEditDialog .dialog-form label{
+  min-width:0;margin:0;color:#b8cbbb;font-size:10px;line-height:1.25;font-weight:650;
+}
+.bali-preorders-workspace #orderEditDialog input,
+.bali-preorders-workspace #orderEditDialog select,
+.bali-preorders-workspace #orderEditDialog textarea{
+  box-sizing:border-box;min-width:0;width:100%;min-height:34px;
+  margin:4px 0 0;padding:5px 9px;border-radius:7px;
+  font-size:13px;line-height:1.3;color:#fff;background:#1e2920;
+}
+.bali-preorders-workspace #orderEditDialog .edit-order-event-grid{
+  display:grid;grid-template-columns:minmax(0,1.7fr) minmax(135px,.85fr);
+  gap:8px;align-items:end;
+}
+.bali-preorders-workspace #orderEditDialog .edit-order-calendar-hint{
+  display:block;min-height:12px;margin:5px 0 8px;
+  color:#a7b5a7;font-size:10px;line-height:1.3;
+}
+.bali-preorders-workspace #orderEditDialog .edit-order-extra{
+  margin:0 0 10px;border:1px solid #334536;border-radius:8px;background:#172019;
+}
+.bali-preorders-workspace #orderEditDialog .edit-order-extra>summary{
+  display:flex;justify-content:space-between;align-items:center;
+  cursor:pointer;list-style:none;padding:8px 10px;color:#d3e6cc;
+  font-size:11px;font-weight:700;line-height:1.25;
+}
+.bali-preorders-workspace #orderEditDialog .edit-order-extra>summary::-webkit-details-marker{display:none}
+.bali-preorders-workspace #orderEditDialog .edit-order-extra[open]>summary span{transform:rotate(180deg)}
+.bali-preorders-workspace #orderEditDialog .edit-order-extra-content{
+  display:grid;gap:8px;padding:0 10px 10px;
+}
+.bali-preorders-workspace #orderEditDialog .edit-order-extra-content .double{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;
+}
+.bali-preorders-workspace #orderEditDialog .edit-order-extra-content textarea{
+  min-height:45px;max-height:95px;resize:vertical;
+}
+.bali-preorders-workspace #orderEditDialog .card-heading{
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:8px;margin:4px 0 7px;
+}
+.bali-preorders-workspace #orderEditDialog .card-heading h3{
+  font-size:12px;line-height:1.3;margin:0;
+}
+.bali-preorders-workspace #orderEditDialog .card-heading .hint{
+  margin:0;font-size:10px;
+}
+.bali-preorders-workspace #orderEditDialog .order-edit-add{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  gap:6px;margin:0 0 7px;
+}
+.bali-preorders-workspace #orderEditDialog .order-edit-add select{margin:0}
+.bali-preorders-workspace #orderEditDialog .order-edit-add button{
+  min-height:34px;padding:5px 9px;font-size:11px;white-space:nowrap;
+}
+.bali-preorders-workspace #orderEditDialog .order-edit-lines{gap:5px}
+.bali-preorders-workspace #orderEditDialog .order-edit-line{
+  display:grid;grid-template-columns:minmax(0,1fr) 57px 31px;
+  align-items:center;gap:6px;padding:6px 8px;
+  border-radius:7px;border:1px solid #324634;background:#19231a;
+}
+.bali-preorders-workspace #orderEditDialog .order-edit-product strong{
+  font-size:11px;line-height:1.25;
+}
+.bali-preorders-workspace #orderEditDialog .order-edit-product small{
+  font-size:9px;line-height:1.2;color:#a7bfa6;margin-top:2px;
+}
+.bali-preorders-workspace #orderEditDialog .order-edit-line input{
+  width:57px;min-height:30px;height:30px;margin:0;padding:4px 2px;font-size:12px;
+}
+.bali-preorders-workspace #orderEditDialog .order-edit-line button{
+  min-width:0;width:31px;min-height:30px;height:30px;
+  padding:0;font-size:16px;border-radius:6px;
+}
+.bali-preorders-workspace #orderEditDialog .edit-order-total{
+  margin:7px 0 0;padding:7px 0 2px;
+  font-size:12px;font-weight:700;border-color:#334836;
+}
+.bali-preorders-workspace #orderEditDialog .edit-order-total strong{color:#b9ff51}
+.bali-preorders-workspace #orderEditDialog #orderEditStatus{
+  font-size:11px;margin:4px 0 0;line-height:1.4;
+}
+.bali-preorders-workspace #orderEditDialog #orderEditStatus:empty{display:none}
+.bali-preorders-workspace #orderEditDialog .dialog-actions{
+  position:sticky;bottom:0;display:flex;gap:7px;
+  margin:9px -13px 0;padding:9px 13px max(9px,env(safe-area-inset-bottom));
+  border-top:1px solid #334836;background:#1b261d;
+}
+.bali-preorders-workspace #orderEditDialog .dialog-actions button{
+  min-height:35px;min-width:0;padding:6px 10px;font-size:12px;
+}
+@media(max-width:700px){
+  .bali-preorders-workspace #orderEditDialog.order-edit-dialog{
+    inset:0;margin:auto;width:calc(100vw - 12px);
+    max-width:calc(100vw - 12px);max-height:calc(100dvh - 12px);
+    border-radius:11px;
+  }
+  .bali-preorders-workspace #orderEditDialog .dialog-header{
+    padding:9px 10px;
+  }
+  .bali-preorders-workspace #orderEditDialog .dialog-form{padding:9px 10px 0}
+  .bali-preorders-workspace #orderEditDialog .dialog-header h2{font-size:14px}
+  .bali-preorders-workspace #orderEditDialog .edit-order-event-grid{
+    grid-template-columns:minmax(0,1.35fr) minmax(118px,1fr);gap:6px;
+  }
+  .bali-preorders-workspace #orderEditDialog input,
+  .bali-preorders-workspace #orderEditDialog select,
+  .bali-preorders-workspace #orderEditDialog textarea{
+    min-height:34px;font-size:16px;padding:4px 7px;
+  }
+  .bali-preorders-workspace #orderEditDialog .edit-order-extra-content .double{
+    grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;
+  }
+  .bali-preorders-workspace #orderEditDialog .dialog-actions{margin:8px -10px 0;padding:8px 10px max(8px,env(safe-area-inset-bottom))}
+  .bali-preorders-workspace #orderEditDialog .dialog-actions button{flex:1;min-height:35px}
+  .bali-preorders-workspace .preorder-compact-row{padding:8px 9px;gap:4px 7px}
+  .bali-preorders-workspace .preorder-compact-row .preorder-primary{gap:3px}
+  .bali-preorders-workspace .preorder-compact-row .preorder-actions{padding-top:4px;gap:4px}
+  .bali-preorders-workspace .preorder-compact-row .preorder-actions>button{
+    flex:0 1 auto;min-height:29px;padding:4px 8px;font-size:10px;
+  }
+}
+@media(max-width:350px){
+  .bali-preorders-workspace #orderEditDialog .edit-order-event-grid{
+    grid-template-columns:minmax(0,1fr);
+  }
+}
