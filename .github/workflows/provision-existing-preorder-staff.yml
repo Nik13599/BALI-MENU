@@ -26,13 +26,12 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: functions/package-lock.json
       - name: Authenticate using the existing project deployment identity
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ vars.FIREBASE_WIF_PROVIDER || 'projects/855889005555/locations/global/workloadIdentityPools/bali-github-pool/providers/bali-github' }}
           service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
-      - run: npm ci --prefix functions --no-audit --no-fund
+      - run: npm install --prefix functions --no-audit --no-fund
       - run: node --check scripts/provision-existing-preorder-staff.cjs
       - name: Inspect exact existing identity and reject wider or revoked roles
         run: node scripts/provision-existing-preorder-staff.cjs
