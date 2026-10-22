@@ -100,12 +100,11 @@ const eventTitle=o=>o.eventTitle||events.get(o.eventId||o.eventDate)?.title||"Н
  * while this public snapshot is unavailable. */
 const minskToday=()=>new Date(Date.now()+3*3600000).toISOString().slice(0,10);
 const activeCalendarEvent=event=>{
-  if(!event||!/^\d{4}-\d{2}-\d{2}$/.test(event.date))return false;
-  const today=minskToday();
-  if(event.date>today)return true;
-  if(event.date!==today)return false;
+  if(!event||event.preorderEnabled!==true||
+      !/^\d{4}-\d{2}-\d{2}$/.test(event.date)||event.date<minskToday())
+    return false;
   const closes=Date.parse(event.closesAt);
-  return !Number.isFinite(closes)||closes>Date.now();
+  return Number.isFinite(closes)&&closes>Date.now();
 };
 function activePreorderEvent(id,date){
   // An already accepted order must NEVER disappear when the public poster
