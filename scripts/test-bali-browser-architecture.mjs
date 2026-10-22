@@ -49,6 +49,13 @@ assert(migrationUi.includes("report.cutoverAllowed!==false")&&
   !migrationUi.includes("migrate-preorders"),
   "The migration audit UI cannot trigger an order migration or cutover");
 assert(reader.includes("/api/public-data?path="),"Public data must use the Cloudflare reader");
+const themeGuest=await load("bali-theme-guest.js");
+assert(guest.includes("bali-theme-guest.js")&&!guest.includes('src="bali-theme.js'),
+  "Guests must load public theme via Cloudflare only");
+assert(themeGuest.includes('./bali-public-reader.js')&&
+  !themeGuest.includes("firebasejs")&&
+  publisher.includes('"settings/appearance"'),
+  "Theme's public color configuration must come from Cloudflare without Firebase client SDK");
 const visibilityGuest=await load("bali-menu-visibility-guest.js");
 assert(visibilityGuest.includes("./bali-public-reader.js")&&!visibilityGuest.includes("firebasejs"),
   "Public menu tabs should not require the Firebase client SDK");

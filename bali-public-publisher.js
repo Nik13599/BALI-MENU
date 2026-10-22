@@ -9,7 +9,7 @@ const PATHS=Object.freeze([
   "events","promotions","menu","bar_menu","hookah_menu","tea_menu",
   "mobileAboutBackgrounds","settings/homeDesign","settings/homeInterface",
   "settings/homeEventPlaceholder","settings/siteBuilderPublished",
-  "settings/menuVisibility"
+  "settings/menuVisibility","settings/appearance"
 ]);
 const allowed=new Set(PATHS),pending=new Set();
 let flushing=false,timer=null;

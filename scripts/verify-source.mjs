@@ -809,7 +809,8 @@ assert(admin.includes('id="baliCopyRules"') &&
 const dashboardClient=source("admin-dashboard.js");
 assert(html.includes('bali-theme.css?v=') &&
   admin.includes('bali-theme.css?v=') &&
-  html.includes('bali-theme.js?v=') &&
+  html.includes('bali-theme-guest.js?v=') &&
+  source("bali-theme-guest.js").includes('./bali-public-reader.js') &&
   admin.includes('bali-theme.js?v=') &&
   html.indexOf('bali-theme.css?v=') >
   html.indexOf('bali-obsidian-premium.css?v=') &&
