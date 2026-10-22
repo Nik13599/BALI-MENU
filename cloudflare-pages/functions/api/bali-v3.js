@@ -4,7 +4,7 @@
 const actions=new Set(["health","me","consentAccept","profileSave","menu",
   "myOrders","createOrder","staffOrders","staffStatus","staffReport",
   "staffList","staffManage","adminGuests","adminGuestOrders","card","activateCard","adminCard","coinHistory",
-  "coinChange","privilegeAssign","bonusGrant","bonusHistory","bonusRecipient",
+  "coinChange","privilegeAssign","privilegeRules","privilegeRulesSave","bonusGrant","bonusHistory","bonusRecipient",
   "bonusTransfer","plans"]);
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{
   "Content-Type":"application/json;charset=utf-8",
