@@ -138,3 +138,34 @@ function baliCoinAudit() {
     return { discrepancies, duplicates, walletCount: wallets.length, operationCount: log.length };
   });
 }
+
+
+/**
+ * INTERNAL read model for a verified caller. This function does not authenticate
+ * browser users. A future HTTP adapter MUST verify an ID token server-side,
+ * derive uid from that token and enforce account ownership.
+ * Never accept a UID supplied by an untrusted browser as authorization.
+ */
+function baliCoinInternalSnapshot(uid, limit) {
+  baliCoinValidateUid_(uid);
+  const safeLimit = Number.isSafeInteger(limit) ? Math.max(1, Math.min(limit, 30)) : 20;
+  return baliCoinLocked_(() => {
+    const wallets = baliCoinRows_(baliCoinSheet_(BALI_COIN_WALLETS), 4);
+    const index = baliCoinIndex_(wallets, uid);
+    const balance = index < 0 ? 0 : Number(wallets[index][1]);
+    if (!Number.isSafeInteger(balance) || balance < 0)
+      throw new Error('Повреждён баланс кошелька');
+    const entries = baliCoinRows_(baliCoinSheet_(BALI_COIN_LOG), 9)
+      .filter(row => String(row[2]) === uid)
+      .slice(-safeLimit).reverse()
+      .map(row => ({
+        id: String(row[0]),
+        at: row[1] instanceof Date ? row[1].toISOString() : String(row[1]),
+        type: String(row[3]),
+        amount: Number(row[4]),
+        balanceAfter: Number(row[5]),
+        reason: String(row[7])
+      }));
+    return { uid, balance, entries };
+  });
+}
