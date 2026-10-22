@@ -138,6 +138,12 @@ async function initializeForUser(user,{force=false}={}){
       profile=profileData;
       privilege={tier:TIERS.includes(card.tier)?card.tier:"Member",
         benefits:Array.isArray(card.benefits)?card.benefits:[]};
+      const values=card.tierRules||{};
+      rules=Object.fromEntries(Object.keys(DEFAULTS).map(tier=>[tier,{
+        description:cleanText(values[tier]?.description)||DEFAULTS[tier].description,
+        criteria:cleanText(values[tier]?.criteria)||DEFAULTS[tier].criteria,
+        benefits:Array.isArray(values[tier]?.benefits)?values[tier].benefits.filter(v=>typeof v==="string").slice(0,5):DEFAULTS[tier].benefits
+      }]));
       render();
       setText("baliCardNumber",/^\d{6}$/.test(card.number)?card.number:"— — — — — —");
       setText("baliIdCoinAmount",Number.isSafeInteger(card.coinBalance)&&card.coinBalance>=0?
