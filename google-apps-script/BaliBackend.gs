@@ -209,6 +209,87 @@ function baliGuestEditOrder(user,data){
     return {id,orderNumber:original.orderNumber,total,status:"pending"};
   });
 }
+
+/**
+ * Dedicated BALI STAFF edit operation. Only a verified admin/staff identity
+ * can reach this route; owner UID and account email are immutable.
+ * A changed calendar event receives a new serial within that event.
+ */
+function baliStaffEditOrder(user,data){
+  baliStaff(user,false);
+  const id=BALI_TEXT(data.id,80),date=BALI_TEXT(data.eventDate,10),
+    eventId=BALI_TEXT(data.eventId,80),name=BALI_TEXT(data.customerName,100),
+    phone=BALI_TEXT(data.customerPhone,22),table=BALI_TEXT(data.tableNumber,20),
+    booking=BALI_TEXT(data.bookingId,60),notes=BALI_TEXT(data.notes,500),
+    status=BALI_TEXT(data.status,20),expected=BALI_TEXT(data.expectedUpdatedAt,60);
+  if(!id||!BALI_DATE(date)||!eventId||name.length<2||
+    !/^\+[1-9][0-9]{7,14}$/.test(phone)||(!table&&!booking)||
+    !["pending","confirmed","cancelled"].includes(status)||
+    !Array.isArray(data.items)||data.items.length<1||data.items.length>12||
+    !expected)
+    BALI_FAIL("invalid-argument","Проверьте данные заказа, мероприятие и блюда.");
+  return baliLock(()=>{
+    // Re-read after locking to avoid overwriting another employee's changes.
+    const sheet=BALI_SHEET("orders"),orders=BALI_ROWS("orders"),
+      index=orders.findIndex(r=>String(r[0])===id);
+    if(index<0)BALI_FAIL("not-found","Предзаказ не найден.");
+    const old=baliOrder(orders[index]);
+    if(old.archived)BALI_FAIL("failed-precondition","Архивный заказ нельзя редактировать.");
+    if(old.updatedAt!==expected)
+      BALI_FAIL("failed-precondition","Заказ уже изменён. Закройте редактор и откройте его заново.");
+    const sameEvent=old.eventId===eventId&&old.eventDate===date;
+    const target=baliEvents().find(e=>e.id===eventId&&e.date===date);
+    if(!target&&!sameEvent)
+      BALI_FAIL("failed-precondition","Мероприятие отсутствует в календаре.");
+    // The original title survives when the old event has already been archived.
+    const title=target?.title||old.eventTitle;
+    if(!title||title.length>150)
+      BALI_FAIL("failed-precondition","Не найдено название мероприятия.");
+    const menu=new Map(baliMenu().map(x=>[x.id,x])),seen=new Set();
+    const lines=data.items.map(it=>{
+      const product=menu.get(String(it.id)),quantity=Number(it.quantity);
+      if(!product||!Number.isInteger(quantity)||quantity<1||quantity>50||
+        seen.has(product.id)||!Number.isFinite(product.price)||product.price<0)
+        BALI_FAIL("invalid-argument","Одно из блюд недоступно или указано неверное количество.");
+      seen.add(product.id);
+      return {...product,quantity,total:Math.round(product.price*quantity*100)/100};
+    });
+    const total=Math.round(lines.reduce((n,x)=>n+x.total,0)*100)/100;
+    // For the same event, never alter the existing serial; changing event
+    // assigns the next unused sequence, even after a cancellation.
+    const number=sameEvent?old.orderNumber:
+      Math.max(0,...orders.filter(r=>String(r[2])===eventId)
+        .map(r=>Number(r[15])||0))+1;
+    if(!Number.isSafeInteger(number)||number<1||number>999999)
+      BALI_FAIL("failed-precondition","Не удалось назначить номер предзаказа.");
+    const now=BALI_NOW(),expiry=target?.closesAt
+      ?new Date(Date.parse(target.closesAt)+30*86400000):null;
+    if(expiry&&!Number.isFinite(expiry.getTime()))
+      BALI_FAIL("failed-precondition","Некорректная дата окончания мероприятия.");
+    const expiresAt=sameEvent?old.expiresAt:(expiry?expiry.toISOString():"");
+    const oldItems=BALI_ROWS("items").map((row,i)=>({row,i}))
+      .filter(x=>String(x.row[0])===id);
+    const itemSheet=BALI_SHEET("items");
+    const newRows=lines.map(x=>[id,x.id,x.name,x.quantity,x.price,x.total,now,eventId]);
+    itemSheet.getRange(itemSheet.getLastRow()+1,1,newRows.length,8).setValues(newRows);
+    for(const item of oldItems)
+      itemSheet.getRange(item.i+2,1,1,8).setValues([Array(8).fill("")]);
+    // Columns preserve UID/email/createdAt. No guest permission is gained.
+    sheet.getRange(index+2,2,1,3).setValues([[date,eventId,title]]);
+    sheet.getRange(index+2,6).setValue(now);
+    sheet.getRange(index+2,8).setValue(BALI_SAFE_CELL(name));
+    sheet.getRange(index+2,10,1,9).setValues([[
+      phone,BALI_SAFE_CELL(table),BALI_SAFE_CELL(booking),BALI_SAFE_CELL(notes),
+      status,total,number,false,expiresAt
+    ]]);
+    BALI_SHEET("audit").appendRow([now,id,user.uid,"staff-edit",2,
+      sameEvent?"updated":"event-changed:"+old.eventId+"->"+eventId]);
+    return {...baliOrder(BALI_ROWS("orders")[index]),items:lines.map(x=>({
+      id:x.id,name:x.name,quantity:x.quantity,unitPrice:x.price,total:x.total
+    }))};
+  });
+}
+
 function baliStatus(user,data){
   const id=BALI_TEXT(data.id,80),status=BALI_TEXT(data.status,20);
   if(!["pending","confirmed","cancelled"].includes(status))BALI_FAIL("invalid-argument","Неверный статус.");
@@ -710,6 +791,7 @@ function baliDispatch(user,action,data){
     if(!BALI_DATE(date))BALI_FAIL("invalid-argument","Выберите дату мероприятия.");
     return {orders:baliOrdersFor(user,true,date,eventId)};
   }
+  if(action==="staffEditOrder")return {order:baliStaffEditOrder(user,data)};
   if(action==="staffStatus"){baliStaff(user,false);return {result:baliStatus(user,data)};}
   if(action==="staffReport"){
     baliStaff(user,false);
