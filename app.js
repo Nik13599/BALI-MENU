@@ -1633,23 +1633,52 @@ function closeCart() {
 // CHECKOUT & LOCATION
 // ============================================
 
+let guestCheckoutPromise=null;
+const guestCheckout=()=>guestCheckoutPromise??=import("./bali-guest-checkout.js?v=20261022-guest1")
+  .catch(error=>{guestCheckoutPromise=null;throw error;});
+function isGuestCheckout(){
+    return document.querySelector('input[name="baliCheckoutMode"]:checked')?.value==="guest";
+}
+function updateCheckoutMode(){
+    const guest=isGuestCheckout();
+    const customer=window.BaliAuth?.isRegistered?.()?window.BaliAuth.getProfile?.():null;
+    const name=document.getElementById("customerName");
+    const phone=document.getElementById("customerPhone");
+    const email=document.getElementById("customerEmail");
+    document.getElementById("baliCheckoutEmailGroup").hidden=guest;
+    document.getElementById("baliGuestCheckoutSecurity").hidden=!guest;
+    document.getElementById("baliGuestPrivacyAccepted").required=guest;
+    email.required=!guest;email.disabled=guest;
+    name.readOnly=!guest;phone.readOnly=!guest;
+    document.getElementById("baliCheckoutModeHint").textContent=guest
+      ?"Без личного кабинета: имя и телефон обязательны, email не нужен. Заявка поступит сотрудникам BALI."
+      :"Имя, телефон и email берутся из подтверждённого профиля Google.";
+    if(!guest){
+        name.value=customer?.name||"";phone.value=customer?.phone||"";
+        email.value=customer?.email||"";
+    }else{
+        name.value="";phone.value="";email.value="";
+        void guestCheckout().then(module=>module.prepare()).catch(error=>{
+          const target=document.getElementById("checkoutOrderError");
+          target.textContent=error.message||"Не удалось загрузить защиту заказа.";
+          target.hidden=false;
+        });
+    }
+}
+document.querySelectorAll('input[name="baliCheckoutMode"]').forEach(input=>{
+  input.addEventListener("change",updateCheckoutMode);
+});
 async function openCheckout() {
     if (cart.length === 0) return;
-
-    // Незарегистрированный пользователь не может попасть к оформлению.
-    if (!window.BaliAuth) {
-        alert('Модуль авторизации недоступен. Проверьте соединение и настройки Firebase.');
-        return;
-    }
-    if (!(await window.BaliAuth.requireProfile())) return;
-    const customer = window.BaliAuth.getProfile();
-    if (!customer) return;
+    const customer=window.BaliAuth?.isRegistered?.()?window.BaliAuth.getProfile?.():null;
+    const mode=editingOrderId?"account":customer?"account":"guest";
+    document.querySelector('input[name="baliCheckoutMode"][value="'+mode+'"]').checked=true;
+    document.querySelectorAll('input[name="baliCheckoutMode"]').forEach(input=>{
+      input.disabled=!!editingOrderId;
+    });
     const oldError=document.getElementById("checkoutOrderError");
     if(oldError){oldError.hidden=true;oldError.textContent="";}
-    document.getElementById('customerName').value = customer.name;
-    document.getElementById('customerPhone').value = customer.phone;
-    document.getElementById('customerEmail').value = customer.email;
-
+    updateCheckoutMode();
     closeCart();
 
     // Populate checkout items
@@ -1721,10 +1750,19 @@ function handleShareLocation() {
 async function handleCheckout(e) {
     e.preventDefault();
 
-    // Проверяем актуальную авторизацию повторно перед отправкой.
-    if (!window.BaliAuth || !(await window.BaliAuth.requireProfile())) return;
-    const customer = window.BaliAuth.getProfile();
-    if (!customer) return;
+    const guest=isGuestCheckout();
+    // Only authenticated checkout needs Firebase and a registered profile.
+    if(!guest&&(!window.BaliAuth||!(await window.BaliAuth.requireProfile())))return;
+    const customer=guest?{
+      uid:"",name:document.getElementById("customerName").value.trim(),
+      phone:document.getElementById("customerPhone").value.trim(),email:""
+    }:window.BaliAuth.getProfile();
+    if(!customer)return;
+    if(guest&&(customer.name.length<2||!/^\\+[1-9]\\d{7,14}$/.test(customer.phone.replace(/[\\s()-]/g,"")))){
+      const feedback=document.getElementById("checkoutOrderError");
+      feedback.textContent="Укажите имя и номер телефона в международном формате, например +375291234567.";
+      feedback.hidden=false;return;
+    }
     const eventDate = document.getElementById('eventDateSelect').value;
     const eventId = document.getElementById('eventSelect').value;
     const tableNumber = document.getElementById('tableNumber').value.trim();
@@ -1767,7 +1805,10 @@ async function handleCheckout(e) {
     submitBtn.disabled=true;
     if(submitLabel)submitLabel.textContent="Отправляем…";
     try{
-        const result=await placeOrder(formData);
+        const result=guest
+          ?await (await guestCheckout()).send({...formData,privacy_accepted:
+            document.getElementById("baliGuestPrivacyAccepted").checked})
+          :await placeOrder(formData);
         if(!result?.success){
             feedback.textContent='Не удалось отправить предзаказ: '+
                 (result?.error||'Сервис временно недоступен. Корзина сохранена.');
