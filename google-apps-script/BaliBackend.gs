@@ -101,7 +101,7 @@ function baliOrderCreate(user,data){
   if(!BALI_DATE(date)||!eventId||(!table&&!booking)||name.length<2||
     !/^\+[1-9][0-9]{7,14}$/.test(phone)||!/^[-_a-zA-Z0-9]{12,80}$/.test(reqId))
     BALI_FAIL("invalid-argument","Заполните дату, имя, телефон, столик или ID брони.");
-  if(!Array.isArray(data.items)||data.items.length<1||data.items.length>35)
+  if(!Array.isArray(data.items)||data.items.length<1||data.items.length>12)
     BALI_FAIL("invalid-argument","Корзина пуста или содержит слишком много позиций.");
   return baliLock(()=>{
     const id="o_"+Utilities.base64EncodeWebSafe(Utilities.computeDigest(
@@ -133,6 +133,24 @@ function baliOrderCreate(user,data){
     BALI_SHEET("audit").appendRow([now,id,user.uid,"create",1,"new-order"]);
     return {id,orderNumber,eventId,eventDate:date,status:"pending",total};
   });
+}
+/**
+ * Browser visitors without an account can only CREATE a single preorder.
+ * Proof is added exclusively by our Cloudflare Pages proxy after successful
+ * Turnstile Siteverify. Staff reads remain authenticated and isolated.
+ */
+function baliAnonymousOrder(data,token){
+  if(data.guestVerified!==true||data.privacyConsent!==true||data.internationalConsent!==true)
+    BALI_FAIL("permission-denied","Для отправки заявки требуется подтверждение защиты и согласия.");
+  const name=BALI_TEXT(data.customerName,100),phone=BALI_TEXT(data.customerPhone,22);
+  if(name.length<2||!/^[^=+@\\-\\t\\r][^\\t\\r]{1,99}$/.test(name)||
+    !/^\\+[1-9][0-9]{7,14}$/.test(phone))
+    BALI_FAIL("invalid-argument","Укажите имя и контактный номер в международном формате.");
+  const principal=token?baliVerifyFirebase(token):{uid:"",email:""};
+  // A guest order belongs to no account, unless a verified Firebase ID token
+  // was explicitly supplied; a claimed uid/email from the browser is ignored.
+  const order=baliOrderCreate(principal,{...data,customerName:name,customerPhone:phone});
+  return {order};
 }
 function baliGuestCancelOrder(user,data){
   const id=BALI_TEXT(data.id,80);
@@ -694,6 +712,8 @@ function doPost(e){
     if(!expected||String(input.bridgeKey||"")!==expected)
       BALI_FAIL("permission-denied","Запрос должен проходить через BALI API.");
     if(input.action==="health")return BALI_JSON({ok:true,data:{status:"ready",version:3}});
+    if(input.action==="guestCreateOrder")
+      return BALI_JSON({ok:true,data:baliAnonymousOrder(input.payload||{},input.token)});
     const user=baliVerifyFirebase(input.token);
     return BALI_JSON({ok:true,data:baliDispatch(user,input.action,input.payload||{})});
   }catch(error){
