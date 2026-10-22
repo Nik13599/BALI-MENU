@@ -486,3 +486,12 @@ body.bali-preorders-workspace{
   .bali-preorders-workspace .preorder-cell.amount strong{text-align:right}
   .bali-preorders-workspace .preorder-actions{padding-top:5px}
 }
+
+/* Keep all order actions visible and tappable on narrow screens. */
+.bali-preorders-workspace .preorder-compact-row .preorder-actions{flex-wrap:wrap;max-width:100%;row-gap:6px}
+.bali-preorders-workspace .preorder-compact-row .preorder-edit-button{border-color:#58764e;color:#d5ffc6}
+@media(max-width:700px){
+  .bali-preorders-workspace .preorder-compact-row .preorder-actions{justify-content:stretch}
+  .bali-preorders-workspace .preorder-compact-row .preorder-actions>button{flex:1 1 110px}
+  .bali-preorders-workspace .preorder-compact-row .preorder-action-menu{margin-left:auto}
+}
