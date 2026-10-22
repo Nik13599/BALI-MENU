@@ -246,9 +246,15 @@ async function deliverReportFile(blob,filename,preferNativeShare){
   if(preferNativeShare&&typeof File==="function"&&
      typeof navigator.share==="function"&&typeof navigator.canShare==="function"){
     const file=new File([blob],filename,{type:blob.type});
-    if(navigator.canShare({files:[file]})){
-      await navigator.share({files:[file],title:"BALI · Предзаказ"});
-      return;
+    try{
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],title:"BALI · Предзаказ"});
+        return;
+      }
+    }catch(error){
+      if(error?.name==="AbortError")throw error;
+      // Some mobile browsers reject sharing a file after canvas encoding:
+      // preserve the generated document and let the guest share it manually.
     }
   }
   download(blob,filename);
