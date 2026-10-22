@@ -1439,10 +1439,7 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
         <label>Контактный телефон<input id="editOrderPhone" type="tel" placeholder="+375291234567" required></label>
       </div>
       <label id="manualOrderGuestLink" hidden>Email аккаунта гостя (необязательно, для отображения предзаказа в личном кабинете)<input id="editOrderGuestEmail" type="email" autocomplete="off" placeholder="guest@example.com"><small>Без email заказ остаётся в административной очереди, но не привязывается к аккаунту.</small></label>
-      <div class="double">
-        <label>Столик<input id="editOrderTable" maxlength="20" placeholder="Например, 12"></label>
-        <label>ID бронирования<input id="editOrderBooking" maxlength="60" placeholder="Например, BALI-456"></label>
-      </div>
+      <label>ID брони / номер стола *<input id="editOrderReference" maxlength="100" required placeholder="Например, BALI-456 или 12" autocomplete="off"></label>
       <label>Пожелания к заказу<textarea id="editOrderNotes" maxlength="500"></textarea></label>
       <div class="card-heading"><h3>Состав заказа</h3><span class="hint">Добавьте блюда из каталога</span></div>
       <div class="order-edit-add">
