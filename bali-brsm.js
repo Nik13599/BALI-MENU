@@ -7,7 +7,7 @@ const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),fn=getFunctions(app,"europe-west1");
 const call=Object.fromEntries(["redeemBrsmPromo","redeemBrsmQr"].map(key=>[key,httpsCallable(fn,key)]));
 const $=id=>document.getElementById(id);
-let uid=null,card=null,called=[],draw=null,cardStop=null,drawStop=null,qrPending=new URL(location.href).searchParams.get("qr")||"",busy=false;
+let uid=null,card=null,called=[],draw=null,cardStop=null,drawStop=null,qrPending=new URL(location.href).searchParams.get("qr")||"",busy=false,cameraStop=null;
 const status=text=>{$("brsmStatus").textContent=text||"";};
 const err=e=>String(e?.message||e?.code||"Не удалось выполнить действие.").slice(0,230);
 const dom=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;e.textContent=text||"";return e;};
@@ -41,7 +41,7 @@ function render(){
  if(draw?.status==="finished")text="Розыгрыш завершён. Победитель: BALI ID №"+draw.winnerNumber+".";
  $("brsmDrawStatus").textContent=text;
 }
-function stop(){cardStop?.();drawStop?.();cardStop=null;drawStop=null;card=null;draw=null;called=[];}
+function stop(){cameraStop?.();cameraStop=null;cardStop?.();drawStop?.();cardStop=null;drawStop=null;card=null;draw=null;called=[];}
 function fromQr(input){
  try{const url=new URL(input);return url.searchParams.get("qr")||"";}catch{return input.trim();}
 }
@@ -93,8 +93,8 @@ $("brsmPromoForm").addEventListener("submit",async e=>{
 });
 $("brsmQrForm").addEventListener("submit",e=>{e.preventDefault();void claimQr($("brsmQrInput").value);});
 $("brsmFlip").addEventListener("click",()=>document.querySelector(".brsm-cards")?.classList.toggle("brsm-flipped"));
-const cards=document.querySelector(".brsm-cards"); // Same two faces, mobile flips visually.
 async function scan(){
+ if(cameraStop){cameraStop();cameraStop=null;return;}
  if(!navigator.mediaDevices?.getUserMedia||typeof BarcodeDetector==="undefined"){
    status("Сканирование не поддерживается этим браузером. Используйте QR-ссылку или вставьте код.");return;
  }
@@ -104,13 +104,13 @@ async function scan(){
    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
    video.srcObject=stream;video.hidden=false;await video.play();
    const detector=new BarcodeDetector({formats:["qr_code"]});let active=true;
-   const stopCamera=()=>{active=false;stream.getTracks().forEach(t=>t.stop());video.hidden=true;video.srcObject=null;};
+   const stopCamera=()=>{active=false;stream.getTracks().forEach(t=>t.stop());video.hidden=true;video.srcObject=null;$("brsmScan").textContent="Сканировать камерой";};
+   cameraStop=stopCamera;
    $("brsmScan").textContent="Остановить камеру";
-   $("brsmScan").onclick=()=>{stopCamera();$("brsmScan").textContent="Сканировать камерой";$("brsmScan").onclick=scan;};
    const frame=async()=>{
      if(!active||video.hidden)return;
      try{const codes=await detector.detect(video);
-       if(codes.length){const raw=codes[0].rawValue;stopCamera();$("brsmScan").textContent="Сканировать камерой";$("brsmScan").onclick=scan;void claimQr(raw);return;}
+       if(codes.length){const raw=codes[0].rawValue;stopCamera();cameraStop=null;void claimQr(raw);return;}
      }catch{}
      if(active)requestAnimationFrame(frame);
    };requestAnimationFrame(frame);
