@@ -1,0 +1,35 @@
+name: BALI admin compact layout checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "admin.html"
+      - "admin-dashboard.js"
+      - "tests/admin-density.spec.cjs"
+      - ".github/workflows/admin-density.yml"
+  pull_request:
+    paths:
+      - "admin.html"
+      - "admin-dashboard.js"
+      - "tests/admin-density.spec.cjs"
+      - ".github/workflows/admin-density.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  layout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run check:styles
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/admin-density.spec.cjs
