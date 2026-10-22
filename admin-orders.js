@@ -319,7 +319,7 @@ function compactOrderRow(o){
   view.setAttribute("data-preorder-view",o.id);
   actions.append(view);
   if(!o.archived){
-    actions.append(button("Изменить",()=>void openEditor(o.id));
+    actions.append(button("Редактировать",()=>void openEditor(o.id),"preorder-edit-button"));
     if(state==="pending")actions.append(button("Подтвердить",()=>void setOrderStatus(o,"confirmed"),"confirm"));
   }
   const dropdown=node("details","","preorder-action-menu");
@@ -906,7 +906,7 @@ async function subscribe(user) {
       void menuReady.then(({data:available})=>{
         if(current!==generation||!available)return;
         events=new Map((available.events||[]).map(e=>[e.id,e]));
-        catalog=(available.menu||[]).map(item=>({...item,id:Number(item.id)}))
+        catalog=(available.menu||[]).map(item=>({...item,id:Number(item.id),available:true}))
           .filter(item=>Number.isSafeInteger(item.id)&&Number.isFinite(item.price));
         renderDates();menuSelect();syncWorkspaceReportScope();
       });
