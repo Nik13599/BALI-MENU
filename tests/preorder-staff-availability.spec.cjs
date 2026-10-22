@@ -2,8 +2,8 @@ const {test,expect}=require("@playwright/test");
 const {readFileSync}=require("node:fs");
 
 const html=readFileSync("admin.html","utf8").replace(
-  /<script\\b[^>]*>[\\s\\S]*?<\\/script>/g,
-  tag=>/src="(?:firebase-config|preorder-staff-admin)\\.js/.test(tag)?tag:""
+  /<script\b[^>]*>[\s\S]*?<\/script>/g,
+  tag=>/src="(?:firebase-config|preorder-staff-admin)\.js/.test(tag)?tag:""
 );
 async function staffPage(page,backend){
   await page.addInitScript(v=>{window.__staffBackend=v;window.__staffCalls=[];},backend);
