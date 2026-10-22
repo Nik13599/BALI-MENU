@@ -50,7 +50,7 @@ export async function submit(payload){
     !String(payload.event_id||"").trim())
     throw Error("Выберите дату и название мероприятия.");
   if((!tableNumber&&!bookingId)||tableNumber.length>20||bookingId.length>60)
-    throw Error("Введите номер столика или ID бронирования.");
+    throw Error("Введите ID брони / номер стола.");
   if(payload.privacyConsent!==true||payload.internationalConsent!==true)
     throw Error("Подтвердите согласие на обработку персональных данных.");
   if(!Array.isArray(payload.items)||payload.items.length<1||payload.items.length>12)
