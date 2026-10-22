@@ -108,7 +108,10 @@ window.addEventListener("bali:auth-state",({detail})=>{
   render();
   // Profile registration alone never creates a card; onboarding is mandatory.
   const user=auth.currentUser;
-  if(detail?.registered&&user?.emailVerified&&activeUid!==user.uid)
+  // Profile changes may occur on home, menu or while filling a preorder.
+  // Only the open BALI ID page may initiate protected card reads.
+  if(document.body.dataset.baliPage==="id" &&
+     detail?.registered&&user?.emailVerified&&activeUid!==user.uid)
     void initializeForUser(user);
 });
 async function initializeForUser(user,{force=false}={}){
