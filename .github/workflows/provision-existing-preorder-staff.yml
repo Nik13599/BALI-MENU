@@ -34,9 +34,9 @@ jobs:
           service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
       - run: npm install --prefix functions --no-audit --no-fund
       - run: node --check scripts/provision-existing-preorder-staff.cjs
+      - name: Verify restricted staff permissions in the existing Sheets backend
+        run: node scripts/test-bali-sheets-backend.mjs
       - name: Inspect the exact existing Firebase employee identity
         run: node scripts/provision-existing-preorder-staff.cjs
       - name: Verify the existing dedicated Firebase staff account
         run: node scripts/provision-existing-preorder-staff.cjs --apply
-      - name: Verify limited staff access against the existing order backend
-        run: node scripts/provision-existing-preorder-staff.cjs --verify-backend
