@@ -29,6 +29,20 @@ assert(!preorderTelegramText(dishes).includes("+37529"),"kitchen report has no p
 const withCancelled=composeBaliPreorderReport({...base,kind:"dishes",orders,includeCancelled:true});
 assert.equal(withCancelled.dishes.find(x=>x.id===1).quantity,9);
 assert.equal(withCancelled.portions,10);
+const daily=composeBaliPreorderReport({...base,kind:"orders",allEvents:true,orders:[
+  {...orders[0],eventTitle:"BALI LATE"},
+  {...orders[1],eventTitle:"BALI EARLY"},
+  {...orders[2],eventTitle:"BALI EARLY"}
+]});
+assert.deepEqual(daily.orders.map(x=>x.eventTitle),["BALI EARLY","BALI EARLY","BALI LATE"],
+  "whole-day detailed report groups individual orders by event");
+assert(preorderTelegramText(daily).includes("BALI EARLY · № 1"),
+  "whole-day report shows event on each order, not just its number");
+const wholeDayDishes=composeBaliPreorderReport({...base,kind:"dishes",allEvents:true,orders:[
+  {...orders[0],eventTitle:"BALI LATE"},{...orders[1],eventTitle:"BALI EARLY"}
+]});
+assert.equal(wholeDayDishes.dishes.find(x=>x.name==="Пицца").quantity,5,
+  "daily kitchen totals combine dishes across events");
 const textChunks=splitTelegramReport(Array.from({length:500},(_,i)=>"Блюдо "+i+" × 2").join("\n"),400);
 assert(textChunks.length>1);
 assert(textChunks.every(x=>x.length<=400));
