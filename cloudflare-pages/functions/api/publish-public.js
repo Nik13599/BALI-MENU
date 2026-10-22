@@ -4,7 +4,7 @@
  */
 const PROJECT="bali-menu-5a48b",API_KEY="AIzaSyAiGyt5O6x2V0pBNIJ2pOlXxXBgaYqzzUA";
 const COLLECTIONS=new Set(["events","promotions","menu","bar_menu","hookah_menu","tea_menu","mobileAboutBackgrounds"]);
-const DOCUMENTS=new Set(["settings/homeDesign","settings/homeInterface","settings/homeEventPlaceholder","settings/siteBuilderPublished","settings/menuVisibility"]);
+const DOCUMENTS=new Set(["settings/homeDesign","settings/homeInterface","settings/homeEventPlaceholder","settings/siteBuilderPublished","settings/menuVisibility","settings/appearance"]);
 const FILTERED=new Set(["promotions","mobileAboutBackgrounds"]);
 const reply=(body,status)=>new Response(JSON.stringify(body),{status,headers:{
   "Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store",

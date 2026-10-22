@@ -49,10 +49,13 @@ assert.equal((await onRequestPost()).status,405);
 const promo=await onRequestGet(make("promotions"));
 assert.equal(promo.status,200);
 await Promise.all(pending.splice(0));
+const appearance=await onRequestGet(make("settings/appearance"));
+assert.equal(appearance.status,200);
+await Promise.all(pending.splice(0));
 const setting=await onRequestGet(make("settings/homeDesign"));
 assert.equal(setting.status,200);
 await Promise.all(pending.splice(0));
-assert.equal(upstreamCalls,3);
+assert.equal(upstreamCalls,4);
 // A billing or permission error must not be cached and must not spill data.
 globalThis.fetch=async()=>{upstreamCalls++;return new Response("quota",{status:429});};
 const q=await onRequestGet(make("menu"));

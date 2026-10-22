@@ -185,6 +185,8 @@ if(form){
         colors:clone(requested.colors),
         updatedAt:serverTimestamp()
       });
+      // Update public Cloudflare snapshot; do not ask every guest to subscribe to Firebase.
+      window.BaliPublicPublish?.queue("settings/appearance");
       published=selectionFor(requested.theme,requested.colors);
       local=selectionFor(published.theme,published.colors);
       editing=false;

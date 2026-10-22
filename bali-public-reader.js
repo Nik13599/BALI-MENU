@@ -5,7 +5,7 @@
  * authenticated Firebase SDK in their separate modules.
  */
 const collections=new Set(["promotions","events","menu","bar_menu","hookah_menu","tea_menu","mobileAboutBackgrounds"]);
-const documents=new Set(["settings/homeDesign","settings/homeInterface","settings/homeEventPlaceholder","settings/siteBuilderPublished","settings/menuVisibility"]);
+const documents=new Set(["settings/homeDesign","settings/homeInterface","settings/homeEventPlaceholder","settings/siteBuilderPublished","settings/menuVisibility","settings/appearance"]);
 const cachedCollections=new Set(["menu","bar_menu","hookah_menu","tea_menu"]);
 const inFlight=new Map();
 const config=()=>window.BALI_FIREBASE_CONFIG;
