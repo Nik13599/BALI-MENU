@@ -401,7 +401,7 @@ function eventRender() {
         (event.startTime && event.endTime ? " · "+event.startTime+"–"+event.endTime : "") +
         (event.cutoff ? " · Предзаказ до " + event.cutoff +
           (event.cutoffNextDay ? " следующего дня" : " в день мероприятия") + " по Минску" : "") +
-        " · Хочет пойти: " + (Number.isSafeInteger(event.interestCount)?event.interestCount:0),
+        "",
       () => {
         $("eventDateAdmin").value=event.date;
         $("eventDateAdmin").readOnly=true;
@@ -618,7 +618,7 @@ $("eventForm").addEventListener("submit",async (event)=>{
     // Старые документы без афиши не должны записывать лишнее пустое поле.
     // Для настоящих афиш необходимы опубликованные Firebase Rules с poster_url.
     if(poster)payload.poster_url=poster;
-    // merge сохраняет interestCount при изменении афиши/названия администратором.
+    // Сохраняем ранее записанные поля без создания новых счётчиков гостей.
     await setDoc(doc(db,"events",eventId),payload,{merge:true});
     window.BaliPublicPublish?.queue("events");
     clearEvent();

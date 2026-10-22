@@ -800,7 +800,7 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
           <div>
             <div class="eyebrow">КАЛЕНДАРЬ</div>
             <h2 id="eventsHeading">Мероприятия</h2>
-            <p>До трёх афиш и самостоятельных списков «Хочу пойти» на одну дату.</p>
+            <p>До трёх отдельных афиш на одну дату. Отметки «Хочу пойти» сохраняются у гостей только в браузере.</p>
           </div>
           <button type="button" id="addEventBtn" class="primary">+ Новое мероприятие</button>
         </div>
@@ -815,7 +815,7 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
                   <option value="2">№ 2 — дополнительное</option>
                   <option value="3">№ 3 — дополнительное</option>
                 </select>
-                <small class="hint">Можно создать до трёх отдельных мероприятий на одну дату. У каждого будет своя афиша, описание, время, цвет точки и отметка «Хочу пойти».</small>
+                <small class="hint">Можно создать до трёх отдельных мероприятий на одну дату. У каждого будет своя афиша, описание, время и цвет точки.</small>
               </label>
               <label>Название мероприятия <input id="eventTitle" minlength="2" maxlength="150" placeholder="Например, BALI ICE NIGHT" required></label>
               <label>Описание мероприятия
@@ -1519,7 +1519,7 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
 <script src="firebase-config.js?v=20261020-2"></script>
 <script type="module" src="bali-public-publisher.js?v=20261022-browser1"></script>
 <script type="module" src="bali-preorder-migration-audit-admin.js?v=20261022-audit1"></script>
-<script type="module" src="admin-firestore.js?v=20261022-browser-publication1"></script>
+<script type="module" src="admin-firestore.js?v=20261022-localplans1"></script>
 <script type="module" src="bali-admin-bar.js?v=20261022-browser-publication1"></script>
 <script type="module" src="bali-admin-cards.js?v=20261020-1"></script>
 <script type="module" src="bali-menu-visibility.js?v=20261017-72"></script>

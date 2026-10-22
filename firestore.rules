@@ -661,20 +661,7 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    function validInterestCountChange(date) {
-      let previous = resource.data.get('interestCount', 0);
-      let next = request.resource.data.get('interestCount', 0);
-      let mine = /databases/$(database)/documents/users/$(request.auth.uid)/eventInterests/$(date);
-      return request.auth != null
-        && request.auth.token.email_verified == true
-        && previous is int && previous >= 0
-        && next is int && next >= 0 && next <= 1000000
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['interestCount'])
-        && (
-          (!exists(mine) && existsAfter(mine) && next == previous + 1)
-          || (exists(mine) && !existsAfter(mine) && next == previous - 1)
-        );
-    }
+    // Want to Go is stored locally in the guest browser, not in Firestore.
 
     // Private, immutable self-reported check-in, distinct from RSVP/plans.
     match /users/{uid}/eventCheckins/{eventId} {
@@ -690,26 +677,9 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Legacy RSVP records stay untouched, but no further reads or writes.
     match /users/{uid}/eventInterests/{eventDate} {
-      allow get, list: if signedInAs(uid) || isAdmin();
-      allow create: if signedInAs(uid)
-        && exists(/databases/$(database)/documents/events/$(eventDate))
-        && exists(/databases/$(database)/documents/users/$(uid))
-        && request.resource.data.keys().hasOnly(['uid', 'eventDate', 'createdAt'])
-        && request.resource.data.keys().hasAll(['uid', 'eventDate', 'createdAt'])
-        && request.resource.data.uid == uid
-        && (eventDate == request.resource.data.eventDate
-          || eventDate == request.resource.data.eventDate + '__2'
-          || eventDate == request.resource.data.eventDate + '__3')
-        && request.resource.data.eventDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
-        && request.resource.data.createdAt == request.time
-        && getAfter(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0)
-          == get(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0) + 1;
-      allow update: if false;
-      allow delete: if signedInAs(uid)
-        && exists(/databases/$(database)/documents/events/$(eventDate))
-        && getAfter(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0)
-          == get(/databases/$(database)/documents/events/$(eventDate)).data.get('interestCount', 0) - 1;
+      allow read, write: if false;
     }
 
     function validEvent(data, eventId) {
@@ -750,8 +720,7 @@ service cloud.firestore {
     match /events/{eventId} {
       allow read: if true;
       allow create: if isAdmin() && validEvent(request.resource.data, eventId);
-      allow update: if (isAdmin() && validEvent(request.resource.data, eventId))
-        || validInterestCountChange(eventId);
+      allow update: if isAdmin() && validEvent(request.resource.data, eventId);
       allow delete: if isAdmin();
     }
 
