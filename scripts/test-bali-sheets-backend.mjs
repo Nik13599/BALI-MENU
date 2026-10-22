@@ -145,7 +145,7 @@ assert.equal(sheets.get("Заказы").length,2); // one row despite duplicate 
 assert.equal(sheets.get("Заказы")[1][6],""); // no fabricated personal account
 assert.equal(ok("owner","staffOrders",{date:eventDate,eventId:eventDate}).orders.length,1);
 assert.equal(ok("guestA","myOrders").orders.length,0); // unrelated logged-in guest
-assert.equal(ok("guestB","myOrders").orders.length,0);
+fail("guestB","myOrders",{},"permission-denied"); // consent was withdrawn earlier in this fixture
 fail("","guestCreateOrder",{...guestOrder,guestVerified:false},"permission-denied");
 fail("","guestCreateOrder",{...guestOrder,privacyConsent:false},"permission-denied");
 fail("","guestCreateOrder",{...guestOrder,customerPhone:"5555",requestId:"guest_request_new000000"},"invalid-argument");
