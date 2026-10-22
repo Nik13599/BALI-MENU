@@ -11,6 +11,8 @@ import {
 
 const firebase = initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth = getAuth(firebase);
+// Share the existing verified Firebase session with the private Sheets API.
+window.BaliSheetsToken=()=>auth.currentUser?.getIdToken()||null;
 const db = getFirestore(firebase);
 const $ = (id) => document.getElementById(id);
 const menu = new Map(), events = new Map(), categories = new Map();
