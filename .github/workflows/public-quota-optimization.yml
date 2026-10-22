@@ -1,0 +1,35 @@
+name: BALI public quota optimization
+on:
+  push:
+    branches:
+      - feature/public-quota-optimization-20261023
+  pull_request:
+    paths:
+      - 'bali-public-reader.js'
+      - 'app.js'
+      - 'cloudflare-pages/functions/api/public-bundle.js'
+      - 'cloudflare-pages/functions/api/publish-public.js'
+      - 'scripts/test-public-bundle.mjs'
+      - '.github/workflows/public-quota-optimization.yml'
+permissions:
+  contents: read
+jobs:
+  safe-bundle-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Cloudflare public reads and bundle tests
+        run: |
+          node scripts/test-public-cache.mjs
+          node scripts/test-public-bundle.mjs
+          node scripts/test-bali-browser-architecture.mjs
+      - name: Cloudflare static build
+        run: node cloudflare-pages/build.mjs
+      - run: npx playwright install --with-deps chromium
+      - name: Guest public content regression
+        run: npx playwright test tests/instant-startup.spec.cjs --project=desktop --project=phone
