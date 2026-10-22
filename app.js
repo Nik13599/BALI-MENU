@@ -869,6 +869,64 @@ function populateEvents(){
     if(!dates.length)dateSelect.options[0].textContent="Нет доступных дат";
     populateEventNames(chosenEvent);
 }
+// Checkout reads the published BALI Calendar, not a hard-coded event list.
+// Refresh on opening and while visible so newly published dates appear without reload.
+let checkoutCalendarRequest=null;
+async function refreshCheckoutCalendar(){
+    if(checkoutCalendarRequest)return checkoutCalendarRequest;
+    const task=(async()=>{
+        const controller=new AbortController();
+        const timeout=setTimeout(()=>controller.abort(),8500);
+        try{
+            const response=await fetch("/api/public-data?path=events",{
+                method:"GET",credentials:"omit",headers:{Accept:"application/json"},
+                cache:"no-store",signal:controller.signal
+            });
+            if(!response.ok)throw new Error("Не удалось обновить календарь.");
+            const payload=await response.json();
+            if(!Array.isArray(payload.documents))throw new Error("Неверный формат календаря.");
+            const field=(data,key)=>data[key]?.stringValue??data[key]?.timestampValue??
+                data[key]?.booleanValue??"";
+            const latest=payload.documents.map(document=>{
+                const data=document.fields||{};
+                const id=String(document.name||"").split("/").pop();
+                const date=String(field(data,"date"));
+                const title=String(field(data,"title")).trim();
+                const closesAt=Date.parse(String(field(data,"closesAt")));
+                if(!id||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date)||!title)return null;
+                return {id,date,title,startTime:String(field(data,"startTime")),
+                    endTime:String(field(data,"endTime")),
+                    preorderEnabled:field(data,"preorderEnabled")===true,
+                    closesAt:Number.isFinite(closesAt)?{toDate:()=>new Date(closesAt)}:null};
+            }).filter(Boolean);
+            // Only replace on a verified complete snapshot.
+            // A request failure must never erase already loaded real events.
+            const checkout=document.getElementById("checkoutModal");
+            if(checkout?.classList.contains("active")){
+                const id=document.getElementById("eventSelect")?.value;
+                const date=document.getElementById("eventDateSelect")?.value;
+                // Prefer the freshest published snapshot for event/date selection.
+                const old=availableEvents;
+                availableEvents=latest;
+                populateEvents();
+                if(date&&availablePreorderEvents().some(event=>event.date===date)){
+                    document.getElementById("eventDateSelect").value=date;
+                    populateEventNames(id);
+                }
+            }
+        }finally{clearTimeout(timeout);}
+    })();
+    checkoutCalendarRequest=task;
+    try{await task;}finally{if(checkoutCalendarRequest===task)checkoutCalendarRequest=null;}
+}
+setInterval(()=>{
+    if(!document.hidden&&document.getElementById("checkoutModal")?.classList.contains("active"))
+        void refreshCheckoutCalendar().catch(()=>{});
+},20000);
+window.addEventListener("focus",()=>{
+    if(document.getElementById("checkoutModal")?.classList.contains("active"))
+        void refreshCheckoutCalendar().catch(()=>{});
+});
 function escapeHTML(value) {
     return String(value ?? '').replace(/[&<>"']/g, c =>
         ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1671,6 +1729,8 @@ async function openCheckout() {
     elements.checkoutTotal.textContent = `${calculateTotal().toFixed(2)} BYN`;
     // The events snapshot can change while a guest is browsing the kitchen.
     populateEvents();
+    // Refresh asynchronously; opening the checkout never waits for the network.
+    queueMicrotask(()=>void refreshCheckoutCalendar().catch(()=>{}));
 
     elements.checkoutModal.classList.add('active');
     elements.overlay.classList.add('active');
