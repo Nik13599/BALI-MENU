@@ -20,7 +20,7 @@ const app=getApps().find(app=>app.name===authAppName)||initializeApp(window.BALI
 const auth=getAuth(app),db=sheetsEnabled()?null:getFirestore(app),$=id=>document.getElementById(id);
 let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=false,orders=[],catalog=[];
 let events=new Map(),dateOrders=[],loadedDate="",unsubDateOrders=null,dateRevision=0;
-let preorderOnlyStaff=false;
+let preorderOnlyStaff=false,sheetsCanEditOrders=false;
 let editOrder=null,editLines=[],originalIds=new Set(),creatingOrder=false;
 const statuses={pending:"Ожидает подтверждения",confirmed:"Подтверждён",cancelled:"Отменён"};
 const normalizedOrderStatus=status=>status==="completed"?"confirmed":status;
@@ -234,7 +234,7 @@ async function openOrderDetails(id){
     totalRow.append(node("span","Итого"),node("strong",fmt(total(o.items))));
     content.append(totalRow);
     if(o.notes)content.append(orderDetailsField("Пожелания к заказу",o.notes));
-    $("orderDetailsEdit").hidden=Boolean(o.archived);
+    $("orderDetailsEdit").hidden=Boolean(o.archived)||(sheetsEnabled()&&!sheetsCanEditOrders);
     $("orderDetailsEdit").onclick=()=>{dialog.close();void openEditor(id);};
     $("orderDetailsPrint").disabled=false;
     $("orderDetailsPrint").onclick=()=>printOrder(o);
@@ -319,7 +319,8 @@ function compactOrderRow(o){
   view.setAttribute("data-preorder-view",o.id);
   actions.append(view);
   if(!o.archived){
-    actions.append(button("Редактировать",()=>void openEditor(o.id),"preorder-edit-button"));
+    if(!sheetsEnabled()||sheetsCanEditOrders)
+      actions.append(button("Редактировать",()=>void openEditor(o.id),"preorder-edit-button"));
     if(state==="pending")actions.append(button("Подтвердить",()=>void setOrderStatus(o,"confirmed"),"confirm"));
   }
   const dropdown=node("details","","preorder-action-menu");
@@ -718,6 +719,7 @@ $("closeOrderEdit").addEventListener("click",()=>$("orderEditDialog").close());
 $("cancelOrderEdit").addEventListener("click",()=>$("orderEditDialog").close());
 async function openEditor(id){
   ensureAdmin();
+  if(sheetsEnabled()&&!sheetsCanEditOrders){setStatus("Сервер редактирования заказов пока не обновлён.");return;}
   $("orderEditStatus").textContent="Загружаем заказ...";
   try{
     const o=await fetchComplete(id);
@@ -889,7 +891,7 @@ async function subscribe(user) {
   dateRevision++;dateOrders=[];loadedDate="";
   reportScopeKey="";clearDishOnlinePreview();
   const current=++generation;
-  orders=[];catalog=[];events=new Map();authorized=false;preorderOnlyStaff=false;
+  orders=[];catalog=[];events=new Map();authorized=false;preorderOnlyStaff=false;sheetsCanEditOrders=false;
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
   $("ordersAdminList").textContent="Проверяем права...";
   if(!user||!user.emailVerified)return;
@@ -901,6 +903,8 @@ async function subscribe(user) {
       const menuReady=sheetsRequest("menu").then(data=>({data}),error=>({error}));
       const recent=await sheetsRequest("staffRecentOrders");
       if(current!==generation)return;
+      // Older live Apps Script versions do not advertise order editing.
+      sheetsCanEditOrders=recent.canEditOrders===true;
       preorderOnlyStaff=true;
       authorized=true;
       void menuReady.then(({data:available})=>{
@@ -919,14 +923,16 @@ async function subscribe(user) {
         ownerUid:user.uid,orders:orders.map(({id,status,orderNumber})=>({id,status,orderNumber})),
         count:orders.length,pending:orders.filter(o=>o.status==="pending"&&!o.archived).length
       }}));
-      setStatus("Google Таблицы · "+orders.length+
-        " последних предзаказов. Редактирование, подтверждение и отчёты доступны.");
+      setStatus("Google Таблицы · "+orders.length+" последних предзаказов. "+
+        (sheetsCanEditOrders?"Редактирование, подтверждение и отчёты доступны.":
+          "Отчёты доступны. Для редактирования необходимо опубликовать новую версию Apps Script."));
       let refreshing=false,lastRefreshAt=Date.now();
       const refresh=async()=>{
         if(refreshing||Date.now()-lastRefreshAt<15000)return;
         refreshing=true;
         try{
-          const {orders:incoming}=await sheetsRequest("staffRecentOrders");
+          const {orders:incoming,canEditOrders}=await sheetsRequest("staffRecentOrders");
+          sheetsCanEditOrders=canEditOrders===true;
           if(current!==generation)return;
           orders=(incoming||[]).filter(withinOrderRetention);
           renderDates();renderOrders();
