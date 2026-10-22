@@ -52,8 +52,9 @@ const sandbox={
 };
 vm.createContext(sandbox);
 vm.runInContext(readFileSync("google-apps-script/BaliBackend.gs","utf8"),sandbox,{filename:"BaliBackend.gs"});
+let bridgeKey="test-bridge";
 const request=(token,action,payload={})=>{
-  const body={bridgeKey:"test-bridge",token:"test-"+token.padEnd(80,"_"),action,payload};
+  const body={bridgeKey,token:"test-"+token.padEnd(80,"_"),action,payload};
   const res=sandbox.doPost({postData:{contents:JSON.stringify(body)}}).value;
   return JSON.parse(res);
 };
@@ -123,5 +124,7 @@ assert.match(sandbox.baliCheckSetup(),/configured/);
 assert.equal(props.get("BALI_BRIDGE_KEY"),bootstrapKey);
 assert.equal(sheets.get("Настройки")[1][1],""); // never retain the bridge secret in guest-data spreadsheet
 assert.equal(sheets.get("Настройки")[1][0],"BALI_BRIDGE_KEY_MIGRATED");
-assert.equal(request("guestA","me").ok,true); // migrated secret authorizes the same bridge
+assert.equal(request("guestA","me").ok,false); // previous bridge secret rejected
+bridgeKey=bootstrapKey;
+assert.equal(request("guestA","me").ok,true); // migrated secret authorizes the new bridge
 console.log("BALI Sheets: guest isolation, privilege tiers, BALI COIN ledger, bonus ownership, privacy and plans PASS");
