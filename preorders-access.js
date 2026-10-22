@@ -1,9 +1,10 @@
-import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {initializeApp,getApps} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signInWithEmailAndPassword,signOut,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {getFirestore,doc,getDoc} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
+// The Sheets workspace uses Firebase Auth only; load Firestore for its legacy mode.
+const {getFirestore,doc,getDoc}=sheetsEnabled()?{}:await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
 const app=getApps().find(app=>app.name==="bali-staff")||initializeApp(window.BALI_FIREBASE_CONFIG,"bali-staff");
-const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
+const auth=getAuth(app),db=sheetsEnabled()?null:getFirestore(app),$=id=>document.getElementById(id);
 window.BaliSheetsToken=()=>auth.currentUser?.getIdToken()||null;
 const sessionReady=setPersistence(auth,browserLocalPersistence);
 // Attach a rejection handler immediately; sign-in also awaits this promise.
