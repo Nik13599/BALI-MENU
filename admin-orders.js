@@ -20,6 +20,25 @@ let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=fal
 let events=new Map(),dateOrders=[],loadedDate="",unsubDateOrders=null,dateRevision=0;
 let preorderOnlyStaff=false;
 let editOrder=null,editLines=[],originalIds=new Set(),creatingOrder=false;
+// Tab-scoped snapshot for refresh only. It never grants action permissions.
+const staffQueueKey="bali-staff-queue-v1";
+function clearStaffQueue(){try{sessionStorage.removeItem(staffQueueKey);}catch(_){}}
+function rememberStaffQueue(uid){
+  try{sessionStorage.setItem(staffQueueKey,JSON.stringify({uid,savedAt:Date.now(),orders}));}catch(_){}
+}
+function restoreStaffQueue(uid){
+  try{
+    const cached=JSON.parse(sessionStorage.getItem(staffQueueKey)||"null");
+    if(!cached||cached.uid!==uid||!Number.isFinite(cached.savedAt)||
+      Date.now()-cached.savedAt>300000||cached.savedAt>Date.now()||
+      !Array.isArray(cached.orders)||cached.orders.length>100){clearStaffQueue();return false;}
+    orders=cached.orders.filter(withinOrderRetention);
+    renderDates();renderOrders();
+    $("adminView").inert=true;
+    setStatus("Сохранённый список · обновляем данные с сервера. Действия временно недоступны.");
+    return true;
+  }catch(_){clearStaffQueue();orders=[];return false;}
+}
 const statuses={pending:"Ожидает подтверждения",confirmed:"Подтверждён",cancelled:"Отменён"};
 const normalizedOrderStatus=status=>status==="completed"?"confirmed":status;
 const compactWorkspace=document.body.classList.contains("bali-preorders-workspace");
@@ -875,10 +894,11 @@ async function subscribe(user) {
   orders=[];catalog=[];events=new Map();authorized=false;preorderOnlyStaff=false;
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
   $("ordersAdminList").textContent="Проверяем права...";
-  if(!user||!user.emailVerified)return;
+  if(!user||!user.emailVerified){clearStaffQueue();$("adminView").inert=true;return;}
   try{
     if(sheetsEnabled()){
-      $("ordersAdminList").textContent="Загружаем предзаказы…";
+      $("adminView").inert=true;
+      if(!restoreStaffQueue(user.uid))$("ordersAdminList").textContent="Загружаем предзаказы…";
       // The queue route enforces the current staff role on the server itself.
       // Menu metadata must not delay the independently authorized order list.
       const menuReady=sheetsRequest("menu").then(data=>({data}),error=>({error}));
@@ -886,6 +906,7 @@ async function subscribe(user) {
       if(current!==generation)return;
       preorderOnlyStaff=true;
       authorized=true;
+      $("adminView").inert=false;
       void menuReady.then(({data:available})=>{
         if(current!==generation||!available)return;
         events=new Map((available.events||[]).map(e=>[e.id,e]));
@@ -894,6 +915,7 @@ async function subscribe(user) {
         renderDates();menuSelect();syncWorkspaceReportScope();
       });
       orders=(recent.orders||[]).filter(withinOrderRetention);
+      rememberStaffQueue(user.uid);
       renderDates();renderOrders();menuSelect();syncWorkspaceReportScope();
       // Sheets status updates and reports are supported; editing, deletion
       // and manual creation remain disabled until their server routes exist.
@@ -909,6 +931,7 @@ async function subscribe(user) {
           const {orders:incoming}=await sheetsRequest("staffRecentOrders");
           if(current!==generation)return;
           orders=(incoming||[]).filter(withinOrderRetention);
+          rememberStaffQueue(user.uid);
           renderDates();renderOrders();
         }catch(e){if(current===generation)setStatus("Не удалось обновить очередь: "+(e.message||e.code));}
       };
@@ -960,6 +983,7 @@ async function subscribe(user) {
       }catch(e){if(current===generation&&run===revision)setStatus("Ошибка состава заказов: "+(e.code||e.message));}
     },e=>{if(current===generation){revision++;setStatus("Не удалось загрузить заказы: "+(e.code||"unknown"));}});
   }catch(e){if(current===generation){
+    clearStaffQueue();orders=[];authorized=false;$("adminView").inert=true;
     $("ordersAdminList").textContent="Не удалось загрузить предзаказы. Обновите страницу для повторной попытки.";
     setStatus("Ошибка загрузки: "+(e.code||e.message||"unknown"));
   }}
