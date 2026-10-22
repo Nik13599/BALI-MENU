@@ -58,3 +58,31 @@ jobs:
             echo "Foreign origin: HTTP ${status}"
             if [[ "$status" != "403" ]]; then exit 1; fi
           done
+
+      - name: Check guest preorder validation without creating orders
+        shell: bash
+        run: |
+          set -euo pipefail
+          for url in https://bali-nightclub-menu.pages.dev/api/bali-v3 https://baliminsk.by/api/bali-v3; do
+            echo "Validating guest checkout protections: ${url}"
+            status=$(curl --silent --show-error --location --max-time 45 \
+              --output guest-response.json --write-out "%{http_code}" \
+              -H 'Content-Type: application/json' \
+              --data '{"action":"guestCreateOrder","payload":{"requestId":"test_guest_preorder_000001","privacyConsent":true,"internationalConsent":true}}' "$url")
+            CHECK_STATUS="${status}" node --input-type=module - <<'JS'
+          import fs from 'node:fs';
+          const r=JSON.parse(fs.readFileSync('guest-response.json','utf8'));
+          console.log("Missing guest challenge:",process.env.CHECK_STATUS,r.error?.code);
+          if(process.env.CHECK_STATUS!=="400"||r.error?.code!=="turnstile-required")process.exit(1);
+          JS
+            status=$(curl --silent --show-error --location --max-time 45 \
+              --output guest-response.json --write-out "%{http_code}" \
+              -H 'Content-Type: application/json' \
+              --data '{"action":"guestCreateOrder","payload":{"requestId":"test_guest_preorder_000002","privacyConsent":false,"internationalConsent":true}}' "$url")
+            CHECK_STATUS="${status}" node --input-type=module - <<'JS'
+          import fs from 'node:fs';
+          const r=JSON.parse(fs.readFileSync('guest-response.json','utf8'));
+          console.log("Missing guest consent:",process.env.CHECK_STATUS,r.error?.code);
+          if(process.env.CHECK_STATUS!=="400"||r.error?.code!=="consent-required")process.exit(1);
+          JS
+          done
