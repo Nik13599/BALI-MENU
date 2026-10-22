@@ -12,7 +12,59 @@
   <link rel="icon" href="assets/bali-favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/manrope-variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" data-bali-bundle="admin" href="generated/admin.css?v=68604f14ec79">
-  <link rel="stylesheet" href="bali-admin-event-date-status.css?v=20261023-dates1">
+<style id="bali-calendar-date-status-20261023">
+/* BALI admin calendar: three persistent Minsk date states.
+   Today remains amber even after the day's preorder cutoff;
+   future events are green; previous dates are red. */
+body.bali-admin-workspace #eventList .bali-admin-date-legend{
+  display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;
+  padding:8px 4px 12px;border-bottom:1px solid #344239;
+}
+body.bali-admin-workspace #eventList .bali-admin-date-key,
+body.bali-admin-workspace #eventList .bali-admin-event-date{
+  display:inline-flex;align-items:center;max-width:100%;box-sizing:border-box;
+  width:max-content;border:1px solid currentColor;
+  border-radius:6px;padding:3px 8px;font-size:11px;
+  font-weight:750;letter-spacing:.015em;line-height:1.4;
+  font-variant-numeric:tabular-nums;
+}
+body.bali-admin-workspace #eventList .bali-admin-date-today{
+  color:#ffd46e;background:rgba(244,200,75,.09);
+}
+body.bali-admin-workspace #eventList .bali-admin-date-upcoming{
+  color:#b9ff51;background:rgba(185,255,81,.07);
+}
+body.bali-admin-workspace #eventList .bali-admin-date-past{
+  color:#ff777e;background:rgba(250,96,112,.08);
+}
+body.bali-admin-workspace #eventList .bali-admin-event-row{
+  box-sizing:border-box;border-bottom:1px solid #37405b;
+  border-left:3px solid transparent;padding:11px 9px;
+  border-radius:5px;
+}
+body.bali-admin-workspace #eventList .bali-admin-event-row.bali-admin-event-today{
+  border-left-color:#f4c84b;
+}
+body.bali-admin-workspace #eventList .bali-admin-event-row.bali-admin-event-upcoming{
+  border-left-color:#b9ff51;
+}
+body.bali-admin-workspace #eventList .bali-admin-event-row.bali-admin-event-past{
+  border-left-color:#fa6070;
+}
+body.bali-admin-workspace #eventList .bali-admin-event-row>div:not(.row-actions){
+  min-width:0;overflow-wrap:anywhere;
+}
+body.bali-admin-workspace #eventList .bali-admin-event-date{
+  margin:0 0 5px;white-space:nowrap;
+}
+body.bali-admin-workspace #eventList .bali-admin-event-row strong{
+  display:block;line-height:1.3;
+}
+@media(max-width:650px){
+  body.bali-admin-workspace #eventList .bali-admin-event-row{gap:7px}
+  body.bali-admin-workspace #eventList .bali-admin-event-row .row-actions{justify-content:flex-end}
+}
+</style>
 
 <script src="bali-content-readiness.js?v=20261020-2"></script>
 
