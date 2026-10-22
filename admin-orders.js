@@ -22,7 +22,9 @@ const auth=getAuth(app),db=sheetsEnabled()?null:getFirestore(app),$=id=>document
 let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=false,orders=[],catalog=[];
 let events=new Map(),dateOrders=[],loadedDate="",unsubDateOrders=null,dateRevision=0;
 let calendarSourceLoaded=false,calendarLastRead=0,calendarReadPromise=null;
-let calendarAutoDatePending=true,calendarAutoEventPending=true;
+// Calendar updates never change staff's selected order filters.
+// The queue opens unfiltered so recent orders stay on screen.
+let calendarFilterTouched=false;
 let preorderOnlyStaff=false,sheetsCanEditOrders=false;
 let editOrder=null,editLines=[],originalIds=new Set(),creatingOrder=false;
 const statuses={pending:"Ожидает подтверждения",confirmed:"Подтверждён",cancelled:"Отменён"};
@@ -106,12 +108,10 @@ const activeCalendarEvent=event=>{
   return !Number.isFinite(closes)||closes>Date.now();
 };
 function activePreorderEvent(id,date){
-  if(date<minskToday())return false;
-  const event=events.get(id||date);
-  // The published calendar is authoritative once available; a deleted or
-  // already-finished event must not resurface from the stored order history.
-  if(calendarSourceLoaded)return activeCalendarEvent(event)&&event.date===date;
-  return event?activeCalendarEvent(event)&&event.date===date:true;
+  // An already accepted order must NEVER disappear when the public poster
+  // reloads, goes offline or is not mirrored into the Sheets events tab.
+  // Keep only the requested current/future dates in the active staff queue.
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(date||""))&&date>=minskToday();
 }
 const calendarValue=field=>field?.stringValue??field?.timestampValue??
   field?.booleanValue??field?.integerValue??field?.doubleValue??"";
@@ -626,11 +626,17 @@ function renderOrders(){
   const summary=$("ordersDishSummary");
   summary.replaceChildren();
   summary.hidden=compactWorkspace||!(date&&selectedEvent);
-  if(date&&loadedDate!==date){
+  // Show the recent queue immediately while the complete selected-day
+  // history downloads. Never blank cards during a filter or calendar refresh.
+  const dayLoaded=Boolean(date&&loadedDate===date);
+  const recent=date?orders.filter(o=>o.eventDate===date):orders;
+  const source=date
+    ?[...new Map([...(dayLoaded?dateOrders:[]),...recent].map(o=>[o.id,o])).values()]
+    :orders;
+  if(date&&!dayLoaded&&!source.length){
     $("ordersStats")?.replaceChildren();
     container.append(node("p","Загружаем предзаказы выбранной даты..."));return;
   }
-  const source=date?dateOrders:orders;
   const shown=source.filter(o=>withinOrderRetention(o)&&(!date||o.eventDate===date)&&
     (!compactWorkspace||activePreorderEvent(o.eventId,o.eventDate))&&
     (!selectedEvent||(o.eventId||o.eventDate)===selectedEvent)&&
@@ -732,7 +738,7 @@ function renderCalendarShortcuts(){
     const chip=button(title,()=>{
       const dates=$("ordersDateFilter"),options=$("ordersEventFilter");
       const dateChanged=dates.value!==event.date;
-      calendarAutoDatePending=false;calendarAutoEventPending=false;
+      calendarFilterTouched=true;
       if(dateChanged){
         dates.value=event.date;
         renderEventFilter();
@@ -751,7 +757,7 @@ function renderCalendarShortcuts(){
   }
 }
 function renderDates(){
-  const el=$("ordersDateFilter"),old=el.value;
+  const el=$("ordersDateFilter"),previous=el.value;
   el.replaceChildren(new Option("Все даты",""));
   const upcoming=compactWorkspace;
   const dates=[...new Set([
@@ -765,19 +771,16 @@ function renderDates(){
     option.dataset.dateState=date===minskToday()?"today":date<minskToday()?"past":"upcoming";
     el.add(option);
   }
-  const valid=dates.includes(old);
-  const choose=compactWorkspace&&dates.length&&(calendarAutoDatePending||Boolean(old&&!valid));
-  if(valid&&!calendarAutoDatePending)el.value=old;
-  else if(choose){el.value=dates[0];calendarAutoDatePending=false;calendarAutoEventPending=true;}
-  if(old&&!valid){dateRevision++;dateOrders=[];loadedDate="";}
-  renderEventFilter();
-  if(el.value&&authorized&&el.value!==loadedDate&&(choose||old!==el.value)){
-    const selectedDate=el.value;
-    queueMicrotask(()=>{
-      if(authorized&&$("ordersDateFilter").value===selectedDate&&loadedDate!==selectedDate)
-        watchDateOrders();
-    });
+  // Do not auto-select the earliest event; it silently hides other orders
+  // after the initial staffRecentOrders response has already rendered them.
+  if(dates.includes(previous))el.value=previous;
+  else if(previous){
+    // A date removed from the public calendar must NOT wipe the queue.
+    // Revert to all dates and retain every loaded preorder.
+    dateRevision++;dateOrders=[];loadedDate="";
+    $("ordersEventFilter").value="";
   }
+  renderEventFilter();
 }
 function renderEventFilter(){
   const select=$("ordersEventFilter"),date=$("ordersDateFilter").value,old=select.value;
@@ -792,11 +795,10 @@ function renderEventFilter(){
       found.set(o.eventId||o.eventDate,eventTitle(o));
   const ordered=[...found].sort((a,b)=>a[1].localeCompare(b[1],"ru"));
   for(const [id,title] of ordered)select.add(new Option(title,id));
-  if(!calendarAutoEventPending&&ordered.some(([id])=>id===old))select.value=old;
-  else if(compactWorkspace&&date&&ordered.length===1){
-    select.value=ordered[0][0];calendarAutoEventPending=false;
-  }
-  select.disabled=!date;syncWorkspaceReportScope();renderCalendarShortcuts();
+  // Keep an explicitly chosen event; never silently narrow the queue.
+  if(ordered.some(([id])=>id===old))select.value=old;
+  select.disabled=!date;
+  syncWorkspaceReportScope();renderCalendarShortcuts();
   const canExport=Boolean(date&&select.value);
   for(const id of ["exportEventOrders","exportEventDishes","exportEventOrdersPng",
     "exportEventDishesPng","exportEventOrdersTg","exportEventDishesTg"]){
@@ -806,9 +808,11 @@ function renderEventFilter(){
 function watchDateOrders(){
   unsubDateOrders?.();unsubDateOrders=null;
   const date=$("ordersDateFilter").value,revision=++dateRevision;
-  dateOrders=[];loadedDate="";
+  // Preserve the previous snapshot while switching dates. It is ignored
+  // unless it matches the selected day; recent orders remain visible.
+  loadedDate="";
   renderEventFilter();
-  if(!date){renderOrders();return;}
+  if(!date){dateOrders=[];renderOrders();return;}
   if(!authorized)return;
   if(sheetsEnabled()){
     renderOrders();
@@ -817,7 +821,12 @@ function watchDateOrders(){
       dateOrders=received||[];loadedDate=date;
       renderEventFilter();renderOrders();
       setStatus("За "+date+" загружено "+dateOrders.length+" предзаказов.");
-    }).catch(e=>{if(revision===dateRevision)setStatus("Ошибка предзаказов за дату: "+(e.message||e.code));});
+    }).catch(e=>{
+      if(revision!==dateRevision)return;
+      setStatus("Не удалось загрузить полную дату. Последние заказы остаются видны: "+
+        (e.message||e.code));
+      renderOrders();
+    });
     return;
   }
   const readOrders=createOrderSnapshotReader(readOrderLines);
@@ -835,11 +844,11 @@ function watchDateOrders(){
   },e=>{if(revision===dateRevision){snapshotRevision++;setStatus("Ошибка списка даты: "+(e.code||e.message));}});
 }
 $("ordersDateFilter").addEventListener("change",()=>{
-  calendarAutoDatePending=false;calendarAutoEventPending=true;
+  calendarFilterTouched=true;
   watchDateOrders();renderCalendarShortcuts();
 });
 $("ordersEventFilter").addEventListener("change",()=>{
-  calendarAutoEventPending=false;renderEventFilter();renderOrders();
+  calendarFilterTouched=true;renderEventFilter();renderOrders();
 });
 $("showArchivedOrders")?.addEventListener("click",()=>{
   const toggle=$("showArchivedOrders");
@@ -1146,7 +1155,7 @@ async function subscribe(user) {
   const current=++generation;
   statusOutbox.deactivate();
   orders=[];catalog=[];events=new Map();calendarSourceLoaded=false;calendarLastRead=0;
-  calendarAutoDatePending=true;calendarAutoEventPending=true;
+  calendarFilterTouched=false;
   authorized=false;preorderOnlyStaff=false;sheetsCanEditOrders=false;
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
   $("ordersAdminList").textContent="Проверяем права...";
