@@ -23,7 +23,7 @@ const json=(body,status,headers={})=>new Response(JSON.stringify(body),{
     "X-Content-Type-Options":"nosniff",...headers}
 });
 
-export async function onRequestGet({request,waitUntil}){
+export async function onRequestGet({request,waitUntil,env}){
   const input=new URL(request.url);
   const path=input.searchParams.get("path");
   if(typeof path!=="string"||path.length>100||
@@ -39,6 +39,33 @@ export async function onRequestGet({request,waitUntil}){
     headers.set("X-BALI-Cache","HIT");
     return new Response(cached.body,{status:cached.status,headers});
   }
+
+  // Keep the last successfully published snapshot in durable Cloudflare KV.
+  // Never write an empty response on an upstream outage, and never expose
+  // users, orders, bonuses or administrator documents through this allowlist.
+  const kv=env?.BALI_PUBLIC_CONTENT;
+  const kvKey="bali:public:v1:"+path;
+  let backup=null;
+  if(kv){
+    try{
+      const record=await kv.get(kvKey,"json");
+      if(record&&Array.isArray(record.documents))backup=record;
+    }catch(_){ /* KV outage must not prevent primary public reads. */ }
+  }
+  const maxAgeMs=path==="events"||path==="promotions"?20*60*1000:
+    path==="menu"?60*60*1000:6*60*60*1000;
+  const usable=backup&&Number.isFinite(backup.cachedAt)&&
+    backup.cachedAt<=Date.now()&&Date.now()-backup.cachedAt<maxAgeMs;
+  function fromBackup(stale=false){
+    const response=json({documents:backup.documents},200,{
+      "Cache-Control":"public, max-age=0, s-maxage="+(stale?120:ttl),
+      "X-BALI-Cache":stale?"STALE":"KV"
+    });
+    waitUntil(cache.put(key,response.clone()));
+    return response;
+  }
+  if(usable)return fromBackup();
+
   const base="https://firestore.googleapis.com/v1/projects/"+PROJECT+
     "/databases/(default)/documents";
   const coll=COLLECTIONS.has(path);
@@ -61,6 +88,8 @@ export async function onRequestGet({request,waitUntil}){
     if(!coll&&upstream.status===404){
       payload={documents:[]};
     }else if(!upstream.ok){
+      // Preserve known real events/menu/banner data on Firestore quota errors.
+      if(backup)return fromBackup(true);
       const status=upstream.status===429?503:upstream.status===403?503:502;
       return json({error:"Public content is temporarily unavailable",code:upstream.status===429?"resource-exhausted":"unavailable"},
         status,{"Cache-Control":"no-store","Retry-After":"30"});
@@ -75,8 +104,14 @@ export async function onRequestGet({request,waitUntil}){
       "X-BALI-Cache":"MISS"
     });
     waitUntil(cache.put(key,response.clone()));
+    if(kv){
+      const contents=JSON.stringify({...payload,cachedAt:Date.now()});
+      // One KV value can hold up to 25 MiB. Avoid unbounded quota usage.
+      if(contents.length<20000000)waitUntil(kv.put(kvKey,contents).catch(()=>{}));
+    }
     return response;
   }catch(_error){
+    if(backup)return fromBackup(true);
     return json({error:"Public content is temporarily unavailable",code:"unavailable"},503,
       {"Cache-Control":"no-store","Retry-After":"30"});
   }finally{clearTimeout(timeout);}
