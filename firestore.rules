@@ -661,7 +661,9 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Want to Go is stored locally in the guest browser, not in Firestore.\n\n    // Private, immutable self-reported check-in, distinct from RSVP/plans.
+    // Want to Go is stored locally in the guest browser, not in Firestore.
+
+    // Private, immutable self-reported check-in, distinct from RSVP/plans.
     match /users/{uid}/eventCheckins/{eventId} {
       allow get, list: if signedInAs(uid) || isAdmin();
       allow create: if signedInAs(uid)
@@ -675,7 +677,12 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // Legacy RSVP records stay untouched, but no further reads or writes.\n    match /users/{uid}/eventInterests/{eventDate} {\n      allow read, write: if false;\n    }\n\n    function validEvent(data, eventId) {
+    // Legacy RSVP records stay untouched, but no further reads or writes.
+    match /users/{uid}/eventInterests/{eventDate} {
+      allow read, write: if false;
+    }
+
+    function validEvent(data, eventId) {
       return data.keys().hasAll(['date','title','preorderEnabled','cutoff','closesAt','updatedAt'])
         && data.keys().hasOnly(['date','title','preorderEnabled','cutoff','closesAt','poster_url','interestCount','updatedAt','description','startTime','endTime','dotColor','cutoffNextDay'])
         && (!('interestCount' in data) || (
