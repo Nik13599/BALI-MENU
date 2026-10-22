@@ -15,7 +15,7 @@ const BUNDLE_KEY="bali:public:bundle:v1";
 const MAX_BUNDLE_BYTES=18000000;
 const validBundle=record=>record&&typeof record==="object"&&
   record.sources&&typeof record.sources==="object"&&
-  PATHS.every(path=>Array.isArray(record.sources[path]));
+  PATHS.some(path=>Array.isArray(record.sources[path]));
 function json(value,status=200,extra={}){
   return new Response(JSON.stringify(value),{status,headers:{
     "Content-Type":"application/json; charset=utf-8",
@@ -87,8 +87,8 @@ export async function onRequestGet({request,env,waitUntil}){
       sources=Object.fromEntries(loaded.filter(row=>row.status==="fulfilled")
         .map(row=>row.value));
       // A partial bundle is safe; the browser falls back for missing paths.
-      // Only complete, verified snapshots may be persisted as a shared bundle.
-      if(PATHS.every(path=>Array.isArray(sources[path]))){
+      // Cache any verified public sources, preserving old per-path fallback for gaps.
+      if(Object.keys(sources).length){
         const encoded=JSON.stringify({sources,cachedAt:Date.now()});
         if(encoded.length<MAX_BUNDLE_BYTES)await kv.put(BUNDLE_KEY,encoded).catch(()=>{});
       }
