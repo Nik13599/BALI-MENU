@@ -23,7 +23,26 @@
   <link rel="icon" href="assets/bali-favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/manrope-variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" data-bali-bundle="index" href="generated/index.css?v=e8025f61f0a7">
-  <link rel="stylesheet" href="bali-checkout-date-status.css?v=20261023-guest-dates1">
+<style id="bali-calendar-date-status-20261023">
+/* Guest checkout, never a public calendar archive.
+   Today's open preorder date is gold; future open dates are lime.
+   Closed or past dates are not included in the dropdown at all. */
+:root[data-bali-theme] body.bali-guest-theme #checkoutModal select#eventDateSelect[data-date-state="today"],
+:root[data-bali-theme] body.bali-guest-theme #checkoutModal select#eventSelect[data-date-state="today"]{
+  border-color:#f4c84b!important;
+  box-shadow:inset 3px 0 0 #f4c84b!important;
+  color:#ffe08b!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #checkoutModal select#eventDateSelect[data-date-state="upcoming"],
+:root[data-bali-theme] body.bali-guest-theme #checkoutModal select#eventSelect[data-date-state="upcoming"]{
+  border-color:#9fdd57!important;
+  box-shadow:inset 3px 0 0 #b9ff51!important;
+}
+:root[data-bali-theme] body.bali-guest-theme #checkoutModal select#eventDateSelect[data-date-state="today"] option,
+:root[data-bali-theme] body.bali-guest-theme #checkoutModal select#eventSelect[data-date-state="today"] option{
+  color:initial;
+}
+</style>
 <style id="bali-id-coin-style">
 /* BALI COIN is an informational loyalty-point balance, not money. */
 body.bali-guest-theme #baliIdSection .bali-id-bottom .bali-id-coin{
