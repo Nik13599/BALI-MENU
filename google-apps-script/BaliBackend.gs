@@ -10,7 +10,7 @@ const BALI_FB_KEY = "AIzaSyAiGyt5O6x2V0pBNIJ2pOlXxXBgaYqzzUA"; // Firebase web k
 const BALI_TABS={orders:"Заказы",items:"Позиции заказов",menu:"Меню",events:"Мероприятия",
   roles:"Администраторы",audit:"История изменений",guests:"Гости",settings:"Настройки",
   cards:"BALI ID",privileges:"Привилегии",bonuses:"Бонусы",bonusHistory:"История бонусов",
-  coins:"BALI COIN",coinHistory:"История BALI COIN",consents:"Согласия",plans:"Планы гостя"};
+  coins:"BALI COIN",coinHistory:"История BALI COIN",consents:"Согласия",plans:"Планы гостя",checkins:"Посещения"};
 const BALI_NOW=()=>new Date().toISOString();
 const BALI_TEXT=(v,n=120)=>String(v==null?"":v).trim().slice(0,n);
 const BALI_FAIL=(code,message)=>{throw {code,message};};
@@ -535,6 +535,26 @@ function baliAvatarSave(user,data){
     return {ok:true};
   });
 }
+function baliCheckins(user,data){
+  const mark=String(data.operation||"")==="mark";
+  const eventId=BALI_TEXT(data.eventId,80);
+  if(mark&&!/^\\d{4}-\\d{2}-\\d{2}(?:__(?:2|3))?$/.test(eventId))
+    BALI_FAIL("invalid-argument","Недопустимое мероприятие.");
+  const read=()=>BALI_ROWS("checkins").filter(r=>String(r[0])===user.uid&&String(r[5])==="active")
+    .map(r=>({eventId:String(r[1]),date:String(r[2]),createdAt:BALI_ISO(r[3])}));
+  if(!mark)return {checkins:read()};
+  if(!baliConsentState(user,"privacy"))BALI_FAIL("permission-denied","Нет согласия на обработку данных.");
+  return baliLock(()=>{
+    if(read().some(x=>x.eventId===eventId))return {alreadyMarked:true,checkins:read()};
+    const event=baliEvents().find(e=>e.id===eventId);
+    const today=Utilities.formatDate(new Date(),"Europe/Minsk","yyyy-MM-dd");
+    if(!event||event.date!==today||!Number.isFinite(Date.parse(event.closesAt))||
+      Date.parse(event.closesAt)<=Date.now())
+      BALI_FAIL("failed-precondition","Отметка входа доступна только во время мероприятия.");
+    BALI_SHEET("checkins").appendRow([user.uid,eventId,event.date,BALI_NOW(),"guest","active"]);
+    return {selected:true,checkins:read()};
+  });
+}
 function baliDispatch(user,action,data){
   if(baliWithdrawn(user)&&action!=="me")
     BALI_FAIL("permission-denied","Согласие отозвано. Обратитесь к администрации BALI.");
@@ -562,6 +582,7 @@ function baliDispatch(user,action,data){
   if(action==="bonusRecipient")return {recipient:baliBonusRecipient(user,data)};
   if(action==="bonusTransfer")return {result:baliBonusTransfer(user,data)};
   if(action==="plans")return baliGuestPlans(user,data);
+  if(action==="checkins")return baliCheckins(user,data);
   if(action==="avatarGet")return baliAvatarGet(user);
   if(action==="avatarSave")return {result:baliAvatarSave(user,data)};
   if(action==="profileSave"){
