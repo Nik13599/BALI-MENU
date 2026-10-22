@@ -48,7 +48,7 @@ test("dedicated preorder page contains no general admin editors",async({page})=>
   await expect(page.locator(".preorder-tools")).toContainText("Общий список предзаказов");
   await expect(page.locator(".preorder-tools")).toContainText("Сводка по блюдам");
   await expect(page.locator(".preorder-tools")).toHaveAttribute("open", "");
-  await expect(page.locator(".preorder-tools")).toContainText("Период отчёта определяется фильтрами");
+  await expect(page.locator(".preorder-tools")).toContainText("Отчёт использует дату и мероприятие");
   await expect(page.locator(".preorder-tools")).not.toContainText("CSV");
 });
 test("general admin links to the dedicated preorder workspace",async({page})=>{
