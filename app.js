@@ -160,7 +160,7 @@ function setInterestSelection(date,selected){
 async function toggleGuestInterest(date,message){
     if(pendingInterestDates.has(date))return;
     if(!window.BaliInterests){
-        if(message)message.textContent="Подключение к Firebase ещё загружается. Попробуйте снова.";
+        if(message)message.textContent="Модуль локальных планов ещё загружается.";
         return;
     }
     const previous=guestInterestDates.has(date);
@@ -169,11 +169,6 @@ async function toggleGuestInterest(date,message){
     if(message)message.textContent="";
     try{
         const result=await window.BaliInterests.toggle(date);
-        if(result?.loginRequired){
-            setInterestSelection(date,previous);
-            if(message)message.textContent="Войдите в личный кабинет, чтобы сохранить мероприятие.";
-            return;
-        }
         if(result?.busy){
             setInterestSelection(date,previous);
             return;
@@ -276,7 +271,7 @@ window.addEventListener('bali:menu', ({ detail }) => {
 window.addEventListener('bali:menu-error', () => showError('Не удалось загрузить меню. Проверьте соединение и попробуйте обновить страницу.'));
 window.addEventListener('bali:events', ({ detail }) => {
     const incoming=detail.events||[];
-    // An RSVP transaction changes interestCount, not the poster or event data.
+    // Legacy count updates do not change the poster; personal choices stay local.
     // Keep the existing carousels mounted so the heart responds without a jump.
     const unchangedPosters=receivedEventSnapshot&&availableEvents.length===incoming.length&&
         availableEvents.every((previous,i)=>{
@@ -287,21 +282,7 @@ window.addEventListener('bali:events', ({ detail }) => {
         });
     availableEvents=incoming;
     receivedEventSnapshot=true;
-    if(unchangedPosters){
-        // Preorder dates and titles do not change with RSVP counts.
-        const counts=new Map(incoming.map(event=>[event.id||event.date,
-            Number.isSafeInteger(event.interestCount)&&event.interestCount>=0?event.interestCount:0]));
-        for(const [selector,countClass] of [
-            ["#homeEventCarousel .bali-home-event-card[data-event-date]",".bali-home-event-count"],
-            ["#eventsGrid .event-card[data-event-date]",".event-interest-count"]
-        ]){
-            for(const card of document.querySelectorAll(selector)){
-                const label=card.querySelector(countClass);
-                if(label)label.textContent="Хочет пойти: "+(counts.get(card.dataset.eventId||card.dataset.eventDate)||0);
-            }
-        }
-        return;
-    }
+    if(unchangedPosters)return;
     populateEvents();
     renderUpcomingEvents();
     updateHomeNextEvent();
@@ -499,7 +480,7 @@ function renderHomeEvents() {
         const id=String(event.id||event.date);
         const signature=JSON.stringify([
             event.date,event.title,event.poster_url,event.startTime,
-            event.endTime,event.description,event.interestCount
+            event.endTime,event.description
         ]);
         const existing=savedEvents.get(id);
         if(existing&&homeCardSignatures.get(existing)===signature){
@@ -507,7 +488,7 @@ function renderHomeEvents() {
             continue;
         }
         // The homepage visually matches the square-poster event cards, without
-        // the two CTA buttons. The heart uses the exact existing RSVP transaction.
+        // the two CTA buttons. The heart now uses browser-local plans without any database writes.
         const card=document.createElement("article");
         card.className="bali-home-event-card";
         card.dataset.eventDate=event.date;
@@ -553,12 +534,7 @@ function renderHomeEvents() {
         description.textContent=typeof event.description==="string"
             ?event.description.trim().slice(0,600):"";
         description.hidden=!description.textContent;
-        const attending=document.createElement("p");
-        attending.className="bali-home-event-count";
-        const count=Number.isSafeInteger(event.interestCount)&&event.interestCount>=0
-            ?event.interestCount:0;
-        attending.textContent="Хочет пойти: "+count;
-        information.append(title,times,description,attending);
+        information.append(title,times,description);
 
         const openCard=document.createElement("button");
         openCard.type="button";
@@ -780,10 +756,6 @@ function renderUpcomingEvents() {
             openBadge.textContent="● Предзаказ открыт";
             posterWrap.append(openBadge);
         }
-        const interested=document.createElement("p");
-        interested.className="event-interest-count";
-        const count=Number.isSafeInteger(event.interestCount)&&event.interestCount>=0?event.interestCount:0;
-        interested.textContent="Хочет пойти: "+count;
         const planBtn=document.createElement("button");
         planBtn.type="button";
         const buttonSelected=status==="live"
@@ -804,7 +776,7 @@ function renderUpcomingEvents() {
         // at the absolute bottom of the visible event card.
         const details=document.createElement("div");
         details.className="bali-event-info";
-        details.append(name,times,description,interested,message);
+        details.append(name,times,description,message);
         const actions=document.createElement("div");
         actions.className="bali-event-actions";
         if(status==="past"){
