@@ -184,7 +184,7 @@ const followingDate=new Date(Date.now()+6*86400000).toISOString().slice(0,10);
 const followingClose=new Date(Date.now()+7*86400000).toISOString();
 sheets.get("Мероприятия").push([followingDate,followingDate,"Next BALI Night",true,followingClose,""]);
 assert.equal(ok("","guestCreateOrder",{...guestOrder,eventDate:followingDate,
-  eventId:followingDate,requestId:"next_date_guest_123456"}).order.orderNumber,1);
+  eventId:followingDate,customerPhone:"+375291234569",requestId:"next_date_guest_123456"}).order.orderNumber,1);
 
 for(const action of ["adminGuests","adminGuestOrders","adminCard","staffList","staffManage",
   "coinChange","privilegeAssign","privilegeRulesSave","bonusGrant","catalogSync"])
