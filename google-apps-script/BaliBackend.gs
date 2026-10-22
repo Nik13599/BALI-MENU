@@ -210,6 +210,16 @@ function baliStatus(user,data){
     return {id,status};
   });
 }
+function baliStaffRecentOrders(user){
+  baliStaff(user,false);
+  const all=BALI_ROWS("orders").map(baliOrder).filter(o=>
+    !o.expiresAt||Date.parse(o.expiresAt)>Date.now());
+  all.sort((a,b)=>Date.parse(b.createdAt||0)-Date.parse(a.createdAt||0));
+  const latest=all.slice(0,100),ids=new Set(latest.map(o=>o.id));
+  const lineItems=baliItems().filter(item=>ids.has(item.orderId));
+  return {orders:latest.map(o=>({...o,items:lineItems.filter(i=>i.orderId===o.id)})),
+    count:latest.length};
+}
 function baliReport(orders,kind,includeCancelled){
   const filtered=kind==="dishes"&&!includeCancelled
     ?orders.filter(o=>o.status!=="cancelled"&&!o.archived):orders;
@@ -682,6 +692,7 @@ function baliDispatch(user,action,data){
   if(action==="createOrder")return {order:baliOrderCreate(user,data)};
   if(action==="editOrder")return {order:baliGuestEditOrder(user,data)};
   if(action==="cancelOrder")return {result:baliGuestCancelOrder(user,data)};
+  if(action==="staffRecentOrders")return baliStaffRecentOrders(user);
   if(action==="staffOrders"){
     baliStaff(user,false);
     const date=BALI_TEXT(data.date,10),eventId=BALI_TEXT(data.eventId,80);
