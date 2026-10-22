@@ -3,7 +3,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: [".github/workflows/bali-sheets-health.yml"]
+    paths:
+      - ".github/workflows/bali-sheets-health.yml"
+      - "cloudflare-pages/functions/api/bali-v3.js"
 permissions:
   contents: read
 jobs:
@@ -27,6 +29,7 @@ jobs:
           let result={};
           try{result=JSON.parse(raw)}catch{}
           console.log("BALI API result:",result.ok===true?"ready":result.error?.code||"invalid-response");
+          if(result.error?.stage)console.log("Upstream stage:",result.error.stage,"status:",result.error.status??"n/a","mime:",result.error.mime??"n/a","kind:",result.error.kind??"n/a");
           if(process.env.API_STATUS!=="200"||result.ok!==true||result.data?.status!=="ready")
             process.exit(1);
           JS
