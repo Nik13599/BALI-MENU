@@ -59,9 +59,9 @@ onAuthStateChanged(auth,async user=>{
   $("adminEmail").textContent=user.displayName||user.email||"Сотрудник BALI";
   try{
     if(sheetsEnabled()){
-      const {role}=await sheetsRequest("me");
+      // This endpoint checks the current admin/staff role before returning data.
+      await sheetsRequest("staffRecentOrders");
       if(current!==seq)return;
-      if(role!=="admin"&&role!=="staff"){status("У этой учётной записи нет доступа к предзаказам.");return;}
       $("adminEmail").textContent=user.displayName||user.email||"Сотрудник BALI";
       $("adminView").hidden=false;$("loginView").hidden=true;
       $("staffHeaderAccount").hidden=false;status("");
