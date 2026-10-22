@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/preorder-staff-activate.yml'
+      - 'functions/preorder-staff.js'
+      - 'functions/index.js'
   workflow_dispatch:
 
 permissions:
@@ -69,14 +71,13 @@ jobs:
         run: |
           npm install -g firebase-tools@15.34.0
           npm install --prefix functions --no-audit --no-fund
+      - name: Install Google Cloud auth CLI
+        uses: google-github-actions/setup-gcloud@v2
       - name: Deploy only preorder staff management function
         id: deploy_staff
-        continue-on-error: true
         run: |
           firebase deploy --project "$FIREBASE_PROJECT_ID" \
             --only "functions:bali-id:manageBaliPreorderStaff" --non-interactive
-      - name: Install Google Cloud auth CLI
-        uses: google-github-actions/setup-gcloud@v2
       - name: Enable password sign-in while preserving Google provider
         run: |
           set -euo pipefail
@@ -110,10 +111,12 @@ jobs:
           curl -sSf -H "Authorization: Bearer $TOKEN" "$CONFIG_URL" \
             | node -e 'let text="";process.stdin.on("data",x=>text+=x).on("end",()=>{const c=JSON.parse(text); if(!c.signIn?.email?.enabled||!c.signIn?.email?.passwordRequired)process.exit(1);console.log("Firebase password authentication is ACTIVE.")})'
 
-      - name: Enforce successful staff function deployment
-        if: always()
+      - name: Explain required Firebase activation permissions
+        if: failure()
         run: |
-          if [ "${{ steps.deploy_staff.outcome }}" != "success" ]; then
-            echo "::error::Staff callable was not deployed. The deploy identity needs permission to enable the Cloud Functions and Cloud Build APIs and to deploy the scoped function."
-            exit 1
-          fi
+          echo "::error::Staff registration is not active. The Firebase deploy identity must be authorized for Cloud Functions/Cloud Build and Identity Toolkit configuration."
+          echo "::notice::Project owner: enable the Cloud Functions and Cloud Build APIs, then grant the deployment service account the minimum necessary roles for deploying functions and configuring Firebase Auth."
+          echo "::notice::Cloud Functions API: https://console.cloud.google.com/apis/library/cloudfunctions.googleapis.com?project=$FIREBASE_PROJECT_ID"
+          echo "::notice::Cloud Build API: https://console.cloud.google.com/apis/library/cloudbuild.googleapis.com?project=$FIREBASE_PROJECT_ID"
+          echo "::notice::Firebase Authentication: https://console.firebase.google.com/project/$FIREBASE_PROJECT_ID/authentication/providers"
+          echo "::notice::IAM: https://console.cloud.google.com/iam-admin/iam?project=$FIREBASE_PROJECT_ID"
