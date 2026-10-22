@@ -41,6 +41,9 @@ jobs:
           node --input-type=module --check < bali-id.js
           node --input-type=module --check < bali-id-bank.js
           node --check functions/index.js
+          node --check functions/brsm.js
+          node --input-type=module --check < bali-brsm.js
+          node --input-type=module --check < bali-brsm-admin.js
           node --check functions/preorders.js
           node --check functions/preorder-staff.js
           node --input-type=module --check < preorders-access.js
