@@ -69,6 +69,59 @@ body.bali-guest-theme #baliIdSection .bali-id-bottom .bali-id-coin output{
     }
   </style>
 
+  <style id="bali-dialog-viewport-centering">
+    /* All native showModal() popups belong to the viewport top layer.
+       The global CSS reset clears UA dialog margins, so explicitly anchor
+       the dialog's own border box at the viewport centre on phone and PC. */
+    body.bali-guest-theme dialog:modal {
+      position:fixed!important;
+      inset:auto!important;
+      top:50%!important;
+      left:50%!important;
+      right:auto!important;
+      bottom:auto!important;
+      margin:0!important;
+      transform:translate(-50%,-50%)!important;
+      box-sizing:border-box!important;
+    }
+    /* BALI ID login and its first-use introduction are the two dialogs
+       missing an explicit centre. Allow internal scrolling on short phones. */
+    body.bali-guest-theme #baliIdLoginDialog:modal,
+    body.bali-guest-theme #baliIdWelcomeDialog:modal {
+      position:fixed!important;
+      inset:auto!important;
+      top:50%!important;
+      left:50%!important;
+      right:auto!important;
+      bottom:auto!important;
+      transform:translate(-50%,-50%)!important;
+      margin:0!important;
+      max-width:calc(100vw - 24px)!important;
+      max-height:calc(100dvh - 24px)!important;
+      box-sizing:border-box!important;
+    }
+    body.bali-guest-theme #baliIdLoginDialog:modal {
+      overflow-y:auto!important;
+      overscroll-behavior:contain;
+    }
+    /* Non-native overlays (registration, checkout, success and order list)
+       also remain centred, not attached to any scrollable page content. */
+    body.bali-guest-theme .modal.active {
+      position:fixed!important;
+      inset:0!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      box-sizing:border-box!important;
+    }
+    body.bali-guest-theme .modal.active > .modal-content {
+      max-height:calc(100dvh - 32px)!important;
+      overflow-y:auto;
+    }
+    @media (prefers-reduced-motion:reduce) {
+      body.bali-guest-theme dialog:modal{transition:none!important}
+    }
+  </style>
   <style>
     /* Center every BALI sign-in overlay against the viewport, not an
        underlying profile, scroll container or device-specific navigation. */
