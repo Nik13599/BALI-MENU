@@ -119,7 +119,7 @@ test('order database is loaded only when the final preorder submit button is cli
   expect(moduleLoads).toBe(0);
   await page.locator('#eventDateSelect').selectOption('2099-10-24');
   await page.locator('#eventSelect').selectOption('2099-10-24');
-  await page.locator('#tableNumber').fill('12');
+  await page.locator('#orderReference').fill('12');
   expect(moduleLoads).toBe(0);
   await page.locator('.submit-order-btn').click();
   await expect(page.locator('#successModal')).toHaveClass(/active/);
@@ -140,7 +140,7 @@ test('storage failure does not break the cart or a successful checkout', async (
   // Preorders require the date first; only then can a named event be chosen.
   await page.locator('#eventDateSelect').selectOption('2099-10-24');
   await page.locator('#eventSelect').selectOption('2099-10-24');
-  await page.locator('#tableNumber').fill('12');
+  await page.locator('#orderReference').fill('12');
   await page.locator('.submit-order-btn').click();
   await expect(page.locator('#successModal')).toHaveClass(/active/);
   await page.locator('#closeSuccess').click();
@@ -175,7 +175,7 @@ test('guest chooses a date and one of multiple named parties for a preorder',asy
   await expect(page.locator('#eventSelect option').nth(1)).toContainText('Основная вечеринка');
   await expect(page.locator('#eventSelect option').nth(2)).toContainText('Вечеринка VIP');
   await page.locator('#eventSelect').selectOption('2099-10-24__2');
-  await page.locator('#tableNumber').fill('12');
+  await page.locator('#orderReference').fill('12');
   await page.locator('.submit-order-btn').click();
   await expect(page.locator('#successModal')).toHaveClass(/active/);
   const order=await page.evaluate(()=>window.savedPreorder);
