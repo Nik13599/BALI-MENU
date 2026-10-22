@@ -308,3 +308,44 @@ body.bali-preorders-workspace{
     height:auto!important;max-height:none!important;overflow:visible!important;display:block!important
   }
 }
+
+
+/* Compact order card: date/status above, event and identifiers on one row. */
+.bali-preorders-workspace .preorder-details-heading{min-width:0;flex:1}
+.bali-preorders-workspace .preorder-details-state-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:9px}
+.bali-preorders-workspace #orderDetailsDate{font-size:12px;font-weight:750;letter-spacing:.03em;color:#b9ff51;font-variant-numeric:tabular-nums}
+.bali-preorders-workspace .preorder-detail-status{display:inline-flex;align-items:center;gap:6px;border:1px solid currentColor;border-radius:999px;padding:4px 9px;font-size:10px;font-weight:800;white-space:nowrap}
+.bali-preorders-workspace .preorder-detail-status-dot{width:7px;height:7px;flex:none;border-radius:50%;background:currentColor}
+.bali-preorders-workspace .preorder-detail-status-confirmed{color:#b9ff51;background:#233721}
+.bali-preorders-workspace .preorder-detail-status-pending{color:#ffd66e;background:#342d1b}
+.bali-preorders-workspace .preorder-detail-status-cancelled{color:#ff8e9c;background:#392327}
+.bali-preorders-workspace .preorder-details-name-row{display:flex;align-items:baseline;gap:10px;min-width:0}
+.bali-preorders-workspace .preorder-details-name-row h2{min-width:0;flex:0 1 auto;max-width:65%;font-size:clamp(15px,4vw,22px);line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bali-preorders-workspace .preorder-details-references{min-width:0;display:flex;align-items:center;gap:6px;flex:1;white-space:nowrap}
+.bali-preorders-workspace .preorder-detail-reference{min-width:0;display:block;font-size:10px;font-weight:750;color:#bddfa7;background:#223023;border:1px solid #3e583d;border-radius:6px;padding:3px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bali-preorders-workspace .preorder-detail-contacts{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.15fr) minmax(0,1.4fr);gap:7px;margin-bottom:12px}
+.bali-preorders-workspace .preorder-detail-contacts .preorder-detail-field{padding:9px 8px;min-width:0}
+.bali-preorders-workspace .preorder-detail-contacts .preorder-detail-field small{font-size:10px}
+.bali-preorders-workspace .preorder-detail-contacts .preorder-detail-field strong{display:block;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bali-preorders-workspace .preorder-detail-contacts .preorder-detail-field a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+.bali-preorders-workspace .preorder-detail-share{position:relative;min-width:0}
+.bali-preorders-workspace .preorder-detail-share>summary{display:flex;align-items:center;justify-content:center;min-height:36px;padding:7px 12px;box-sizing:border-box;border:1px solid #547446;border-radius:9px;background:#253520;color:#c4ff89;font-size:13px;white-space:nowrap;font-weight:750;cursor:pointer;list-style:none}
+.bali-preorders-workspace .preorder-detail-share>summary::-webkit-details-marker{display:none}
+.bali-preorders-workspace .preorder-detail-share[open]>summary{border-color:#b9ff51}
+.bali-preorders-workspace .preorder-detail-share-menu{position:absolute;z-index:20;right:0;bottom:calc(100% + 8px);width:max-content;min-width:168px;max-width:calc(100vw - 36px);display:grid;gap:5px;padding:7px;border:1px solid #66845a;background:#1b291c;border-radius:10px;box-shadow:0 12px 28px #000b}
+.bali-preorders-workspace .preorder-detail-share-menu button{text-align:left;white-space:nowrap;font-size:12px}
+.bali-preorders-workspace .preorder-detail-share-feedback{margin:4px 0 0;font-size:11px;color:#b9ff51;line-height:1.4}
+.bali-preorders-workspace .preorder-detail-share-feedback:empty{display:none}
+@media(max-width:700px){
+  .bali-preorders-workspace .preorder-details-head{gap:7px}
+  .bali-preorders-workspace .preorder-details-head>button{flex:none}
+  .bali-preorders-workspace .preorder-details-name-row{gap:6px}
+  .bali-preorders-workspace .preorder-details-name-row h2{max-width:60%}
+  .bali-preorders-workspace .preorder-detail-contacts{gap:5px}
+  .bali-preorders-workspace .preorder-detail-contacts .preorder-detail-field{padding:8px 6px}
+  .bali-preorders-workspace .preorder-detail-contacts .preorder-detail-field strong{font-size:10px}
+  .bali-preorders-workspace .preorder-details-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+  .bali-preorders-workspace .preorder-details-actions>button,.bali-preorders-workspace .preorder-detail-share>summary{padding:7px 3px;min-width:0;font-size:11px;white-space:nowrap}
+  .bali-preorders-workspace .preorder-details-actions #orderDetailsEdit[hidden]{display:none}
+  .bali-preorders-workspace .preorder-details-actions:has(#orderDetailsEdit[hidden]){grid-template-columns:repeat(3,minmax(0,1fr))}
+}
