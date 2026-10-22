@@ -111,8 +111,11 @@ function baliOrderCreate(user,data){
       Utilities.DigestAlgorithm.SHA_256,user.uid+":"+reqId)).replace(/=+$/,"").slice(0,36);
     const existing=BALI_ROWS("orders").find(r=>String(r[0])===id);
     if(existing)return {...baliOrder(existing),alreadyCreated:true};
-    const event=baliEvents().find(e=>e.id===eventId&&e.date===date&&e.preorderEnabled);
-    if(!event||!event.closesAt||!Number.isFinite(Date.parse(event.closesAt))||
+    // New events saved in the main admin arrive via the published calendar;
+    // a manual catalogSync into Google Sheets is no longer a prerequisite.
+    const mirrored=baliEvents().find(e=>e.id===eventId&&e.date===date&&e.preorderEnabled);
+    const event=mirrored||baliPublishedCalendarEvent(eventId,date);
+    if(!event.preorderEnabled||!event.closesAt||!Number.isFinite(Date.parse(event.closesAt))||
       Date.parse(event.closesAt)<=Date.now())
       BALI_FAIL("failed-precondition","Приём предзаказов на это мероприятие закрыт.");
     const menu=new Map(baliMenu().map(x=>[x.id,x])),dedup=new Set();
@@ -243,7 +246,8 @@ function baliPublishedCalendarEvent(eventId,date){
   const title=BALI_TEXT(baliPublishedValue(fields.title),150);
   if(!BALI_DATE(publishedDate)||publishedDate!==date||!title)
     BALI_FAIL("failed-precondition","Дата мероприятия изменилась на сайте. Обновите список.");
-  return {id:eventId,date,title,closesAt:String(baliPublishedValue(fields.closesAt)||"")};
+  return {id:eventId,date,title,closesAt:String(baliPublishedValue(fields.closesAt)||""),
+    preorderEnabled:baliPublishedValue(fields.preorderEnabled)===true};
 }
 function baliStaffEditOrder(user,data){
   baliStaff(user,false);
