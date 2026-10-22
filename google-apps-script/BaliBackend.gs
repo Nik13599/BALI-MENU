@@ -621,8 +621,7 @@ function doPost(e){
     const input=JSON.parse(body);
     if(input.action!=="avatarSave"&&body.length>28000)
       BALI_FAIL("invalid-argument","Слишком большой запрос.");
-    const expected=PropertiesService.getScriptProperties().getProperty("BALI_BRIDGE_KEY")||
-      String((BALI_ROWS("settings").find(row=>String(row[0])==="BALI_BRIDGE_KEY")||[])[1]||"");
+    const expected=PropertiesService.getScriptProperties().getProperty("BALI_BRIDGE_KEY");
     if(!expected||String(input.bridgeKey||"")!==expected)
       BALI_FAIL("permission-denied","Запрос должен проходить через BALI API.");
     if(input.action==="health")return BALI_JSON({ok:true,data:{status:"ready",version:3}});
@@ -636,13 +635,27 @@ function doPost(e){
     return BALI_JSON({ok:false,error:{code,message}});
   }
 }
-/** Run manually ONCE after setting a private BALI_BRIDGE_KEY in Script Properties. */
+/**
+ * One-time deployment bootstrap: move the private key from the owner's Sheet
+ * into Script Properties, then clear the Sheet cell before accepting requests.
+ * Execute manually as the spreadsheet owner BEFORE deploying the Web App.
+ */
 function baliCheckSetup(){
-  if(!PropertiesService.getScriptProperties().getProperty("BALI_BRIDGE_KEY")&&
-      !BALI_ROWS("settings").some(row=>String(row[0])==="BALI_BRIDGE_KEY"&&String(row[1]||"").length>=64))
-    throw Error("BALI_BRIDGE_KEY отсутствует в закрытых настройках таблицы.");
+  const properties=PropertiesService.getScriptProperties();
+  let key=properties.getProperty("BALI_BRIDGE_KEY");
+  if(!key){
+    const sheet=BALI_SHEET("settings"),rows=BALI_ROWS("settings");
+    const index=rows.findIndex(r=>String(r[0])==="BALI_BRIDGE_KEY");
+    if(index<0)throw Error("Bootstrap key not found. Configure BALI_BRIDGE_KEY in Script Properties.");
+    key=String(rows[index][1]||"");
+    if(!/^[a-fA-F0-9]{64}$/.test(key))throw Error("Bootstrap key must contain 64 hexadecimal characters.");
+    properties.setProperty("BALI_BRIDGE_KEY",key);
+    sheet.getRange(index+2,2).clearContent();
+    sheet.getRange(index+2,1).setValue("BALI_BRIDGE_KEY_MIGRATED");
+    sheet.getRange(index+2,3).setValue("Секрет перенесён в закрытые Script Properties; значение удалено.");
+  }
   Object.keys(BALI_TABS).forEach(k=>{
     if(!BALI_SHEET(k))throw Error("Missing sheet "+k);
   });
-  return "BALI v3 server configured. Deploy a new Web App version.";
+  return "BALI v3 configured; secret stored in private Script Properties. Deploy a new Web App version.";
 }
