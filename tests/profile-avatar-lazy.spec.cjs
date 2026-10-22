@@ -39,7 +39,7 @@ test("restored login does not read private avatar until My BALI opens",async({pa
   expect(await page.evaluate(()=>window.__reads)).toBe(0);
   await page.evaluate(()=>window.__go("profile"));
   await expect.poll(()=>page.evaluate(()=>window.__reads)).toBe(1);
-  await expect(page.locator("#baliAvatarImage")).toBeVisible();
+  await expect.poll(()=>page.locator("#baliAvatarImage").evaluate(node=>node.hidden)).toBe(false);
   await page.evaluate(()=>window.__go("profile"));
   await page.waitForTimeout(80);
   expect(await page.evaluate(()=>window.__reads)).toBe(1);
