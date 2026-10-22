@@ -10,8 +10,8 @@ test("dedicated preorder page contains no general admin editors",async({page})=>
   await expect(page.locator("#loginView")).toBeVisible();
   await expect(page.locator("#adminView")).toBeHidden();
   for(const id of ["ordersDateFilter","ordersEventFilter","createManualOrder",
-    "clearExpiredOrders","exportEventOrders","exportEventDishes",
-    "exportEventOrdersPng","exportEventOrdersTg","exportEventDishesPng","exportEventDishesTg",
+    "clearExpiredOrders","preorderReportOrder",
+    "preorderReportPdf","preorderReportPng","preorderReportTg",
     "orderEditDialog","editOrderGuestEmail","editOrderAddProduct"]) {
     await expect(page.locator("#"+id)).toHaveCount(1);
   }
@@ -36,9 +36,14 @@ test("dedicated preorder page contains no general admin editors",async({page})=>
   await expect(page.locator('a[href="admin.html"]')).toHaveCount(0);
   await expect(page.locator("#orderDetailsDialog")).toHaveCount(1);
   await expect(page.locator("#orderDetailsContent")).toHaveCount(1);
-  await expect(page.locator(".preorder-report-row")).toHaveCount(2);
+  await expect(page.locator(".preorder-report-single")).toHaveCount(1);
+  await expect(page.locator("#preorderReportPdf")).toBeDisabled();
+  await expect(page.locator("#preorderReportPng")).toBeDisabled();
+  await expect(page.locator("#preorderReportTg")).toBeDisabled();
+  await expect(page.locator(".preorder-tools")).toContainText("Отчёт по предзаказу");
+  await expect(page.locator(".preorder-tools")).not.toContainText("Отчёт по мероприятию");
   await expect(page.locator(".preorder-tools")).toHaveAttribute("open", "");
-  await expect(page.locator(".preorder-tools")).toContainText("после закрытия приёма");
+  await expect(page.locator(".preorder-tools")).toContainText("Дату и мероприятие для отчёта выбирать не нужно");
   await expect(page.locator(".preorder-tools")).not.toContainText("CSV");
 });
 test("general admin links to the dedicated preorder workspace",async({page})=>{
@@ -124,4 +129,22 @@ test("guest preorder checkout uses inline accessible error instead of native ale
   await expect(page.locator("#checkoutOrderError")).toHaveAttribute("role","alert");
   await expect(page.locator("#checkoutOrderError")).toBeHidden();
   await expect(page.locator("#checkoutForm .submit-order-btn")).toHaveCount(1);
+});
+
+test("new preorder button fits mobile compactly",async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto("/preorders.html");
+  await page.evaluate(()=>{
+    document.getElementById("loginView").hidden=true;
+    document.getElementById("adminView").hidden=false;
+  });
+  const button=page.locator("#createManualOrder");
+  await expect(button).toBeVisible();
+  await expect(button).toHaveText(/Новый предзаказ/);
+  const bounds=await button.boundingBox();
+  const panel=await page.locator(".preorder-controls").boundingBox();
+  expect(bounds.width).toBeLessThan(panel.width*.82);
+  expect(bounds.height).toBeLessThanOrEqual(42);
+  const size=await button.evaluate(el=>Number.parseFloat(getComputedStyle(el).fontSize));
+  expect(size).toBeLessThanOrEqual(14);
 });
