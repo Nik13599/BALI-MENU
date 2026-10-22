@@ -431,6 +431,7 @@ function compactOrderRow(o){
     headline.append(node("span","ID "+String(o.bookingId).trim(),"preorder-queue-reference"));
   const date=node("time",compactOrderDate(o.eventDate),"preorder-queue-date");
   date.dateTime=o.eventDate||"";
+  // Date, event number and table share one compact top line.
   ref.append(date,headline);
 
   const guest=node("div","","preorder-cell guest");
@@ -449,11 +450,13 @@ function compactOrderRow(o){
   const items=Array.isArray(o.items)?o.items:[];
   const portions=items.reduce((sum,item)=>sum+(Number(item.quantity)||0),0);
   dishes.append(node("strong",items.length+" поз. · "+portions+" порц."));
-  guest.append(dishes);
   primary.append(ref,guest);
 
   const amount=node("div","","preorder-cell amount");
   amount.append(node("strong",fmt(o.total)));
+  // Keep the total level with the number of dishes and portions.
+  const summary=node("div","","preorder-order-summary");
+  summary.append(dishes,amount);
   const statusBox=node("div","","preorder-status-cell");
   const state=normalizedOrderStatus(o.status);
   const statusDot=node("span","","preorder-state preorder-state-"+state);
@@ -491,7 +494,7 @@ function compactOrderRow(o){
     menu.append(menuButton("Удалить навсегда",()=>void deleteOrder(o),"danger-action"));
   }
   dropdown.append(trigger,menu);actions.append(dropdown);
-  row.append(primary,amount,statusBox,actions);
+  row.append(primary,summary,statusBox,actions);
   return row;
 }
 const reportActionIds=[
