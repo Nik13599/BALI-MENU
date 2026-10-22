@@ -621,7 +621,8 @@ function doPost(e){
     const input=JSON.parse(body);
     if(input.action!=="avatarSave"&&body.length>28000)
       BALI_FAIL("invalid-argument","Слишком большой запрос.");
-    const expected=PropertiesService.getScriptProperties().getProperty("BALI_BRIDGE_KEY");
+    const expected=PropertiesService.getScriptProperties().getProperty("BALI_BRIDGE_KEY")||
+      String((BALI_ROWS("settings").find(row=>String(row[0])==="BALI_BRIDGE_KEY")||[])[1]||"");
     if(!expected||String(input.bridgeKey||"")!==expected)
       BALI_FAIL("permission-denied","Запрос должен проходить через BALI API.");
     if(input.action==="health")return BALI_JSON({ok:true,data:{status:"ready",version:3}});
@@ -637,8 +638,9 @@ function doPost(e){
 }
 /** Run manually ONCE after setting a private BALI_BRIDGE_KEY in Script Properties. */
 function baliCheckSetup(){
-  if(!PropertiesService.getScriptProperties().getProperty("BALI_BRIDGE_KEY"))
-    throw Error("Set BALI_BRIDGE_KEY in Project Settings → Script Properties.");
+  if(!PropertiesService.getScriptProperties().getProperty("BALI_BRIDGE_KEY")&&
+      !BALI_ROWS("settings").some(row=>String(row[0])==="BALI_BRIDGE_KEY"&&String(row[1]||"").length>=64))
+    throw Error("BALI_BRIDGE_KEY отсутствует в закрытых настройках таблицы.");
   Object.keys(BALI_TABS).forEach(k=>{
     if(!BALI_SHEET(k))throw Error("Missing sheet "+k);
   });
