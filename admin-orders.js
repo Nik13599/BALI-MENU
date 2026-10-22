@@ -1,21 +1,23 @@
 /** BALI admin order queue, staff item amendments and soft deletion.
  * All edits use atomic Firestore batches. Security enforced by firestore.rules.
  */
-import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {initializeApp,getApps} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBatch,
-  serverTimestamp,runTransaction,query,limit,orderBy,where,Timestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1";
 import {withinOrderRetention,ORDER_RETENTION_MS} from "./bali-order-retention.js";
 import {createBaliStaffPreorder} from "./bali-staff-preorder-create.js?v=20261021-1";
 import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
+// The Sheets workspace uses Firebase Auth only; load Firestore for its legacy mode.
+const {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBatch,
+  serverTimestamp,runTransaction,query,limit,orderBy,where,Timestamp}=sheetsEnabled()?{}:await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
 import {composeBaliPreorderReport,composeBaliSinglePreorder,downloadBaliPreorderReport,showBaliPreorderTelegram} from "./bali-preorder-reports.js?v=20261022-aggregate-report3";
 const readOrderLines=async row=>{
   const lines=await getDocs(collection(row.ref,"items"));
   return lines.docs.map(line=>line.data());
 };
-const app=getApps().find(app=>app.name==="bali-staff")||initializeApp(window.BALI_FIREBASE_CONFIG,"bali-staff");
-const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
+const authAppName=document.body.classList.contains("bali-preorders-workspace")?"bali-staff":"[DEFAULT]";
+const app=getApps().find(app=>app.name===authAppName)||initializeApp(window.BALI_FIREBASE_CONFIG,authAppName);
+const auth=getAuth(app),db=sheetsEnabled()?null:getFirestore(app),$=id=>document.getElementById(id);
 let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=false,orders=[],catalog=[];
 let events=new Map(),dateOrders=[],loadedDate="",unsubDateOrders=null,dateRevision=0;
 let preorderOnlyStaff=false;
@@ -876,13 +878,17 @@ async function subscribe(user) {
       }}));
       setStatus("Google Таблицы · "+orders.length+
         " последних предзаказов. Подтверждение, отмена и отчёты доступны; редактирование пока заблокировано.");
+      let refreshing=false,lastRefreshAt=Date.now();
       const refresh=async()=>{
+        if(refreshing||Date.now()-lastRefreshAt<15000)return;
+        refreshing=true;
         try{
           const {orders:incoming}=await sheetsRequest("staffRecentOrders");
           if(current!==generation)return;
           orders=(incoming||[]).filter(withinOrderRetention);
           renderDates();renderOrders();
         }catch(e){if(current===generation)setStatus("Не удалось обновить очередь: "+(e.message||e.code));}
+        finally{refreshing=false;lastRefreshAt=Date.now();}
       };
       const timer=setInterval(()=>{if(document.visibilityState==="visible")void refresh()},60000);
       unsubOrders=()=>clearInterval(timer);
