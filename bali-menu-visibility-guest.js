@@ -2,7 +2,7 @@
  * The admin editor continues using authenticated Firestore writes.
  */
 import {getApp,getApps,initializeApp,getFirestore,doc,onSnapshot}
-  from "./bali-public-reader.js?v=20261022-menuvisibility1";
+  from "./bali-public-reader.js?v=20261021-instant-pages2";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const db=getFirestore(app);
 const keys=["kitchen","bar","hookah","tea"];

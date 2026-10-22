@@ -52,7 +52,8 @@ assert(reader.includes("/api/public-data?path="),"Public data must use the Cloud
 const themeGuest=await load("bali-theme-guest.js");
 assert(guest.includes("bali-theme-guest.js")&&!guest.includes('src="bali-theme.js'),
   "Guests must load public theme via Cloudflare only");
-assert(themeGuest.includes('./bali-public-reader.js')&&
+assert(themeGuest.includes('bali-public-reader.js?v=20261021-instant-pages2')&&
+  (await load("bali-menu-visibility-guest.js")).includes('bali-public-reader.js?v=20261021-instant-pages2')&&
   !themeGuest.includes("firebasejs")&&
   publisher.includes('"settings/appearance"'),
   "Theme's public color configuration must come from Cloudflare without Firebase client SDK");

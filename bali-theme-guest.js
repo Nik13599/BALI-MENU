@@ -3,7 +3,7 @@
  * No Firebase SDK, authentication or Firestore subscription on the guest page.
  */
 import {getApps,getApp,initializeApp,getFirestore,doc,onSnapshot}
-  from "./bali-public-reader.js?v=20261022-theme-public1";
+  from "./bali-public-reader.js?v=20261021-instant-pages2";
 const palettes=Object.freeze({
   cobalt:Object.freeze({primary:"#7585FF",secondary:"#536AE0",text:"#C3CAFF",border:"#8192FF"}),
   lime:Object.freeze({primary:"#B9FF51",secondary:"#88D43E",text:"#D8FF9F",border:"#B2EF5F"}),
