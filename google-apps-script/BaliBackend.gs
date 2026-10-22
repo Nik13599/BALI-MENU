@@ -538,7 +538,7 @@ function baliAvatarSave(user,data){
 function baliCheckins(user,data){
   const mark=String(data.operation||"")==="mark";
   const eventId=BALI_TEXT(data.eventId,80);
-  if(mark&&!/^\\d{4}-\\d{2}-\\d{2}(?:__(?:2|3))?$/.test(eventId))
+  if(mark&&!/^\d{4}-\d{2}-\d{2}(?:__(?:2|3))?$/.test(eventId))
     BALI_FAIL("invalid-argument","Недопустимое мероприятие.");
   const read=()=>BALI_ROWS("checkins").filter(r=>String(r[0])===user.uid&&String(r[5])==="active")
     .map(r=>({eventId:String(r[1]),date:String(r[2]),createdAt:BALI_ISO(r[3])}));
