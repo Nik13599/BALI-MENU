@@ -732,3 +732,8 @@ body.bali-preorders-workspace{
     grid-template-columns:minmax(0,1fr);
   }
 }
+
+/* A dotted ring marks a local change which has not been acknowledged by Sheets. */
+.bali-preorders-workspace .preorder-compact-row .preorder-state-queued{
+  outline:2px dashed #fff9;outline-offset:3px;
+}
