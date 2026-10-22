@@ -1070,33 +1070,30 @@ assert(!html.includes('id="plannedEventsCount"') &&
   app.includes('if(nav.dataset.baliNav==="events")showOnlyPlannedEvents=false;'),
   "Calendar filters must be removed; profile My Plans stays accessible and Calendar opens all events");
 assert(app.includes('Хочу пойти') &&
-  app.includes('Хочет пойти: ') &&
-  app.includes('guestInterestDates.has(event.id||event.date)'), "Event cards must display RSVP button and public counts");
+  app.includes('guestInterestDates.has(event.id||event.date)') &&
+  !app.includes('Хочет пойти: '),
+  "Guest event cards keep local controls without a false public count");
 assert(app.includes('window.setInterval(()=>') &&
-  app.includes('renderUpcomingEvents();'), "Past events must disappear automatically from My Plans");
-assert(app.includes('details.append(name,times,description,interested,message);') &&
+  app.includes('renderUpcomingEvents();'), "Past events must disappear from My Plans");
+assert(app.includes('details.append(name,times,description,message);') &&
   app.includes('actions.append(planBtn);') &&
   !app.includes('button.className="event-go-to-menu"') &&
-  app.includes('body.append(details,actions);') &&
-  !app.includes('className="event-card-date"'),
-  "Date must only appear on square poster; event details above bottom-anchored CTAs");
-assert(interestSource.includes('runTransaction(db,async transaction=>') &&
-  interestSource.includes('transaction.update(eventRef,{interestCount:') &&
-  interestSource.includes('transaction.delete(selectedRef)') &&
-  interestSource.includes('transaction.set(selectedRef,'), "Attendance and counts must update in one transaction");
-assert(interestSource.includes('collection(db,"users",watcherUid,"eventInterests")'),
-  "User event choices must be private");
+  app.includes('body.append(details,actions);'),
+  "Event details and personal CTA must remain properly positioned");
+assert(interestSource.includes('localStorage.setItem(KEY,') &&
+  interestSource.includes('window.addEventListener("storage"') &&
+  !interestSource.includes('firebasejs') &&
+  !interestSource.includes('runTransaction(') &&
+  !interestSource.includes('onSnapshot('),
+  "Want to Go must use only browser localStorage");
 assert(rules.includes('match /users/{uid}/eventInterests/{eventDate}') &&
-  rules.includes('existsAfter(mine)') &&
-  rules.includes('getAfter(/databases/$(database)/documents/events/$(eventDate))'),
-  "Firestore Rules must enforce atomic RSVP document and count updates");
-assert(rules.includes('validInterestCountChange(eventId)') &&
-  rules.includes("hasOnly(['interestCount'])"), "Guests must only change public counters through their own RSVP");
-assert(adminClient.includes('" · Хочет пойти: "') &&
+  rules.includes('allow read, write: if false;') &&
+  !rules.includes('validInterestCountChange('),
+  "New legacy RSVP database transactions must be disabled");
+assert(!adminClient.includes('" · Хочет пойти: "') &&
   adminClient.includes('payload,{merge:true}'),
-  "Admin calendar must show counts and preserve them when editing events");
-assert(interestCss.includes('.event-want-to-go') &&
-  interestCss.includes('.event-interest-count'), "Mobile RSVP styling must exist");
+  "Admin event editor must not display RSVP counts");
+assert(interestCss.includes('.event-want-to-go'), "Heart controls must remain styled");
 assert((rules.match(/match \/events\/\{eventId\}/g)||[]).length===1 &&
   (rules.match(/match \/\{document=\*\*\}/g)||[]).length===1,
   "Firestore Rules must contain one event match and one catchall");
@@ -1211,15 +1208,15 @@ assert(app.includes('const card=document.createElement("article");') &&
   app.includes('const rendered=[];') &&
   html.includes('grid-template-columns:repeat(3,minmax(0,1fr))') &&
   html.includes('grid-template-columns:repeat(5,minmax(0,1fr))'),
-  "Home RSVP hearts must persist through Firebase; Home must keep its static 3-mobile/5-desktop grid");
+  "Local RSVP hearts persist in the browser; home keeps static 3-mobile/5-desktop grid");
 assert(html.includes('id="homeInterestFeedback"') &&
   app.includes('getElementById("homeInterestFeedback")') &&
-  app.includes('result?.loginRequired') &&
+  !app.includes('Войдите в личный кабинет, чтобы сохранить мероприятие.') &&
   app.includes('pendingInterestDates.add(date)') &&
   app.includes('pendingInterestDates.delete(date)') &&
   app.includes('setInterestSelection(date,previous)') &&
   app.includes('heart.disabled=waiting'),
-  "Home hearts need login, pending-operation and save-error feedback");
+  "Home hearts need local pending-operation and storage-error feedback");
 
 assert(html.includes('<section class="bali-home-events-panel"') &&
   html.includes('id="homeEventCarousel"') &&
@@ -1271,7 +1268,7 @@ assert(rules.includes("'description','startTime','endTime'") &&
   rules.includes("data.description.size() <= 600") &&
   rules.includes("data.startTime.matches") &&
   rules.includes("data.endTime.matches") &&
-  rules.includes("validInterestCountChange(eventId)"),
+  rules.includes("allow update: if isAdmin() && validEvent(request.resource.data, eventId)"),
   "Firestore event validation must allow safe admin-written descriptions and event times");
 assert(!app.includes('className="event-preorder-state"') &&
   app.includes('openBadge.textContent="● Предзаказ открыт"') &&
@@ -1370,7 +1367,7 @@ assert(source("bali-calendar-coverflow.js").includes('shell.addEventListener("wh
   "One stage controller must own desktop wheel and keyboard without a competing legacy carousel");
 assert(app.includes('const previousDate=previousCards[previousIndex]?.dataset.eventId||previousCards[previousIndex]?.dataset.eventDate') &&
   app.includes('centerEventCard(grid,cards[restoreIndex],false)'),
-  "Realtime RSVP refreshes must preserve carousel position");
+  "Event carousel must preserve position after poster updates");
 assert(carouselCss.includes('scroll-snap-type:x mandatory') &&
   carouselCss.includes('touch-action:pan-x') &&
   carouselCss.includes('overflow-x:auto'),
