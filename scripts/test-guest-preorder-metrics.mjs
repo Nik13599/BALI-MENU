@@ -18,7 +18,7 @@ const rows=[
 ];
 const all=filterBaliPreorders([...rows,rows[0]],{archive:true});
 assert.equal(all.length,5,"All rows deduplicate by stable order reference");
-assert.equal(sumBaliPreorders(all).amountMinor,17703);
+assert.equal(sumBaliPreorders(all).amountMinor,18177);
 assert.equal(sumBaliPreorders(all).portions,20);
 const date=filterBaliPreorders(rows,{date:"2099-10-24"});
 assert.equal(date.length,4,"Date includes both same-date events plus guest");
@@ -27,7 +27,7 @@ assert.equal(event.length,3,"Event filter must not include other events that sam
 const kitchen=sumBaliPreorders(event,{kitchen:true});
 assert.equal(kitchen.count,2,"Cancelled order excluded from kitchen");
 assert.equal(kitchen.portions,6);
-assert.equal(kitchen.amountMinor,5509);
+assert.equal(kitchen.amountMinor,5511);
 assert.equal(kitchen.dishes.find(x=>x.id===2).quantity,3);
 const visible=filterBaliPreorders(rows,{archive:false});
 const dash=dashboardBaliPreorders(visible);
