@@ -1490,7 +1490,7 @@ assert(html.includes('id="baliCardNumber"') &&
   "BALI ID must use a protected sequential transaction and a full guest profile.");
 assert(admin.includes('id="baliPrivilegeAssignForm"') &&
   admin.includes('id="baliPrivilegeRulesForm"') &&
-  admin.includes('bali-privilege-admin.js?v=20261021-5priv') &&
+  admin.includes('bali-privilege-admin.js?v=20261022-sheets-stage1') &&
   privilegeClient.includes('setDoc(doc(db,"guestPrivileges",selected)') &&
   privilegeClient.includes('setDoc(doc(db,"privilegeRules","main")'),
   "Privilege statuses and assignment rules must be admin-editable without client self-upgrades.");
