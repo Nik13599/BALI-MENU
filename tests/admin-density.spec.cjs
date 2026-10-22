@@ -60,9 +60,9 @@ test("switching tabs preserves all seven admin sections and uses inner scrolling
   await exposeAdmin(page);
   const tabs=["overview","orders","clients","menu","events","design","appearance"];
   await expect(page.locator(".admin-tab")).toHaveCount(tabs.length);
-  await page.locator("#adminServiceTools summary").click();
+  await page.locator("#adminServiceTools > summary").click();
   await expect(page.locator("#baliPublicPublishAll")).toBeVisible();
-  await page.locator("#adminServiceTools summary").click();
+  await page.locator("#adminServiceTools > summary").click();
   for(const name of tabs){
     await page.locator('[data-admin-tab="'+name+'"]').click();
     await expect(page.locator('[data-admin-panel="'+name+'"]')).toBeVisible();
