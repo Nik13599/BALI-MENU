@@ -33,7 +33,7 @@ assert(auth.includes("serverTimestamp()"), "Server timestamps missing");
 assert(auth.includes('doc(database, "users", savingUser.uid)'), "User profile persistence missing");
 assert(app.includes("BaliAuth.requireProfile()"), "Checkout must require profile");
 const ordersClient = source("orders-firestore.js");
-assert(app.includes("window.BaliOrders.save"), "Checkout must use Firestore order service");
+assert(app.includes('orders.save(orderData, editingOrderId)') && app.includes('ensureOrdersService()'), "Checkout must lazy-load Firestore order service on submit");
 assert(ordersClient.includes("getAuth(") && ordersClient.includes("writeBatch("), "Order service must use Firebase authentication and atomic writes");
 assert(rules.includes("request.auth.uid == uid"), "Rules need UID ownership");
 assert(rules.includes("data.email == request.auth.token.email"), "Rules must pin email");

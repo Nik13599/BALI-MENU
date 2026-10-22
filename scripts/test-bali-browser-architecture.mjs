@@ -21,8 +21,9 @@ assert(!guest.includes('src="orders-firestore.js'),"Guest entry must not preload
 assert(app.includes('ensureOrdersService()'),"Orders service should be loaded on the actual action");
 assert(app.includes('orders.startHistory?.()'),"Order history is requested on demand");
 const orderSvc=await load("orders-firestore.js");
-assert(!orderSvc.includes('onAuthStateChanged(auth,watchUserOrders);'),
-  "Order collection subscription must not start when a restored account opens the site");
+assert(!/^onAuthStateChanged\(auth,watchUserOrders\);/m.test(orderSvc) &&
+  orderSvc.includes('stopHistoryAuth=onAuthStateChanged(auth,watchUserOrders);'),
+  "Order collection subscription must only start when order history is opened");
 assert(orderSvc.includes('function stopHistory()'),"Closing history must stop order reads");
 
 assert(guest.includes('id="homeSection"')&&guest.includes('id="eventsSection"')&&
