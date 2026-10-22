@@ -1,0 +1,26 @@
+name: BALI guest preorder browser staging
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "app.js"
+      - "bali-guest-preorder*.js"
+      - "tests/guest-preorder-staging.spec.cjs"
+      - ".github/workflows/bali-guest-staging-browser.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/guest-preorder-staging.spec.cjs
