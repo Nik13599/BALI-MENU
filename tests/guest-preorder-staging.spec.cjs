@@ -5,12 +5,12 @@ test.beforeEach(async({page})=>{
     return u.hostname==="127.0.0.1"?route.continue():route.abort();
   });
 });
-test("normal BALI guest page keeps new checkout disabled",async({page})=>{
+test("normal BALI guest page offers account-free checkout but keeps modal closed",async({page})=>{
   await page.goto("/index.html");
-  expect(await page.evaluate(()=>window.BALI_GUEST_PREORDER_ENABLED)).toBe(false);
+  expect(await page.evaluate(()=>window.BALI_GUEST_PREORDER_ENABLED)).toBe(true);
   await expect(page.locator("#baliGuestCheckoutConsent")).toBeHidden();
 });
-test("opt-in guest can fill compulsory contact, date, event and table without login",async({page})=>{
+test("guest can fill compulsory contact, date, event and table without Google login",async({page})=>{
   await page.addInitScript(()=>{
     window.turnstile={render:(root,config)=>{
       window.__testTurnstileConfig=config;
@@ -23,7 +23,7 @@ test("opt-in guest can fill compulsory contact, date, event and table without lo
     await route.fulfill({status:200,contentType:"application/json",
       body:JSON.stringify({ok:true,data:{order:{id:"o_test",orderNumber:1,total:25}}})});
   });
-  await page.goto("/index.html?guestPreorderTest=1#menu");
+  await page.goto("/index.html#menu");
   expect(await page.evaluate(()=>window.BALI_GUEST_PREORDER_ENABLED)).toBe(true);
   await page.evaluate(()=>{
     window.dispatchEvent(new CustomEvent("bali:menu",{detail:{items:[{
