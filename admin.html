@@ -503,6 +503,17 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
   <summary>Доступ сотрудников к предзаказам · логин и пароль</summary>
   <div class="preorder-staff-inner">
     <p class="hint">Назначайте сотрудникам отдельные учётные записи. Доступ открывает только страницу предзаказов, без прав на остальную админку. Пароли не сохраняются в базе данных и не отправляются по почте.</p>
+    <details id="preorderStaffSetupHelp" class="preorder-staff-setup" hidden>
+      <summary>Настройка Firebase для регистрации сотрудников</summary>
+      <p>Серверная функция сотрудников ещё не готова. Для её запуска требуется однократная настройка владельцем Firebase проекта <strong>bali-menu-5a48b</strong>.</p>
+      <ol>
+        <li>Убедитесь, что проект Firebase использует тариф Blaze и для него настроены уведомления о расходах.</li>
+        <li>В Google Cloud включите API <a href="https://console.cloud.google.com/apis/library/cloudfunctions.googleapis.com?project=bali-menu-5a48b" target="_blank" rel="noopener noreferrer">Cloud Functions</a>, <a href="https://console.cloud.google.com/apis/library/cloudbuild.googleapis.com?project=bali-menu-5a48b" target="_blank" rel="noopener noreferrer">Cloud Build</a> и <a href="https://console.cloud.google.com/apis/library/artifactregistry.googleapis.com?project=bali-menu-5a48b" target="_blank" rel="noopener noreferrer">Artifact Registry</a>.</li>
+        <li>В разделе <a href="https://console.cloud.google.com/iam-admin/iam?project=bali-menu-5a48b" target="_blank" rel="noopener noreferrer">IAM</a> проверьте необходимые права для <code>bali-firestore-deploy@bali-menu-5a48b.iam.gserviceaccount.com</code> на развёртывание Cloud Functions. Не выдавайте доступ всем пользователям.</li>
+        <li>В <a href="https://console.firebase.google.com/project/bali-menu-5a48b/authentication/providers" target="_blank" rel="noopener noreferrer">Firebase Authentication</a> включите способ входа «Email/Password», не отключая Google.</li>
+        <li>Повторно запустите <a href="https://github.com/Nik13599/BALI-MENU/actions/workflows/preorder-staff-activate.yml" target="_blank" rel="noopener noreferrer">публикацию функций сотрудников</a>, затем нажмите «Обновить» в этом разделе.</li>
+      </ol>
+    </details>
     <form id="preorderStaffCreateForm" class="preorder-staff-create">
       <label>Имя сотрудника<input id="preorderStaffName" required minlength="2" maxlength="80" autocomplete="off" placeholder="Например, Администратор зала"></label>
       <label>Логин<input id="preorderStaffLogin" required minlength="3" maxlength="32" pattern="[a-zA-Z][a-zA-Z0-9_-]{2,31}" autocomplete="off" placeholder="Например, bali_staff1"></label>
@@ -516,6 +527,13 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
   </div>
 </details>
 <style>
+
+.preorder-staff-setup{border:1px solid #816c42;background:#2a2519;padding:9px 11px;margin:10px 0;border-radius:9px;color:#f1e4c4;font-size:11px;line-height:1.5}
+.preorder-staff-setup summary{font-size:12px;font-weight:800;cursor:pointer}
+.preorder-staff-setup ol{padding-left:18px;margin:7px 0}
+.preorder-staff-setup li{margin:5px 0}
+.preorder-staff-setup a{color:#c0ff7a;text-decoration:underline}
+.preorder-staff-setup code{overflow-wrap:anywhere}
 .preorder-staff-management{margin-top:15px}.preorder-staff-management>summary{cursor:pointer;font-weight:800;font-size:14px;color:#b9ff51;padding:6px 0}
 .preorder-staff-inner{padding:8px 0 12px}.preorder-staff-create{display:grid;grid-template-columns:repeat(3,minmax(125px,1fr)) auto;align-items:end;gap:10px;margin:12px 0 18px}
 .preorder-staff-create label{font-size:11px;color:#b2c2b2}.preorder-staff-create input{width:100%;min-height:39px;box-sizing:border-box}
