@@ -8,7 +8,7 @@ import {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBat
 import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1";
 import {withinOrderRetention,ORDER_RETENTION_MS} from "./bali-order-retention.js";
 import {createBaliStaffPreorder} from "./bali-staff-preorder-create.js?v=20261021-1";
-import {composeBaliPreorderReport,downloadBaliPreorderReport,showBaliPreorderTelegram} from "./bali-preorder-reports.js?v=20261021-1";
+import {composeBaliPreorderReport,composeBaliSinglePreorder,downloadBaliPreorderReport,showBaliPreorderTelegram} from "./bali-preorder-reports.js?v=20261022-order-share1";
 const readOrderLines=async row=>{
   const lines=await getDocs(collection(row.ref,"items"));
   return lines.docs.map(line=>line.data());
@@ -138,17 +138,35 @@ async function clearExpiredOrderHistory() {
   finally{if(control)control.disabled=false;}
 }
 $("clearExpiredOrders")?.addEventListener("click",()=>void clearExpiredOrderHistory());
-function orderDetailsField(label,value){
+function orderDetailsField(label,value,href=""){
   const field=node("div","","preorder-detail-field");
-  field.append(node("small",label),node("strong",String(value||"—")));
+  const content=href?node("a",String(value||"—")):node("strong",String(value||"—"));
+  if(href){
+    content.href=href;
+    content.title=String(value||"");
+    const strong=node("strong");strong.append(content);
+    field.append(node("small",label),strong);
+  }else field.append(node("small",label),content);
   return field;
+}
+function readableOrderDate(iso){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(iso||"")))return String(iso||"Дата не указана");
+  const [year,month,day]=iso.split("-");
+  return day+"."+month+"."+year;
 }
 async function openOrderDetails(id){
   ensureAdmin();
   const dialog=$("orderDetailsDialog");
   if(!dialog)return;
   $("orderDetailsTitle").textContent="Загрузка предзаказа…";
+  $("orderDetailsDate").textContent="Загрузка даты…";
+  $("orderDetailsStatusText").textContent="Ожидание";
+  $("orderDetailsStatus").className="preorder-detail-status preorder-detail-status-pending";
+  $("orderDetailsReferences").replaceChildren();
   $("orderDetailsContent").replaceChildren(node("p","Загружаем состав заказа…"));
+  $("orderDetailsShareFeedback").textContent="";
+  $("orderDetailsShare").open=false;
+  $("orderDetailsShare").hidden=true;
   $("orderDetailsEdit").hidden=true;
   $("orderDetailsPrint").disabled=true;
   if(!dialog.open)dialog.showModal();
@@ -158,21 +176,28 @@ async function openOrderDetails(id){
     ensureAdmin();
     if(!dialog.open)return;
     const state=normalizedOrderStatus(o.status);
+    $("orderDetailsDate").textContent=readableOrderDate(o.eventDate);
+    $("orderDetailsDate").dateTime=o.eventDate||"";
+    $("orderDetailsStatus").className="preorder-detail-status preorder-detail-status-"+(
+      ["pending","confirmed","cancelled"].includes(state)?state:"pending");
+    $("orderDetailsStatusText").textContent=({pending:"Ожидание",confirmed:"Подтверждён",cancelled:"Отменён"})[state]||
+      statuses[state]||"Ожидание";
+    if(o.archived)$("orderDetailsStatusText").textContent+=" · Архив";
     $("orderDetailsTitle").textContent=eventTitle(o)+" №"+
       (Number.isInteger(o.orderNumber)?o.orderNumber:o.id);
+    const refs=$("orderDetailsReferences");
+    if(o.tableNumber)refs.append(node("span","Столик №"+o.tableNumber,"preorder-detail-reference"));
+    if(o.bookingId)refs.append(node("span","ID "+o.bookingId,"preorder-detail-reference"));
     const content=$("orderDetailsContent");content.replaceChildren();
-    const header=node("div","","preorder-detail-meta");
-    header.append(orderDetailsField("Дата",o.eventDate),
-      orderDetailsField("Статус",(statuses[state]||"Подтверждён")+(o.archived?" · Архив":"")));
-    const guest=node("div","","preorder-detail-meta");
-    guest.append(orderDetailsField("Гость",o.customerName),
-      orderDetailsField("Телефон",o.customerPhone));
-    const references=node("div","","preorder-detail-meta");
-    references.append(orderDetailsField("Столик",o.tableNumber),
-      orderDetailsField("ID бронирования",o.bookingId));
-    content.append(header,guest,references);
-    if(o.email)content.append(orderDetailsField("Email",o.email));
-    content.append(node("h3","Состав предзаказа","preorder-detail-section-title"));
+    const contacts=node("div","","preorder-detail-contacts");
+    const phone=String(o.customerPhone||"").replace(/[^+\d]/g,"");
+    const email=String(o.email||"").trim();
+    contacts.append(
+      orderDetailsField("Гость",o.customerName),
+      orderDetailsField("Телефон",o.customerPhone,phone?"tel:"+phone:""),
+      orderDetailsField("Email",email,email?"mailto:"+encodeURIComponent(email):"")
+    );
+    content.append(contacts,node("h3","Состав предзаказа","preorder-detail-section-title"));
     const list=node("div","","preorder-detail-items");
     for(const item of o.items){
       const line=node("div","","preorder-detail-item");
@@ -192,6 +217,30 @@ async function openOrderDetails(id){
     $("orderDetailsEdit").onclick=()=>{dialog.close();void openEditor(id);};
     $("orderDetailsPrint").disabled=false;
     $("orderDetailsPrint").onclick=()=>printOrder(o);
+    const report=composeBaliSinglePreorder({...o,eventTitle:eventTitle(o)});
+    const feedback=$("orderDetailsShareFeedback");
+    for(const [buttonId,format] of [["orderDetailsSharePng","png"],["orderDetailsSharePdf","pdf"]]){
+      const control=$(buttonId);
+      control.onclick=async()=>{
+        feedback.textContent="Подготавливаем "+format.toUpperCase()+"…";
+        control.disabled=true;
+        try{
+          await downloadBaliPreorderReport(report,format,{preferNativeShare:true});
+          feedback.textContent="Файл "+format.toUpperCase()+" готов: отправлен через меню устройства или сохранён.";
+        }catch(e){
+          feedback.textContent=e.name==="AbortError"?"Отправка отменена.":
+            "Не удалось поделиться файлом: "+(e.message||"Ошибка браузера");
+        }finally{
+          control.disabled=false;
+          $("orderDetailsShare").open=false;
+        }
+      };
+    }
+    $("orderDetailsShareTelegram").onclick=()=>{
+      $("orderDetailsShare").open=false;
+      showBaliPreorderTelegram(report);
+    };
+    $("orderDetailsShare").hidden=false;
   }catch(e){
     if(dialog.open)$("orderDetailsContent").replaceChildren(
       node("p","Не удалось открыть заказ: "+(e.message||e.code||"unknown"),"preorder-detail-error"));
