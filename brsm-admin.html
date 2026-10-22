@@ -49,6 +49,7 @@
 <p>Ведущий вытягивает бочонок физически и вводит его число. Сервер обновляет билеты всех гостей и проверяет совпадения.</p>
 <div class="brsm-draw-state"><div><small>Билетов в розыгрыше</small><strong id="brsmTicketCount">—</strong></div><div><small>Текущий порог</small><strong id="brsmTarget">5</strong></div><div><small>Статус</small><strong id="brsmDrawMode">Не начат</strong></div></div>
 <button type="button" id="brsmDrawStart" class="director-primary">Закрыть регистрацию и начать розыгрыш</button>
+<button type="button" id="brsmReopen" class="director-ghost" hidden>Вернуть регистрацию до начала розыгрыша</button>
 <form id="brsmDrawCall"><label>Номер бочонка (1–90)<input name="number" type="number" min="1" max="90" required></label><button class="director-primary">Зафиксировать число</button></form>
 <div id="brsmDrawNumbers" class="brsm-admin-called"></div>
 <p id="brsmWinner" class="brsm-winner"></p>
