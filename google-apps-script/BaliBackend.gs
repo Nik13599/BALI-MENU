@@ -402,11 +402,14 @@ function baliGuestPlans(user,data){
 
 function baliAdminGuests(user,data){
   baliStaff(user,true);
-  const q=BALI_TEXT(data.search,100).toLowerCase(),max=100;
-  const rows=BALI_ROWS("guests").filter(r=>(String(r[2])+" "+String(r[1])+" "+String(r[3]))
-    .toLowerCase().includes(q)).slice(0,max);
+  const q=BALI_TEXT(data.search,100).toLowerCase(),max=80;
+  const offset=Math.max(0,Math.min(100000,Number(data.offset)||0));
+  const all=BALI_ROWS("guests").filter(r=>(String(r[2])+" "+String(r[1])+" "+String(r[3]))
+    .toLowerCase().includes(q)).sort((a,b)=>String(a[2]).localeCompare(String(b[2]),"ru"));
+  const rows=all.slice(offset,offset+max);
   return {clients:rows.map(r=>({uid:String(r[0]),email:String(r[1]),name:String(r[2]),
-    phone:String(r[3]),createdAt:BALI_ISO(r[4])})),limit:max};
+    phone:String(r[3]),createdAt:BALI_ISO(r[4])})),limit:max,nextOffset:offset+rows.length,
+    hasMore:offset+rows.length<all.length};
 }
 function baliAdminGuestOrders(user,data){
   baliStaff(user,true);
