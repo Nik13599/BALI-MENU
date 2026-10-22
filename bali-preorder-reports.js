@@ -32,8 +32,8 @@ export function preorderTelegramText(report){
     if(!o)throw new Error("Предзаказ не найден.");
     const parts=["BALI NIGHT CLUB","ПРЕДЗАКАЗ · "+report.eventTitle+" №"+(o.orderNumber??o.id),
       "Дата: "+report.date,"Статус: "+(labels[normalizedStatus(o.status)]||o.status)];
-    if(o.tableNumber)parts.push("Столик: "+o.tableNumber);
-    if(o.bookingId)parts.push("ID бронирования: "+o.bookingId);
+    const reference=[o.tableNumber,o.bookingId].filter(Boolean).join(" / ");
+    if(reference)parts.push("ID брони / номер стола: "+reference);
     parts.push("Гость: "+(o.customerName||"—"),"Телефон: "+(o.customerPhone||"—"));
     if(o.email)parts.push("Email: "+o.email);
     parts.push("","Состав предзаказа:");
@@ -49,10 +49,10 @@ export function preorderTelegramText(report){
   if(report.kind==="orders"){
     if(!report.orders.length)result.push("Предзаказов нет.");
     for(const o of report.orders){
-      const ref=[o.tableNumber&&"столик "+o.tableNumber,o.bookingId&&"бронь "+o.bookingId].filter(Boolean).join(" · ");
+      const ref=[o.tableNumber,o.bookingId].filter(Boolean).join(" / ");
       result.push((report.allEvents?(o.eventTitle||"Мероприятие")+" · ":"")+"№ "+(o.orderNumber??o.id)+" · "+(o.customerName||"Гость")+
         " · "+(labels[normalizedStatus(o.status)]||"Подтверждён")+(o.archived?" · архив":""));
-      result.push("Тел.: "+(o.customerPhone||"не указан")+(ref?" · "+ref:""));
+      result.push("Тел.: "+(o.customerPhone||"не указан")+(ref?" · ID брони / номер стола: "+ref:""));
       for(const item of o.items||[])result.push("• "+item.name+" × "+item.quantity+" — "+fmt(lineTotal(item)));
       if(o.notes)result.push("Пожелания: "+o.notes);
       result.push("Итого: "+fmt(orderTotal(o)),"");
@@ -128,7 +128,8 @@ function reportPages(report){
       text((report.allEvents?(String(o.eventTitle||"Мероприятие")+" · "):"")+"№ "+(o.orderNumber??o.id)+"  ·  "+(o.customerName||"Гость"),L+18,y+31,20,800);
       text(fmt(orderTotal(o)),R-220,y+31,22,800);
       y+=62;
-      const ref=[o.customerPhone,o.tableNumber&&"Столик "+o.tableNumber,o.bookingId&&"Бронь "+o.bookingId,(report.singleOrder||report.kind==="orders")&&o.email&&"Email: "+o.email].filter(Boolean).join(" · ");
+      const reference=[o.tableNumber,o.bookingId].filter(Boolean).join(" / ");
+      const ref=[o.customerPhone,reference&&"ID брони / номер стола: "+reference,(report.singleOrder||report.kind==="orders")&&o.email&&"Email: "+o.email].filter(Boolean).join(" · ");
       multiline(ref,L+14,W-2*L-20,18,25);
       text("Статус: "+(labels[normalizedStatus(o.status)]||"Подтверждён")+(o.archived?" · Архив":""),L+14,y+18,17,400,color.muted);y+=33;
       for(const item of items){
