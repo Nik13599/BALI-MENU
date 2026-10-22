@@ -23,7 +23,7 @@ test("restored login does not read private avatar until My BALI opens",async({pa
   }));
   await page.route("**/*",route=>{
     const url=new URL(route.request().url());
-    if(url.hostname==="127.0.0.1")return route.continue();
+    if(url.hostname==="127.0.0.1")return route.fallback();
     const filename=url.pathname.split("/").at(-1);
     const modules={
       "firebase-app.js":"export const getApps=()=>[{}],getApp=()=>({}),initializeApp=()=>({});",
