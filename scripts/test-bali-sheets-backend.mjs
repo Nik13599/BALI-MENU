@@ -37,7 +37,7 @@ const sandbox={
   PropertiesService:{getScriptProperties:()=>({getProperty:x=>x==="BALI_BRIDGE_KEY"?"test-bridge":null})},
   UrlFetchApp:{fetch:(_url,options)=>({getResponseCode:()=>200,getContentText:()=>{
     const token=JSON.parse(options.payload).idToken;
-    const user=accounts.get(token);
+    const user=accounts.get(String(token).replace(/^test-/,"").replace(/_+$/,""));
     return JSON.stringify({users:user?[user]:[]});
   }})},
   ContentService:{MimeType:{JSON:"application/json"},createTextOutput(value){
@@ -52,7 +52,7 @@ const sandbox={
 vm.createContext(sandbox);
 vm.runInContext(readFileSync("google-apps-script/BaliBackend.gs","utf8"),sandbox,{filename:"BaliBackend.gs"});
 const request=(token,action,payload={})=>{
-  const body={bridgeKey:"test-bridge",token,action,payload};
+  const body={bridgeKey:"test-bridge",token:"test-"+token.padEnd(80,"_"),action,payload};
   const res=sandbox.doPost({postData:{contents:JSON.stringify(body)}}).value;
   return JSON.parse(res);
 };
