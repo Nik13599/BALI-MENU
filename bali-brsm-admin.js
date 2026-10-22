@@ -4,7 +4,7 @@ import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged} f
 import {getFunctions,httpsCallable} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-functions.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG),auth=getAuth(app),fn=getFunctions(app,"europe-west1");
 const names=["getBrsmAdminState","assignBrsmCard","createBrsmPromo","revokeBrsmPromo",
- "listBrsmEvents","createBrsmQrBatch","startBrsmDraw","callBrsmNumber","finishBrsmTie"];
+ "listBrsmEvents","createBrsmQrBatch","startBrsmDraw","reopenBrsmRegistration","callBrsmNumber","finishBrsmTie"];
 const call=Object.fromEntries(names.map(name=>[name,httpsCallable(fn,name)]));
 const $=id=>document.getElementById(id);
 const error=e=>String(e?.message||e?.code||"Ошибка запроса").slice(0,230);
@@ -31,6 +31,7 @@ function updateDraw(state){
  (d?.called||[]).forEach(n=>{const ball=document.createElement("span");ball.textContent=n;numbers.append(ball);});
  $("brsmWinner").textContent=d?.winnerNumber?"ПОБЕДИТЕЛЬ · BALI ID "+d.winnerNumber+" · "+(d.winnerName||""):"";
  $("brsmDrawStart").hidden=!!d&&["live","finished","tiebreak"].includes(d.status);
+ $("brsmReopen").hidden=!state?.closed||!!d&&["live","finished","tiebreak"].includes(d.status);
  $("brsmDrawCall").hidden=d?.status!=="live";
  $("brsmDrawTie").hidden=d?.status!=="tiebreak";
  if(state?.closed&&!d)$("brsmDrawStart").textContent="Сформировать билеты после закрытия регистрации";
@@ -93,6 +94,10 @@ $("brsmQrCreate").addEventListener("submit",e=>{
  });
 });
 $("brsmPrintQr").addEventListener("click",()=>window.print());
+$("brsmReopen").addEventListener("click",()=>{
+ if(!confirm("Вернуть возможность принимать отметки КОНТАКТ? Только до начала лото."))return;
+ void run("reopenBrsmRegistration",{},"lotto",refresh);
+});
 $("brsmDrawStart").addEventListener("click",()=>{
  if(!confirm("Внимание: выдача отметок закроется, билеты будут зафиксированы. Начать розыгрыш?"))return;
  void run("startBrsmDraw",{},"lotto",refresh);
