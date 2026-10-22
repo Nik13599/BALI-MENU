@@ -596,6 +596,7 @@ function attachInteractions(d){
   if(enabled){event.preventDefault();event.stopImmediatePropagation();}
  },true);
  d.addEventListener("keydown",onBuilderShortcut,true);
+ d.documentElement.dataset.baliBuilderReady="true";
 }
 function attachFrame(){
  const d=frameDoc();if(!d?.body)return;
@@ -681,7 +682,7 @@ async function save(publish=false){
    await batch.commit();
   }else await setDoc(draftRef,payload);
   if(epoch!==authEpoch)return;
-  if(publish)published=clone(clean);
+  if(publish){published=clone(clean);window.BaliPublicPublish?.queue("settings/siteBuilderPublished");}
   dirty=false;history=[];future=[];
   msg(publish?"Опубликовано в Firestore: изменения доступны посетителям на устройствах соответствующего типа.":"Черновик сохранён. Публичный сайт не изменился.");
  }catch(e){if(epoch!==authEpoch)return;msg(e.code==="permission-denied"?"Недостаточно прав или правила Firestore не опубликованы.":"Ошибка сохранения: "+(e.code||e.message||"неизвестно"));}

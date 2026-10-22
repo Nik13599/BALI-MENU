@@ -376,7 +376,7 @@ function menuRender() {
         ()=>openProductDialog(item),
         async()=>{
           if(!confirm("Удалить «"+item.name+"»? Это действие нельзя отменить."))return;
-          try{await deleteDoc(doc(db,"menu",String(item.id)));renderStatus("categoryStatus","Товар удалён.");}
+          try{await deleteDoc(doc(db,"menu",String(item.id)));window.BaliPublicPublish?.queue("menu");renderStatus("categoryStatus","Товар удалён.");}
           catch(e){renderStatus("categoryStatus","Не удалось удалить товар: "+(e.code||"unknown"));}
         },
         item.image_url
@@ -424,7 +424,7 @@ function eventRender() {
       },
       async () => {
         if(!confirm("Удалить мероприятие "+event.title+" ("+event.date+", №"+slot+")?"))return;
-        try { await deleteDoc(doc(db,"events",event.id));renderStatus("eventStatus","Мероприятие удалено."); }
+        try { await deleteDoc(doc(db,"events",event.id));window.BaliPublicPublish?.queue("events");renderStatus("eventStatus","Мероприятие удалено."); }
         catch(e){renderStatus("eventStatus","Ошибка: "+(e.code || "unknown"));}
       },
       event.poster_url||""
@@ -535,6 +535,7 @@ $("menuForm").addEventListener("submit",async event=>{
       if(activeMenuEdit!==id)throw new Error("ID товара не должен изменяться.");
       await setDoc(ref,data);
     }
+    window.BaliPublicPublish?.queue("menu");
     const savedName=data.name;
     closeProductDialog();
     clearMenu();
@@ -619,6 +620,7 @@ $("eventForm").addEventListener("submit",async (event)=>{
     if(poster)payload.poster_url=poster;
     // merge сохраняет interestCount при изменении афиши/названия администратором.
     await setDoc(doc(db,"events",eventId),payload,{merge:true});
+    window.BaliPublicPublish?.queue("events");
     clearEvent();
     renderStatus("eventStatus","Мероприятие сохранено.");
   }catch(e){

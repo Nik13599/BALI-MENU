@@ -56,7 +56,7 @@ if(form&&root){
         const prev=items[index-1],batch=writeBatch(db);
         batch.update(doc(coll,item.id),{sort:prev.sort,updatedAt:serverTimestamp()});
         batch.update(doc(coll,prev.id),{sort:item.sort,updatedAt:serverTimestamp()});
-        await batch.commit();say("Порядок фонов обновлён.");
+        await batch.commit();window.BaliPublicPublish?.queue("mobileAboutBackgrounds");say("Порядок фонов обновлён.");
       }));
       const down=el("button","","↓ Ниже");down.type="button";down.disabled=!allowed||working||index===items.length-1;
       down.addEventListener("click",()=>void guarded(async()=>{
@@ -69,6 +69,7 @@ if(form&&root){
       toggle.type="button";toggle.disabled=!allowed||working;
       toggle.addEventListener("click",()=>void guarded(async()=>{
         await updateDoc(doc(coll,item.id),{published:!item.published,updatedAt:serverTimestamp()});
+        window.BaliPublicPublish?.queue("mobileAboutBackgrounds");
         say(item.published?"Фон скрыт.":"Фон опубликован.");
       }));
       const remove=el("button","","Удалить");remove.type="button";remove.dataset.remove="";
@@ -77,6 +78,7 @@ if(form&&root){
         if(!confirm("Удалить выбранный фон мобильного блока «О клубе»?"))return;
         void guarded(async()=>{
           await deleteDoc(doc(coll,item.id));
+          window.BaliPublicPublish?.queue("mobileAboutBackgrounds");
           say("Фон удалён.");
         });
       });
@@ -104,6 +106,7 @@ if(form&&root){
         nextSort+=10;completed++;
       }
       $("baliMobileAboutFiles").value="";
+      window.BaliPublicPublish?.queue("mobileAboutBackgrounds");
       say("Готово: загружено "+completed+" фонов. Они появились на мобильной главной.");
     });
   });

@@ -89,6 +89,9 @@ test('logout network failure stays visible without an unhandled rejection',async
 
 test('out of order order snapshots and logout cannot restore stale data',async({page})=>{
   await fixture(page,'orders-firestore.js');
+  // The order-list listener is intentionally inactive until "Мои заказы" opens.
+  expect(await page.evaluate(()=>typeof window.__orderWatch)).toBe('undefined');
+  await page.evaluate(()=>window.BaliOrders.startHistory());
   await expect.poll(()=>page.evaluate(()=>typeof window.__orderWatch)).toBe('function');
   await page.evaluate(()=>{
     const gates={};
@@ -133,6 +136,12 @@ test('wallet waits for profile consent, displays zero counts and ignores a stale
     window.__registered=true;
     window.BaliAuth={isRegistered:()=>window.__registered,getProfile:()=>window.__profile(window.__auth.currentUser.uid)};
     window.dispatchEvent(new CustomEvent('bali:auth-state',{detail:{registered:true}}));
+  });
+  // Logging in from home or the kitchen must not initialize the BALI ID wallet.
+  expect(await page.evaluate(()=>typeof window.__walletWatch)).toBe('undefined');
+  await page.evaluate(()=>{
+    document.body.dataset.baliPage='id';
+    window.dispatchEvent(new CustomEvent('bali:guest-page',{detail:{page:'id'}}));
   });
   await expect.poll(()=>page.evaluate(()=>typeof window.__walletWatch)).toBe('function');
   await expect(page.locator('#baliIdBonusStrip')).toHaveAttribute('hidden','');

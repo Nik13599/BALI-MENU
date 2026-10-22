@@ -108,7 +108,10 @@ window.addEventListener("bali:auth-state",({detail})=>{
   render();
   // Profile registration alone never creates a card; onboarding is mandatory.
   const user=auth.currentUser;
-  if(detail?.registered&&user?.emailVerified&&activeUid!==user.uid)
+  // Profile changes may occur on home, menu or while filling a preorder.
+  // Only the open BALI ID page may initiate protected card reads.
+  if(document.body.dataset.baliPage==="id" &&
+     detail?.registered&&user?.emailVerified&&activeUid!==user.uid)
     void initializeForUser(user);
 });
 async function initializeForUser(user,{force=false}={}){
@@ -170,7 +173,14 @@ async function initializeForUser(user,{force=false}={}){
     }
   }
 }
+const cardIsOpen=()=>document.body.dataset.baliPage==="id";
+const resumeCard=user=>void initializeForUser(cardIsOpen()?user:null);
 window.addEventListener("bali:id-accepted",event=>{
-  if(event.detail?.uid===auth.currentUser?.uid)void initializeForUser(auth.currentUser);
+  if(cardIsOpen()&&event.detail?.uid===auth.currentUser?.uid)
+    void initializeForUser(auth.currentUser);
 });
-onAuthStateChanged(auth,initializeForUser);
+window.addEventListener("bali:guest-page",event=>{
+  if(event.detail?.page==="id")resumeCard(auth.currentUser);
+  else void initializeForUser(null); // Also invalidate any asynchronous card setup in flight.
+});
+onAuthStateChanged(auth,resumeCard);

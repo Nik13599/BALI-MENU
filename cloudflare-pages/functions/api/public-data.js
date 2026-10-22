@@ -13,7 +13,7 @@ const COLLECTIONS=new Set([
 ]);
 const DOCUMENTS=new Set([
   "settings/homeDesign","settings/homeInterface",
-  "settings/homeEventPlaceholder","settings/siteBuilderPublished"
+  "settings/homeEventPlaceholder","settings/siteBuilderPublished","settings/menuVisibility"
 ]);
 const PUBLISHED_ONLY=new Set(["promotions","mobileAboutBackgrounds"]);
 const TTL=path=>path==="events"||path==="promotions"?20:

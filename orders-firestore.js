@@ -270,6 +270,16 @@ function watchUserOrders(user) {
     error=>{if(current===generation){revision++;emit("bali:orders-error",{message:errorText(error)});}}
   );
 }
-onAuthStateChanged(auth,watchUserOrders);
-window.BaliOrders={save,getOrderWithItems,cancel,errorText,maxItems:MAX_DIFFERENT_ITEMS};
+// Explicitly opt in to historical order reads ONLY from "Мои заказы".
+let stopHistoryAuth=null;
+function startHistory(){
+  if(stopHistoryAuth)return;
+  stopHistoryAuth=onAuthStateChanged(auth,watchUserOrders);
+}
+function stopHistory(){
+  if(stopHistoryAuth){stopHistoryAuth();stopHistoryAuth=null;}
+  if(orderListener){orderListener();orderListener=null;}
+  generation++;
+}
+window.BaliOrders={save,getOrderWithItems,cancel,startHistory,stopHistory,errorText,maxItems:MAX_DIFFERENT_ITEMS};
 emit("bali:orders-ready",{});

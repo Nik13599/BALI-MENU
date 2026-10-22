@@ -33,7 +33,7 @@ assert(auth.includes("serverTimestamp()"), "Server timestamps missing");
 assert(auth.includes('doc(database, "users", savingUser.uid)'), "User profile persistence missing");
 assert(app.includes("BaliAuth.requireProfile()"), "Checkout must require profile");
 const ordersClient = source("orders-firestore.js");
-assert(app.includes("window.BaliOrders.save"), "Checkout must use Firestore order service");
+assert(app.includes('orders.save(orderData, editingOrderId)') && app.includes('ensureOrdersService()'), "Checkout must lazy-load Firestore order service on submit");
 assert(ordersClient.includes("getAuth(") && ordersClient.includes("writeBatch("), "Order service must use Firebase authentication and atomic writes");
 assert(rules.includes("request.auth.uid == uid"), "Rules need UID ownership");
 assert(rules.includes("data.email == request.auth.token.email"), "Rules must pin email");
@@ -223,7 +223,7 @@ assert(html.includes('id="baliMobileAboutBackgroundA"') &&
   admin.includes('data-design-editor="mobileAbout"') &&
   admin.includes('id="baliMobileAboutFiles"') &&
   admin.includes('multiple>') &&
-  admin.includes('bali-mobile-about-admin.js?v=20261020-2') &&
+  admin.includes('bali-mobile-about-admin.js?v=') &&
   admin.includes('bali-mobile-about-admin.css?v=20261019-1') &&
   mobileAboutAdmin.includes('const MAX=8') &&
   mobileAboutAdmin.includes('writeBatch(db)') &&
@@ -530,7 +530,8 @@ assert(["kitchen","bar","hookah","tea"].every(key=>
   admin.includes('id="baliCatalogVisibilityTitle"') &&
   admin.includes('id="baliVisibilityStatus"') &&
   admin.includes('bali-menu-visibility.js?v=') &&
-  html.includes('bali-menu-visibility.js?v=') &&
+  html.includes('bali-menu-visibility-guest.js?v=') &&
+  source("bali-menu-visibility-guest.js").includes('from "./bali-public-reader.js') &&
   visibilitySource.includes('doc(db,"settings","menuVisibility")') &&
   visibilitySource.includes('onSnapshot(configRef') &&
   visibilitySource.includes('onAuthStateChanged(auth') &&
@@ -1481,7 +1482,9 @@ assert(html.includes('id="baliCardNumber"') &&
   idClient.includes('runTransaction(db,async tx=>') &&
   idClient.includes('doc(db,"baliCounters","guests")') &&
   idClient.includes('doc(db,"baliIds",uid)') &&
-  idClient.includes('onAuthStateChanged(auth,initializeForUser)') &&
+  idClient.includes('onAuthStateChanged(auth,resumeCard)') &&
+  idClient.includes('cardIsOpen()') &&
+  source("bali-id-bank.js").includes('document.body.dataset.baliPage!=="id"') &&
   rules.includes('match /baliCounters/{key}') &&
   rules.includes('getAfter(baliIdPath(request.auth.uid))') &&
   rules.includes('match /guestPrivileges/{uid}') &&

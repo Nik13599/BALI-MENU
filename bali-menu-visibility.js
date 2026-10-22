@@ -74,6 +74,7 @@ if(admin){
       report("Сохраняем видимость раздела…");
       try{
         await setDoc(configRef,{sections:next,updatedAt:serverTimestamp()});
+        window.BaliPublicPublish?.queue("settings/menuVisibility");
         report(next[key]
           ?"Раздел включён. Кнопка отображается у гостей."
           :"Раздел скрыт. Все позиции и цены сохранены.");

@@ -93,3 +93,21 @@ assert.equal(stale.headers.get("X-BALI-Cache"),"STALE");
 assert.equal((await stale.json()).documents[0].fields.title.stringValue,"Настоящая афиша");
 await Promise.all(pending.splice(0));
 console.log("Last real public content survives Firestore quota exhaustion PASS.");
+
+ 
+// A stale KV entry must refresh from Firestore if Firestore is available.
+kvRows.get("bali:public:v1:events").cachedAt=Date.now()-22*60*1000;
+stored.clear();
+let refreshed=0;
+globalThis.fetch=async()=>{
+  refreshed++;
+  return new Response(JSON.stringify([{document:{
+    name:"projects/bali-menu-5a48b/databases/(default)/documents/events/new_event",
+    fields:{title:{stringValue:"Следующая афиша"}}
+  }}]),{status:200});
+};
+const refreshedSnapshot=await onRequestGet(context("events"));
+assert.equal(refreshedSnapshot.headers.get("X-BALI-Cache"),"MISS");
+assert.equal(refreshed,1);
+await Promise.all(pending.splice(0));
+console.log("Stale KV refreshes from the authoritative source when available PASS.");

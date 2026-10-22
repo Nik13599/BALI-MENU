@@ -90,6 +90,7 @@ if(form){
      await setDoc(aboutRef,{aboutTitle,aboutSubtitle,aboutDescription,aboutImageUrl,
        aboutImageTabletUrl:versions.tablet,aboutImageMobileUrl:versions.mobile,
        updatedAt:serverTimestamp()});
+     window.BaliPublicPublish?.queue("settings/homeDesign");
      say("Сохранено. Карточка клуба обновлена на сайте.");
    }catch(error){
      say(error.code==="permission-denied"?
