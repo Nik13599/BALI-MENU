@@ -1321,13 +1321,9 @@ html.bali-booting .bali-startup-splash {
                     <p class="auth-help">Предзаказ оформляется на выбранную дату и конкретное мероприятие BALI.</p>
                 </div>
                 <div class="form-group">
-                    <label for="tableNumber">Номер столика</label>
-                    <input type="text" id="tableNumber" maxlength="20" placeholder="Например, 12">
-                </div>
-                <div class="form-group">
-                    <label for="bookingId">ID бронирования</label>
-                    <input type="text" id="bookingId" maxlength="60" placeholder="Например, BALI-4826">
-                    <p class="auth-help">Укажи номер столика или ID бронирования. Достаточно одного из двух.</p>
+                    <label for="orderReference">ID брони / номер стола *</label>
+                    <input type="text" id="orderReference" maxlength="100" required placeholder="Например, BALI-4826 или 12" autocomplete="off">
+                    <p class="auth-help">Введи ID бронирования или номер своего столика в одно поле.</p>
                 </div>
 
                 <div class="form-group">
