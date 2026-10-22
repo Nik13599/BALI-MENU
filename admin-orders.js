@@ -14,7 +14,7 @@ const readOrderLines=async row=>{
   const lines=await getDocs(collection(row.ref,"items"));
   return lines.docs.map(line=>line.data());
 };
-const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
+const app=getApps().find(app=>app.name==="bali-staff")||initializeApp(window.BALI_FIREBASE_CONFIG,"bali-staff");
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=false,orders=[],catalog=[];
 let events=new Map(),dateOrders=[],loadedDate="",unsubDateOrders=null,dateRevision=0;
