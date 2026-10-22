@@ -7,7 +7,10 @@
  * The Apps Script backend independently verifies each Firebase ID token.
  */
 const ACTIONS=new Set(["health","me","profileSave","menu","myOrders","createOrder",
-  "staffOrders","staffStatus","staffReport","staffList","staffManage"]);
+  "staffOrders","staffStatus","staffReport","staffList","staffManage",
+  "adminGuests","adminGuestOrders","card","activateCard","adminCard",
+  "consentAccept","coinHistory","coinChange","privilegeAssign","bonusGrant","bonusHistory",
+  "bonusRecipient","bonusTransfer","plans"]);
 function reply(body,status=200){
   return new Response(JSON.stringify(body),{status,headers:{
     "Content-Type":"application/json;charset=utf-8",
