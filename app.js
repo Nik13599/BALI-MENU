@@ -884,6 +884,7 @@ function populateEvents(){
 // Checkout reads the published BALI Calendar, not a hard-coded event list.
 // Refresh on opening and while visible so newly published dates appear without reload.
 let checkoutCalendarRequest=null;
+let checkoutCalendarLastRefresh=0;
 async function refreshCheckoutCalendar(){
     if(checkoutCalendarRequest)return checkoutCalendarRequest;
     const task=(async()=>{
@@ -897,6 +898,7 @@ async function refreshCheckoutCalendar(){
             if(!response.ok)throw new Error("Не удалось обновить календарь.");
             const payload=await response.json();
             if(!Array.isArray(payload.documents))throw new Error("Неверный формат календаря.");
+            checkoutCalendarLastRefresh=Date.now();
             const field=(data,key)=>data[key]?.stringValue??data[key]?.timestampValue??
                 data[key]?.booleanValue??"";
             const latest=payload.documents.map(document=>{
@@ -930,12 +932,15 @@ async function refreshCheckoutCalendar(){
     checkoutCalendarRequest=task;
     try{await task;}finally{if(checkoutCalendarRequest===task)checkoutCalendarRequest=null;}
 }
+// Event dates are refreshed immediately on checkout open. Rechecking the
+// same form every 20 seconds would burn 180 Function calls per hour per guest.
 setInterval(()=>{
     if(!document.hidden&&document.getElementById("checkoutModal")?.classList.contains("active"))
         void refreshCheckoutCalendar().catch(()=>{});
-},20000);
+},180000);
 window.addEventListener("focus",()=>{
-    if(document.getElementById("checkoutModal")?.classList.contains("active"))
+    if(document.getElementById("checkoutModal")?.classList.contains("active")&&
+       Date.now()-checkoutCalendarLastRefresh>60000)
         void refreshCheckoutCalendar().catch(()=>{});
 });
 function escapeHTML(value) {

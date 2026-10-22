@@ -489,7 +489,11 @@ html.bali-booting .bali-startup-splash {
       return true; // Profile, ID and static pages may load personal data separately.
     };
     const sync=()=>{
-      if(!domReady||(!timedOut&&!needsData())){
+      // Guest navigation is wired synchronously at the end of app.js.
+      // A delayed Google module must not keep the public home/menu overlay
+      // visible after those sections already have their real content.
+      const fastPublic=["home","events","menu"].includes(currentPage());
+      if((!domReady&&!fastPublic)||(!timedOut&&!needsData())){
         showing=true;
         splash.hidden=false;
         root.classList.add("bali-booting");
