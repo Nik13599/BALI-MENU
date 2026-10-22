@@ -27,6 +27,8 @@ jobs:
           node --input-type=module --check < cloudflare-pages/functions/api/public-data.js
           node scripts/test-public-cache.mjs
           node scripts/test-bali-browser-architecture.mjs
+          node scripts/test-preorder-migration-audit.mjs
+          node --input-type=module --check < cloudflare-pages/functions/api/admin/preorder-migration-audit.js
           node --input-type=module --check < cloudflare-pages/functions/api/admin/migrate-preorders.js
           node --input-type=module --check < cloudflare-pages/functions/api/staff-preorders.js
           node --input-type=module --check < cloudflare-pages/functions/api/publish-public.js

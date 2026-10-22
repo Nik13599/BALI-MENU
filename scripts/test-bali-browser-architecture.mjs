@@ -40,6 +40,14 @@ assert(admin.includes('id="adminView"')&&staff.includes('id="adminView"'),
 assert(!staff.includes('href="admin.html"'),"Staff has no navigation to private admin");
 assert(admin.includes("baliPublicPublishAll"),"Public content manual publication missing");
 assert(admin.includes("bali-public-publisher.js"),"Public content publish bridge missing");
+assert(admin.includes('id="baliMigrationAuditPanel"')&&
+  admin.includes('id="baliMigrationAuditResults" hidden')&&
+  admin.includes('bali-preorder-migration-audit-admin.js'),
+  "Migration audit must be collapsed and owner-only in the independent admin");
+const migrationUi=await load("bali-preorder-migration-audit-admin.js");
+assert(migrationUi.includes("report.cutoverAllowed!==false")&&
+  !migrationUi.includes("migrate-preorders"),
+  "The migration audit UI cannot trigger an order migration or cutover");
 assert(reader.includes("/api/public-data?path="),"Public data must use the Cloudflare reader");
 const visibilityGuest=await load("bali-menu-visibility-guest.js");
 assert(visibilityGuest.includes("./bali-public-reader.js")&&!visibilityGuest.includes("firebasejs"),
