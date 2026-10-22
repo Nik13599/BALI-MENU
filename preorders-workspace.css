@@ -741,3 +741,213 @@ body.bali-preorders-workspace{
 .bali-preorders-workspace #orderEditDialog .edit-order-event-grid select{
   min-width:0;text-overflow:ellipsis;
 }
+
+
+/* Compact preorder row v2: event and table beside the date, amount
+   horizontally aligned with the dishes/portions. Shared desktop + mobile. */
+.bali-preorders-workspace .preorder-compact-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(205px,255px) max-content;
+  grid-template-areas:"primary summary actions";
+  gap:10px;
+  align-items:center;
+  min-height:0;
+  padding:9px 12px;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-primary{
+  grid-area:primary;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:5px;
+  min-width:0;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-primary>.preorder-cell.reference{
+  display:flex;
+  flex-flow:row nowrap;
+  align-items:baseline;
+  gap:9px;
+  width:100%;
+  min-width:0;
+  margin:0;
+  padding-right:0;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-queue-date{
+  flex:none;
+  display:inline-block;
+  position:static;
+  margin:0;
+  color:#adbcaf;
+  line-height:1.2;
+  font-size:11px;
+  white-space:nowrap;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-queue-headline{
+  display:flex;
+  flex:1 1 auto;
+  min-width:0;
+  max-width:100%;
+  width:auto;
+  align-items:baseline;
+  gap:7px;
+  white-space:nowrap;
+  overflow:hidden;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-queue-headline strong{
+  flex:0 1 auto;
+  min-width:0;
+  font-size:13px;
+  line-height:1.2;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  overflow:hidden;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-queue-reference{
+  flex:0 1 auto;
+  font-size:11px;
+  min-width:0;
+  line-height:1.2;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-primary>.preorder-cell.guest{
+  display:block;
+  grid-area:auto;
+  width:100%;
+  min-width:0;
+  margin:0;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-queue-identity{
+  display:flex;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  margin:0;
+  gap:10px;
+  align-items:baseline;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-order-summary{
+  grid-area:summary;
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  min-width:0;
+  width:100%;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-order-summary>.preorder-cell.dishes{
+  grid-area:auto;
+  display:block;
+  flex:0 1 auto;
+  min-width:0;
+  width:auto;
+  margin:0;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-order-summary>.preorder-cell.dishes strong{
+  font-size:11px;
+  font-weight:600;
+  line-height:1.2;
+  color:#aebead;
+  white-space:nowrap;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-order-summary>.preorder-cell.amount{
+  grid-area:auto;
+  display:block;
+  flex:none;
+  width:auto;
+  margin:0;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-order-summary>.preorder-cell.amount strong{
+  font-size:14px;
+  line-height:1.2;
+  font-weight:800;
+  text-align:right;
+  white-space:nowrap;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-actions{
+  grid-area:actions;
+  gap:6px;
+  justify-content:flex-end;
+  padding:0 28px 0 0;
+  border-top:0;
+  min-width:0;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-actions button{
+  min-height:34px;
+}
+.bali-preorders-workspace .preorder-compact-row .preorder-status-cell{
+  top:9px;
+  right:11px;
+}
+@media(max-width:1200px){
+  .bali-preorders-workspace .preorder-compact-row{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:"primary" "summary" "actions";
+    gap:7px;
+  }
+  .bali-preorders-workspace .preorder-compact-row .preorder-primary>.preorder-cell.reference{
+    padding-right:29px;
+  }
+  .bali-preorders-workspace .preorder-compact-row .preorder-actions{
+    border-top:1px solid #2b3b2d;
+    padding:6px 0 0;
+  }
+}
+@media(max-width:700px){
+  .bali-preorders-workspace .preorder-compact-row{
+    padding:9px 10px;
+    gap:6px;
+    border-radius:12px;
+  }
+  .bali-preorders-workspace .preorder-compact-row .preorder-primary{gap:6px}
+  .bali-preorders-workspace .preorder-compact-row .preorder-primary>.preorder-cell.reference{
+    flex-flow:row nowrap;
+    align-items:baseline;
+    gap:7px;
+    padding-right:26px;
+  }
+  .bali-preorders-workspace .preorder-compact-row .preorder-queue-date{font-size:10px}
+  .bali-preorders-workspace .preorder-compact-row .preorder-queue-headline{gap:6px}
+  .bali-preorders-workspace .preorder-compact-row .preorder-queue-headline strong{font-size:12px}
+  .bali-preorders-workspace .preorder-compact-row .preorder-queue-reference{font-size:10px}
+  .bali-preorders-workspace .preorder-compact-row .preorder-queue-identity{gap:9px}
+  .bali-preorders-workspace .preorder-compact-row .preorder-order-summary{
+    display:flex;gap:10px;
+  }
+  .bali-preorders-workspace .preorder-compact-row .preorder-order-summary>.preorder-cell.dishes strong{
+    font-size:11px;
+  }
+  .bali-preorders-workspace .preorder-compact-row .preorder-order-summary>.preorder-cell.amount strong{
+    font-size:14px;
+  }
+  .bali-preorders-workspace .preorder-compact-row .preorder-actions{
+    flex-wrap:nowrap;
+    justify-content:space-between;
+    align-items:center;
+    gap:5px;
+    padding:6px 0 0;
+  }
+  .bali-preorders-workspace .preorder-compact-row .preorder-actions>button{
+    flex:0 1 auto;
+    min-width:0;
+    min-height:34px;
+    padding:6px 8px;
+    font-size:11px;
+    line-height:1.2;
+  }
+  .bali-preorders-workspace .preorder-compact-row .preorder-action-menu{
+    margin-left:auto;
+    flex:none;
+  }
+  .bali-preorders-workspace .preorder-compact-row .preorder-status-cell{
+    top:9px;right:10px;
+  }
+}
+@media(max-width:365px){
+  .bali-preorders-workspace .preorder-compact-row .preorder-queue-headline strong{font-size:11px}
+  .bali-preorders-workspace .preorder-compact-row .preorder-queue-reference{font-size:10px}
+  .bali-preorders-workspace .preorder-compact-row .preorder-actions>button{
+    font-size:10px;padding:5px 6px;
+  }
+  .bali-preorders-workspace .preorder-compact-row .preorder-action-menu summary{
+    min-width:28px;padding:0 4px;
+  }
+}
