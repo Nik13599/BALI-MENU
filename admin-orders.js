@@ -20,6 +20,7 @@ const app=getApps().find(app=>app.name===authAppName)||initializeApp(window.BALI
 const auth=getAuth(app),db=sheetsEnabled()?null:getFirestore(app),$=id=>document.getElementById(id);
 let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=false,orders=[],catalog=[];
 let events=new Map(),dateOrders=[],loadedDate="",unsubDateOrders=null,dateRevision=0;
+let calendarSourceLoaded=false,calendarLastRead=0,calendarReadPromise=null;
 let preorderOnlyStaff=false,sheetsCanEditOrders=false;
 let editOrder=null,editLines=[],originalIds=new Set(),creatingOrder=false;
 const statuses={pending:"Ожидает подтверждения",confirmed:"Подтверждён",cancelled:"Отменён"};
@@ -42,6 +43,56 @@ const orderLabel = o => {
 };
 const setStatus=text=>{$("ordersAdminStatus").textContent=text;};
 const eventTitle=o=>o.eventTitle||events.get(o.eventId||o.eventDate)?.title||"Название мероприятия не сохранено";
+
+/* The staff editor uses exactly the same published events snapshot as the
+ * guest site's BALI Calendar. The private Sheets catalog is only a fallback
+ * while this public snapshot is unavailable. */
+const minskToday=()=>new Date(Date.now()+3*3600000).toISOString().slice(0,10);
+const calendarValue=field=>field?.stringValue??field?.timestampValue??
+  field?.booleanValue??field?.integerValue??field?.doubleValue??"";
+async function refreshCalendarEvents({force=false,quiet=false}={}){
+  if(!sheetsEnabled())return;
+  if(calendarReadPromise)return calendarReadPromise;
+  if(!force&&calendarSourceLoaded&&Date.now()-calendarLastRead<45000)return;
+  const job=(async()=>{
+    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8500);
+    try{
+      const response=await fetch("/api/public-data?path=events",{
+        method:"GET",credentials:"omit",headers:{Accept:"application/json"},
+        cache:"no-store",signal:controller.signal
+      });
+      if(!response.ok)throw Error("Сайт временно не отдаёт календарь.");
+      const data=await response.json();
+      if(!Array.isArray(data.documents))throw Error("Ошибка формата списка мероприятий.");
+      const next=new Map();
+      for(const document of data.documents){
+        const id=String(document.name||"").split("/").pop();
+        const fields=document.fields||{};
+        const date=String(calendarValue(fields.date)||"");
+        const title=String(calendarValue(fields.title)||"").trim();
+        if(!id||!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||!title)continue;
+        next.set(id,{id,date,title,startTime:String(calendarValue(fields.startTime)||""),
+          endTime:String(calendarValue(fields.endTime)||""),
+          closesAt:String(calendarValue(fields.closesAt)||""),
+          preorderEnabled:calendarValue(fields.preorderEnabled)===true});
+      }
+      calendarSourceLoaded=true;calendarLastRead=Date.now();
+      events=next;
+      renderDates();renderOrders();syncWorkspaceReportScope();
+      if($("orderEditDialog").open){
+        fillOrderEventOptions($("editOrderEvent").value);
+        $("editOrderCalendarHint").textContent="Мероприятия обновлены с календаря сайта BALI.";
+      }
+    }catch(error){
+      if(!quiet&&$("orderEditDialog").open)
+        $("editOrderCalendarHint").textContent="Календарь недоступен. Показаны последние загруженные мероприятия.";
+      throw error;
+    }finally{clearTimeout(timeout);}
+  })();
+  calendarReadPromise=job;
+  try{await job;}finally{if(calendarReadPromise===job)calendarReadPromise=null;}
+}
+
 function node(tag,text="",cls=""){
   const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e;
 }
@@ -639,22 +690,37 @@ $("showArchivedOrders")?.addEventListener("click",()=>{
   renderOrders();
 });
 function fillOrderEventOptions(preferredId=""){
-  const select=$("editOrderEvent"),date=$("editOrderDate").value;
+  const select=$("editOrderEvent");
   const previous=preferredId||select.value;
+  const existingId=!creatingOrder&&editOrder?(editOrder.eventId||editOrder.eventDate):"";
   select.replaceChildren(new Option("Выберите мероприятие",""));
-  for(const [id,event] of [...events].filter(([,event])=>event.date===date)
-    .sort((a,b)=>(a[1].startTime||"").localeCompare(b[1].startTime||"")||a[0].localeCompare(b[0]))){
-    select.add(new Option(event.title+(event.startTime?" · "+event.startTime:""),id));
+  const today=minskToday();
+  const available=[...events].filter(([id,event])=>event.date>=today||id===existingId)
+    .sort((a,b)=>a[1].date.localeCompare(b[1].date)||
+      (a[1].startTime||"").localeCompare(b[1].startTime||"")||
+      a[1].title.localeCompare(b[1].title,"ru"));
+  for(const [id,event] of available){
+    select.add(new Option(readableOrderDate(event.date)+" · "+event.title+
+      (event.startTime?" · "+event.startTime:""),id));
   }
-  // Existing orders remain editable even when an older event was removed.
-  if(!creatingOrder&&editOrder?.eventDate===date){
-    const originalId=editOrder.eventId||date;
-    if(![...select.options].some(o=>o.value===originalId))
-      select.add(new Option(eventTitle(editOrder)+" · архивное мероприятие",originalId));
+  // Historical orders stay editable even after a poster has left the website.
+  if(existingId&&![...select.options].some(option=>option.value===existingId)){
+    select.add(new Option(readableOrderDate(editOrder.eventDate)+" · "+
+      eventTitle(editOrder)+" (из заказа)",existingId));
   }
-  if([...select.options].some(o=>o.value===previous))select.value=previous;
+  if([...select.options].some(option=>option.value===previous))select.value=previous;
 }
-$("editOrderDate").addEventListener("change",()=>fillOrderEventOptions());
+$("editOrderEvent").addEventListener("change",()=>{
+  const selected=events.get($("editOrderEvent").value);
+  if(selected?.date)$("editOrderDate").value=selected.date;
+});
+$("editOrderDate").addEventListener("change",()=>{
+  const date=$("editOrderDate").value;
+  const select=$("editOrderEvent");
+  const matches=[...events.values()].filter(event=>event.date===date);
+  if(matches.length===1)select.value=matches[0].id;
+  else if(events.get(select.value)?.date!==date)select.value="";
+});
 function openCreateOrder(){
   ensureAdmin();
   creatingOrder=true;editOrder=null;editLines=[];originalIds=new Set();
@@ -665,6 +731,7 @@ function openCreateOrder(){
   fillOrderEventOptions();
   $("editOrderStatus").value="pending";
   for(const id of ["editOrderName","editOrderPhone","editOrderReference","editOrderNotes"])$(id).value="";
+  $("editOrderExtra").open=false;
   $("orderEditStatus").textContent="Ручной заказ: учётная запись гостя не обязательна.";
   menuSelect();renderEditLines();
   $("orderEditDialog").showModal();
@@ -695,10 +762,13 @@ function renderEditLines(){
       item.quantity=qty;
       editTotal();
     });
-    row.append(details,step,button("Убрать",()=>{
+    const remove=button("×",()=>{
       editLines=editLines.filter(x=>x.id!==item.id);
       renderEditLines();
-    },"danger-action"));
+    },"danger-action");
+    remove.setAttribute("aria-label","Убрать "+item.name);
+    remove.title="Убрать блюдо";
+    row.append(details,step,remove);
     root.append(row);
   }
   if(!editLines.length)root.append(node("p","Нет блюд. Добавьте хотя бы одну позицию."));
@@ -742,9 +812,12 @@ async function openEditor(id){
     $("editOrderPhone").value=o.customerPhone;
     $("editOrderReference").value=bookingReference(o);
     $("editOrderNotes").value=o.notes;
+    $("editOrderExtra").open=false;
+    $("editOrderCalendarHint").textContent="Обновляем мероприятия с основного календаря BALI…";
     $("orderEditStatus").textContent="";
     menuSelect();renderEditLines();
     $("orderEditDialog").showModal();
+    if(sheetsEnabled())void refreshCalendarEvents({force:true}).catch(()=>{});
   }catch(e){setStatus("Не удалось открыть заказ: "+(e.code||e.message||"unknown"));}
 }
 window.addEventListener("bali:admin:open-order",({detail})=>{
@@ -771,7 +844,7 @@ $("orderEditForm").addEventListener("submit",async event=>{
   const linkedEmail=creatingOrder?$("editOrderGuestEmail").value.trim().toLowerCase():"";
   if(!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)
       ||!eventId || (!selectedEvent&&!samePreviousEvent) ||
-      (selectedEvent&&selectedEvent.date!==eventDate)
+      (selectedEvent&&selectedEvent.date!==eventDate&&!samePreviousEvent)
       ||customerName.length<2||customerName.length>100
       ||!/^\+[1-9][0-9]{7,14}$/.test(customerPhone)
       ||!reference||tableNumber.length>20||bookingId.length>60
@@ -896,7 +969,7 @@ async function subscribe(user) {
   dateRevision++;dateOrders=[];loadedDate="";
   reportScopeKey="";clearDishOnlinePreview();
   const current=++generation;
-  orders=[];catalog=[];events=new Map();authorized=false;preorderOnlyStaff=false;sheetsCanEditOrders=false;
+  orders=[];catalog=[];events=new Map();calendarSourceLoaded=false;calendarLastRead=0;authorized=false;preorderOnlyStaff=false;sheetsCanEditOrders=false;
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
   $("ordersAdminList").textContent="Проверяем права...";
   if(!user||!user.emailVerified)return;
@@ -914,11 +987,12 @@ async function subscribe(user) {
       authorized=true;
       void menuReady.then(({data:available})=>{
         if(current!==generation||!available)return;
-        events=new Map((available.events||[]).map(e=>[e.id,e]));
+        if(!calendarSourceLoaded)events=new Map((available.events||[]).map(e=>[e.id,e]));
         catalog=(available.menu||[]).map(item=>({...item,id:Number(item.id),available:true}))
           .filter(item=>Number.isSafeInteger(item.id)&&Number.isFinite(item.price));
         renderDates();menuSelect();syncWorkspaceReportScope();
       });
+      void refreshCalendarEvents({force:true,quiet:true}).catch(()=>{});
       orders=(recent.orders||[]).filter(withinOrderRetention);
       renderDates();renderOrders();menuSelect();syncWorkspaceReportScope();
       // The server authorizes staff edits and reports. Manual creation and
@@ -944,9 +1018,17 @@ async function subscribe(user) {
         }catch(e){if(current===generation)setStatus("Не удалось обновить очередь: "+(e.message||e.code));}
         finally{refreshing=false;lastRefreshAt=Date.now();}
       };
-      const timer=setInterval(()=>{if(document.visibilityState==="visible")void refresh()},60000);
+      const timer=setInterval(()=>{
+        if(document.visibilityState==="visible"){
+          void refresh();
+          void refreshCalendarEvents({quiet:true}).catch(()=>{});
+        }
+      },60000);
       unsubOrders=()=>clearInterval(timer);
-      const focus=()=>void refresh();
+      const focus=()=>{
+        void refresh();
+        void refreshCalendarEvents({quiet:true}).catch(()=>{});
+      };
       window.addEventListener("focus",focus);
       unsubEvents=()=>window.removeEventListener("focus",focus);
       return;
