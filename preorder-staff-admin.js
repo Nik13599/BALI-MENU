@@ -8,6 +8,21 @@ const manage=httpsCallable(functions,"manageBaliPreorderStaff");
 const $=id=>document.getElementById(id);
 let generation=0,allowed=false,busy=false;
 const status=(s)=>{$("preorderStaffAdminStatus").textContent=s;};
+const staffError=(error)=>{
+  const code=String(error?.code||"").replace(/^functions\//,"");
+  switch(code){
+    case "not-found":return "Серверная функция регистрации сотрудников не опубликована в Firebase. Проверьте развёртывание manageBaliPreorderStaff.";
+    case "internal":return "Ошибка сервера Firebase (internal). Последнее развёртывание функции сотрудников завершилось ошибкой прав. Проверьте Cloud Functions, Cloud Build и IAM.";
+    case "unavailable":return "Сервис Firebase временно недоступен. Повторите после восстановления соединения.";
+    case "permission-denied":return "Недостаточно прав для создания сотрудника. Проверьте права администратора и серверного аккаунта.";
+    case "unauthenticated":return "Сессия администратора недействительна. Войдите в админку заново.";
+    case "already-exists":return "Такой логин уже занят. Выберите другой.";
+    case "failed-precondition":return error?.message||"Не выполнены условия настройки Firebase Authentication.";
+    case "invalid-argument":return error?.message||"Проверьте введённые данные.";
+    default:return (error?.message&&error.message!=="internal"?error.message:"Неизвестная ошибка Firebase.")+
+      (code?" ("+code+")":"");
+  }
+};
 const item=(tag,txt,cls)=>{const n=document.createElement(tag);n.textContent=txt;if(cls)n.className=cls;return n;};
 const entry=(placeholder,type="text")=>{
   const input=document.createElement("input");input.placeholder=placeholder;input.type=type;
@@ -41,7 +56,7 @@ async function refresh(){
           busy=true;submit.disabled=true;
           try{await manage({action:"resetPassword",uid:row.uid,password:password.value});
             password.value="";status("Пароль сотрудника «"+row.login+"» изменён.");form.remove();}
-          catch(e){status("Не удалось сменить пароль: "+(e.message||e.code));}
+          catch(e){status("Не удалось сменить пароль: "+staffError(e));}
           finally{busy=false;submit.disabled=false;}
         };
         section.querySelector(".preorder-staff-reset")?.remove();
@@ -52,13 +67,12 @@ async function refresh(){
         busy=true;toggle.disabled=true;
         try{await manage({action:"setActive",uid:row.uid,active:!row.active});
           status("Доступ сотрудника «"+row.login+"» изменён.");await refresh();}
-        catch(e){status("Не удалось обновить доступ: "+(e.message||e.code));}
+        catch(e){status("Не удалось обновить доступ: "+staffError(e));}
         finally{busy=false;toggle.disabled=false;}
       });
       actions.append(reset,toggle);section.append(details,actions);output.append(section);
     }
-  }catch(e){output.replaceChildren();status("Список сотрудников недоступен: "+
-    (e.code==="functions/not-found"?"не опубликована функция Firebase.":e.message||e.code));}
+  }catch(e){output.replaceChildren();status("Список сотрудников недоступен: "+staffError(e));}
 }
 $("preorderStaffCreateForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!allowed||busy)return;
@@ -73,7 +87,7 @@ $("preorderStaffCreateForm").addEventListener("submit",async e=>{
     $("preorderStaffPassword").value="";$("preorderStaffCreateForm").reset();
     status("Аккаунт сотрудника «"+login+"» создан. Передайте логин и пароль лично.");
     await refresh();
-  }catch(e){status("Аккаунт не создан: "+(e.message||e.code));}
+  }catch(e){status("Аккаунт не создан: "+staffError(e));}
   finally{busy=false;btn.disabled=false;}
 });
 $("preorderStaffRefresh").addEventListener("click",refresh);
