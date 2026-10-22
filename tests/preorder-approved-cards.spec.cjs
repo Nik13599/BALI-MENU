@@ -83,7 +83,7 @@ test("status and amount match approved positions on small and large screens",asy
   await expect(card.getByRole("button",{name:"Подтвердить"})).toHaveCount(0);
   const positions=await card.evaluate(el=>{
     const r=selector=>el.querySelector(selector).getBoundingClientRect();
-    const card=r(".preorder-approved-card");
+    const card=el.getBoundingClientRect();
     const status=r(".preorder-approved-top");
     const foot=r(".preorder-approved-foot");
     const amount=r(".preorder-approved-total");
