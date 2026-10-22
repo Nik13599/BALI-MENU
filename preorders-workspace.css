@@ -363,54 +363,17 @@ body.bali-preorders-workspace{
 .bali-preorders-workspace .preorder-create-icon{
   font-size:18px;line-height:1;font-weight:550;display:inline-block;
 }
-.bali-preorders-workspace .preorder-report-single{
-  display:grid;grid-template-columns:minmax(220px,1fr) auto;
-  align-items:end;gap:12px;padding:6px 0 4px;
-}
-.bali-preorders-workspace .preorder-report-single label{
-  color:#b3c4af;font-size:12px;display:grid;gap:6px;min-width:0;
-}
-.bali-preorders-workspace .preorder-report-single select{
-  box-sizing:border-box;width:100%;min-width:0;height:39px;
-  padding:7px 11px;border:1px solid #48624b;border-radius:8px;
-  background:#202b22;color:#f4f8f1;font-size:12px;
-}
-.bali-preorders-workspace .preorder-report-single .preorder-report-actions{
-  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
-}
-.bali-preorders-workspace .preorder-report-single .preorder-report-actions button{
-  min-height:39px;padding:7px 12px;font-size:12px;white-space:nowrap;
-}
-.bali-preorders-workspace .preorder-report-single .preorder-report-actions button:disabled{
-  opacity:.44;cursor:not-allowed;
-}
 @media(max-width:700px){
   .bali-preorders-workspace .preorder-controls #createManualOrder{
     display:flex;width:max-content;margin:8px 0 0 auto;
     min-height:36px;height:36px;padding:0 13px;font-size:12px!important;
   }
-  .bali-preorders-workspace .preorder-report-single{grid-template-columns:minmax(0,1fr);gap:9px}
-  .bali-preorders-workspace .preorder-report-single select{font-size:12px}
-  .bali-preorders-workspace .preorder-report-single .preorder-report-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:6px}
-  .bali-preorders-workspace .preorder-report-single .preorder-report-actions button{min-width:0;padding:7px 5px}
 }
-
-
 /* Day/event reporting, with a live kitchen tally inside the staff workspace. */
-.bali-preorders-workspace .preorder-report-filters{
-  display:grid;grid-template-columns:minmax(140px,0.7fr) minmax(190px,1.5fr);
-  align-items:end;gap:10px;margin:10px 0 13px;
+.bali-preorders-workspace .preorder-report-scope{
+  font-size:12px;color:#bbf58e;font-weight:700;
+  line-height:1.45;margin:6px 0 11px;overflow-wrap:anywhere;
 }
-.bali-preorders-workspace .preorder-report-filters label{
-  display:grid;gap:5px;min-width:0;color:#b4c8b5;font-size:11px;
-}
-.bali-preorders-workspace .preorder-report-filters input,
-.bali-preorders-workspace .preorder-report-filters select{
-  box-sizing:border-box;width:100%;height:38px;min-height:38px;
-  border-radius:8px;border:1px solid #48624b;
-  background:#202b22;color:#f4f8f1;padding:6px 9px;font-size:12px;
-}
-.bali-preorders-workspace .preorder-report-filters input{color-scheme:dark}
 .bali-preorders-workspace .preorder-report-row .preorder-report-actions button:disabled{
   opacity:.43;cursor:not-allowed;
 }
@@ -440,14 +403,8 @@ body.bali-preorders-workspace{
   width:32%;text-align:right;font-variant-numeric:tabular-nums
 }
 @media(max-width:700px){
-  .bali-preorders-workspace .preorder-report-filters{grid-template-columns:1fr 1fr;gap:7px}
-  .bali-preorders-workspace .preorder-report-filters input,
-  .bali-preorders-workspace .preorder-report-filters select{font-size:11px;min-width:0}
   .bali-preorders-workspace .preorder-report-row .preorder-report-actions{width:100%;display:flex;gap:5px}
   .bali-preorders-workspace .preorder-report-row .preorder-report-actions button{
     flex:1 1 auto;min-width:0;padding:6px 7px;
   }
-}
-@media(max-width:359px){
-  .bali-preorders-workspace .preorder-report-filters{grid-template-columns:1fr}
 }
