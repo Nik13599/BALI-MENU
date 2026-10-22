@@ -5,7 +5,7 @@ const columns={
   "Заказы":18,"Позиции заказов":8,"Меню":8,"Мероприятия":6,
   "Баннеры":6,"Администраторы":5,"История изменений":6,"Настройки":3,
   "Гости":8,"BALI ID":6,"Привилегии":6,"Бонусы":12,"История бонусов":10,
-  "BALI COIN":4,"История BALI COIN":9,"Согласия":6,"Планы гостя":6
+  "BALI COIN":4,"История BALI COIN":9,"Согласия":6,"Планы гостя":6,"Посещения":6
 };
 const sheets=new Map(Object.entries(columns).map(([name,cols])=>[name,[Array(cols).fill("header")]]));
 function range(name,row,col,height=1,width=1){
