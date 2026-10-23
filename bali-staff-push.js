@@ -50,6 +50,12 @@ button?.addEventListener("click",async()=>{
   if(busy||!supported())return;
   busy=true;button.disabled=true;
   try{
+    // On iOS, permission prompts must be initiated before async fetch/register
+    // operations can consume the user's activation gesture.
+    if(Notification.permission==="default"){
+      const granted=await Notification.requestPermission();
+      if(granted!=="granted")throw Error("Разрешите уведомления в настройках iPhone.");
+    }
     const reg=await getRegistration();
     const current=await reg.pushManager.getSubscription();
     if(current){
@@ -59,8 +65,8 @@ button?.addEventListener("click",async()=>{
       return;
     }
     // Request permission from this explicit button click only (required on iOS).
-    const permission=await Notification.requestPermission();
-    if(permission!=="granted")throw Error("Разрешите уведомления в настройках iPhone.");
+    if(Notification.permission!=="granted")
+      throw Error("Уведомления запрещены в настройках устройства.");
     const configResponse=await fetch("/api/staff-push",{cache:"no-store"});
     const config=await configResponse.json();
     if(!configResponse.ok||!config.publicKey)throw Error("Уведомления ещё не настроены на сервере.");
