@@ -11,7 +11,7 @@ import {createDurableStaffStatusQueue} from "./bali-staff-status-queue.js?v=2026
 // The Sheets workspace uses Firebase Auth only; load Firestore for its legacy mode.
 const {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBatch,
   serverTimestamp,runTransaction,query,limit,orderBy,where,Timestamp}=sheetsEnabled()?{}:await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
-import {composeBaliPreorderReport,composeBaliSinglePreorder,downloadBaliPreorderReport,showBaliPreorderTelegram} from "./bali-preorder-reports.js?v=20261022-aggregate-report3";
+import {composeBaliPreorderReport,composeBaliSinglePreorder,downloadBaliPreorderReport,showBaliPreorderTelegram} from "./bali-preorder-reports.js?v=20261023-reference-kind1";
 const readOrderLines=async row=>{
   const lines=await getDocs(collection(row.ref,"items"));
   return lines.docs.map(line=>line.data());
@@ -1367,7 +1367,7 @@ async function exportEventReport(kind,format="csv"){
       return;
     }
     if(kind==="orders"){
-      const header=["Дата","Мероприятие","Номер предзаказа","Статус","ID брони / номер стола",
+      const header=["Дата","Мероприятие","Номер предзаказа","Статус","Столик / ID брони",
         "Гость","Телефон","Email","Блюдо","Количество","Цена за шт., BYN",
         "Сумма позиции, BYN","Сумма заказа, BYN","Пожелания","Firestore ID"];
       const rows=completed.flatMap(o=>{
