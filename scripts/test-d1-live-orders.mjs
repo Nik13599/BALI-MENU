@@ -9,11 +9,14 @@ for(const name of ["0001_preorders.sql","0002_staff_status.sql","0004_live_preor
 sql.prepare("INSERT INTO migration_state(id,source,status,record_count,updated_at_ms) VALUES (?,?,?,?,?)")
  .run("preorders","test","complete",0,Date.now());
 const db={
- prepare(statement){const stmt=sql.prepare(statement);return {bind(...args){return {
-  first:async()=>stmt.get(...args)||null,
-  all:async()=>({results:stmt.all(...args)}),
-  run:async()=>({meta:{changes:stmt.run(...args).changes}})
- }}}},
+ prepare(statement){const stmt=sql.prepare(statement);
+  const run=(args=[])=>({
+   first:async()=>stmt.get(...args)||null,
+   all:async()=>({results:stmt.all(...args)}),
+   run:async()=>({meta:{changes:stmt.run(...args).changes}})
+  });
+  return {...run(),bind(...args){return run(args);}};
+ },
  async batch(commands){sql.exec("BEGIN IMMEDIATE");try{
   const results=[];for(const cmd of commands)results.push(await cmd.run());
   sql.exec("COMMIT");return results;
