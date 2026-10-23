@@ -1,0 +1,28 @@
+name: BALI ID D1 staging safety
+on:
+  push:
+    branches: [feature/bali-id-d1-staging-audit-20261023]
+  pull_request:
+    paths:
+      - 'cloudflare-pages/d1/migrations/0005_bali_id_staging.sql'
+      - 'cloudflare-pages/functions/api/admin/bali-id-migration-status.js'
+      - 'scripts/test-bali-id-d1-staging.mjs'
+      - '.github/workflows/bali-id-staging-safety.yml'
+permissions:
+  contents: read
+jobs:
+  staging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify schemas and owner's read-only audit
+        run: |
+          node --input-type=module --check < cloudflare-pages/functions/api/admin/bali-id-migration-status.js
+          node --experimental-sqlite scripts/test-bali-id-d1-staging.mjs
+      - name: Ensure no changes to Staff PC and mobile
+        run: node scripts/test-staff-appearance-locked.mjs
+      - name: Verify Cloudflare Pages build
+        run: node cloudflare-pages/build.mjs
