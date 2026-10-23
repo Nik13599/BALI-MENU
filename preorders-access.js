@@ -1,6 +1,6 @@
 import {initializeApp,getApps} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signInWithEmailAndPassword,signOut,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {preorderServiceEnabled,sheetsRequest} from "./bali-sheets-api.js";
+import {preorderServiceEnabled,sheetsRequest} from "./bali-sheets-api.js?v=20261023-d1-live1";
 // The Sheets workspace uses Firebase Auth only; load Firestore for its legacy mode.
 const {getFirestore,doc,getDoc}=preorderServiceEnabled()?{}:await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
 const app=getApps().find(app=>app.name==="bali-staff")||initializeApp(window.BALI_FIREBASE_CONFIG,"bali-staff");
