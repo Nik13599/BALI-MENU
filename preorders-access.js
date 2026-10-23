@@ -1,10 +1,10 @@
 import {initializeApp,getApps} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signInWithEmailAndPassword,signOut,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
+import {preorderServiceEnabled,sheetsRequest} from "./bali-sheets-api.js";
 // The Sheets workspace uses Firebase Auth only; load Firestore for its legacy mode.
-const {getFirestore,doc,getDoc}=sheetsEnabled()?{}:await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+const {getFirestore,doc,getDoc}=preorderServiceEnabled()?{}:await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
 const app=getApps().find(app=>app.name==="bali-staff")||initializeApp(window.BALI_FIREBASE_CONFIG,"bali-staff");
-const auth=getAuth(app),db=sheetsEnabled()?null:getFirestore(app),$=id=>document.getElementById(id);
+const auth=getAuth(app),db=preorderServiceEnabled()?null:getFirestore(app),$=id=>document.getElementById(id);
 window.BaliSheetsToken=()=>auth.currentUser?.getIdToken()||null;
 const sessionReady=setPersistence(auth,browserLocalPersistence);
 // Attach a rejection handler immediately; sign-in also awaits this promise.
@@ -15,7 +15,7 @@ const status=text=>{
   $("staffSessionLoading").hidden=true;
   if(text){$("loginView").hidden=false;$("adminView").hidden=true;$("staffHeaderAccount").hidden=true;}
 };
-if(sheetsEnabled()){
+if(preorderServiceEnabled()){
   $("loginIdentity").textContent="Доступ к предзаказам проверяется по назначенной сотруднику роли на сервере.";
 }
 $("preorderStaffLogin").addEventListener("submit",async e=>{
@@ -56,7 +56,7 @@ onAuthStateChanged(auth,async user=>{
   // Never reveal the order workspace before the backend has confirmed
   // the current staff role. Keep the session splash visible until authorization.
   try{
-    if(sheetsEnabled()){
+    if(preorderServiceEnabled()){
       // This endpoint checks the current admin/staff role before returning data.
       await sheetsRequest("staffRecentOrders");
       if(current!==seq)return;
