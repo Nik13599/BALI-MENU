@@ -7,7 +7,7 @@ test.beforeEach(async({page})=>{
 });
 test("dedicated preorder page contains no general admin editors",async({page})=>{
   await page.goto("/preorders.html");
-  await expect(page.locator("#loginView")).toBeVisible();
+  // Without network access, the login shell legitimately waits for Firebase\n  // to restore a session. Verify the bootstrap and then inspect the static UI.\n  await expect(page.locator("#staffSessionLoading")).toBeVisible();
   await expect(page.locator("#adminView")).toBeHidden();
   for(const id of ["ordersDateFilter","ordersEventFilter","createManualOrder",
     "clearExpiredOrders","preorderReportScope",
@@ -18,7 +18,7 @@ test("dedicated preorder page contains no general admin editors",async({page})=>
     await expect(page.locator("#"+id)).toHaveCount(1);
   }
   await expect(page.locator("#adminMenuPanel, #adminDesignPanel, #adminClientsPanel")).toHaveCount(0);
-  await page.evaluate(()=>{document.getElementById("loginView").hidden=true;document.getElementById("adminView").hidden=false;});
+  await page.evaluate(()=>{document.getElementById("staffSessionLoading").hidden=true;document.getElementById("loginView").hidden=true;document.getElementById("adminView").hidden=false;});
   await expect(page.locator("#createManualOrder")).toBeVisible();
   await expect(page.locator(".preorder-tools")).not.toHaveAttribute("open","");
   await page.locator(".preorder-tools summary").click();
