@@ -43,7 +43,11 @@ const input=[
  ['brsmCards/'+uid,{uid,active:true}],
  ['brsmCampaigns/campaign_one',{status:'draft'}],
  ['brsmCampaigns/campaign_one/entries/'+uid,{uid,visits:1}],
- ['brsmCampaigns/campaign_one/roundPrivate/round_one',{entries:[{uid,numbers:[1,2]}]}]
+ ['brsmCampaigns/campaign_one/roundPrivate/round_one',{entries:[{uid,numbers:[1,2]}]}],
+ // Unrelated app data must never be fetched by the BALI source exporter.
+ ['otherModule/unrelated/items/not-bali',{privateRecord:true}],
+ ['otherModule/unrelated/history/not-bali',{privateRecord:true}],
+ ['otherModule/unrelated/events/not-bali',{privateRecord:true}]
 ];
 // Exercise pagination in both Firestore and D1, beyond a single 250-row page.
 for(let i=0;i<260;i++)input.push(['walletOperations/page_'+String(i).padStart(4,'0'),{guestUid:uid,count:1}]);
@@ -63,8 +67,26 @@ function query(filter){
  return q;
 }
 const firestore=()=>({
- collection:name=>query(path=>path.split('/').length===2&&path.split('/')[0]===name),
- collectionGroup:name=>query(path=>path.split('/').at(-2)===name)
+ collection(name){
+  const root=query(path=>path.split('/').length===2&&path.split('/')[0]===name);
+  // Firestore listDocuments includes missing parents with live subcollections.
+  root.listDocuments=async()=>{
+   const ids=new Set();
+   for(const doc of docs){
+    const parts=doc.ref.path.split('/');
+    if(parts[0]===name&&parts.length>=2)ids.add(parts[1]);
+   }
+   return [...ids].sort().map(id=>({
+    path:name+'/'+id,
+    collection(group){return query(path=>{
+     const parts=path.split('/');
+     return parts.length===4&&parts[0]===name&&parts[1]===id&&parts[2]===group;
+    });}
+   }));
+  };
+  return root;
+ },
+ collectionGroup(){throw Error('Global collection-group reads are prohibited');}
 });
 firestore.FieldPath={documentId:()=> '__name__'};
 const fakeAdmin={credential:{applicationDefault:()=>({fixture:true})},
@@ -122,6 +144,10 @@ try{
  assert.deepEqual(report.counts,[0,0,0]);
  const inventory=JSON.parse(result.stdout.split('\n')[0]);
  assert.equal(inventory.totalDocuments,279);
+ assert.equal(inventory.scopes['transfer-inbox'],1,
+  'Missing parent with nested inbox must be preserved');
+ assert.equal(inventory.scopes['coin-history'],1,
+  'Coin history must be read only under BALI account parents');
  assert.equal(inventory.scopes['card-counters'],1);
  assert.equal(inventory.scopes.operations,261);
  assert.equal(inventory.scopes['qr-codes'],1);
