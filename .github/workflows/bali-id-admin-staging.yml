@@ -1,0 +1,81 @@
+name: BALI ID Admin staging and integrity
+on:
+  push:
+    branches:
+      - feature/bali-id-admin-export-20261023
+  pull_request:
+    paths:
+      - 'scripts/stage-bali-id-from-firestore.cjs'
+      - 'scripts/test-bali-id-admin-export.mjs'
+      - 'cloudflare-pages/d1/migrations/0006_bali_id_operation_details_staging.sql'
+      - '.github/workflows/bali-id-admin-staging.yml'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Firebase read-only audit, or stage to D1 without cutover'
+        type: choice
+        required: true
+        options:
+          - audit
+          - stage
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  offline-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify JS syntax
+        run: |
+          node --check scripts/stage-bali-id-from-firestore.cjs
+          node --check scripts/test-bali-id-admin-export.mjs
+      - name: Verify safe Firebase UID, card, grant and history staging
+        run: node --experimental-sqlite scripts/test-bali-id-admin-export.mjs
+      - name: Protect BALI Staff desktop/mobile design
+        run: node scripts/test-staff-appearance-locked.mjs
+  owner-staging:
+    if: github.event_name == 'workflow_dispatch'
+    needs: offline-integrity
+    runs-on: ubuntu-latest
+    environment: firebase-production
+    concurrency:
+      group: bali-id-staging-production
+      cancel-in-progress: false
+    env:
+      GOOGLE_CLOUD_PROJECT: bali-menu-5a48b
+      CLOUDFLARE_ACCOUNT_ID: 399972c0a0358037b0cb4d0d46ce69a3
+      CLOUDFLARE_D1_DATABASE_ID: 6ec5e063-e2b7-48ce-beb9-d59af7207353
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      MODE: ${{ inputs.mode }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enforce correct project and nonempty Firebase identity
+        env:
+          PROVIDER: ${{ vars.FIREBASE_WIF_PROVIDER }}
+          SERVICE_ACCOUNT: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          test "$GOOGLE_CLOUD_PROJECT" = "bali-menu-5a48b"
+          test -n "$PROVIDER"
+          test -n "$SERVICE_ACCOUNT"
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.FIREBASE_WIF_PROVIDER }}
+          service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+          project_id: bali-menu-5a48b
+      - name: Install Firebase Admin only
+        run: npm install --prefix functions --no-audit --no-fund
+      - name: Read-only export and integrity audit
+        if: inputs.mode == 'audit'
+        run: node scripts/stage-bali-id-from-firestore.cjs
+      - name: Stage verified records; never switch bonuses
+        if: inputs.mode == 'stage'
+        env:
+          BALI_ID_STAGING_APPROVED: YES
+        run: node scripts/stage-bali-id-from-firestore.cjs --apply
