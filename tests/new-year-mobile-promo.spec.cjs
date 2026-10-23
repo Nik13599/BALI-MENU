@@ -12,6 +12,9 @@ const savedHoliday=()=>({
 
 // Isolate the promotional renderer from the production Firebase connection.
 test.beforeEach(async({page})=>{
+  // Every scenario supplies an explicit published offer or editor fixture.
+  // The real async guest renderer would race and clear those isolated slides.
+  await page.route('**/bali-pc-offers.js*',route=>route.fulfill({contentType:'text/javascript',body:'export {};'}));
   await page.route("**/*",route=>
     new URL(route.request().url()).hostname==="127.0.0.1"?
       route.continue():route.abort());
