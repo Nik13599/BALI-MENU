@@ -6,6 +6,7 @@ const source=file=>readFileSync(file,"utf8");
 const db=new DatabaseSync(":memory:");
 db.exec(source("cloudflare-pages/d1/migrations/0001_preorders.sql"));
 db.exec(source("cloudflare-pages/d1/migrations/0002_staff_status.sql"));
+db.exec(source("cloudflare-pages/d1/migrations/0004_live_preorder_receipts.sql"));
 const wrap={
  prepare(sql){
   const stmt=db.prepare(sql);
