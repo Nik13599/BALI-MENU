@@ -14,6 +14,10 @@ on:
       - 'cloudflare-pages/functions/_lib/d1-orders.js'
       - 'cloudflare-pages/d1/migrations/0010_staff_web_push.sql'
       - 'scripts/test-staff-web-push.mjs'
+      - 'scripts/test-staff-order-revision.mjs'
+      - 'admin-orders.js'
+      - 'preorders-workspace.css'
+      - 'cloudflare-pages/functions/api/staff-order-revision.js'
       - '.github/workflows/bali-staff-web-push.yml'
   push:
     branches: [main]
@@ -79,6 +83,8 @@ jobs:
           NODE
       - name: Verify Web Push encryption, VAPID and receipt handling
         run: node scripts/test-staff-web-push.mjs
+      - name: Verify indexed staff revision and in-app new order notifications
+        run: node --experimental-sqlite scripts/test-staff-order-revision.mjs
       - name: Verify existing guest/Staff order contract
         run: node --experimental-sqlite scripts/test-d1-live-preorders.mjs
       - name: Verify Cloudflare Pages output
