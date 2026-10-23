@@ -11,6 +11,11 @@ on:
       - 'bali-sheets-api.js'
       - 'preorders.html'
       - 'scripts/test-d1-live-preorders.mjs'
+      - 'scripts/test-bali-staff-controls.mjs'
+      - 'cloudflare-pages/functions/_lib/d1-orders.js'
+      - 'cloudflare-pages/functions/api/staff-session.js'
+      - 'admin-orders.js'
+      - 'preorders-access.js'
       - '.github/workflows/d1-live-preorders.yml'
 permissions:
   contents: read
@@ -30,10 +35,15 @@ jobs:
           node --input-type=module --check < cloudflare-pages/functions/api/d1-preorders.js
           node --input-type=module --check < cloudflare-pages/functions/api/bali-v3.js
           node --input-type=module --check < bali-sheets-api.js
+          node --input-type=module --check < preorders-access.js
+          node --input-type=module --check < admin-orders.js
+          node --input-type=module --check < cloudflare-pages/functions/_lib/d1-orders.js
+          node --input-type=module --check < cloudflare-pages/functions/api/staff-session.js
       - name: Run atomic D1 and role-aware guest/Staff integration
         run: |
           node --experimental-sqlite scripts/test-d1-live-preorders.mjs
           node --experimental-sqlite scripts/test-d1-staff-status.mjs
+          node scripts/test-bali-staff-controls.mjs
       - name: Assert Staff desktop and mobile appearance unchanged
         run: node scripts/test-staff-appearance-locked.mjs
       - name: Build Cloudflare site

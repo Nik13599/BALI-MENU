@@ -8,13 +8,23 @@ self.addEventListener("push",event=>{
   const title="BALI STAFF • Новый заказ";
   const options={
     body:"Откройте предзаказы, чтобы посмотреть новый заказ.",
-    icon:"/assets/bali-nightclub-logo.png",
-    badge:"/assets/bali-nightclub-logo.png",
+    icon:"/bali-staff-approved-icon.png?v=20261023-1",
+    badge:"/bali-staff-approved-icon.png?v=20261023-1",
     tag:detail.orderId?"bali-order-"+String(detail.orderId).slice(0,128):"bali-new-order",
     data:{url:"/preorders.html"},
     renotify:false
   };
-  event.waitUntil(self.registration.showNotification(title,options));
+  event.waitUntil(Promise.all([
+    self.registration.showNotification(title,options),
+    self.clients.matchAll({type:"window",includeUncontrolled:true}).then(clients=>{
+      for(const client of clients){
+        try{
+          if(new URL(client.url).pathname==="/preorders.html")
+            client.postMessage({type:"bali-staff:new-order",orderId:String(detail.orderId||"").slice(0,128)});
+        }catch{}
+      }
+    })
+  ]));
 });
 self.addEventListener("notificationclick",event=>{
   event.notification.close();

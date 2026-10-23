@@ -109,6 +109,9 @@ createForm?.addEventListener("submit",async event=>{
 });
 $("baliQrPrint")?.addEventListener("click",()=>{if(lastBatch.length)window.print();});
 $("baliQrRefreshList")?.addEventListener("click",()=>void loadList());
+const newGrantRequestId=()=>Array.from(crypto.getRandomValues(new Uint8Array(16)),
+ b=>b.toString(16).padStart(2,"0")).join("");
+let pendingGrant=null;
 const grant=$("baliAdminBonusGrantForm");
 grant?.addEventListener("submit",async event=>{
  event.preventDefault();const uid=$("baliPrivilegeGuestUid")?.value,data=new FormData(grant);
@@ -116,11 +119,21 @@ grant?.addEventListener("submit",async event=>{
  if(!uid||!kinds.has(kind)||!Number.isInteger(quantity)||quantity<1||quantity>999||reason.length<5){status(grant,"Выберите гостя, тип, количество и основание.");return;}
  if(!confirm("Начислить "+quantity+" "+kinds.get(kind)+" выбранному гостю?"))return;
  const button=grant.querySelector('button[type="submit"]');button.disabled=true;status(grant,"Начисляем…");
- try{const result=sheetsEnabled()?
-  (await sheetsRequest("bonusGrant",{uid,kind,quantity,transferable,reason})).result:
-  (await calls.issueBaliQuantity({uid,kind,quantity,transferable,reason})).data;
+ const payload={uid,kind,quantity,transferable,reason};
+ const signature=JSON.stringify(payload);
+ if(pendingGrant?.signature!==signature)
+  pendingGrant={signature,requestId:newGrantRequestId()};
+ try{
+  // Only the current Firebase wallet may be mutated. An identical retry uses
+  // the same operation ID, so a lost response cannot credit the guest twice.
+  const result=(await calls.issueBaliQuantity({...payload,requestId:pendingGrant.requestId})).data;
   if(!result?.ok)throw Error("Нет подтверждения сервера");
-  status(grant,"Бонусы начислены. Баланс и история гостя обновятся.");
- }catch(e){status(grant,errorText(e));}finally{button.disabled=false}
+  pendingGrant=null;
+  status(grant,result.alreadyProcessed?"Начисление уже записано. Повтор не изменил баланс.":
+   "Бонусы начислены. Баланс и история гостя обновятся.");
+ }catch(e){
+  status(grant,"Операция не подтверждена: "+errorText(e)+
+   ". Повторите с теми же данными, чтобы избежать двойного начисления.");
+ }finally{button.disabled=false}
 });
 onAuthStateChanged(auth,user=>{if(user?.emailVerified){void reloadKinds();void loadList();}});

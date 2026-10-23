@@ -3,8 +3,8 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>BALI | Предзаказы · Сотрудники</title>
-<link rel="icon" href="assets/bali-favicon.svg">
-<link rel="apple-touch-icon" href="/assets/bali-nightclub-logo.png">
+<link rel="icon" href="/bali-staff-approved-icon.png?v=20261023-1">
+<link rel="apple-touch-icon" href="/bali-staff-approved-icon.png?v=20261023-1">
 <link rel="manifest" href="/bali-staff.webmanifest">
 <meta name="theme-color" content="#0f1712">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="BALI STAFF">
 <link rel="stylesheet" href="generated/admin.css?v=faac21ed7332">
 <link rel="stylesheet" href="preorders-workspace.css?v=20261023-reference-kind3">
+<link rel="stylesheet" href="bali-staff-live-notice.css?v=20261023-live-orders2">
 <style>
 .bali-preorders-workspace #staffNotifications{min-height:30px;padding:5px 9px;font-size:11px;white-space:nowrap;border:1px solid #60744c;color:#cafa95;background:#1c291f;border-radius:7px}
 .bali-preorders-workspace #staffNotifications[aria-pressed="true"]{border-color:#b4f87c}
@@ -19,6 +20,16 @@
 .bali-preorders-workspace .staff-notification-status{margin:0;color:#acbaac;font-size:11px;line-height:1.2}
 .bali-preorders-workspace .staff-notification-status:empty{display:none}
 @media(max-width:570px){.bali-preorders-workspace #staffNotifications{font-size:10px;min-width:35px;padding:4px 6px}}
+</style>
+<style>
+/* Login only; approved Staff desktop/tablet/mobile order CSS stays untouched. */
+.bali-preorders-workspace .staff-google-login{width:100%;min-height:44px;
+ font-weight:700;border:1px solid #75946c;background:#202b22;color:#f4f8f4}
+.bali-preorders-workspace .staff-login-separator{color:#a8b7a9;font-size:12px;
+ text-align:center;margin:13px 0 12px}
+.bali-preorders-workspace #loginView[hidden],
+.bali-preorders-workspace #staffSessionLoading[hidden]{display:none!important}
+.bali-preorders-workspace #loginStatus:empty{display:none}
 </style>
 </head><body class="bali-preorders-workspace">
 <header class="topbar" role="banner">
@@ -37,17 +48,18 @@
 <div class="login-logo" aria-hidden="true">✦</div><div class="eyebrow">BALI · ПРЕДЗАКАЗЫ</div>
 <h1>Вход сотрудников</h1>
 <p class="login-description">Вход только для сотрудников, назначенных руководителем.</p>
-<form id="preorderStaffLogin" class="preorder-login-form">
+<div class="staff-login-methods">
+<button type="button" id="adminSignIn" class="staff-google-login">Войти через Google</button>
+<p class="staff-login-separator">или войдите по логину и паролю</p>
+</div>
+<form id="preorderStaffLogin" class="preorder-login-form" novalidate>
 <label for="staffLoginName">Логин сотрудника</label>
 <input id="staffLoginName" name="login" autocomplete="username" minlength="3" maxlength="32" pattern="[a-zA-Z][a-zA-Z0-9_-]{2,31}" required placeholder="Например, staff01">
 <label for="staffLoginPassword">Пароль</label>
 <input id="staffLoginPassword" name="password" type="password" autocomplete="current-password" minlength="12" required placeholder="Ваш пароль">
 <button type="submit" class="primary login-button" id="staffPasswordSignIn">Войти в предзаказы</button>
 </form>
-<details class="preorder-admin-owner-entry"><summary>Вход сотрудника через Google</summary>
-<button type="button" id="adminSignIn">Войти через Google</button><p class="hint">Доступ откроется только после назначения прав руководителем. Обычный Google-аккаунт не получает административных полномочий.</p></details>
-<button type="button" id="adminSwitchAccount" hidden>Сменить учётную запись</button>
-<p class="hint" id="loginIdentity"></p><p id="loginStatus" class="status" role="status"></p></section>
+<p id="loginStatus" class="status" role="status" aria-live="polite"></p></section>
 <section id="adminView" class="preorder-workspace" hidden>
 <p id="staffNotificationStatus" class="staff-notification-status" role="status" aria-live="polite"></p>
 
@@ -182,7 +194,7 @@
 <script src="bali-guest-preorder-config.js?v=20261022-guest-public1"></script>
 <script>window.BALI_D1_PREORDERS_ENABLED=true;</script>
 <script src="firebase-config.js?v=20261020-2"></script>
-<script type="module" src="preorders-access.js?v=20261023-auth-d1-role2"></script>
-<script type="module" src="admin-orders.js?v=20261023-reference-kind5"></script>
-<script type="module" src="bali-staff-push.js?v=20261023-webpush1"></script>
+<script type="module" src="preorders-access.js?v=20261023-auth-simple4"></script>
+<script type="module" src="admin-orders.js?v=20261023-single-actions4"></script>
+<script type="module" src="bali-staff-push.js?v=20261023-live-orders2"></script>
 </body></html>

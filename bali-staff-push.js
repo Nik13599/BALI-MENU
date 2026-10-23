@@ -27,7 +27,9 @@ async function syncStatus(){
   try{
     const sub=await activeSubscription();
     update(Boolean(sub));
-    if(sub&&Notification.permission==="granted")status("Уведомления включены на этом устройстве.");
+    const enabled=Boolean(sub&&Notification.permission==="granted");
+    window.dispatchEvent(new CustomEvent("bali-staff-push-status",{detail:{enabled}}));
+    if(enabled)status("Уведомления включены на этом устройстве.");
     else status("Нажмите «Уведомления», чтобы получать новые предзаказы.");
   }catch{status("Не удалось проверить разрешение на уведомления.");update(false);}
 }
@@ -62,6 +64,7 @@ button?.addEventListener("click",async()=>{
       await request("unsubscribe",current.toJSON());
       await current.unsubscribe();
       status("Уведомления отключены.");update(false);
+      window.dispatchEvent(new CustomEvent("bali-staff-push-status",{detail:{enabled:false}}));
       return;
     }
     // Request permission from this explicit button click only (required on iOS).
@@ -77,6 +80,7 @@ button?.addEventListener("click",async()=>{
     catch(error){await sub.unsubscribe().catch(()=>{});throw error;}
     status("Уведомления включены! Новые заказы будут приходить на телефон.");
     update(true);
+    window.dispatchEvent(new CustomEvent("bali-staff-push-status",{detail:{enabled:true}}));
   }catch(error){status(error?.message||"Не получилось включить уведомления.");}
   finally{busy=false;button.disabled=false;}
 });
@@ -92,5 +96,6 @@ window.BaliStaffPushDisable=async()=>{
 window.addEventListener("bali-staff-authorized",()=>void syncStatus());
 window.addEventListener("bali-staff-signed-out",()=>{
   if(button)button.hidden=true;status("");
+  window.dispatchEvent(new CustomEvent("bali-staff-push-status",{detail:{enabled:false}}));
 });
 if(!supported())status("Для iPhone нужен установленный с Safari BALI STAFF.");

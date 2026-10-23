@@ -29,6 +29,27 @@ export async function authorizeUser(request){
 }
 export async function authorizeStaff(request,{adminOnly=false,env}={}){
   const {uid,email,token}=await authorizeUser(request);
+  const dedicatedStaff=/^staff\+[a-z][a-z0-9_-]{2,31}@staff\.baliminsk\.by$/i.test(email);
+  let grant;
+  if(dedicatedStaff&&env?.BALI_OPERATIONS_DB){
+    try{
+      grant=await env.BALI_OPERATIONS_DB.prepare(
+        "SELECT role,active,authority FROM preorder_staff_access WHERE uid=? AND email=?"
+      ).bind(uid,email.toLowerCase()).first();
+    }catch{
+      throw Object.assign(Error("role-db-unavailable"),{status:503});
+    }
+    // An owner must explicitly transfer this exact identity's role to D1.
+    // This is not an outage fallback: legacy roles still require Firestore,
+    // including its revocations and denied reads. D1 owns revocation only for
+    // migrated rows; Firebase still verifies identity/disabled state every time.
+    if(grant?.authority==="d1"){
+      if(adminOnly)deny("administrator-required");
+      if(grant.role==="preorders"&&Number(grant.active)===1)
+        return {uid,role:"staff"};
+      deny("preorder-staff-revoked");
+    }
+  }
   const root="https://firestore.googleapis.com/v1/projects/"+PROJECT+
     "/databases/(default)/documents/";
   async function getRole(path){
@@ -56,18 +77,10 @@ export async function authorizeStaff(request,{adminOnly=false,env}={}){
   // The Cloudflare D1 operator can grant access to a pre-verified synthetic
   // Firebase password identity, without GCP Firestore document-write rights.
   // No browser-controlled UID/email/role is trusted; all come from Firebase.
-  if(!/^staff\+[a-z][a-z0-9_-]{2,31}@staff\.baliminsk\.by$/i.test(email))
+  if(!dedicatedStaff)
     deny("preorder-staff-required");
   const db=env?.BALI_OPERATIONS_DB;
   if(!db)throw Object.assign(Error("role-db-unavailable"),{status:503});
-  let grant;
-  try{
-    grant=await db.prepare(
-      "SELECT role,active FROM preorder_staff_access WHERE uid=? AND email=?"
-    ).bind(uid,email.toLowerCase()).first();
-  }catch{
-    throw Object.assign(Error("role-db-unavailable"),{status:503});
-  }
   if(grant?.role==="preorders"&&Number(grant.active)===1)
     return {uid,role:"staff"};
   deny("preorder-staff-required");

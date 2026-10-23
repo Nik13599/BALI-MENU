@@ -5,7 +5,7 @@ import {getFirestore,doc,getDoc,setDoc,serverTimestamp} from "https://www.gstati
 import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
-const TIERS=["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ"];
+const TIERS=["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ","BigBoss"];
 const defaults={
   Member:{description:"Ваш первый уровень BALI PRIVILEGE.",criteria:"Автоматически после регистрации.",benefits:["Персональная цифровая карта гостя"]},
   Silver:{description:"Ваш уровень с первыми дополнительными привилегиями.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Дополнительные клубные преимущества"]},
@@ -13,7 +13,8 @@ const defaults={
   Platinum:{description:"Ваш премиальный уровень BALI PRIVILEGE.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Премиальные преимущества"]},
   Black:{description:"Ваш уровень с особыми клубными привилегиями.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Особые клубные привилегии"]},
   Private:{description:"Закрытый статус по приглашению.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Индивидуальные привилегии по решению администрации"]},
-  ResidentDJ:{description:"",criteria:"Только по назначению директора или администратора для DJ-резидентов BALI.",benefits:["Безлимит замесов","Возможность ночевки в клубе","Работать за бесплатно"]}
+  ResidentDJ:{description:"",criteria:"Только по назначению директора или администратора для DJ-резидентов BALI.",benefits:["Безлимит замесов","Возможность ночевки в клубе","Работать за бесплатно"]},
+  BigBoss:{description:"",criteria:"Только собственнику заведения; ручное назначение.",benefits:["Полное управление клубом","Безлимитный доступ","Персональный бар и обслуживание","Индивидуальные условия"]}
 };
 let authorized=false,selected=null;
 const line=()=>document.createElement("div");
@@ -24,7 +25,7 @@ function renderRules(values=defaults){
   for(const tier of TIERS){
     const d=values[tier]||defaults[tier];
     const fieldset=document.createElement("fieldset");
-    const legend=document.createElement("legend");legend.textContent=tier==="ResidentDJ"?"Resident Bali - DJ":tier;fieldset.append(legend);
+    const legend=document.createElement("legend");legend.textContent=tier==="ResidentDJ"?"Resident Bali - DJ":tier==="BigBoss"?"BIG BOSS":tier;fieldset.append(legend);
     for(const [key,label,multi,max] of [
       ["description","Описание статуса",false,180],
       ["criteria","Условия ручного назначения",false,250],

@@ -6,7 +6,7 @@ import {getFirestore,doc,getDoc,setDoc,onSnapshot,runTransaction,serverTimestamp
 const $=id=>document.getElementById(id);
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app);
-const TIERS=["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ"];
+const TIERS=["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ","BigBoss"];
 // Default copy mirrors the six approved BALI ID category references.
 // These descriptions do not issue free products or discounts.
 const DEFAULTS={
@@ -16,7 +16,8 @@ const DEFAULTS={
   Platinum:{description:"Ваш премиальный уровень Bali Card.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Премиальные преимущества"]},
   Black:{description:"Ваш уровень с особыми клубными привилегиями.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Особые клубные привилегии"]},
   Private:{description:"Закрытый статус по приглашению.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Индивидуальные привилегии по решению администрации"]},
-  ResidentDJ:{description:"",criteria:"Только по назначению директора или администратора для DJ-резидентов BALI.",benefits:["Безлимит замесов","Возможность ночевки в клубе","Работать за бесплатно"]}
+  ResidentDJ:{description:"",criteria:"Только по назначению директора или администратора для DJ-резидентов BALI.",benefits:["Безлимит замесов","Возможность ночевки в клубе","Работать за бесплатно"]},
+  BigBoss:{description:"",criteria:"Только собственнику заведения, по ручному назначению директора или администратора.",benefits:["Полное управление клубом","Безлимитный доступ","Персональный бар и обслуживание","Индивидуальные условия"]}
 };
 let privilegedUnsub=null,rulesUnsub=null,coinUnsub=null,session=0,profile=null,rules=DEFAULTS,privilege=null,activeUid=null;
 const setLoading=value=>{
@@ -25,7 +26,13 @@ const setLoading=value=>{
 };
 const displayNumber=n=>Number.isSafeInteger(n)&&n>0?String(n).padStart(6,"0"):"— — — — — —";
 const cleanText=x=>typeof x==="string"?x.trim():"";
-const displayTier=tier=>tier==="ResidentDJ"?"RESIDENT BALI - DJ":tier.toUpperCase();
+const displayTier=tier=>tier==="ResidentDJ"?"RESIDENT BALI - DJ":tier==="BigBoss"?"BIG BOSS":tier.toUpperCase();
+const BIG_BOSS_SUBTITLES=Object.freeze({
+  "Полное управление клубом":"Принятие ключевых решений",
+  "Безлимитный доступ":"Вход для Вас и гостей",
+  "Персональный бар и обслуживание":"Индивидуальный подход",
+  "Индивидуальные условия":"Специальные привилегии и бонусы"
+});
 const setText=(id,value)=>{if($(id))$(id).textContent=value;};
 function offerRetry(){
   const status=$("baliIdStatus");
@@ -51,11 +58,23 @@ function render(){
     ...(Array.isArray(privilege?.benefits)?privilege.benefits:[])].filter(x=>cleanText(x));
   const list=$("baliBenefitsList");if(list){
     list.replaceChildren();
-    for(const text of [...new Set(values)].slice(0,5)){
-      const line=document.createElement("li");line.textContent=text;list.append(line);
+    for(const [index,text] of [...new Set(values)].slice(0,5).entries()){
+      const line=document.createElement("li");
+      if(tier==="BigBoss"){
+        line.className="bali-boss-privilege";
+        line.dataset.bossIndex=String(index);
+        const title=document.createElement("strong");title.textContent=text;
+        line.append(title);
+        if(BIG_BOSS_SUBTITLES[text]){
+          const sub=document.createElement("small");
+          sub.textContent=BIG_BOSS_SUBTITLES[text];line.append(sub);
+        }
+      }else line.textContent=text;
+      list.append(line);
     }
     if(!values.length){const li=document.createElement("li");li.textContent="Индивидуальные предложения появятся здесь после назначения администратором.";list.append(li);}
   }
+  window.dispatchEvent(new CustomEvent("bali:card-tier",{detail:{tier}}));
 }
 async function ensureMemberAssignment(uid){
   const ref=doc(db,"guestPrivileges",uid);

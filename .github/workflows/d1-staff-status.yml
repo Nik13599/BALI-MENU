@@ -2,16 +2,31 @@ name: BALI D1 staff status safety
 on:
   push:
     branches:
+      - main
       - feature/d1-staff-status-20261023
+    # The production authorization path needs regression tests after every merge.
+    paths:
+      - 'cloudflare-pages/functions/api/staff-preorder-status.js'
+      - 'cloudflare-pages/d1/migrations/0002_staff_status.sql'
+      - 'scripts/test-d1-staff-status.mjs'
+      - 'scripts/test-d1-staff-access.mjs'
+      - 'scripts/test-staff-quota-login.mjs'
+      - 'cloudflare-pages/functions/_lib/staff-auth.js'
+      - 'cloudflare-pages/functions/_lib/d1-orders.js'
+      - 'cloudflare-pages/d1/migrations/0009_preorder_staff_access.sql'
+      - 'cloudflare-pages/d1/migrations/0011_staff_role_authority.sql'
+      - '.github/workflows/d1-staff-status.yml'
   pull_request:
     paths:
       - 'cloudflare-pages/functions/api/staff-preorder-status.js'
       - 'cloudflare-pages/d1/migrations/0002_staff_status.sql'
       - 'scripts/test-d1-staff-status.mjs'
       - 'scripts/test-d1-staff-access.mjs'
+      - 'scripts/test-staff-quota-login.mjs'
       - 'cloudflare-pages/functions/_lib/staff-auth.js'
       - 'cloudflare-pages/functions/_lib/d1-orders.js'
       - 'cloudflare-pages/d1/migrations/0009_preorder_staff_access.sql'
+      - 'cloudflare-pages/d1/migrations/0011_staff_role_authority.sql'
       - '.github/workflows/d1-staff-status.yml'
 permissions:
   contents: read
@@ -33,7 +48,9 @@ jobs:
           node --input-type=module --check < cloudflare-pages/functions/_lib/d1-orders.js
           node --check scripts/test-d1-staff-access.mjs
       - name: Verify employee identities, revocation, D1 scoped grants
-        run: node scripts/test-d1-staff-access.mjs
+        run: |
+          node scripts/test-d1-staff-access.mjs
+          node --experimental-sqlite scripts/test-staff-quota-login.mjs
       - name: Verify D1 live-order workflow is unchanged
         run: node --experimental-sqlite scripts/test-d1-live-preorders.mjs
       - name: Cloudflare Pages static build

@@ -71,16 +71,23 @@ async function askPassword(){
   }
   const user=await auth.getUserByEmail(email());
   const ref=db.doc("preorderStaff/"+user.uid);
+  if(action==="revoke"){
+    // Disable identity first, even for D1-managed roles or exhausted Firestore
+    // quota. The edge checks this live Firebase flag on every request.
+    await auth.updateUser(user.uid,{disabled:true});
+    await auth.revokeRefreshTokens(user.uid);
+    stdout.write("Firebase аккаунт отключён, сеансы отозваны.\n");
+    try{
+      const record=await ref.get();
+      if(record.exists&&record.data()?.role==="preorders")await ref.update({active:false});
+    }catch{
+      stdout.write("Firestore недоступен; аккаунт уже заблокирован. Для D1-роли также установите active=0 в preorder_staff_access.\n");
+    }
+    return;
+  }
   const record=await ref.get();
   if(!record.exists||record.data()?.role!=="preorders")throw Error("У пользователя нет роли preorders.");
-  if(action==="revoke"){
-    await ref.update({active:false});
-    await auth.revokeRefreshTokens(user.uid);
-    await auth.updateUser(user.uid,{disabled:true});
-    stdout.write("Доступ отозван.\n");
-  }else{
-    await ref.update({active:true});
-    await auth.updateUser(user.uid,{disabled:false});
-    stdout.write("Доступ восстановлен.\n");
-  }
+  await ref.update({active:true});
+  await auth.updateUser(user.uid,{disabled:false});
+  stdout.write("Доступ восстановлен.\n");
 })().catch(e=>{stderr.write("Ошибка: "+e.message+"\n");process.exitCode=1;});

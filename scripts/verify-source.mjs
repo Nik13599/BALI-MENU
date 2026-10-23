@@ -1493,7 +1493,7 @@ assert(html.includes('id="baliCardNumber"') &&
   "BALI ID must use a protected sequential transaction and a full guest profile.");
 assert(admin.includes('id="baliPrivilegeAssignForm"') &&
   admin.includes('id="baliPrivilegeRulesForm"') &&
-  admin.includes('bali-privilege-admin.js?v=20261022-sheets-stage1') &&
+  admin.includes('bali-privilege-admin.js?v=') &&
   privilegeClient.includes('setDoc(doc(db,"guestPrivileges",selected)') &&
   privilegeClient.includes('setDoc(doc(db,"privilegeRules","main")'),
   "Privilege statuses and assignment rules must be admin-editable without client self-upgrades.");
@@ -1503,13 +1503,14 @@ const directorHtml=source("director-id.html");
 const directorClient=source("bali-director-id.js");
 const tierCss=source("bali-id-tiers.css");
 const residentCss=source("bali-id-resident.css");
-for(const tier of ["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ"]){
+const bossCss=source("bali-id-big-boss.css");
+for(const tier of ["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ","BigBoss"]){
   assert(idClient.includes(tier+':{description:') &&
     privilegeClient.includes(tier+':{description:') &&
     admin.includes('<option value="'+tier+'">') &&
     directorHtml.includes('<option value="'+tier+'">'),
     "Six BALI ID status names must match the approved categories: "+tier);
-  assert((tier==="ResidentDJ"?residentCss:tierCss).includes('data-bali-tier="'+tier.toLowerCase()+'"'),
+  assert((tier==="ResidentDJ"?residentCss:tier==="BigBoss"?bossCss:tierCss).includes('data-bali-tier="'+tier.toLowerCase()+'"'),
     "Missing the approved color treatment for BALI ID tier "+tier);
 }
 assert(html.includes('bali-id-tiers.css?v=') &&
@@ -1524,8 +1525,8 @@ assert(html.includes('bali-id-tiers.css?v=') &&
   rules.includes("allow update: if (isAdmin() || isDirector())") &&
   rules.includes("function isDirector()") &&
   rules.includes('match /staffRoles/{uid}') &&
-  rules.includes("data.tier in ['Member','Silver','Gold','Platinum','Black','Private','ResidentDJ']") &&
-  rules.includes("data.levels.keys().hasAll(['Member','Silver','Gold','Platinum','Black','Private','ResidentDJ'])") &&
+  rules.includes("data.tier in ['Member','Silver','Gold','Platinum','Black','Private','ResidentDJ','BigBoss']") &&
+  rules.includes("data.levels.keys().hasAll(['Member','Silver','Gold','Platinum','Black','Private','ResidentDJ','BigBoss'])") &&
   directorClient.includes('where("number","==",number)') &&
   directorClient.includes('getDoc(doc(db,"staffRoles",user.uid))') &&
   directorClient.includes('setDoc(doc(db,"guestPrivileges",selectedUid)') &&
