@@ -66,9 +66,21 @@ export async function onRequestPost({request,env}){
     "myOrders","staffRecentOrders","staffOrders","staffCreateOrder","staffEditOrder",
     "staffStatus","staffArchiveOrder","staffDeleteOrder","staffClearExpiredOrders","menu"]);
   if(d1Actions.has(input.action)){
-    const {handleD1OrderAction}=await import("../_lib/d1-orders.js");
-    const result=await handleD1OrderAction({...input,payload},request,env);
-    return json({ok:result.ok,...(result.ok?{data:result.data}:{error:result.error})},result.status);
+    // Before cutover keep the existing Sheets route working. Afterwards every
+    // order action is D1-only; a D1 outage can never silently create orders
+    // in a second database.
+    const db=env?.BALI_OPERATIONS_DB;
+    if(!db)return json({ok:false,error:{code:"unavailable",
+      message:"База предзаказов временно недоступна."}},503);
+    let migration;
+    try{migration=await db.prepare("SELECT status FROM migration_state WHERE id='preorders'").first();}
+    catch{return json({ok:false,error:{code:"unavailable",
+      message:"Невозможно проверить состояние базы предзаказов."}},503);}
+    if(migration?.status==="complete"){
+      const {handleD1OrderAction}=await import("../_lib/d1-orders.js");
+      const result=await handleD1OrderAction({...input,payload},request,env);
+      return json({ok:result.ok,...(result.ok?{data:result.data}:{error:result.error})},result.status);
+    }
   }
   if(!env.SHEETS_SCRIPT_URL||!env.BALI_BRIDGE_KEY)
     return json({ok:false,error:{code:"not-configured",message:"BALI Sheets API пока не подключён."}},503);
