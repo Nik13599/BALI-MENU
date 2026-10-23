@@ -107,7 +107,7 @@
 </dialog>
 <dialog id="orderEditDialog" class="admin-form-dialog order-edit-dialog" aria-labelledby="orderEditTitle">
     <div class="dialog-header">
-      <div><span class="eyebrow">РЕДАКТИРОВАНИЕ ПРЕДЗАКАЗА</span><h2 id="orderEditTitle">Заказ</h2></div>
+      <div><span class="eyebrow" id="orderEditEyebrow">РЕДАКТИРОВАНИЕ ПРЕДЗАКАЗА</span><h2 id="orderEditTitle">Заказ</h2></div>
       <button type="button" id="closeOrderEdit" class="dialog-close" aria-label="Закрыть">✕</button>
     </div>
     <form id="orderEditForm" class="dialog-form" novalidate>
@@ -153,7 +153,7 @@
       <p id="orderEditStatus" class="status" role="status" aria-live="polite"></p>
       <div class="dialog-actions">
         <button type="button" id="cancelOrderEdit">Отмена</button>
-        <button type="submit" class="primary">Сохранить изменения</button>
+        <button type="submit" class="primary" id="orderEditSubmit">Сохранить изменения</button>
       </div>
     </form>
   </dialog>
@@ -162,5 +162,5 @@
 <script>if(window.BALI_GUEST_PREORDER_ENABLED===true)window.BALI_SHEETS_API_ENABLED=true;</script>
 <script src="firebase-config.js?v=20261020-2"></script>
 <script type="module" src="preorders-access.js?v=20261023-auth-light1"></script>
-<script type="module" src="admin-orders.js?v=20261023-staff-create-order1"></script>
+<script type="module" src="admin-orders.js?v=20261023-staff-create-order2"></script>
 </body></html>
