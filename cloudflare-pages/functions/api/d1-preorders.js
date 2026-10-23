@@ -77,7 +77,7 @@ async function updateOrder(db,actor,p,catalogue){
     throw abort("failed-precondition","Данные заказа изменились. Обновите карточку.",409);
   return lookup(db,id);
 }
-export async function onRequestPost({request,env}){
+export async function onRequestPost({request,env,waitUntil}){
   try{
     const origin=request.headers.get("Origin");
     if(origin&&origin!==new URL(request.url).origin)
@@ -144,6 +144,11 @@ export async function onRequestPost({request,env}){
         id:"o_"+p.requestId,eventId:event.id,eventDate:event.date,eventTitle:event.title,
         customer,lines,status,staffUid:actor.uid
       });
+      if(!order.alreadyCreated){
+        const {notifyNewStaffOrder}=await import("../_lib/staff-web-push.js");
+        waitUntil?.(notifyNewStaffOrder(env,order).catch(e=>
+          console.error("BALI Staff push dispatch failed",String(e?.message||"unknown").slice(0,80))));
+      }
       return json({order});
     }
     if(action==="staffEditOrder"){
