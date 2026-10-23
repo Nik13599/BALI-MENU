@@ -747,7 +747,7 @@ body.bali-preorders-workspace{
    horizontally aligned with the dishes/portions. Shared desktop + mobile. */
 .bali-preorders-workspace .preorder-compact-row{
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(205px,255px) max-content;
+  grid-template-columns:minmax(0,1fr) minmax(175px,205px) minmax(0,300px);
   grid-template-areas:"primary summary actions";
   gap:10px;
   align-items:center;
