@@ -42,3 +42,22 @@ test("frozen QR attendance returns zero COIN without a wallet read or write",asy
     {uid:other,campaignId:"contact_2026",eventId:"event_01"});
   assert.deepEqual(result,{amount:0,rolloutFrozen:true});
 });
+
+test("BRSM live QR attendance defers COIN when the guest wallet is not migrated",async()=>{
+  const guard=policy({BALI_COIN_WRITE_MODE:"live",
+    BALI_COIN_VERIFIED_EXPORT_SHA256:"b".repeat(64),
+    BALI_COIN_LIVE_CONFIRM:"VERIFIED_SOURCE_AND_WALLETS"});
+  const failWrite=()=>{throw Error("Attempted balance write without verified source")};
+  const awards=require("../functions/brsm-coin-awards")({coinRollout:guard,
+    db:{doc:path=>({path})},TS:{now:()=>new Date()},fail});
+  const tx={
+    get:async ref=>ref.path.startsWith("baliCoinRewards/")?
+      {exists:true,data:()=>({active:true,amount:40})}:
+      {exists:false},
+    set:failWrite,create:failWrite,update:failWrite
+  };
+  const result=await awards.award(tx,{
+    uid:"guest_unmigrated_01",campaignId:"contact_2026",eventId:"contact_event_01"
+  });
+  assert.deepEqual(result,{amount:0,sourceWalletUnverified:true});
+});

@@ -107,6 +107,15 @@ This operational release flag is an **additional guard**, not evidence that
 legacy balances were successfully imported. Pilot accounts must be verified
 and isolated from existing guest history before enabling pilot mode.
 
+In **live** mode the server rejects any balance-changing request for a guest
+whose `baliCoinAccounts/{uid}` document does not exist. A missing document
+is not equivalent to a zero balance. Guest card endpoints return
+`walletReady: false` and `coinBalance: null`; the UI explicitly requests
+source reconciliation instead of displaying 0. BRSM attendance can still
+be recorded for that guest; automatic COIN credit is deferred until the
+preexisting wallet has been verified and imported. The idempotent guest visit
+claim can then complete the missed award.
+
 ## Deployment checklist
 1. Run all backend, Firestore emulator, BRSM, admin and mobile tests.
 2. Validate source-to-target BALI IDs, final COIN sums and histories using a
