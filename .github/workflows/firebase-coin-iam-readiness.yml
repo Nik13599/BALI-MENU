@@ -2,6 +2,12 @@ name: Firebase BALI COIN + BRSM — read-only IAM readiness
 
 on:
   workflow_dispatch:
+  # One-time read-only diagnosis whenever this workflow itself is reviewed and
+  # updated on the protected default branch; never deploy on this event.
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/firebase-coin-iam-readiness.yml'
 
 permissions:
   contents: read
@@ -68,7 +74,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: bali-menu-5a48b
-      - name: Read-only check of runtime IAM actAs for Cloud Functions v2
+      - name: Identify the actual default Compute runtime and distinguish HTTP 404 from denied actAs
         shell: bash
         run: |
           set -euo pipefail
@@ -76,23 +82,37 @@ jobs:
           [[ "$PROJECT_NUMBER" =~ ^[0-9]+$ ]]
           TARGET="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
           TOKEN="$(gcloud auth print-access-token)"
-          RESULT="$(curl --fail-with-body --silent --show-error \
+          RESPONSE_FILE="$(mktemp)"
+          trap 'rm -f "$RESPONSE_FILE"' EXIT
+          HTTP_STATUS="$(curl --silent --show-error --output "$RESPONSE_FILE" --write-out '%{http_code}' \
             --request POST \
             --header "Authorization: Bearer $TOKEN" \
             --header "Content-Type: application/json" \
             --data '{"permissions":["iam.serviceAccounts.actAs"]}' \
             "https://iam.googleapis.com/v1/projects/-/serviceAccounts/$TARGET:testIamPermissions")"
-          printf '%s' "$RESULT" | node -e '
-            let input="";
-            process.stdin.on("data",chunk=>input+=chunk);
-            process.stdin.on("end",()=>{
-              const value=JSON.parse(input);
-              if(!Array.isArray(value.permissions)||!value.permissions.includes("iam.serviceAccounts.actAs")){
-                console.error("::error::GitHub deployer lacks roles/iam.serviceAccountUser on the Compute Engine default service account used by Firebase Functions v2.");
-                process.exitCode=1;
-              }else console.log("Firebase Functions v2 runtime IAM permission OK.");
-            });
-          '
+          if [ "$HTTP_STATUS" = "404" ]; then
+            if gcloud iam service-accounts describe "$TARGET" --project "$FIREBASE_PROJECT_ID" \
+              --format='value(email)' >/dev/null 2>&1; then
+              echo "::error::The IAM testIamPermissions API returned HTTP 404 for a service account which is readable. Check the IAM API endpoint and enabled Google APIs; no Firebase changes were made."
+            else
+              echo "::error::HTTP 404: the default Cloud Functions v2 Compute service account is missing or cannot be read. Check Google Cloud > IAM > Service Accounts for the PROJECT_NUMBER-compute account, and confirm the runtime serviceAccount configured on deployed functions. Do not grant roles blindly."
+            fi
+            exit 1
+          fi
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "::error::The read-only IAM probe returned HTTP $HTTP_STATUS, not a permissions verdict. Verify IAM API access and service account visibility."
+            exit 1
+          fi
+          if ! node -e '
+            const fs=require("node:fs");
+            const data=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
+            if(!Array.isArray(data.permissions)||!data.permissions.includes("iam.serviceAccounts.actAs")){
+              console.error("::error::The actual Compute runtime service account exists, but the GitHub deployment principal does not have iam.serviceAccounts.actAs. Grant roles/iam.serviceAccountUser on this single service account.");
+              process.exitCode=1;
+            }else console.log("Cloud Functions v2 runtime IAM permission OK.");
+          ' "$RESPONSE_FILE"; then
+            exit 1
+          fi
       - name: Summarize read-only IAM result
         run: |
           echo "### Firebase Functions v2 IAM readiness" >> "$GITHUB_STEP_SUMMARY"
