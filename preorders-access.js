@@ -51,7 +51,7 @@ onAuthStateChanged(auth,async user=>{
   $("staffSessionLoading").hidden=false;
   $("staffHeaderAccount").hidden=true;
   $("adminSwitchAccount").hidden=!user;
-  if(!user){status("Введите логин и пароль сотрудника или используйте вход через Google.");return;}
+  if(!user){window.dispatchEvent(new Event("bali-staff-signed-out"));status("Введите логин и пароль сотрудника или используйте вход через Google.");return;}
   if(!user.emailVerified){status("Нет подтверждённого доступа к предзаказам.");return;}
   // Never reveal the order workspace before the backend has confirmed
   // the current staff role. Keep the session splash visible until authorization.
@@ -63,6 +63,7 @@ onAuthStateChanged(auth,async user=>{
       $("adminEmail").textContent=user.displayName||user.email||"Сотрудник BALI";
       $("adminView").hidden=false;$("loginView").hidden=true;
       $("staffHeaderAccount").hidden=false;status("");
+      window.dispatchEvent(new Event("bali-staff-authorized"));
       return;
     }
     const adminRole=await getDoc(doc(db,"admins",user.uid));
