@@ -1,0 +1,48 @@
+name: BALI QR — deployed source audit (read-only)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/published-qr-audit.yml'
+      - 'scripts/audit-published-bali-qr.mjs'
+  pull_request:
+    paths:
+      - '.github/workflows/published-qr-audit.yml'
+      - 'scripts/audit-published-bali-qr.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  audit-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/test-published-bali-qr-audit.mjs
+  published-source:
+    if: github.ref == 'refs/heads/main'
+    needs: audit-contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    environment: firebase-production
+    env:
+      FIREBASE_PROJECT_ID: bali-menu-5a48b
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Obtain short-lived read identity
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.FIREBASE_WIF_PROVIDER || 'projects/855889005555/locations/global/workloadIdentityPools/bali-github-pool/providers/bali-github' }}
+          service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      - run: npm install --prefix functions --no-audit --no-fund
+      - name: Compare deployed QR function sources without reading Firestore
+        run: node scripts/audit-published-bali-qr.mjs
