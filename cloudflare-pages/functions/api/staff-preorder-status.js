@@ -18,7 +18,7 @@ const sameAction=(old,{id,status,requestId,expectedUpdatedAtMs})=>
   old.new_status===status&&Number(old.expected_updated_at_ms)===expectedUpdatedAtMs;
 export async function onRequestPost({request,env}){
   try{
-    const actor=await authorizeStaff(request);
+    const actor=await authorizeStaff(request,{env});
     const origin=request.headers.get("Origin");
     if(origin&&origin!==new URL(request.url).origin)
       return errorJson(403,"invalid-origin");
