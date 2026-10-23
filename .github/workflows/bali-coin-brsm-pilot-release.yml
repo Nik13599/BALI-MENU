@@ -40,6 +40,7 @@ jobs:
       - name: Verify wallet, lottery, QR and freeze logic
         run: |
           node --test scripts/test-bali-coin.cjs scripts/test-coin-rollout.cjs
+          node --test scripts/test-bali-coin-pilot.cjs
           node --test scripts/test-brsm.cjs scripts/test-brsm-service.cjs
           node --test scripts/test-bali-coin-migration-offline.cjs
       - name: Test real Firestore transaction contention in demo only
@@ -130,6 +131,11 @@ jobs:
           '; then
             exit 1
           fi
+      - name: Verify real test Firebase Authentication users and Bali Card identities
+        env:
+          PILOT_UIDS: ${{ secrets.BALI_COIN_PILOT_UIDS }}
+        run: |
+          node scripts/verify-bali-coin-pilot.cjs
       - name: Deploy COIN read and administration callables (test ledger frozen for real guests)
         run: |
           npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:coinMe,functions:bali-id:coinCard,functions:bali-id:coinAdminCard,functions:bali-id:coinHistory,functions:bali-id:coinRecipient,functions:bali-id:coinLots,functions:bali-id:coinVouchers,functions:bali-id:coinSetReward"
