@@ -1,7 +1,7 @@
 import {initializeApp,getApps} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signInWithEmailAndPassword,signOut,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {preorderServiceEnabled,sheetsRequest} from "./bali-sheets-api.js?v=20261023-d1-live1";
-// The Sheets workspace uses Firebase Auth only; load Firestore for its legacy mode.
+// D1 staff sessions use Firebase Auth for identity; legacy Firestore mode reads roles directly.
 const {getFirestore,doc,getDoc}=preorderServiceEnabled()?{}:await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
 const app=getApps().find(app=>app.name==="bali-staff")||initializeApp(window.BALI_FIREBASE_CONFIG,"bali-staff");
 const auth=getAuth(app),db=preorderServiceEnabled()?null:getFirestore(app),$=id=>document.getElementById(id);
@@ -75,5 +75,17 @@ onAuthStateChanged(auth,async user=>{
     $("adminEmail").textContent=staff?staffRole.data().name:(user.displayName||user.email||"Администратор");
     $("adminView").hidden=false;$("loginView").hidden=true;
     $("staffHeaderAccount").hidden=false;status("");
-  }catch(error){if(current===seq)status("Ошибка проверки прав: "+(error.code||error.message));}
+  }catch(error){
+    if(current!==seq)return;
+    if(error?.code==="permission-denied"){
+      const staffAccount=/^staff\+[a-z][a-z0-9_-]{2,31}@staff\.baliminsk\.by$/i.test(user.email||"");
+      status(staffAccount
+        ?"Пароль принят, но сервер не подтвердил роль сотрудника. Руководителю необходимо проверить роль доступа в BALI STAFF."
+        :"У текущей учётной записи нет прав на предзаказы. Введите логин и пароль сотрудника.");
+    }else if(error?.code==="unauthenticated"){
+      status("Сессия устарела. Войдите в предзаказы повторно.");
+    }else{
+      status("Не удалось проверить доступ к предзаказам. Повторите вход. ("+(error?.code||"ошибка сервера")+")");
+    }
+  }
 });
