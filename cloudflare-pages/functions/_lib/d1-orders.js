@@ -147,9 +147,10 @@ function messages(e){
 }
 async function create(db,env,input,request,{staff=false,guest=false}={}){
  const idToken=input.token;
- const identity=staff?await authorizeStaff(request):guest?
-   (idToken?await verifiedIdentity(input,request).catch(()=>null):null):
-   await verifiedIdentity(input,request);
+ let identity;
+ if(staff)identity=await authorizeStaff(request);
+ else if(guest)identity=idToken?await verifiedIdentity(input,request):null;
+ else identity=await verifiedIdentity(input,request);
  if(!guest&&!identity)return error("unauthenticated","Войдите в BALI.",401);
  const p=input.payload||{};
  const data=validateBody({...p,
@@ -340,7 +341,9 @@ export async function handleD1OrderAction(input,request,env){
    return good({ok:true});
   }
   if(action==="staffArchiveOrder"||action==="staffDeleteOrder"){
-   const staff=await authorizeStaff(staffRequest),id=String(input.payload?.id||"");
+   const staff=await authorizeStaff(staffRequest,{
+     adminOnly:action==="staffDeleteOrder"
+   }),id=String(input.payload?.id||"");
    if(!idPattern.test(id))return error("invalid-argument","Неверный номер заказа.",400);
    const current=await db.prepare("SELECT * FROM preorder_orders WHERE id=?").bind(id).first();
    if(!current)return error("not-found","Заказ не найден.",404);
@@ -360,7 +363,7 @@ export async function handleD1OrderAction(input,request,env){
    return good({order:await readOne(db,id)});
   }
   if(action==="staffClearExpiredOrders"){
-   await authorizeStaff(staffRequest);
+   await authorizeStaff(staffRequest,{adminOnly:true});
    const cutoff=Date.now()-30*86400000;
    const old=await db.prepare("SELECT id FROM preorder_orders WHERE created_at_ms<? LIMIT 50")
     .bind(cutoff).all();
