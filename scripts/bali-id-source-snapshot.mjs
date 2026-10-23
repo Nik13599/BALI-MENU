@@ -99,8 +99,12 @@ export function validateRecords(rows){
     const fields=JSON.parse(r.payload).fields;
     if(r.scope==="cards"&&!profiles.has(r.uid))
       throw Error("card-without-profile");
-    if(["wallets","privileges","operations","agreements"].includes(r.scope)&&
+    if(["wallets","privileges","operations"].includes(r.scope)&&
       !cards.has(r.uid))throw Error("orphan-card-related-record");
+    // An agreement may legitimately precede card allocation. Preserve it
+    // as long as its Firebase account exists, even if onboarding failed.
+    if(r.scope==="agreements"&&!profiles.has(r.uid))
+      throw Error("agreement-without-profile");
     if(r.scope==="wallets"){
       if(fields.uid&&fields.uid!==r.uid)throw Error("wallet-uid-mismatch");
       if(!Array.isArray(fields.grants))throw Error("invalid-wallet-grants");
