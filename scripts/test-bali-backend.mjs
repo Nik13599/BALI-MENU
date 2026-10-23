@@ -87,6 +87,7 @@ vm.runInNewContext(readFileSync("functions/index.js","utf8"),{
      name==="./brsm"?()=>({}):
      name==="./brsm-campaigns"?()=>({}):
      name==="./brsm-identity"?()=>({}):
+     name==="./coin-rollout"?require("../functions/coin-rollout.js"):
      name==="./bali-coin"?()=>({}):
      name==="./preorders"?()=>async()=>({}):
      name==="./preorder-staff"?()=>({manageBaliPreorderStaff:async()=>({})}):require(name),
