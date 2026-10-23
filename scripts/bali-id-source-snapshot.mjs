@@ -51,12 +51,18 @@ export function encode(data){
   return JSON.stringify(canonicalize(data));
 }
 export function record(scope,path,data,{updateTime=null}={}){
-  if(!Object.hasOwn(SOURCE_COLLECTIONS,scope)&&scope!=="agreements")
+  if(!Object.hasOwn(SOURCE_COLLECTIONS,scope)&&!["agreements","event-checkins","transfer-inbox"].includes(scope))
     throw Error("invalid-snapshot-scope");
   const base=path.split("/").filter(Boolean);
   if(scope==="agreements"){
     if(base.length!==4||base[0]!=="users"||base[2]!=="baliIdAgreements")
       throw Error("unexpected-agreement-source");
+  }else if(scope==="event-checkins"){
+    if(base.length!==4||base[0]!=="users"||base[2]!=="eventCheckins")
+      throw Error("unexpected-checkin-source");
+  }else if(scope==="transfer-inbox"){
+    if(base.length!==4||base[0]!=="baliTransferInbox"||base[2]!=="items")
+      throw Error("unexpected-inbox-source");
   }else if(base.length!==2||base[0]!==SOURCE_COLLECTIONS[scope])
     throw Error("unexpected-source-path");
   if(!data||typeof data!=="object"||Array.isArray(data))
@@ -66,7 +72,8 @@ export function record(scope,path,data,{updateTime=null}={}){
   const details=data;
   const uid=["profiles","cards","privileges","wallets"].includes(scope)
     ?base[1]:scope==="operations"?data.guestUid:
-    scope==="transfers"?data.fromUid:scope==="agreements"?base[1]:null;
+    scope==="transfers"?data.fromUid:
+    ["agreements","event-checkins","transfer-inbox"].includes(scope)?base[1]:null;
   if(uid!==null&&(typeof uid!=="string"||!/^[A-Za-z0-9_-]{8,128}$/.test(uid)))
     throw Error("invalid-firebase-uid");
   const payload=encode({fields:details,
@@ -103,8 +110,8 @@ export function validateRecords(rows){
       !cards.has(r.uid))throw Error("orphan-card-related-record");
     // An agreement may legitimately precede card allocation. Preserve it
     // as long as its Firebase account exists, even if onboarding failed.
-    if(r.scope==="agreements"&&!profiles.has(r.uid))
-      throw Error("agreement-without-profile");
+    if(["agreements","event-checkins","transfer-inbox"].includes(r.scope)&&
+      !profiles.has(r.uid))throw Error("nested-record-without-profile");
     if(r.scope==="wallets"){
       if(fields.uid&&fields.uid!==r.uid)throw Error("wallet-uid-mismatch");
       if(!Array.isArray(fields.grants))throw Error("invalid-wallet-grants");
