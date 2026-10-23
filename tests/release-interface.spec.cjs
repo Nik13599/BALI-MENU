@@ -61,7 +61,7 @@ test('all calendar states use outline-only rings without date fills',async({page
  await expect(day(page,'2026-10-24')).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
  // There must be no old 900/1100ms lock after opening or selecting a day.
  const instant=await page.evaluate(()=>{
-  window.BaliCalendarShowcase.focusIndex(2,true);
+  window.BaliCalendarShowcase.focusIndex(2,true,true,true);
   return {animating:window.BaliCalendarShowcase.getState().animating,
    date:document.querySelector('#baliCalendarDays [data-selected="true"]').dataset.date};
  });
