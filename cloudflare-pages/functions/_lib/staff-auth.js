@@ -9,7 +9,7 @@ export const errorJson=(status,error)=>new Response(JSON.stringify({error}),{sta
   "X-Content-Type-Options":"nosniff","Vary":"Authorization"
 }});
 const deny=error=>{throw Object.assign(new Error(error),{status:403});};
-export async function authorizeStaff(request,{adminOnly=false}={}){
+export async function authorizeUser(request){
   const bearer=request.headers.get("Authorization")||"";
   if(!/^Bearer [A-Za-z0-9_.-]{100,5000}$/.test(bearer))
     throw Object.assign(Error("authentication-required"),{status:401});
@@ -25,6 +25,10 @@ export async function authorizeStaff(request,{adminOnly=false}={}){
   if(!profile||profile.emailVerified!==true||profile.disabled===true||
      typeof uid!=="string"||!/^[a-zA-Z0-9_-]{8,128}$/.test(uid))
     throw Object.assign(Error("authentication-invalid"),{status:401});
+  return {uid,email:profile.email||"",token};
+}
+export async function authorizeStaff(request,{adminOnly=false}={}){
+  const {uid,token}=await authorizeUser(request);
   const root="https://firestore.googleapis.com/v1/projects/"+PROJECT+
     "/databases/(default)/documents/";
   async function getRole(path){
