@@ -63,8 +63,13 @@ function parse(text){
   if(/^[a-f0-9]{48}$/.test(raw))return raw;
   try{
     const url=new URL(raw);
-    if(url.origin!=="https://nik13599.github.io"||url.pathname.replace(/\/$/,"")!=="/BALI-MENU")
-      return "";
+    const host=url.hostname.toLowerCase();
+    const production=(url.protocol==="https:"&&
+      (host==="baliminsk.by"||host==="www.baliminsk.by")&&
+      url.pathname.replace(/\/$/,"")==="");
+    const legacy=url.origin==="https://nik13599.github.io"&&
+      url.pathname.replace(/\/$/,"")==="/BALI-MENU";
+    if(!production&&!legacy)return "";
     const param=mode==="recipient"?"baliRecipientQr":"baliQrBonus";
     const value=url.searchParams.get(param);
     return /^[a-f0-9]{48}$/.test(value||"")?value:"";

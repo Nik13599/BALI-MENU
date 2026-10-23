@@ -262,10 +262,24 @@ exports.issueBaliQuantity=api("issueBaliQuantity",async req=>{
     const custom=await db.doc("baliBonusKinds/"+kind).get();
     if(!custom.exists||custom.data().active!==true)fail("invalid-argument","Направление бонусов неактивно.");
   }
+  // The browser keeps one requestId for every retry of a pending manual grant.
+  // The immutable receipt ID makes a lost network response safe to retry.
+  const requestId=req.data?.requestId;
+  if(typeof requestId!=="string"||!/^[a-f0-9]{32}$/.test(requestId))
+    fail("invalid-argument","Требуется идентификатор операции.");
   const ref=db.doc("guestWallets/"+guestUid),guestRef=db.doc("baliIds/"+guestUid);
-  const id=randomBytes(16).toString("hex"),opRef=db.doc("walletOperations/"+id);
-  await db.runTransaction(async tx=>{
-    const [guest,old]=await Promise.all([tx.get(guestRef),tx.get(ref)]);
+  const id="manual_"+digest(staffUid+":"+guestUid+":"+requestId).slice(0,48);
+  const opRef=db.doc("walletOperations/"+id);
+  const result=await db.runTransaction(async tx=>{
+    const [previous,guest,old]=await Promise.all([tx.get(opRef),tx.get(guestRef),tx.get(ref)]);
+    if(previous.exists){
+      const done=previous.data();
+      if(done.source!=="staff-grant"||done.staffUid!==staffUid||
+         done.guestUid!==guestUid||done.kind!==kind||done.count!==quantity||
+         done.reason!==reason||done.transferable!==transferable)
+        fail("already-exists","Этот идентификатор использован для другого начисления.");
+      return {ok:true,alreadyProcessed:true,grantId:id};
+    }
     if(!guest.exists)fail("not-found","BALI ID гостя не найдена.");
     const w=wallet(guestUid,old);
     const now=Date.now();
@@ -283,10 +297,11 @@ exports.issueBaliQuantity=api("issueBaliQuantity",async req=>{
     tx.create(opRef,{
       type:"grant",guestUid,kind,count:quantity,reason,staffUid,source:"staff-grant",
       balanceAfter:balance+quantity,receiptExpiresAt:TS.fromMillis(at.toMillis()+30*86400000),
-      transferable,createdAt:at
+      transferable,requestId,createdAt:at
     });
+    return {ok:true,alreadyProcessed:false,grantId:id};
   });
-  return {ok:true,grantId:id};
+  return result;
 });
 
 Object.assign(exports,require("./bonus-qr")({api,admin,db,TS,verified,privileged,fail,nameAndId,wallet}));
@@ -304,7 +319,7 @@ exports.issueGuestQr=api("issueGuestQr",async req=>{
   await db.doc("guestRecipientQr/"+digest(code)).create({
     uid,createdAt:TS.now(),expiresAt:TS.fromMillis(expiresAt)
   });
-  const url="https://nik13599.github.io/BALI-MENU/?baliRecipientQr="+code+"#id";
+  const url="https://baliminsk.by/?baliRecipientQr="+code+"#id";
   const qrDataUrl=await QRForCard.toDataURL(url,{errorCorrectionLevel:"M",width:340,margin:3,
     color:{dark:"#0b0d0e",light:"#ffffff"}});
   return {qrDataUrl,expiresAt,number:guest.number};

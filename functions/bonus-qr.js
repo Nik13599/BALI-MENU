@@ -24,7 +24,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,wallet})=>{
     return {id:kind,name:clip(snap.data().name,42),emoji:clip(snap.data().emoji,8)};
   }
   const number=Number.isInteger;
-  const codeUrl=t=>"https://nik13599.github.io/BALI-MENU/?baliQrBonus="+t+"#id";
+  const codeUrl=t=>"https://baliminsk.by/?baliQrBonus="+t+"#id";
   async function images(codes){
     return Promise.all(codes.map(async x=>({...x,qrDataUrl:await QRCode.toDataURL(codeUrl(x.code),{
       errorCorrectionLevel:"M",width:240,margin:2,color:{dark:"#0b0d0e",light:"#ffffff"}
