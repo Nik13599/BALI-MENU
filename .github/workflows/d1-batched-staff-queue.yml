@@ -21,6 +21,8 @@ jobs:
         run: node --input-type=module --check < cloudflare-pages/functions/_lib/d1-orders.js
       - name: Verify 220 order lines under D1 bound-parameter limit
         run: node --experimental-sqlite scripts/test-d1-batched-staff-lines.mjs
+      - name: Verify guest, Staff and account orders through unified D1 service
+        run: node --experimental-sqlite scripts/test-d1-live-orders.mjs
       - name: Verify approved Staff PC and phone appearance is unchanged
         run: node scripts/test-staff-appearance-locked.mjs
       - name: Build Cloudflare Pages
