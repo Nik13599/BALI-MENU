@@ -1237,15 +1237,32 @@ function preorderReferenceValue(order){
     return [order?.tableNumber,order?.bookingId].map(x=>String(x||"").trim())
       .filter(Boolean).join(" / ");
 }
-function preorderReferenceParts(value,original=null){
+function preorderReferenceParts(value,original=null,kind=""){
     const ref=String(value||"").trim();
-    if(original&&ref===preorderReferenceValue(original))
+    const originalKind=original?.tableNumber&&!original?.bookingId?"table":
+      original?.bookingId&&!original?.tableNumber?"booking":"";
+    if(original&&ref===preorderReferenceValue(original)&&(!kind||kind===originalKind))
         return {tableNumber:String(original.tableNumber||""),bookingId:String(original.bookingId||"")};
     if(!ref||ref.length>60)return null;
-    return /^\d{1,20}$/.test(ref)
-      ?{tableNumber:ref,bookingId:""}
-      :{tableNumber:"",bookingId:ref};
+    const chosen=kind||(/^\d{1,20}$/.test(ref)?"table":"booking");
+    const cleaned=chosen==="table"
+      ?ref.replace(/^(?:столик|стол|table)\s*(?:№|#|:)?\s*/i,"")
+      :ref.replace(/^(?:id|ид|бронь|booking)\s*(?:№|#|:)?\s*/i,"");
+    if(!cleaned||cleaned.length>(chosen==="table"?20:60))return null;
+    return chosen==="table"?{tableNumber:cleaned,bookingId:""}:
+      {tableNumber:"",bookingId:cleaned};
 }
+function preorderReferenceLabel(order){
+    const table=String(order?.tableNumber||"").trim();
+    const booking=String(order?.bookingId||"").trim();
+    return [table?"Столик №"+table.replace(/^(?:столик|стол|table)\s*(?:№|#|:)?\s*/i,""):"",
+      booking?"ID "+booking.replace(/^(?:id|ид|бронь|booking)\s*(?:№|#|:)?\s*/i,""):""]
+      .filter(Boolean).join(" · ");
+}
+document.getElementById("orderReferenceType")?.addEventListener("change",event=>{
+    const input=document.getElementById("orderReference");
+    if(input)input.placeholder=event.target.value==="table"?"Номер столика":"ID бронирования";
+});
 // Order database code is not fetched and cannot subscribe during public
 // browsing, menu selection, cart viewing or checkout field entry.
 let orderServiceLoading=null;
@@ -1827,7 +1844,8 @@ async function handleCheckout(e) {
     const eventDate = document.getElementById('eventDateSelect').value;
     const eventId = document.getElementById('eventSelect').value;
     const bookingReference = document.getElementById('orderReference').value.trim();
-    const parts=preorderReferenceParts(bookingReference,editingOriginalReference);
+    const parts=preorderReferenceParts(bookingReference,editingOriginalReference,
+      document.getElementById("orderReferenceType")?.value||"");
     const tableNumber=parts?.tableNumber||"";
     const bookingId=parts?.bookingId||"";
     const selectedEvent=availablePreorderEvents().find(e =>
@@ -1894,7 +1912,7 @@ async function handleCheckout(e) {
         elements.displayOrderId.textContent =
             (result.event_title||selectedEvent.title)+' №'+
             (result.order_number||result.order_id)+
-            (bookingReference?' · ID брони / номер стола: '+bookingReference:'');
+            (bookingReference?' · '+preorderReferenceLabel(parts):'');
 
         try { localStorage.setItem('last_order_id', result.order_id); } catch (_) {}
         const successHistory=document.getElementById("successMyOrders");
@@ -1998,11 +2016,11 @@ function renderMyOrders() {
             'Название мероприятия не сохранено';
         head.textContent=eventTitle+' №'+
             (Number.isInteger(order.orderNumber)?order.orderNumber:order.id)+
-            (preorderReferenceValue(order)?' · '+preorderReferenceValue(order):'')+
+            (preorderReferenceValue(order)?' · '+preorderReferenceLabel(order):'')+
             ' · '+(statusText[order.status]||order.status);
         const meta = document.createElement('p');
         meta.textContent=order.eventDate+' · '+eventTitle+' · '+
-            'ID брони / номер стола: '+(preorderReferenceValue(order)||'—');
+            (preorderReferenceLabel(order)||'Столик / ID не указан');
         const items = document.createElement('ul');
         for(const item of order.items||[]) {
             const li = document.createElement('li');
@@ -2057,6 +2075,11 @@ async function editMyOrder(orderId) {
             alert('Предзаказ на это мероприятие закрыт. Выберите другую доступную дату и вечеринку.');
         }
         document.getElementById('orderReference').value=preorderReferenceValue(order);
+        const kindControl=document.getElementById('orderReferenceType');
+        if(kindControl){
+            kindControl.value=order.bookingId&&!order.tableNumber?"booking":"table";
+            kindControl.dispatchEvent(new Event("change"));
+        }
         document.getElementById('orderNotes').value=order.notes||'';
     }catch(error){alert(window.BaliOrders?.errorText(error)||error.message);}
 }
