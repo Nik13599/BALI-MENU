@@ -14,8 +14,8 @@
   "lang": "ru",
   "icons": [
     {
-      "src": "/assets/bali-nightclub-logo.png",
-      "type": "image/png",
+      "src": "/bali-staff-icon.svg",
+      "type": "image/svg+xml",
       "sizes": "any",
       "purpose": "any"
     }
