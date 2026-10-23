@@ -9,11 +9,14 @@ const [guest,admin,staff,app,workflows,reader,publisher,api,stage,schema]=await 
   load("cloudflare-pages/functions/api/admin/migrate-preorders.js"),
   load("cloudflare-pages/d1/migrations/0001_preorders.sql")
 ]);
-// BALI is a browser web application. Never prompt to install as a PWA.
-for(const [name,page] of [["guest",guest],["admin",admin],["staff",staff]]){
+// Guest and general admin remain browser-only. The independent BALI STAFF
+// workspace is allowed to install as an opt-in notification-capable web app.
+for(const [name,page] of [["guest",guest],["admin",admin]]){
   assert(!/<link[^>]+rel=["']manifest["']/i.test(page),name+" installs a PWA");
   assert(!/beforeinstallprompt|navigator\.serviceWorker\.register/i.test(page),name+" registers an installable worker");
 }
+assert(/<link[^>]+rel=["']manifest["'][^>]+bali-staff\.webmanifest/.test(staff),
+  "Staff must provide a dedicated standalone web app manifest");
 assert(!/manifest\.webmanifest|service-worker\.js/i.test(workflows));
 assert(app.includes("history.pushState("),"Guest SPA navigation must preserve the page");
 assert(app.includes("history.replaceState("),"Browser Back and shared links must remain supported");

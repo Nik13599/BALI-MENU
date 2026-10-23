@@ -46,15 +46,20 @@ export const handlerError=e=>errorJson(e.status||503,e.message);
 const statusSource=source("cloudflare-pages/functions/api/staff-preorder-status.js")
  .replace('from "../_lib/staff-auth.js"','from "'+authModule+'"');
 const statusModule=dataURI(statusSource);
+// Only push delivery is mocked here; order SQL and authorizations remain real.
+globalThis.__baliPushTestCount=0;
+const pushModule=dataURI("export async function notifyNewStaffOrder(){globalThis.__baliPushTestCount++}");
 const staffSource=source("cloudflare-pages/functions/api/d1-preorders.js")
  .replace('from "../_lib/staff-auth.js"','from "'+authModule+'"')
  .replace('from "../_lib/d1-preorders.js"','from "'+orderModule+'"')
- .replace('from "./staff-preorder-status.js"','from "'+statusModule+'"');
+ .replace('from "./staff-preorder-status.js"','from "'+statusModule+'"')
+ .replace('await import("../_lib/staff-web-push.js")','await import("'+pushModule+'")');
 const staff=await import(dataURI(staffSource));
 const ordersModule=dataURI(source("cloudflare-pages/functions/_lib/d1-orders.js")
  .replace('from "./staff-auth.js"','from "'+authModule+'"'));
 const guest=await import(dataURI(source("cloudflare-pages/functions/api/bali-v3.js")
- .replace('await import("../_lib/d1-orders.js")','await import("'+ordersModule+'")')));
+ .replace('await import("../_lib/d1-orders.js")','await import("'+ordersModule+'")')
+ .replace('await import("../_lib/staff-web-push.js")','await import("'+pushModule+'")')));
 const menu=[{name:"projects/demo/documents/menu/101",fields:{
   name:{stringValue:"Салат"},available:{booleanValue:true},
   price:{integerValue:"25"},id:{integerValue:"101"}

@@ -218,7 +218,7 @@ async function create(db,env,input,request,{staff=false,guest=false}={}){
   return error("order-conflict","Параллельный заказ. Повторите попытку.",409);
  }
  const result=await readOne(db,orderId);
- return result?good({order:result}):error("service-unavailable","Заказ не прочитан после записи.",503);
+ return result?good({order:result,_created:true}):error("service-unavailable","Заказ не прочитан после записи.",503);
 }
 async function updateStatus(db,input,request,env){
  const staff=await authorizeStaff(request,{env}),p=input.payload||{};

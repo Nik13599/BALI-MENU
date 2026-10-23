@@ -32,7 +32,7 @@ const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:
   "Content-Type":"application/json;charset=utf-8",
   "Cache-Control":"private,no-store","X-Content-Type-Options":"nosniff"
 }});
-export async function onRequestPost({request,env}){
+export async function onRequestPost({request,env,waitUntil}){
   if(new URL(request.url).origin!==request.headers.get("Origin")&&request.headers.get("Origin"))
     return json({ok:false,error:{code:"origin",message:"Недопустимый источник."}},403);
   let input;
@@ -80,6 +80,11 @@ export async function onRequestPost({request,env}){
         message:"D1 ещё не подтвердила готовность предзаказов."}},503);
     const {handleD1OrderAction}=await import("../_lib/d1-orders.js");
     const result=await handleD1OrderAction({...input,payload},request,env);
+    if(result.ok&&result.data?._created===true&&result.data.order?.id){
+      const {notifyNewStaffOrder}=await import("../_lib/staff-web-push.js");
+      waitUntil?.(notifyNewStaffOrder(env,result.data.order).catch(e=>
+        console.error("BALI Staff push dispatch failed",String(e?.message||"unknown").slice(0,80))));
+    }
     return json({ok:result.ok,...(result.ok?{data:result.data}:{error:result.error})},result.status);
   }
   if(!env.SHEETS_SCRIPT_URL||!env.BALI_BRIDGE_KEY)

@@ -1,0 +1,23 @@
+{
+  "id": "/preorders.html",
+  "name": "BALI STAFF • Предзаказы",
+  "short_name": "BALI STAFF",
+  "description": "Рабочее приложение сотрудников BALI с защищёнными предзаказами",
+  "start_url": "/preorders.html",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone"
+  ],
+  "background_color": "#0f1712",
+  "theme_color": "#0f1712",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "/bali-staff-icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ]
+}

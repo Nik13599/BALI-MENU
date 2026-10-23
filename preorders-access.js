@@ -43,15 +43,20 @@ $("adminSignIn").addEventListener("click",async()=>{
   catch(error){status("Вход не завершён: "+(error.code||error.message));}
   finally{$("adminSignIn").disabled=false;}
 });
-$("adminSignOut").addEventListener("click",()=>void signOut(auth));
-$("adminSwitchAccount").addEventListener("click",()=>void signOut(auth));
+const closeStaffSession=async()=>{
+  try{await window.BaliStaffPushDisable?.();}
+  catch(error){console.warn("BALI Staff device push unsubscription failed.");}
+  await signOut(auth);
+};
+$("adminSignOut").addEventListener("click",()=>void closeStaffSession());
+$("adminSwitchAccount").addEventListener("click",()=>void closeStaffSession());
 onAuthStateChanged(auth,async user=>{
   const current=++seq;
   $("adminView").hidden=true;$("loginView").hidden=true;
   $("staffSessionLoading").hidden=false;
   $("staffHeaderAccount").hidden=true;
   $("adminSwitchAccount").hidden=!user;
-  if(!user){status("Введите логин и пароль сотрудника или используйте вход через Google.");return;}
+  if(!user){window.dispatchEvent(new Event("bali-staff-signed-out"));status("Введите логин и пароль сотрудника или используйте вход через Google.");return;}
   if(!user.emailVerified){status("Нет подтверждённого доступа к предзаказам.");return;}
   // Never reveal the order workspace before the backend has confirmed
   // the current staff role. Keep the session splash visible until authorization.
@@ -63,6 +68,7 @@ onAuthStateChanged(auth,async user=>{
       $("adminEmail").textContent=user.displayName||user.email||"Сотрудник BALI";
       $("adminView").hidden=false;$("loginView").hidden=true;
       $("staffHeaderAccount").hidden=false;status("");
+      window.dispatchEvent(new Event("bali-staff-authorized"));
       return;
     }
     const adminRole=await getDoc(doc(db,"admins",user.uid));
