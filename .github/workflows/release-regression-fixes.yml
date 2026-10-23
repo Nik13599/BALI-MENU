@@ -29,6 +29,9 @@ jobs:
       - name: Verify scripts and browser bundles
         run: |
           node scripts/test-bali-event-dates.mjs
+          node --check tests/guest.spec.cjs
+          node --check tests/preorders-workspace.spec.cjs
+          node --check tests/release-interface.spec.cjs
           node --input-type=module --check < admin-orders.js
           node --input-type=module --check < preorders-access.js
           npm run check:styles
