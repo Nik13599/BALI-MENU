@@ -36,8 +36,23 @@ Example private file:
 }
 ```
 
-Install the Firebase dependencies in `functions/`, configure Firebase
-Application Default Credentials locally (never commit credentials), then run:
+Run the **offline export check** first, without Firebase credentials or writes:
+
+```bash
+node scripts/migrate-bali-coins.cjs --offline --input ./private/bali-coin-export.json
+```
+
+The offline report includes wallet count, history count, total COIN, a SHA-256
+of the private source file and explicit `firebaseIdentityVerified: false`.
+It rejects empty exports, duplicate identities, malformed balances and
+out-of-order histories. **Passing this check is not proof of source authenticity
+or correspondence to Firebase**; verify the original Sheets/Firebase export and
+freeze legacy writes separately.
+
+Install Firebase dependencies in `functions/`, configure Firebase Application
+Default Credentials locally (never commit credentials), then run the online
+read-only identity comparison and only afterwards the explicitly authorized
+import:
 
 ```bash
 npm ci --prefix functions
@@ -45,7 +60,7 @@ node scripts/migrate-bali-coins.cjs --input ./private/bali-coin-export.json
 node scripts/migrate-bali-coins.cjs --input ./private/bali-coin-export.json --apply --confirm FIREBASE_COIN_IMPORT
 ```
 
-First command only inspects. The import rejects Firebase UID/number mismatches,
+The online dry run only inspects. The import rejects Firebase UID/number mismatches,
 live wallets and duplicates, creates deterministic history references, and
 can resume after a network interruption. A wallet with incomplete imported
 history cannot be used.

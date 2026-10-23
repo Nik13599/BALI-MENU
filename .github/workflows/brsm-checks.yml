@@ -16,6 +16,7 @@ on:
       - "firestore.rules"
       - "scripts/test-brsm*"
       - "scripts/test-bali-coin*"
+      - "scripts/migrate-bali-coins.cjs"
       - "tests/brsm-card.spec.cjs"
       - ".github/workflows/brsm-checks.yml"
   workflow_dispatch:
@@ -70,6 +71,8 @@ jobs:
           node --check < google-apps-script/BaliBackend.gs
       - name: Test shared Firebase COIN, bar and transfers
         run: node --test scripts/test-bali-coin.cjs
+      - name: Test offline COIN export validation (no Firebase credentials)
+        run: node --test scripts/test-bali-coin-migration-offline.cjs
       - name: Test cards, promo codes, QR and stage draws
         run: node --test scripts/test-brsm.cjs scripts/test-brsm-service.cjs
       # Historical Apps Script COIN test removed from BRSM pipeline after Firebase cutover.
