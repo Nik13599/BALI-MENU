@@ -6,7 +6,7 @@ import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.
 import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1";
 import {withinOrderRetention,ORDER_RETENTION_MS} from "./bali-order-retention.js";
 import {createBaliStaffPreorder} from "./bali-staff-preorder-create.js?v=20261021-1";
-import {preorderServiceEnabled,sheetsRequest} from "./bali-sheets-api.js";
+import {preorderServiceEnabled,sheetsRequest} from "./bali-sheets-api.js?v=20261023-d1-live1";
 import {createDurableStaffStatusQueue} from "./bali-staff-status-queue.js?v=20261023-durable1";
 // The Sheets workspace uses Firebase Auth only; load Firestore for its legacy mode.
 const {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBatch,
