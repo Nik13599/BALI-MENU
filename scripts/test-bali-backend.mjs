@@ -131,7 +131,7 @@ assert.equal(inbox[0][1].senderNumber,"000001");
 assert.equal(inbox[0][1].comment,"Приятного отдыха!");
 await assert.rejects(make([{grantId:"shot-001",quantity:2},{grantId:"cocktail-01",quantity:1}],key,sender,"000002","Другое пожелание"),e=>e.code==="already-exists");
 const grant=await exports.issueBaliQuantity({...auth(staff),data:{
-  uid:receiver,kind:"shot",quantity:3,transferable:true,reason:"Приветственный подарок клуба"
+  uid:receiver,kind:"shot",quantity:3,transferable:true,reason:"Приветственный подарок клуба",requestId:"7".repeat(32)
 }});
 assert.equal(grant.ok,true);
 assert.equal(balance(receiver,"shot"),5);
@@ -183,7 +183,7 @@ assert.equal(memory.get("guestWallets/"+receiver).grants.length,1);
 for(const key of historyKeys)assert(memory.has(key),"compaction keeps immutable operation history");
 memory.set("guestWallets/"+receiver,{uid:receiver,grants:spent});
 assert.equal((await exports.issueBaliQuantity({...auth(staff),data:{
-  uid:receiver,kind:"shot",quantity:1,transferable:true,reason:"Новое начисление после списаний"
+  uid:receiver,kind:"shot",quantity:1,transferable:true,reason:"Новое начисление после списаний",requestId:"8".repeat(32)
 }})).ok,true);
 assert.equal(memory.get("guestWallets/"+receiver).grants.length,1);
 // Unknown expiry formats and unlimited rights are retained, never guessed away.
