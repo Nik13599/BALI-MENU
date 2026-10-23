@@ -18,7 +18,8 @@ const auth=getAuth(app);connectAuthEmulator(auth,'http://'+process.env.FIREBASE_
 const db=getFirestore(app);const [host,port]=process.env.FIRESTORE_EMULATOR_HOST.split(':');connectFirestoreEmulator(db,host,Number(port));
 global.window=new EventTarget();window.BALI_FIREBASE_CONFIG=app.options;
 await mkdir('.cache',{recursive:true});
-const source=(await readFile('orders-firestore.js','utf8')).replace(/https:\/\/www\.gstatic\.com\/firebasejs\/10\.14\.1\/firebase-(app|auth|firestore)\.js/g,(_,name)=>'firebase/'+name).replace('./bali-order-snapshots.js?v=20261021-1','../bali-order-snapshots.js?v=20261021-1').replace('./bali-order-retention.js','../bali-order-retention.js').replace('import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";','const sheetsEnabled=()=>false;const sheetsRequest=async()=>{throw Error("Google Sheets disabled in Firestore emulator")};');
+const source=(await readFile('orders-firestore.js','utf8')).replace(/https:\/\/www\.gstatic\.com\/firebasejs\/10\.14\.1\/firebase-(app|auth|firestore)\.js/g,(_,name)=>'firebase/'+name).replace('./bali-order-snapshots.js?v=20261021-1','../bali-order-snapshots.js?v=20261021-1').replace('./bali-order-retention.js','../bali-order-retention.js').replace(/import\s*\{\s*preorderServiceEnabled\s*,\s*sheetsRequest\s*\}\s*from\s*"\.\/bali-sheets-api\.js(?:\?[^"]*)?";/, 'const preorderServiceEnabled=()=>false;const sheetsRequest=async()=>{throw Error("D1 and Google Sheets disabled in Firestore emulator")};');
+assert.match(source,/const preorderServiceEnabled=\(\)=>false/,"Legacy Firebase flow must never contact production D1 during emulator tests");
 await writeFile('.cache/orders-client.mjs',source);
 await import('../.cache/orders-client.mjs');
 const eventDate='2099-10-24';
