@@ -994,26 +994,3 @@ body.bali-preorders-workspace{
     gap:6px;
   }
 }
-
-/* Notification about a newly committed preorder; visible only in Staff. */
-.bali-preorders-workspace .bali-staff-new-order-toast{
-  position:fixed;z-index:200;top:calc(env(safe-area-inset-top,0px) + 58px);
-  right:12px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;
-  max-width:min(92vw,520px);padding:11px 13px;
-  border:1px solid #b8fa72;border-radius:12px;background:#132119;
-  color:#f6fff2;box-shadow:0 8px 28px #0009;font-size:13px;
-}
-.bali-preorders-workspace .bali-staff-new-order-toast strong{color:#bbfc84}
-.bali-preorders-workspace .bali-staff-new-order-toast button{
-  border:1px solid #8cc455;background:#202f1d;border-radius:8px;
-  color:#f7ffef;font-size:12px;padding:7px 11px;min-height:32px;
-}
-.bali-preorders-workspace .bali-staff-new-order-toast .bali-staff-toast-dismiss{
-  border:0;background:transparent;font-size:20px;padding:2px 6px;
-}
-@media(max-width:600px){
-  .bali-preorders-workspace .bali-staff-new-order-toast{
-    left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 55px);
-    max-width:none;
-  }
-}
