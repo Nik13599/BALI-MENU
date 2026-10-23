@@ -3,6 +3,9 @@ test.beforeEach(async({page})=>{
  await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
 });
 test('Seasonal banner preserves the complete 2048 by 706 reference at all viewports',async({page})=>{
+ // Test the CSS shape with a manually published seasonal state. Disable the
+ // async public renderer so an empty live snapshot cannot clear this fixture.
+ await page.route('**/bali-pc-offers.js*',route=>route.fulfill({contentType:'text/javascript',body:'export {};'}));
  await page.goto('/index.html');
  await page.evaluate(()=>{
    document.body.dataset.baliPage='home';
