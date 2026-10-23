@@ -27,15 +27,18 @@ export async function authorizeUser(request){
     throw Object.assign(Error("authentication-invalid"),{status:401});
   return {uid,email:profile.email||"",token};
 }
-export async function authorizeStaff(request,{adminOnly=false}={}){
-  const {uid,token}=await authorizeUser(request);
+export async function authorizeStaff(request,{adminOnly=false,env}={}){
+  const {uid,email,token}=await authorizeUser(request);
   const root="https://firestore.googleapis.com/v1/projects/"+PROJECT+
     "/databases/(default)/documents/";
   async function getRole(path){
     const response=await fetch(root+path+encodeURIComponent(uid),{
       headers:{Authorization:"Bearer "+token},signal:AbortSignal.timeout(7000)
     });
-    if(response.status===404||response.status===403)return null;
+    if(response.status===404)return null;
+    // Never treat inaccessible Firestore roles as nonexistent: a revoked role
+    // must not be bypassed by a fallback grant when security rules change.
+    if(response.status===403)throw Object.assign(Error("role-check-denied"),{status:503});
     if(!response.ok)throw Object.assign(Error("access-check-unavailable"),{status:503});
     return (await response.json()).fields;
   }
@@ -43,7 +46,29 @@ export async function authorizeStaff(request,{adminOnly=false}={}){
   if(admin?.active?.booleanValue===true)return {uid,role:"admin"};
   if(adminOnly)deny("administrator-required");
   const staff=await getRole("preorderStaff/");
-  if(staff?.active?.booleanValue===true&&staff?.role?.stringValue==="preorders")
+  if(staff){
+    if(staff.active?.booleanValue===true&&staff.role?.stringValue==="preorders")
+      return {uid,role:"staff"};
+    // Explicitly disabled / reassigned Firestore accounts must stay denied.
+    deny("preorder-staff-revoked");
+  }
+
+  // The Cloudflare D1 operator can grant access to a pre-verified synthetic
+  // Firebase password identity, without GCP Firestore document-write rights.
+  // No browser-controlled UID/email/role is trusted; all come from Firebase.
+  if(!/^staff\+[a-z][a-z0-9_-]{2,31}@staff\.baliminsk\.by$/i.test(email))
+    deny("preorder-staff-required");
+  const db=env?.BALI_OPERATIONS_DB;
+  if(!db)throw Object.assign(Error("role-db-unavailable"),{status:503});
+  let grant;
+  try{
+    grant=await db.prepare(
+      "SELECT role,active FROM preorder_staff_access WHERE uid=? AND email=?"
+    ).bind(uid,email.toLowerCase()).first();
+  }catch{
+    throw Object.assign(Error("role-db-unavailable"),{status:503});
+  }
+  if(grant?.role==="preorders"&&Number(grant.active)===1)
     return {uid,role:"staff"};
   deny("preorder-staff-required");
 }
