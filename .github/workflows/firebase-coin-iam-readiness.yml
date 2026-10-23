@@ -8,7 +8,35 @@ permissions:
   id-token: write
 
 jobs:
+  verify-pilot-uids:
+    name: Verify test-only Firebase UID allowlist
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: firebase-production
+    env:
+      PILOT_UIDS: ${{ secrets.BALI_COIN_PILOT_UIDS }}
+    steps:
+      - name: Check protected pilot secret without showing UIDs
+        shell: bash
+        run: |
+          node <<'NODE'
+          const ids=String(process.env.PILOT_UIDS||"").split(",").map(x=>x.trim());
+          const valid=ids.length>=2&&ids.length<=10&&
+            ids.every(x=>/^[A-Za-z0-9_-]{8,128}$/.test(x))&&
+            new Set(ids).size===ids.length;
+          if(!valid){
+            console.error("::error::Missing or invalid BALI_COIN_PILOT_UIDS. Go to Settings > Environments > firebase-production > Environment secrets and add 2-10 distinct, real TEST Firebase Authentication UIDs separated by commas.");
+            process.exitCode=1;
+          }else console.log("Pilot allowlist format: valid; values remain hidden.");
+          NODE
+      - name: Note pilot status
+        if: success()
+        run: |
+          echo "### Pilot UID settings" >> "$GITHUB_STEP_SUMMARY"
+          echo "Protected UID allowlist format is valid. Actual Firebase account existence is not verified by this check." >> "$GITHUB_STEP_SUMMARY"
+
   verify-firebase-access:
+    name: Verify Firebase Functions v2 IAM separately
     runs-on: ubuntu-latest
     timeout-minutes: 12
     environment: firebase-production
@@ -16,28 +44,17 @@ jobs:
       FIREBASE_PROJECT_ID: bali-menu-5a48b
       FIREBASE_WIF_PROVIDER: ${{ vars.FIREBASE_WIF_PROVIDER || 'projects/855889005555/locations/global/workloadIdentityPools/bali-github-pool/providers/bali-github' }}
       FIREBASE_DEPLOY_SERVICE_ACCOUNT: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
-      PILOT_UIDS: ${{ secrets.BALI_COIN_PILOT_UIDS }}
     steps:
-      - name: Check configuration without printing test identities or secrets
+      - name: Check deployer settings independently of test UIDs
         shell: bash
         run: |
           set -euo pipefail
           test "$FIREBASE_PROJECT_ID" = "bali-menu-5a48b"
           test -n "$FIREBASE_WIF_PROVIDER"
           if [ -z "$FIREBASE_DEPLOY_SERVICE_ACCOUNT" ]; then
-            echo "::error::Set FIREBASE_DEPLOY_SERVICE_ACCOUNT in the firebase-production environment or repository variables."
+            echo "::error::Set FIREBASE_DEPLOY_SERVICE_ACCOUNT in firebase-production Environment variables or repository Actions Variables."
             exit 1
           fi
-          node <<'NODE'
-          const ids=String(process.env.PILOT_UIDS||"").split(",").map(x=>x.trim());
-          const valid=ids.length>=2&&ids.length<=10&&
-            ids.every(x=>/^[A-Za-z0-9_-]{8,128}$/.test(x))&&
-            new Set(ids).size===ids.length;
-          if(!valid){
-            console.error("::error::Configure BALI_COIN_PILOT_UIDS as 2-10 distinct dedicated Firebase test UIDs in firebase-production secrets.");
-            process.exitCode=1;
-          }else console.log("Dedicated test UID allowlist format OK (values hidden).");
-          NODE
       - name: Authenticate Firebase deployer without a static JSON key
         uses: google-github-actions/auth@v2
         with:
@@ -72,9 +89,8 @@ jobs:
               }else console.log("Firebase Functions v2 runtime IAM permission OK.");
             });
           '
-      - name: Summarize results without releasing anything
+      - name: Summarize read-only IAM result
         run: |
-          echo "### Firebase BALI COIN + BRSM read-only readiness" >> "$GITHUB_STEP_SUMMARY"
-          echo "OAuth/WIF credentials and v2 runtime actAs are valid." >> "$GITHUB_STEP_SUMMARY"
-          echo "Dedicated test Firebase UID allowlist is configured (UIDs not displayed)." >> "$GITHUB_STEP_SUMMARY"
-          echo "No Firebase deployment, wallet writes, BRSM entries, secrets or Cloudflare changes were performed." >> "$GITHUB_STEP_SUMMARY"
+          echo "### Firebase Functions v2 IAM readiness" >> "$GITHUB_STEP_SUMMARY"
+          echo "WIF identity and Compute runtime actAs permission are valid." >> "$GITHUB_STEP_SUMMARY"
+          echo "This test never deploys functions or changes COIN, BRSM, Firestore, or Cloudflare." >> "$GITHUB_STEP_SUMMARY"
