@@ -153,8 +153,10 @@ test('BALI ID keeps its enlarged card on-screen without redundant heading',async
   expect(layout.pageScrollable).toBe(false);
   await expect.poll(()=>page.evaluate(()=>!!window.BaliIdMotion)).toBe(true);
   const scene=page.locator('#baliIdFlipScene');
-  const rect=await scene.boundingBox();
-  await page.mouse.click(rect.x+rect.width*.5,rect.y+rect.height*.5);
+  // Locator click waits until the card really receives pointer input. A raw
+  // coordinate mouse click can race the initial loading/consent overlay,
+  // creating a false negative under heavy parallel CI load.
+  await scene.click();
   await expect.poll(()=>page.evaluate(()=>window.BaliIdMotion.getState().flipped)).toBe(true);
 });
 
