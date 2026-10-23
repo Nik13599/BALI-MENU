@@ -179,7 +179,7 @@ test("BRSM visit can be credited once after revocation, reinstatement and frozen
   // An administrator cancelled the entry and atomically reversed the credit.
   records.set(entry,{visits:[]});
   records.set(operation,{...records.get(operation),revoked:true,reissues:0,balance:0});
-  records.set("baliCoinAccounts/"+uid,{balance:0});
+  records.set("baliCoinAccounts/"+uid,{balance:0,source:"bali-coin-pilot"});
   await assert.rejects(call("coinClaimVisit",uid,{campaignId,eventId}),
     e=>e.code==="failed-precondition");
   // A new verified QR visit was registered while COIN was disabled.
@@ -219,4 +219,18 @@ test("production COIN refuses zero initialization of unmigrated guest accounts",
     uid,operation:"credit",amount:10,reason:"verified reward",
     requestId:"source_verified_0001"
   })).result.balance,82);
+});
+
+test("pilot cannot alter a pre-existing ordinary or migrated guest wallet",async()=>{
+  const {records,call,person}=setup();
+  const uid="guest_alice_0001"; person(uid,1);
+  records.set("admins/director",{active:true});
+  records.set("baliCoinAccounts/"+uid,{balance:240,source:"legacy-sheets-migration",migrationComplete:true});
+  await assert.rejects(call("coinChange","director",{
+    uid,operation:"credit",amount:3,reason:"Misrouted test reward",
+    requestId:"pilot_legacy_wallet_01"
+  }),e=>e.code==="failed-precondition");
+  assert.equal(records.get("baliCoinAccounts/"+uid).balance,240);
+  const card=(await call("coinCard",uid)).card;
+  assert.equal(card.coinWritable,false);
 });

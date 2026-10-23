@@ -33,6 +33,8 @@ module.exports=({db,TS,fail,coinRollout})=>{
     // not been reconciled. COIN is deferred until that balance exists.
     if(rollout.phase==="live"&&!account.exists)
       return {amount:0,sourceWalletUnverified:true};
+    if(rollout.phase==="pilot"&&account.exists&&account.data().source!=="bali-coin-pilot")
+      fail("failed-precondition","Нельзя начислять тестовые COIN на существующий кошелёк.");
     if(account.exists&&account.data().source==="legacy-sheets-migration"&&
       account.data().migrationComplete!==true)
       fail("failed-precondition","История BALI COIN ещё переносится.");
@@ -44,7 +46,8 @@ module.exports=({db,TS,fail,coinRollout})=>{
     const issueCount=previous.exists?priorCount+1:0;
     const historyRef=issueCount?
       db.doc(r.historyRoot+"_reissue_"+issueCount):r.history;
-    tx.set(r.account,{balance:after,updatedAt:at},{merge:true});
+    tx.set(r.account,{balance:after,updatedAt:at,
+      ...(rollout.phase==="pilot"&&!account.exists?{source:"bali-coin-pilot"}:{})},{merge:true});
     if(previous.exists){
       if(previous.data().action!=="award"||previous.data().uid!==uid)
         fail("already-exists","Конфликт истории BALI COIN.");
@@ -66,6 +69,8 @@ module.exports=({db,TS,fail,coinRollout})=>{
     if(account.exists&&account.data().source==="legacy-sheets-migration"&&
       account.data().migrationComplete!==true)
       fail("failed-precondition","История BALI COIN ещё переносится.");
+    if(rollout.phase==="pilot"&&(!account.exists||account.data().source!=="bali-coin-pilot"))
+      fail("failed-precondition","Нельзя отменять тестовые COIN с существующего кошелька.");
     const value=previous.data(),before=account.exists?account.data().balance:0;
     if(value.action!=="award"||value.uid!==uid||!validBalance(before)||
       !Number.isSafeInteger(value.amount)||value.amount<1)

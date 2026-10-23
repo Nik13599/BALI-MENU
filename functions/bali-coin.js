@@ -22,6 +22,8 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
   const voucherRef=code=>db.doc("baliCoinVouchers/"+hash(code));
   const rewardRef=(campaignId,kind,itemId)=>db.doc("baliCoinRewards/"+hash(campaignId+"|"+kind+"|"+itemId));
   const balance=snap=>{
+    if(rollout.phase==="pilot"&&snap.exists&&snap.data().source!=="bali-coin-pilot")
+      fail("failed-precondition","Тестовые COIN нельзя использовать с существующим кошельком гостя.");
     if(snap.exists&&snap.data().source==="legacy-sheets-migration"&&snap.data().migrationComplete!==true)
       fail("failed-precondition","Перенос истории BALI COIN ещё не завершён.");
     const value=snap.exists?snap.data().balance:0;
@@ -35,6 +37,10 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
       fail("failed-precondition","Баланс этой Bali Card ещё не перенесён.");
     return balance(snap);
   };
+  const walletUpdate=(snap,amount,at)=>({
+    balance:amount,updatedAt:at,
+    ...(rollout.phase==="pilot"&&!snap.exists?{source:"bali-coin-pilot"}:{})
+  });
   async function role(uid){
     const [a,r,preorders]=await Promise.all([
       db.doc("admins/"+uid).get(),
@@ -81,7 +87,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
       tier:tier.exists?tier.data().tier:"Member",benefits:tier.exists?tier.data().benefits||[]:[],
       coinBalance:snap.exists?balance(snap):null,
         walletReady:snap.exists,coinWritable:rollout.eligible([uid])&&
-          (rollout.phase==="pilot"||snap.exists)}};
+          (rollout.phase==="pilot"?(!snap.exists||snap.data().source==="bali-coin-pilot"):snap.exists)}};
   });
   const coinAdminCard=api("coinAdminCard",async req=>{
     await director(req);const uid=text(req.data?.uid,128);
@@ -89,7 +95,8 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
     const [person,snap]=await Promise.all([nameAndId(uid),acct(uid).get()]);
     return {card:{...person,activated:true,
       coinBalance:snap.exists?balance(snap):null,walletReady:snap.exists,
-      coinWritable:rollout.eligible([uid])&&(rollout.phase==="pilot"||snap.exists)}};
+      coinWritable:rollout.eligible([uid])&&
+        (rollout.phase==="pilot"?(!snap.exists||snap.data().source==="bali-coin-pilot"):snap.exists)}};
   });
   const coinHistory=api("coinHistory",async req=>{
     const uid=verified(req);await nameAndId(uid);
@@ -126,8 +133,8 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
       if(before<amount)fail("failed-precondition","Недостаточно BALI COIN.");
       if(!coins(other+amount))fail("resource-exhausted","Лимит баланса получателя.");
       const at=TS.now(),after=before-amount;
-      tx.set(from,{balance:after,updatedAt:at},{merge:true});
-      tx.set(target,{balance:other+amount,updatedAt:at},{merge:true});
+      tx.set(from,walletUpdate(left,after,at),{merge:true});
+      tx.set(target,walletUpdate(right,other+amount,at),{merge:true});
       tx.create(op,{action:"transfer",fromUid:uid,toUid:to.uid,amount,comment,balance:after,createdAt:at});
       tx.create(hist(uid,id+"_out"),{type:"transfer-out",count:amount,balance:after,
         reason:"Перевод на Bali Card "+to.number+(comment?" · "+comment:""),createdAt:at});
@@ -155,7 +162,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
       const before=verifiedWallet(old),next=before+(action==="credit"?amount:-amount);
       if(!coins(next))fail("failed-precondition","Недостаточно BALI COIN или превышен лимит.");
       const at=TS.now();
-      tx.set(account,{balance:next,updatedAt:at},{merge:true});
+      tx.set(account,walletUpdate(old,next,at),{merge:true});
       tx.create(op,{action:"manual",uid,amount,operation:action,reason,balance:next,by:staff,createdAt:at});
       tx.create(hist(uid,id),{type:action,count:amount,balance:next,reason,by:staff,createdAt:at});
       return {result:{ok:true,balance:next}};
@@ -197,7 +204,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
           const issueCount=count+1,before=verifiedWallet(old),next=before+checked.amount;
           if(!coins(next))fail("resource-exhausted","Превышен лимит BALI COIN.");
           const at=TS.now();
-          tx.set(account,{balance:next,updatedAt:at},{merge:true});
+          tx.set(account,walletUpdate(old,next,at),{merge:true});
           tx.update(op,{revoked:false,reissues:issueCount,amount:checked.amount,
             balance:next,updatedAt:at});
           tx.create(hist(uid,id+"_reissue_"+issueCount),{type:"credit",
@@ -211,7 +218,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
       const next=verifiedWallet(old)+checked.amount;
       if(!coins(next))fail("resource-exhausted","Превышен лимит BALI COIN.");
       const at=TS.now();
-      tx.set(account,{balance:next,updatedAt:at},{merge:true});
+      tx.set(account,walletUpdate(old,next,at),{merge:true});
       tx.create(op,{action:"award",uid,amount:checked.amount,reason,balance:next,createdAt:at});
       tx.create(hist(uid,id),{type:"credit",count:checked.amount,balance:next,reason,createdAt:at});
       return {result:{ok:true,balance:next,amount:checked.amount}};
@@ -298,7 +305,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
       const next=before-item.price,at=TS.now();
       const record={uid,campaignId,lotId,name:item.name,category:item.category,
         price:item.price,voucher:code,ownerVoucherId:id,status:"pending",createdAt:at,updatedAt:at};
-      tx.set(account,{balance:next,updatedAt:at},{merge:true});
+      tx.set(account,walletUpdate(old,next,at),{merge:true});
       tx.update(lot,{sold:item.sold+1,updatedAt:at});
       tx.create(voucher,record);tx.create(mine,record);
       tx.create(op,{action:"redeem",campaignId,lotId,balance:next,
