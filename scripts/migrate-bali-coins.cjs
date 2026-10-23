@@ -9,10 +9,17 @@ const apply=args.includes("--apply"),offline=args.includes("--offline"),file=par
 if(offline&&apply)throw Error("Offline validation cannot write to Firebase");
 if(!file)throw Error("Specify --input private-export.json");
 if(apply&&param("--confirm")!=="FIREBASE_COIN_IMPORT")throw Error("Write requires --confirm FIREBASE_COIN_IMPORT");
-const data=JSON.parse(fs.readFileSync(path.resolve(file),"utf8"));
+const project=param("--project");
+if(apply&&project!=="bali-menu-5a48b")
+  throw Error("Production import requires --project bali-menu-5a48b");
+const sha=s=>crypto.createHash("sha256").update(s).digest("hex");
+const exportBytes=fs.readFileSync(path.resolve(file));
+const exportSha256=sha(exportBytes);
+if(apply&&param("--expected-sha256")!==exportSha256)
+  throw Error("Source export SHA-256 mismatch: run --offline and verify the exact frozen snapshot");
+const data=JSON.parse(exportBytes.toString("utf8"));
 if(!Array.isArray(data.cards)||!Array.isArray(data.history))throw Error("Expected cards[] and history[]");
 if(!data.cards.length)throw Error("Source wallet export is empty: no migration can be verified");
-const sha=s=>crypto.createHash("sha256").update(s).digest("hex");
 const bal=n=>Number.isSafeInteger(n)&&n>=0&&n<=999999999;
 const users=new Map(),numbers=new Set();
 for(const c of data.cards){
@@ -34,11 +41,20 @@ const signature=x=>sha(JSON.stringify({number:x.card.number,balance:x.card.coinB
   history:x.history.map(h=>[h.id,h.type,h.count,h.balance,h.createdAt,h.reason])}));
 for(const item of users.values()){
   const hist=item.history;
-  let lastTime=-Infinity;
+  let lastTime=-Infinity,previousBalance=null;
   for(const h of hist){
     const currentTime=Date.parse(h.createdAt);
     if(currentTime<lastTime)throw Error("History is not chronological for "+item.card.number);
     lastTime=currentTime;
+    // Preserve a possible opening balance before the first exported receipt.
+    // Every later receipt must reconcile with the preceding recorded balance.
+    const credit=h.type==="credit"||h.type==="transfer-in";
+    const impliedBefore=h.balance+(credit?-h.count:h.count);
+    if(!bal(impliedBefore))
+      throw Error("Invalid opening balance or operation amount for "+item.card.number+" / "+h.id);
+    if(previousBalance!==null&&impliedBefore!==previousBalance)
+      throw Error("COIN ledger arithmetic mismatch for "+item.card.number+" / "+h.id);
+    previousBalance=h.balance;
   }
   if(hist.length&&hist.at(-1).balance!==item.card.coinBalance)
     throw Error("Balance does not match final history for "+item.card.number);
@@ -50,7 +66,7 @@ if(offline){
     wallets:users.size,
     operations:data.history.length,
     totalCoinBalance:total.toString(),
-    exportSha256:sha(fs.readFileSync(path.resolve(file))),
+    exportSha256,
     firebaseIdentityVerified:false,
     actualSourceReconciled:false,
     firebaseWrites:0
@@ -58,7 +74,9 @@ if(offline){
   process.exit(0);
 }
 const admin=require(require.resolve("firebase-admin",{paths:[path.join(__dirname,"../functions")]}));
-if(!admin.apps.length)admin.initializeApp();
+if(!admin.apps.length)admin.initializeApp(project?{projectId:project}:{});
+if(apply&&admin.app().options.projectId!=="bali-menu-5a48b")
+  throw Error("Firebase Admin project mismatch: production import blocked");
 const db=admin.firestore();
 (async()=>{
   // Validate all immutable Firebase card IDs before writing the first balance.

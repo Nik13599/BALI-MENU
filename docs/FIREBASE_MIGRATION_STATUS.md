@@ -57,8 +57,19 @@ import:
 ```bash
 npm ci --prefix functions
 node scripts/migrate-bali-coins.cjs --input ./private/bali-coin-export.json
-node scripts/migrate-bali-coins.cjs --input ./private/bali-coin-export.json --apply --confirm FIREBASE_COIN_IMPORT
+node scripts/migrate-bali-coins.cjs --input ./private/bali-coin-export.json \
+  --apply --project bali-menu-5a48b \
+  --expected-sha256 "$VERIFIED_EXPORT_SHA256" \
+  --confirm FIREBASE_COIN_IMPORT
 ```
+
+Before the import, compare the offline report's `exportSha256` with the SHA-256
+of the reviewed, frozen private export. Set `VERIFIED_EXPORT_SHA256` to that
+exact 64-character digest. Imports are rejected if the file has changed or the
+production project was not selected explicitly. Adjacent transaction balances
+are recalculated and validated using signed credit/debit/transfer arithmetic.
+A nonzero opening balance before the earliest exported transaction is allowed,
+but it must be independently reconciled to the original source.
 
 The online dry run only inspects. The import rejects Firebase UID/number mismatches,
 live wallets and duplicates, creates deterministic history references, and

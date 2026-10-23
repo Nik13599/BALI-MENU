@@ -36,6 +36,20 @@ test("BALI COIN export can be audited offline without Firebase credentials",()=>
     assert.notEqual(run([],[]).status,0,"empty export cannot count as a successful audit");
     assert.notEqual(run([card,card],[earlier,later]).status,0,"duplicate card must fail");
     assert.notEqual(run([card],[later,earlier]).status,0,"nonchronological history must fail");
+    assert.notEqual(run([card],[{...earlier,balance:16},later]).status,0,
+      "intermediate balance mismatch must fail even when the final balance matches");
+    assert.notEqual(run([card],[{...earlier,count:20},later]).status,0,
+      "a credit with impossible negative opening balance must fail");
+    assert.notEqual(run([card],[{...earlier,type:"transfer-in"}, {...later,type:"transfer-out"}]).status,0,
+      "transfer-in/out must use the same signed arithmetic as credit/debit");
+    assert.equal(run([card],[{...earlier,type:"transfer-in"}, {...later,type:"transfer-out",count:3}]).status,0,
+      "balanced transfer-in and transfer-out history must pass");
+    const importWithoutVerifiedDigest=spawnSync(process.execPath,[tool,"--apply","--input",input,
+      "--confirm","FIREBASE_COIN_IMPORT","--project","bali-menu-5a48b"],{
+        encoding:"utf8",env:{...process.env,GOOGLE_APPLICATION_CREDENTIALS:"/does-not-exist"}
+      });
+    assert.notEqual(importWithoutVerifiedDigest.status,0,
+      "production import without the reviewed export hash must fail before accessing Firebase");
     assert.notEqual(run([{...card,coinBalance:8}],[earlier,later]).status,0,
       "final history and balance mismatch must fail");
     assert.notEqual(run([card],[earlier,later],["--apply","--confirm","FIREBASE_COIN_IMPORT"]).status,0,
