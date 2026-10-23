@@ -1,7 +1,9 @@
 name: BALI ID — protected Firebase to D1 staging (manual)
 on:
   push:
-    branches: [feature/bali-id-firestore-d1-snapshot-20261023]
+    # Production identity is restricted to trusted main by the existing WIF
+    # provider. Feature branches run only the credential-free integrity tests.
+    branches: [main]
     paths:
       - '.github/workflows/bali-id-source-migration-manual.yml'
       - 'scripts/export-bali-id-to-d1.mjs'
