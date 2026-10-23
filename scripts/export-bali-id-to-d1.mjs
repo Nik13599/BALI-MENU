@@ -44,13 +44,28 @@ async function source(){
  }
  const profiles=records.filter(x=>x.scope==="profiles");
  for(const profile of profiles){
-  // Agreements can exist even if card allocation later fails. Capture
-  // every version, not only the current `privilege` acknowledgement.
-  const list=await firestore.collection("users/"+profile.uid+"/baliIdAgreements")
-    .orderBy(admin.firestore.FieldPath.documentId()).limit(100).get();
-  if(list.size===100)throw Error("Agreement history may be truncated");
-  for(const doc of list.docs)records.push(record("agreements",doc.ref.path,
-    doc.data(),{updateTime:doc.updateTime}));
+  // Keep past consents, visits, incoming transfer notices and unfinished
+  // onboarding. Source collections are paginated, not silently truncated.
+  for(const [scope,path] of [
+    ["agreements","users/"+profile.uid+"/baliIdAgreements"],
+    ["event-checkins","users/"+profile.uid+"/eventCheckins"],
+    ["transfer-inbox","baliTransferInbox/"+profile.uid+"/items"]
+  ]){
+    let cursor=null,count=0;
+    do{
+      let q=firestore.collection(path)
+        .orderBy(admin.firestore.FieldPath.documentId()).limit(PAGE);
+      if(cursor)q=q.startAfter(cursor);
+      const docs=await q.get();
+      for(const doc of docs.docs)records.push(record(scope,doc.ref.path,
+        doc.data(),{updateTime:doc.updateTime}));
+      count+=docs.size;
+      if(records.length>MAX_ALL||count>MAX_PER_COLLECTION)
+        throw Error("Nested source exceeds migration safety bound");
+      if(docs.size<PAGE)break;
+      cursor=docs.docs.at(-1);
+    }while(true);
+  }
  }
  if(records.length>MAX_ALL)throw Error("Total source exceeds safety bound");
  return records;
@@ -85,22 +100,26 @@ async function query(sql,params=[]){
   throw Error("Cloudflare D1 rejected a statement; migration stopped");
  return result.result[0]?.results||[];
 }
-const tables=await query("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('bali_source_snapshots','bali_snapshot_manifests')");
-if(tables.length!==2)throw Error("Apply migration 0006 to D1 before staging");
+const tables=await query("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('bali_source_snapshots','bali_snapshot_manifests','bali_nested_source_snapshots')");
+if(tables.length!==3)throw Error("Apply D1 migrations 0006 and 0007 before staging");
 if(expected.total===0)throw Error("Empty Firebase export is not eligible for staging");
 for(let index=0;index<original.length;index++){
  const r=original[index];
- await query("INSERT INTO bali_source_snapshots "+
-  "(snapshot_id,source_path,scope,firebase_uid,payload_json,source_digest,staged_at_ms) "+
+ const nested=["event-checkins","transfer-inbox"].includes(r.scope);
+ const table=nested?"bali_nested_source_snapshots":"bali_source_snapshots";
+ await query("INSERT INTO "+table+
+  " (snapshot_id,source_path,scope,firebase_uid,payload_json,source_digest,staged_at_ms) "+
   "VALUES (?,?,?,?,?,?,?) ON CONFLICT(snapshot_id,source_path) DO NOTHING",
   [snapshotId,r.path,r.scope,r.uid,r.payload,r.digest,started]);
  if((index+1)%1000===0)console.log("Staged documents:",index+1);
 }
 const staged=[];
 for(let offset=0;offset<expected.total;offset+=PAGE){
- const chunk=await query("SELECT source_path,source_digest FROM bali_source_snapshots "+
-  "WHERE snapshot_id=? ORDER BY source_path LIMIT ? OFFSET ?",
-  [snapshotId,PAGE,offset]);
+ const chunk=await query("SELECT source_path,source_digest FROM ("+
+  "SELECT source_path,source_digest FROM bali_source_snapshots WHERE snapshot_id=? "+
+  "UNION ALL SELECT source_path,source_digest FROM bali_nested_source_snapshots WHERE snapshot_id=?"+
+  ") ORDER BY source_path LIMIT ? OFFSET ?",
+  [snapshotId,snapshotId,PAGE,offset]);
  for(const row of chunk)staged.push(row.source_path+"\t"+row.source_digest);
 }
 if(staged.length!==expected.total)throw Error("Readback count differs from Firebase");
