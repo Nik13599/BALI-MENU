@@ -76,9 +76,9 @@ jobs:
           service_account: ${{ env.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
       - name: Deploy only bonus catalogue and preview callables
         run: |
-          npx firebase-tools deploy --project "$FIREBASE_PROJECT_ID" --only "functions:bali-id:listBaliBonusKinds,functions:bali-id:createBaliBonusKind,functions:bali-id:previewBaliBonusQR,functions:bali-id:listBaliQrCodes" --non-interactive
+          npx firebase deploy --project "$FIREBASE_PROJECT_ID" --only "functions:bali-id:listBaliBonusKinds,functions:bali-id:createBaliBonusKind,functions:bali-id:previewBaliBonusQR,functions:bali-id:listBaliQrCodes" --non-interactive
       - name: Deploy only authorized credit/debit callables
         run: |
-          npx firebase-tools deploy --project "$FIREBASE_PROJECT_ID" --only "functions:bali-id:createBaliQrBatch,functions:bali-id:applyBaliBonusQR,functions:bali-id:issueBaliQuantity,functions:bali-id:revokeBaliQrCode" --non-interactive
+          npx firebase deploy --project "$FIREBASE_PROJECT_ID" --only "functions:bali-id:createBaliQrBatch,functions:bali-id:applyBaliBonusQR,functions:bali-id:issueBaliQuantity,functions:bali-id:revokeBaliQrCode" --non-interactive
       - name: Inspect deployed QR code sources without invoking or crediting anyone
         run: node scripts/audit-published-bali-qr.mjs
