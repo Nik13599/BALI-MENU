@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "functions/brsm*.js"
+      - "functions/bali-coin.js"
       - "brsm-*"
       - "bali-coin-*"
       - "google-apps-script/BaliBackend.gs"
@@ -14,6 +15,7 @@ on:
       - "admin.html"
       - "firestore.rules"
       - "scripts/test-brsm*"
+      - "scripts/test-bali-coin*"
       - "tests/brsm-card.spec.cjs"
       - ".github/workflows/brsm-checks.yml"
   workflow_dispatch:
@@ -22,6 +24,26 @@ permissions:
   contents: read
 
 jobs:
+  coin-firestore-transactions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GCLOUD_PROJECT: demo-bali-menu
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci --no-audit --no-fund
+      - run: npm install --prefix functions --no-audit --no-fund
+      - name: Test actual ledger contention in the isolated demo Firestore
+        run: npx firebase emulators:exec --config firebase.emulator.json --project demo-bali-menu --only firestore "node scripts/test-bali-coin-firestore.mjs"
+
   brsm-service:
     runs-on: ubuntu-latest
     steps:
