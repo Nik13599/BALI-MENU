@@ -8,8 +8,8 @@ self.addEventListener("push",event=>{
   const title="BALI STAFF • Новый заказ";
   const options={
     body:"Откройте предзаказы, чтобы посмотреть новый заказ.",
-    icon:"/assets/bali-nightclub-logo.png",
-    badge:"/assets/bali-nightclub-logo.png",
+    icon:"/bali-staff-approved-icon.png?v=20261023-1",
+    badge:"/bali-staff-approved-icon.png?v=20261023-1",
     tag:detail.orderId?"bali-order-"+String(detail.orderId).slice(0,128):"bali-new-order",
     data:{url:"/preorders.html"},
     renotify:false

@@ -4,7 +4,7 @@
 const identifier="by.baliminsk.staff";
 const esc=value=>String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;");
 export async function onRequestGet({request,env}){
-  const iconUrl=new URL("/assets/bali-nightclub-logo.png",request.url);
+  const iconUrl=new URL("/bali-staff-approved-icon.png",request.url);
   let icon="";
   try{
     const response=await env.ASSETS.fetch(new Request(iconUrl));
