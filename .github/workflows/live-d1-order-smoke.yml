@@ -1,0 +1,24 @@
+name: BALI live D1 production smoke
+on:
+  push:
+    branches:
+      - test/live-d1-order-smoke-20261023
+  pull_request:
+    paths:
+      - 'scripts/smoke-live-d1-orders.mjs'
+      - '.github/workflows/live-d1-order-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  non-destructive-live-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: node --check scripts/smoke-live-d1-orders.mjs
+      - name: Verify actual live checkout and authorization without writing orders
+        run: node scripts/smoke-live-d1-orders.mjs

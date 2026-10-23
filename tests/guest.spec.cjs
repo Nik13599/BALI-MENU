@@ -5,6 +5,12 @@ const AxeBuilder = require('@axe-core/playwright').default;
 test.beforeEach(async ({page}) => {
   await page.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1'
     ? route.continue() : route.abort());
+  // These component scenarios supply menu/events explicitly below. Prevent a
+  // late failure from the real data adapter from clearing the fixture dates.
+  // Public API loading/recovery has dedicated browser and backend coverage.
+  await page.route('**/menu-firestore.js*', route => route.fulfill({
+    contentType: 'text/javascript', body: '// Explicit menu/event fixtures in this spec.'
+  }));
 });
 function cartTrigger(page) { return page.locator(page.viewportSize().width >= 1180 ? '#baliPcCartBtn' : '#baliCartDock'); }
 async function menu(page) {

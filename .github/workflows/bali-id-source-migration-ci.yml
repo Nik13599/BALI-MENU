@@ -1,0 +1,37 @@
+name: BALI ID source migration integrity
+on:
+  push:
+    branches: [feature/bali-id-firestore-d1-snapshot-20261023]
+  pull_request:
+    paths:
+      - 'cloudflare-pages/d1/migrations/0006_bali_source_snapshots.sql'
+      - 'cloudflare-pages/d1/migrations/0007_bali_nested_history.sql'
+      - 'cloudflare-pages/d1/migrations/0008_bali_loyalty_source_snapshots.sql'
+      - 'scripts/bali-id-source-snapshot.mjs'
+      - 'scripts/export-bali-id-to-d1.mjs'
+      - 'scripts/test-bali-id-source-snapshot.mjs'
+      - 'scripts/test-bali-id-export-runner.mjs'
+      - 'cloudflare-pages/functions/api/admin/bali-id-source-snapshot-status.js'
+      - '.github/workflows/bali-id-source-migration-ci.yml'
+permissions:
+  contents: read
+jobs:
+  migration-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify source migration code parses
+        run: |
+          node --check scripts/bali-id-source-snapshot.mjs
+          node --check scripts/export-bali-id-to-d1.mjs
+          node --check scripts/test-bali-id-source-snapshot.mjs
+          node --input-type=module --check < cloudflare-pages/functions/api/admin/bali-id-source-snapshot-status.js
+      - name: Test lossless UID, wallet and operation import in SQLite
+        run: |
+          node --experimental-sqlite scripts/test-bali-id-source-snapshot.mjs
+          node --experimental-sqlite scripts/test-bali-id-export-runner.mjs
+      - name: Prevent accidental Staff visual changes
+        run: node scripts/test-staff-appearance-locked.mjs
