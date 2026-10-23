@@ -43,8 +43,13 @@ $("adminSignIn").addEventListener("click",async()=>{
   catch(error){status("Вход не завершён: "+(error.code||error.message));}
   finally{$("adminSignIn").disabled=false;}
 });
-$("adminSignOut").addEventListener("click",()=>void signOut(auth));
-$("adminSwitchAccount").addEventListener("click",()=>void signOut(auth));
+const closeStaffSession=async()=>{
+  try{await window.BaliStaffPushDisable?.();}
+  catch(error){console.warn("BALI Staff device push unsubscription failed.");}
+  await signOut(auth);
+};
+$("adminSignOut").addEventListener("click",()=>void closeStaffSession());
+$("adminSwitchAccount").addEventListener("click",()=>void closeStaffSession());
 onAuthStateChanged(auth,async user=>{
   const current=++seq;
   $("adminView").hidden=true;$("loginView").hidden=true;
