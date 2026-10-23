@@ -25,7 +25,7 @@ globalThis.fetch=async(url)=>{
   throw Error("Unexpected upstream: "+url);
 };
 const env={BALI_OPERATIONS_DB:{prepare(sql){
-  assert.match(sql,/FROM preorder_staff_access WHERE uid=\\? AND email=\\?/);
+  assert.match(sql,/FROM preorder_staff_access WHERE uid=\? AND email=\?/);
   return {bind(target,addr){return {async first(){
     queries++;
     return target===uid&&addr===email?grant:null;
