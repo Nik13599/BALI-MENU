@@ -917,7 +917,7 @@ $("editOrderDate").addEventListener("change",()=>{
 function openCreateOrder(){
   ensureAdmin();
   creatingOrder=true;editOrder=null;editLines=[];originalIds=new Set();
-  createOrderRequestId=crypto.randomUUID();
+  createOrderRequestId=crypto.randomUUID().replace(/-/g,"");
   $("orderEditTitle").textContent="Новый предзаказ · по телефону";
   if($("orderEditEyebrow"))$("orderEditEyebrow").textContent="СОЗДАНИЕ ПРЕДЗАКАЗА";
   if($("orderEditSubmit"))$("orderEditSubmit").textContent="Создать предзаказ";
