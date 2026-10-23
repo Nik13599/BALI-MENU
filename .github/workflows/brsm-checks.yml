@@ -84,7 +84,11 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - run: npx playwright install --with-deps chromium
+      - name: Use preinstalled Google Chrome for Playwright
+        run: |
+          command -v google-chrome
+          google-chrome --version
+          echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
       - name: Test card and operator panel (phone + desktop, no Firebase)
         run: npx playwright test tests/brsm-card.spec.cjs --project=phone --project=desktop
       - uses: actions/upload-artifact@v4
