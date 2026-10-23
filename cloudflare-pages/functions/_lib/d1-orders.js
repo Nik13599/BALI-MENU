@@ -156,7 +156,7 @@ function messages(e){
 async function create(db,env,input,request,{staff=false,guest=false}={}){
  const idToken=input.token;
  let identity;
- if(staff)identity=await authorizeStaff(request);
+ if(staff)identity=await authorizeStaff(request,{env});
  else if(guest)identity=idToken?await verifiedIdentity(input,request):null;
  else identity=await verifiedIdentity(input,request);
  if(!guest&&!identity)return error("unauthenticated","Войдите в BALI.",401);
@@ -220,8 +220,8 @@ async function create(db,env,input,request,{staff=false,guest=false}={}){
  const result=await readOne(db,orderId);
  return result?good({order:result}):error("service-unavailable","Заказ не прочитан после записи.",503);
 }
-async function updateStatus(db,input,request){
- const staff=await authorizeStaff(request),p=input.payload||{};
+async function updateStatus(db,input,request,env){
+ const staff=await authorizeStaff(request,{env}),p=input.payload||{};
  const id=String(p.id||""),status=String(p.status||"");
  if(!idPattern.test(id)||!statuses.has(status))return error("invalid-argument","Недопустимый заказ или статус.",400);
  const current=await db.prepare("SELECT * FROM preorder_orders WHERE id=?").bind(id).first();
@@ -258,7 +258,7 @@ async function updateStatus(db,input,request){
  return good({result:{id,status,updatedAt:iso(now)}});
 }
 async function change(db,env,input,request,{staff=false}={}){
- const user=staff?await authorizeStaff(request):await verifiedIdentity(input,request);
+ const user=staff?await authorizeStaff(request,{env}):await verifiedIdentity(input,request);
  const p=input.payload||{};
  const id=String(p.id||"");
  if(!idPattern.test(id))return error("invalid-argument","Некорректный заказ.",400);
@@ -324,13 +324,13 @@ export async function handleD1OrderAction(input,request,env){
    ...(request.headers.get("Origin")?{"Origin":request.headers.get("Origin")}:{})
   }});
   if(action==="menu"){
-   await authorizeStaff(staffRequest);
+   await authorizeStaff(staffRequest,{env});
    const data=await catalog(env);return good(data);
   }
   if(action==="guestCreateOrder")return await create(db,env,input,staffRequest,{guest:true});
   if(action==="createOrder")return await create(db,env,input,staffRequest);
   if(action==="staffCreateOrder")return await create(db,env,input,staffRequest,{staff:true});
-  if(action==="staffStatus")return await updateStatus(db,input,staffRequest);
+  if(action==="staffStatus")return await updateStatus(db,input,staffRequest,env);
   if(action==="editOrder")return await change(db,env,input,staffRequest);
   if(action==="staffEditOrder")return await change(db,env,input,staffRequest,{staff:true});
   if(action==="myOrders"){
@@ -350,7 +350,7 @@ export async function handleD1OrderAction(input,request,env){
   }
   if(action==="staffArchiveOrder"||action==="staffDeleteOrder"){
    const staff=await authorizeStaff(staffRequest,{
-     adminOnly:action==="staffDeleteOrder"
+     adminOnly:action==="staffDeleteOrder",env
    }),id=String(input.payload?.id||"");
    if(!idPattern.test(id))return error("invalid-argument","Неверный номер заказа.",400);
    const current=await db.prepare("SELECT * FROM preorder_orders WHERE id=?").bind(id).first();
@@ -371,7 +371,7 @@ export async function handleD1OrderAction(input,request,env){
    return good({order:await readOne(db,id)});
   }
   if(action==="staffClearExpiredOrders"){
-   await authorizeStaff(staffRequest,{adminOnly:true});
+   await authorizeStaff(staffRequest,{adminOnly:true,env});
    const cutoff=Date.now()-30*86400000;
    const old=await db.prepare("SELECT id FROM preorder_orders WHERE created_at_ms<? LIMIT 50")
     .bind(cutoff).all();
@@ -383,7 +383,7 @@ export async function handleD1OrderAction(input,request,env){
    return good({removed:found.length});
   }
   if(action==="staffOrders"||action==="staffRecentOrders"){
-   await authorizeStaff(staffRequest);
+   await authorizeStaff(staffRequest,{env});
    const p=input.payload||{};
    const date=String(p.date||""),eventId=String(p.eventId||"");
    if(date&&!datePattern.test(date))return error("invalid-argument","Неверная дата.",400);
