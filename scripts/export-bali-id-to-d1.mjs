@@ -45,15 +45,62 @@ async function source(){
     {updateTime:item.updateTime}));
   if(records.length>MAX_ALL)throw Error("Total source exceeds safety bound");
  }
- // Collection-group queries retain nested history even when a parent document
- // is missing. Validation blocks orphan accounts instead of silently omitting them.
+ // Generic collectionGroup('items'|'history'|'events') scans unrelated app
+ // data and can exhaust Firestore reads before BALI source is captured.
+ // Query only the immediate subcollections under each known BALI root.
+ // listDocuments() includes missing parent documents with live subcollections,
+ // so orphaned nested records are retained and validation can reject them.
+ const parentRoots={
+  agreements:"users","event-checkins":"users",
+  "transfer-inbox":"baliTransferInbox",
+  "coin-history":"baliCoinAccounts","coin-user-vouchers":"baliCoinAccounts",
+  "brsm-entries":"brsmCampaigns","brsm-campaign-events":"brsmCampaigns",
+  "brsm-rounds":"brsmCampaigns","brsm-round-private":"brsmCampaigns",
+  "brsm-campaign-audit":"brsmCampaigns"
+ };
+ const parentsByRoot=new Map();
+ let scopedQueries=0;
  for(const [scope,{group,path}] of Object.entries(NESTED_SOURCES)){
-  const docs=await listCollection(firestore.collectionGroup(group));
-  for(const doc of docs){
-   if(path.test(doc.ref.path))records.push(record(scope,doc.ref.path,
-    doc.data(),{updateTime:doc.updateTime}));
+  // These names are specific to BALI and cost one collection-group query
+  // instead of thousands of empty per-user subcollection queries. Generic
+  // names (items/history/events/vouchers/entries/...) MUST stay scoped.
+  if(scope==="agreements"||scope==="event-checkins"){
+   const docs=await listCollection(firestore.collectionGroup(group));
+   for(const doc of docs){
+    if(path.test(doc.ref.path))records.push(record(scope,doc.ref.path,
+      doc.data(),{updateTime:doc.updateTime}));
+   }
+   if(records.length>MAX_ALL)throw Error("Total source exceeds safety bound");
+   continue;
   }
-  if(records.length>MAX_ALL)throw Error("Total source exceeds safety bound");
+  const root=parentRoots[scope];
+  if(!root)throw Error("Unmapped nested snapshot scope");
+  if(!parentsByRoot.has(root)){
+   const refs=await firestore.collection(root).listDocuments();
+   if(!Array.isArray(refs)||refs.length>MAX_PER_COLLECTION)
+    throw Error("Nested parent inventory exceeded safety bound");
+   const unique=new Set();
+   for(const parent of refs){
+    if(typeof parent.path!=="string"||
+       parent.path.split("/").length!==2||!parent.path.startsWith(root+"/")||
+       typeof parent.collection!=="function"||unique.has(parent.path))
+      throw Error("Invalid nested parent reference");
+    unique.add(parent.path);
+   }
+   parentsByRoot.set(root,refs);
+  }
+  for(const parent of parentsByRoot.get(root)){
+   // An empty subcollection still costs a query: stop unreasonable fanout
+   // rather than turning a damaged source hierarchy into a quota storm.
+   if(++scopedQueries>6000)throw Error("Nested query budget exceeded");
+   const docs=await listCollection(parent.collection(group));
+   for(const doc of docs){
+    if(!path.test(doc.ref.path))throw Error("Unexpected nested source path");
+    records.push(record(scope,doc.ref.path,doc.data(),
+      {updateTime:doc.updateTime}));
+   }
+   if(records.length>MAX_ALL)throw Error("Total source exceeds safety bound");
+  }
  }
  if(records.length>MAX_ALL)throw Error("Total source exceeds safety bound");
  return records;
