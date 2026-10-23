@@ -108,8 +108,17 @@ const db=admin.firestore();
         ref.collection("history").doc("legacy_"+sha(card.uid+"|"+h.id)));
       const snaps=await db.getAll(...refs),batch=db.batch();
       let pending=0;
-      for(let j=0;j<slice.length;j++)if(!snaps[j].exists){
+      for(let j=0;j<slice.length;j++){
         const h=slice[j];
+        if(snaps[j].exists){
+          const existing=snaps[j].data();
+          if(existing.source!=="legacy-sheets-migration"||
+            existing.type!==h.type||existing.count!==h.count||
+            existing.balance!==h.balance||existing.reason!==h.reason||
+            existing.createdAt?.toMillis?.()!==Date.parse(h.createdAt))
+            throw Error("Existing history differs from source: "+card.number+" / "+h.id);
+          continue;
+        }
         batch.create(refs[j],{type:h.type,count:h.count,balance:h.balance,
           reason:h.reason,source:"legacy-sheets-migration",
           createdAt:admin.firestore.Timestamp.fromDate(new Date(h.createdAt))});
@@ -117,7 +126,15 @@ const db=admin.firestore();
       }
       if(pending)await batch.commit();
     }
-    await ref.update({migrationComplete:true,migrationCompletedAt:admin.firestore.Timestamp.now()});
+    // Complete the import only if the wallet still matches the audited snapshot.
+    await db.runTransaction(async tx=>{
+      const current=await tx.get(ref);
+      if(!current.exists||current.data().source!=="legacy-sheets-migration"||
+        current.data().migrationDigest!==digest||
+        current.data().balance!==card.coinBalance)
+        throw Error("Wallet changed during history import: "+card.number);
+      tx.update(ref,{migrationComplete:true,migrationCompletedAt:admin.firestore.Timestamp.now()});
+    });
     processed++;
     if(processed%25===0||processed===users.size)console.log(processed+"/"+users.size);
   }
