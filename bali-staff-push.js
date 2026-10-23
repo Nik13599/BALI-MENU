@@ -80,6 +80,15 @@ button?.addEventListener("click",async()=>{
   }catch(error){status(error?.message||"Не получилось включить уведомления.");}
   finally{busy=false;button.disabled=false;}
 });
+// Explicit logout also revokes this device's subscription. Closing the PWA
+// does not unsubscribe, so alerts continue while it is not open.
+window.BaliStaffPushDisable=async()=>{
+  if(!supported())return;
+  const current=await activeSubscription().catch(()=>null);
+  if(!current)return;
+  try{await request("unsubscribe",current.toJSON());}
+  finally{await current.unsubscribe().catch(()=>{});}
+};
 window.addEventListener("bali-staff-authorized",()=>void syncStatus());
 window.addEventListener("bali-staff-signed-out",()=>{
   if(button)button.hidden=true;status("");
