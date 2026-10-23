@@ -1,0 +1,58 @@
+name: BALI ID — protected Firebase to D1 staging (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      apply_staging:
+        description: "false = read-only inventory; true = copy verified source to isolated D1 staging"
+        type: choice
+        options: ['false', 'true']
+        required: true
+        default: 'false'
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: bali-id-protected-migration
+  cancel-in-progress: false
+jobs:
+  firebase-to-d1-staging:
+    runs-on: ubuntu-latest
+    environment: firebase-production
+    env:
+      FIREBASE_PROJECT_ID: bali-menu-5a48b
+      FIREBASE_WIF_PROVIDER: ${{ vars.FIREBASE_WIF_PROVIDER }}
+      FIREBASE_DEPLOY_SERVICE_ACCOUNT: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      CF_ACCOUNT_ID: ${{ vars.CF_ACCOUNT_ID }}
+      CF_D1_DATABASE_ID: ${{ vars.CF_D1_DATABASE_ID }}
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      BALI_ID_STAGE_APPLY: ${{ inputs.apply_staging }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reject unconfigured identity before accessing Firebase
+        run: |
+          test -n "$FIREBASE_WIF_PROVIDER"
+          test -n "$FIREBASE_DEPLOY_SERVICE_ACCOUNT"
+          test "$FIREBASE_PROJECT_ID" = "bali-menu-5a48b"
+          node --check scripts/export-bali-id-to-d1.mjs
+      - name: Validate source schema, balances and unchanged Staff interface
+        run: |
+          node --experimental-sqlite scripts/test-bali-id-source-snapshot.mjs
+          node scripts/test-staff-appearance-locked.mjs
+      - name: Obtain short-lived Google identity (no service account key)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.FIREBASE_WIF_PROVIDER }}
+          service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Install Firebase Admin
+        run: npm install --prefix functions --no-audit --no-fund
+      - name: Require D1 secrets only for staging writes
+        if: inputs.apply_staging == 'true'
+        run: |
+          test -n "$CF_ACCOUNT_ID"
+          test -n "$CF_D1_DATABASE_ID"
+          test -n "$CF_API_TOKEN"
+      - name: Inventory and optionally stage Firebase records with source parity
+        run: node scripts/export-bali-id-to-d1.mjs
