@@ -879,6 +879,8 @@ function openCreateOrder(){
   creatingOrder=true;editOrder=null;editLines=[];originalIds=new Set();
   createOrderRequestId=crypto.randomUUID();
   $("orderEditTitle").textContent="Новый предзаказ · по телефону";
+  $("orderEditEyebrow").textContent="СОЗДАНИЕ ПРЕДЗАКАЗА";
+  $("orderEditSubmit").textContent="Создать предзаказ";
   $("manualOrderGuestLink").hidden=preorderOnlyStaff;
   $("editOrderGuestEmail").value="";
   fillOrderDateOptions($("ordersDateFilter").value||
@@ -977,6 +979,8 @@ async function openEditor(id){
     editLines=o.items.map(x=>({...x,id:Number(x.id)}));
     originalIds=new Set(o.items.map(x=>String(x.id)));
     $("orderEditTitle").textContent="Заказ "+orderLabel(o);
+    $("orderEditEyebrow").textContent="РЕДАКТИРОВАНИЕ ПРЕДЗАКАЗА";
+    $("orderEditSubmit").textContent="Сохранить изменения";
     fillOrderDateOptions(o.eventDate);
     fillOrderEventOptions(o.eventId||o.eventDate);
     $("editOrderStatus").value=normalizedOrderStatus(o.status);
