@@ -28,7 +28,7 @@ const sqlite={
  prepare(sql){const stmt=db.prepare(sql);return {
   first:async()=>stmt.get()||null,
   all:async()=>({results:stmt.all()})
- }};
+ }}
 };
 const authMock=[
  'const errorJson=(status,error)=>new Response(JSON.stringify({error}),{status});',
