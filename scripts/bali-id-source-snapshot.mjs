@@ -15,8 +15,6 @@ export const SOURCE_COLLECTIONS=Object.freeze({
   "bonus-kinds":"baliBonusKinds",
   "privilege-rules":"privilegeRules"
 });
-const userFields=new Set(["uid","name","displayName","phone","phoneNumber",
-  "email","createdAt","updatedAt","registeredAt","consentVersion"]);
 const hex=s=>createHash("sha256").update(s).digest("hex");
 export const newSnapshotId=()=>randomBytes(16).toString("hex");
 
@@ -63,9 +61,9 @@ export function record(scope,path,data,{updateTime=null}={}){
     throw Error("unexpected-source-path");
   if(!data||typeof data!=="object"||Array.isArray(data))
     throw Error("invalid-source-document");
-  let details=data;
-  if(scope==="profiles")
-    details=Object.fromEntries(Object.entries(data).filter(([k])=>userFields.has(k)));
+  // Preserve every original field, including versioned consents and
+  // unforeseen extensions. Filtering profiles makes a "lossless" copy false.
+  const details=data;
   const uid=["profiles","cards","privileges","wallets"].includes(scope)
     ?base[1]:scope==="operations"?data.guestUid:
     scope==="transfers"?data.fromUid:scope==="agreements"?base[1]:null;
