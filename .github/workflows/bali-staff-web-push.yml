@@ -53,13 +53,27 @@ jobs:
           import assert from "node:assert/strict";
           const src=fs.readFileSync("cloudflare-pages/functions/staff-install.js","utf8");
           const module=await import("data:text/javascript;base64,"+Buffer.from(src).toString("base64"));
-          const env={ASSETS:{fetch:async()=>new Response(new Uint8Array([137,80,78,71]))}};
+          const icon=fs.readFileSync("bali-staff-approved-icon.png");
+          assert.deepEqual([...icon.subarray(0,8)],[137,80,78,71,13,10,26,10]);
+          assert.equal(icon.readUInt32BE(16),256);
+          assert.equal(icon.readUInt32BE(20),256);
+          const html=fs.readFileSync("preorders.html","utf8");
+          const manifest=JSON.parse(fs.readFileSync("bali-staff.webmanifest","utf8"));
+          const worker=fs.readFileSync("bali-staff-sw.js","utf8");
+          assert(html.includes("/bali-staff-approved-icon.png"));
+          assert(manifest.icons.some(i=>i.src.includes("/bali-staff-approved-icon.png")&&i.type==="image/png"));
+          assert(worker.includes("/bali-staff-approved-icon.png"));
+          assert(src.includes('new URL("/bali-staff-approved-icon.png",request.url)'));
+          const env={ASSETS:{fetch:async()=>new Response(icon)}};
           const response=await module.onRequestGet({env,request:new Request("https://baliminsk.by/staff-install")});
           const text=await response.text();
           assert.equal(response.status,200);
           assert.match(response.headers.get("Content-Type"),/application\/x-apple-aspen-config/);
           assert(text.includes("com.apple.webClip.managed")&&text.includes("https://baliminsk.by/preorders.html"));
           assert(text.includes("IsRemovable")&&text.includes("BALI STAFF"));
+          const match=text.match(/<key>Icon<\/key><data>([A-Za-z0-9+/=]+)<\/data>/);
+          assert(match,"Web Clip must embed the approved staff PNG");
+          assert.deepEqual(Buffer.from(match[1],"base64"),icon);
           assert(!text.includes("VPN")&&!text.includes("Password"));
           console.log("Apple Web Clip configuration profile PASS");
           NODE
