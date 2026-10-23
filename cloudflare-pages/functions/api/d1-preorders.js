@@ -88,7 +88,7 @@ export async function onRequestPost({request,env,waitUntil}){
     const {action,payload:p,token}=parseRequest(body);
     const signed=new Request(request.url,{headers:{Authorization:"Bearer "+token}});
     const actor=await authorizeStaff(signed,{
-      adminOnly:action==="staffDeleteOrder",env
+      env
     });
     const db=env?.BALI_OPERATIONS_DB;
     if(!db)throw abort("unavailable","D1 недоступна.",503);
@@ -166,8 +166,22 @@ export async function onRequestPost({request,env,waitUntil}){
     }
     if(action==="staffDeleteOrder"){
       if(!validId(p.id))throw abort("invalid-argument","Неверный ID.");
-      await db.prepare("DELETE FROM preorder_orders WHERE id=?").bind(p.id).run();
-      return json({deleted:true,id:p.id});
+      const expected=millis(p.expectedUpdatedAt);
+      const current=await db.prepare("SELECT updated_at_ms FROM preorder_orders WHERE id=?")
+        .bind(p.id).first();
+      if(!current)throw abort("not-found","Заказ не найден.",404);
+      if(Number(current.updated_at_ms)!==expected)
+        throw abort("failed-precondition","Заказ изменился. Обновите список перед удалением.",409);
+      const result=await db.prepare(
+        "DELETE FROM preorder_orders WHERE id=? AND updated_at_ms=?"
+      ).bind(p.id,expected).run();
+      if(Number(result?.meta?.changes)!==1)
+        throw abort("failed-precondition","Заказ изменён. Обновите список.",409);
+      try{
+        await db.prepare("INSERT INTO preorder_audit(order_id,actor_uid,action,created_at_ms,details) VALUES(?,?,?,?,?)")
+          .bind(p.id,actor.uid,"staff-delete",Date.now(),"{}").run();
+      }catch(e){console.error("BALI Staff deletion audit unavailable");}
+      return json({deleted:p.id});
     }
     throw abort("invalid-argument","Неизвестная команда.");
   }catch(error){return toError(error)}

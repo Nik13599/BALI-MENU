@@ -292,7 +292,9 @@ async function deleteOrder(o) {
   setStatus("Удаляем заказ и все его блюда...");
   try{
     if(preorderServiceEnabled()){
-      const saved=await sheetsRequest("staffDeleteOrder",{id:o.id});
+      const saved=await sheetsRequest("staffDeleteOrder",{
+        id:o.id,expectedUpdatedAt:o.updatedAt
+      });
       if(saved?.deleted!==o.id)throw new Error("Сервер не подтвердил удаление.");
       orders=orders.filter(x=>x.id!==o.id);
       dateOrders=dateOrders.filter(x=>x.id!==o.id);
@@ -305,6 +307,7 @@ async function deleteOrder(o) {
       batch.delete(ref);
       await batch.commit();
     }
+    $("baliStaffNewOrderToast")?.remove();
     window.dispatchEvent(new CustomEvent("bali:admin:order-deleted",{detail:{id:o.id}}));
     setStatus("Заказ и позиции полностью удалены из базы.");
   }catch(e){setStatus("Ошибка удаления: "+(e.code||e.message));}
@@ -461,6 +464,26 @@ $("orderDetailsClose")?.addEventListener("click",()=>$("orderDetailsDialog").clo
 function compactOrderDate(value){
   const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value||""));
   return match?match[3]+"."+match[2]+"."+match[1].slice(2):"—";
+}
+// Only one row action menu may be expanded across the entire Staff queue.
+// Delegated listeners survive all live re-renders of order cards.
+if(compactWorkspace){
+  document.addEventListener("toggle",event=>{
+    const opened=event.target;
+    if(!opened?.matches?.("#ordersAdminList details.preorder-action-menu")||!opened.open)return;
+    document.querySelectorAll("#ordersAdminList details.preorder-action-menu[open]")
+      .forEach(menu=>{if(menu!==opened)menu.open=false;});
+  },true);
+  document.addEventListener("click",event=>{
+    if(event.target.closest?.("#ordersAdminList details.preorder-action-menu[open]"))return;
+    document.querySelectorAll("#ordersAdminList details.preorder-action-menu[open]")
+      .forEach(menu=>menu.open=false);
+  });
+  document.addEventListener("keydown",event=>{
+    if(event.key!=="Escape")return;
+    for(const menu of document.querySelectorAll("#ordersAdminList details.preorder-action-menu[open]"))
+      menu.open=false;
+  });
 }
 function compactOrderRow(o){
   const row=node("article","","preorder-compact-row");

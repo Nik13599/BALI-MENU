@@ -349,17 +349,30 @@ export async function handleD1OrderAction(input,request,env){
    return good({ok:true});
   }
   if(action==="staffArchiveOrder"||action==="staffDeleteOrder"){
-   const staff=await authorizeStaff(staffRequest,{
-     adminOnly:action==="staffDeleteOrder",env
-   }),id=String(input.payload?.id||"");
+   // The approved preorder staff role may permanently delete orders; all
+   // other administrator-only actions keep their existing access checks.
+   const staff=await authorizeStaff(staffRequest,{env}),
+     id=String(input.payload?.id||"");
    if(!idPattern.test(id))return error("invalid-argument","Неверный номер заказа.",400);
    const current=await db.prepare("SELECT * FROM preorder_orders WHERE id=?").bind(id).first();
    if(!current)return error("not-found","Заказ не найден.",404);
    if(action==="staffDeleteOrder"){
-    // Cascades to items, receipts, status actions. Audit is intentionally preserved.
+    const expected=Date.parse(String(input.payload?.expectedUpdatedAt||""));
+    if(!Number.isSafeInteger(expected)||expected<=0)
+      return error("invalid-argument","Не указана версия заказа.",400);
+    if(Number(current.updated_at_ms)!==expected)
+      return error("order-conflict","Заказ изменился. Обновите список перед удалением.",409);
+    // FK ON DELETE CASCADE removes order items, status receipts and actions.
     const result=await db.prepare("DELETE FROM preorder_orders WHERE id=? AND updated_at_ms=?")
-      .bind(id,current.updated_at_ms).run();
-    if(Number(result?.meta?.changes)!==1)return error("order-conflict","Заказ изменён.",409);
+      .bind(id,expected).run();
+    if(Number(result?.meta?.changes)!==1)
+      return error("order-conflict","Заказ изменён. Обновите список.",409);
+    // Audit is intentionally kept after deleting the parent. This also
+    // bumps the indexed Staff revision so other open panels refresh.
+    try{
+      await db.prepare("INSERT INTO preorder_audit(order_id,actor_uid,action,created_at_ms,details) VALUES(?,?,?,?,?)")
+        .bind(id,staff.uid,"staff-delete",Date.now(),"{}").run();
+    }catch(e){console.error("BALI Staff deletion audit unavailable");}
     return good({deleted:id});
    }
    const archived=Boolean(input.payload?.archived),now=Math.max(Date.now(),current.updated_at_ms+1);
