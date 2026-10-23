@@ -327,12 +327,12 @@ export async function handleD1OrderAction(input,request,env){
    await authorizeStaff(staffRequest);
    const data=await catalog(env);return good(data);
   }
-  if(action==="guestCreateOrder")return create(db,env,input,staffRequest,{guest:true});
-  if(action==="createOrder")return create(db,env,input,staffRequest);
-  if(action==="staffCreateOrder")return create(db,env,input,staffRequest,{staff:true});
-  if(action==="staffStatus")return updateStatus(db,input,staffRequest);
-  if(action==="editOrder")return change(db,env,input,staffRequest);
-  if(action==="staffEditOrder")return change(db,env,input,staffRequest,{staff:true});
+  if(action==="guestCreateOrder")return await create(db,env,input,staffRequest,{guest:true});
+  if(action==="createOrder")return await create(db,env,input,staffRequest);
+  if(action==="staffCreateOrder")return await create(db,env,input,staffRequest,{staff:true});
+  if(action==="staffStatus")return await updateStatus(db,input,staffRequest);
+  if(action==="editOrder")return await change(db,env,input,staffRequest);
+  if(action==="staffEditOrder")return await change(db,env,input,staffRequest,{staff:true});
   if(action==="myOrders"){
    const user=await verifiedIdentity(input,staffRequest);
    return good({orders:await list(db,{uid:user.uid,limit:40})});
