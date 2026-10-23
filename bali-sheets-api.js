@@ -9,7 +9,10 @@ export const sheetsEnabled=()=>window.BALI_SHEETS_API_ENABLED===true||
   window.BALI_D1_PREORDERS_ENABLED===true;
 const pendingRoles=new Map();
 export async function sheetsRequest(action,payload={},options={}){
-  if(!sheetsEnabled())throw Object.assign(new Error("База Google Sheets ещё не активирована."),{code:"not-configured"});
+  const orderActions=new Set(["menu","createOrder","guestCreateOrder","editOrder","cancelOrder",
+    "myOrders","staffOrders","staffRecentOrders","staffCreateOrder","staffEditOrder","staffStatus"]);
+  if(!sheetsEnabled()&&!(preordersD1Enabled()&&orderActions.has(action)))
+    throw Object.assign(new Error("Этот раздел базы не активирован."),{code:"not-configured"});
   const provider=window.BaliAuth?.getIdToken||window.BaliSheetsToken;
   const token=action==="health"?"":await provider?.();
   if(action!=="health"&&!token)throw Object.assign(new Error("Войдите в аккаунт BALI."),{code:"unauthenticated"});
