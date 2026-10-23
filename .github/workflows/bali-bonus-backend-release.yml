@@ -38,7 +38,7 @@ jobs:
     env:
       FIREBASE_PROJECT_ID: bali-menu-5a48b
       GCLOUD_PROJECT: bali-menu-5a48b
-      FIREBASE_WIF_PROVIDER: ${{ vars.FIREBASE_WIF_PROVIDER }}
+      FIREBASE_WIF_PROVIDER: ${{ vars.FIREBASE_WIF_PROVIDER || 'projects/855889005555/locations/global/workloadIdentityPools/bali-github-pool/providers/bali-github' }}
       FIREBASE_DEPLOY_SERVICE_ACCOUNT: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
     steps:
       - uses: actions/checkout@v4
