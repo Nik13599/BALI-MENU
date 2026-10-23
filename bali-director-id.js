@@ -141,6 +141,9 @@ $("directorAssignForm").addEventListener("submit",async event=>{
 });
 /* Quantitative grants are server-side and entirely independent of cosmetic tiers. */
 const issueQuantity=httpsCallable(functions,"issueBaliQuantity");
+const newBonusRequestId=()=>Array.from(crypto.getRandomValues(new Uint8Array(16)),
+ byte=>byte.toString(16).padStart(2,"0")).join("");
+let pendingBonusGrant=null;
 $("directorBonusGrantForm")?.addEventListener("submit",async event=>{
   event.preventDefault();
   if(!authorized||!selectedUid||!auth.currentUser?.emailVerified){
@@ -157,14 +160,21 @@ $("directorBonusGrantForm")?.addEventListener("submit",async event=>{
   if(!confirm("Начислить "+quantity+" ед. ("+kind+") гостю "+guestName+" · Bali Card "+number+"?"))return;
   const button=event.currentTarget.querySelector('button[type="submit"]');
   button.disabled=true;status("directorBonusGrantStatus","Сохраняем начисление на сервере…");
+  const input={uid:destination,kind,quantity,transferable,reason};
+  const signature=JSON.stringify(input);
+  if(pendingBonusGrant?.signature!==signature)
+    pendingBonusGrant={signature,requestId:newBonusRequestId()};
   try{
-    const response=(await issueQuantity({uid:destination,kind,quantity,transferable,reason})).data;
+    const response=(await issueQuantity({...input,requestId:pendingBonusGrant.requestId})).data;
     if(!response?.ok)throw Error("Server did not confirm");
-    status("directorBonusGrantStatus","Успешно начислено: "+quantity+" шт. гостю "+guestName+". Запись добавлена в историю.");
+    pendingBonusGrant=null;
+    status("directorBonusGrantStatus",response.alreadyProcessed
+      ?"Начисление уже записано. Повторно бонусы не добавлены."
+      :"Успешно начислено: "+quantity+" шт. гостю "+guestName+". Запись добавлена в историю.");
   }catch(error){
     const code=String(error.code||"");
     status("directorBonusGrantStatus",code.includes("not-found")||code.includes("unavailable")
       ?"Сервер количественных бонусов ещё не опубликован. Начисление не выполнено."
-      :"Не удалось начислить бонусы ("+(code||"server-error")+"). Начисление не подтверждено.");
+      :"Нет подтверждения ("+(code||"server-error")+"). Повторите с теми же данными без двойного начисления.");
   }finally{button.disabled=false}
 });
