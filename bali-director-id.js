@@ -29,8 +29,8 @@ async function loadBonusKinds(user,round){
     if(round===authRound)status("directorBonusGrantStatus","Не удалось загрузить дополнительные виды бонусов. Доступны стандартные виды.");
   }
 }
-const TIERS=["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ"];
-const displayTier=tier=>tier==="ResidentDJ"?"RESIDENT BALI - DJ":tier.toUpperCase();
+const TIERS=["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ","BigBoss"];
+const displayTier=tier=>tier==="ResidentDJ"?"RESIDENT BALI - DJ":tier==="BigBoss"?"BIG BOSS":tier.toUpperCase();
 let authorized=false,selectedUid=null,selectedGuestName="",selectedId="",isBusy=false,authRound=0;
 function status(id,text){$(id).textContent=text;}
 function resetGuest(){
