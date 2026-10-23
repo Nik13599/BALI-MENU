@@ -1,0 +1,36 @@
+name: BALI unified data migration safety
+on:
+  push:
+    branches:
+      - feature/unified-d1-migration-gates-20261023
+  pull_request:
+    paths:
+      - 'cloudflare-pages/d1/migrations/0003_unified_staging.sql'
+      - 'cloudflare-pages/functions/api/admin/migrate-sheets-preorders.js'
+      - 'cloudflare-pages/functions/api/admin/unified-migration-audit.js'
+      - 'scripts/test-unified-migration-gates.mjs'
+      - '.github/workflows/unified-migration-safety.yml'
+permissions:
+  contents: read
+jobs:
+  migration-readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check syntax of edge import and audit
+        run: |
+          node --input-type=module --check < cloudflare-pages/functions/api/admin/migrate-sheets-preorders.js
+          node --input-type=module --check < cloudflare-pages/functions/api/admin/unified-migration-audit.js
+      - name: Reconcile orders and verify wallet schema in SQLite
+        run: node --experimental-sqlite scripts/test-unified-migration-gates.mjs
+      - name: Preserve existing D1 preorder and QR regressions
+        run: |
+          node --experimental-sqlite scripts/test-d1-staff-status.mjs
+          node scripts/test-preorder-migration-audit.mjs
+      - name: Verify Pages build
+        run: node cloudflare-pages/build.mjs
+      - name: Ensure Staff appearance is not changed
+        run: node scripts/test-staff-appearance-locked.mjs

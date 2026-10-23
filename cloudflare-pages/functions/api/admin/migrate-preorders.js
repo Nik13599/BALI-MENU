@@ -41,7 +41,16 @@ function decode(order,items){
   });
   if(normalized.length<1||normalized.length>50)
     throw Object.assign(Error("missing-source-items"),{status:422});
+  // Never move an order without validating the actual original total.
+  const originTotal=numberField(f,"total");
+  const expectedTotalMinor=Math.round(originTotal*100);
+  const itemsTotalMinor=normalized.reduce((sum,item)=>sum+item.minor*item.quantity,0);
+  if(!Number.isFinite(originTotal)||originTotal<0||
+    !Number.isSafeInteger(expectedTotalMinor)||
+    expectedTotalMinor!==itemsTotalMinor)
+    throw Object.assign(Error("source-total-mismatch"),{status:422});
   return {id,eventId,date,number,status,created,updated,items:normalized,
+    expectedTotalMinor,
     eventTitle:readField(f,"eventTitle").slice(0,300),
     ownerUid:readField(f,"ownerUid").slice(0,128),
     createdByUid:readField(f,"createdByUid").slice(0,128),
@@ -82,8 +91,26 @@ export async function onRequestPost({request,env}){
     const state=await db.prepare("SELECT status FROM migration_state WHERE id=?")
       .bind("preorders").first();
     if(state?.status==="complete")return errorJson(409,"migration-already-complete");
+    // Reject collisions between independently created Sheet and Firestore
+    // orders. A matching row number does not prove that two IDs are identical.
+    for(const o of orders){
+      const old=await db.prepare("SELECT updated_at_ms FROM preorder_orders WHERE id=?")
+        .bind(o.id).first();
+      if(old&&Number(old.updated_at_ms)>o.updated)
+        return errorJson(409,"staged-order-is-newer");
+      const proof=await db.prepare("SELECT source_backend FROM preorder_import_proofs WHERE order_id=?")
+        .bind(o.id).first();
+      if(proof&&proof.source_backend!=="firestore")
+        return errorJson(409,"cross-source-order-id-conflict");
+    }
     const now=Date.now(),statements=[];
     for(const o of orders){
+      const sourceBytes=new TextEncoder().encode(JSON.stringify({
+        id:o.id,date:o.date,eventId:o.eventId,number:o.number,
+        total:o.expectedTotalMinor,updated:o.updated,items:o.items
+      }));
+      const hashed=await crypto.subtle.digest("SHA-256",sourceBytes);
+      const digest=Array.from(new Uint8Array(hashed),b=>b.toString(16).padStart(2,"0")).join("");
       statements.push(db.prepare(
         "INSERT INTO preorder_orders (id,firestore_id,event_id,event_date,"+
         "event_title,order_number,owner_uid,created_by_uid,customer_name,customer_phone,"+
@@ -106,6 +133,15 @@ export async function onRequestPost({request,env}){
       for(const item of o.items)statements.push(db.prepare(
         "INSERT INTO preorder_items (order_id,menu_id,item_name,unit_price_minor,quantity)"+
         " VALUES (?,?,?,?,?)").bind(o.id,item.menuId,item.name,item.minor,item.quantity));
+      statements.push(db.prepare(
+        "INSERT INTO preorder_import_proofs (source_backend,source_order_id,order_id,"+
+        "source_updated_at_ms,expected_total_minor,expected_item_count,source_digest,checked_at_ms)"+
+        " VALUES ('firestore',?,?,?,?,?,?,?) ON CONFLICT(source_backend,source_order_id) "+
+        "DO UPDATE SET source_updated_at_ms=excluded.source_updated_at_ms,"+
+        "expected_total_minor=excluded.expected_total_minor,"+
+        "expected_item_count=excluded.expected_item_count,"+
+        "source_digest=excluded.source_digest,checked_at_ms=excluded.checked_at_ms"
+      ).bind(o.id,o.id,o.updated,o.expectedTotalMinor,o.items.length,digest,now));
       statements.push(db.prepare(
         "INSERT INTO preorder_counters (event_id,event_date,last_number,updated_at_ms)"+
         " VALUES (?,?,?,?) ON CONFLICT(event_id) DO UPDATE SET "+
