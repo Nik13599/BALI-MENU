@@ -24,16 +24,20 @@ jobs:
           const valid=ids.length>=2&&ids.length<=10&&
             ids.every(x=>/^[A-Za-z0-9_-]{8,128}$/.test(x))&&
             new Set(ids).size===ids.length;
+          const summary=require("node:fs");
           if(!valid){
-            console.error("::error::Missing or invalid BALI_COIN_PILOT_UIDS. Go to Settings > Environments > firebase-production > Environment secrets and add 2-10 distinct, real TEST Firebase Authentication UIDs separated by commas.");
-            process.exitCode=1;
-          }else console.log("Pilot allowlist format: valid; values remain hidden.");
+            console.log("::warning::BALI_COIN_PILOT_UIDS is missing or malformed. Set 2-10 dedicated TEST Firebase UIDs in Settings > Environments > firebase-production > Environment secrets. IAM diagnostics continue independently.");
+            summary.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+              "### BALI COIN pilot: NOT READY\\n\\n"+
+              "Dedicated test Firebase UIDs are missing or invalid. **No production coin release is allowed.** "+
+              "Add 2-10 distinct test Authentication UIDs to the protected BALI_COIN_PILOT_UIDS environment secret.\\n");
+          }else{
+            console.log("Pilot UID allowlist format OK. Actual Firebase users still require server-side verification before release.");
+            summary.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+              "### BALI COIN pilot: format OK\\n\\n"+
+              "Protected UID format is valid. The existence of Firebase users and Bali Card records has not yet been verified.\\n");
+          }
           NODE
-      - name: Note pilot status
-        if: success()
-        run: |
-          echo "### Pilot UID settings" >> "$GITHUB_STEP_SUMMARY"
-          echo "Protected UID allowlist format is valid. Actual Firebase account existence is not verified by this check." >> "$GITHUB_STEP_SUMMARY"
 
   verify-firebase-access:
     name: Verify Firebase Functions v2 IAM separately
