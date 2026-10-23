@@ -37,8 +37,10 @@ const stubs=[
  'const authorizeStaff=async r=>{if(r.headers.get("Authorization")!=="Bearer staff-test")throw Object.assign(Error("denied"),{status:403});return {uid:"staff_0001",role:"admin"};};',
  'const authorizeUser=async r=>{if(r.headers.get("Authorization")!=="Bearer user-test")throw Object.assign(Error("denied"),{status:401});return {uid:"user_0001",role:"guest"};};'
 ].join("\n");
+const diagnostic=src.replace(marker,stubs).replace(" }catch(e){\n  if(e.status===401)",
+ " }catch(e){console.error(\"D1 test backend error:\",e);\n  if(e.status===401)");
 const {handleD1OrderAction}=await import("data:text/javascript;base64,"+
- Buffer.from(src.replace(marker,stubs)).toString("base64"));
+ Buffer.from(diagnostic).toString("base64"));
 const request=new Request("https://baliminsk.by/api/bali-v3");
 const call=(name,payload={},token="")=>handleD1OrderAction({action:name,payload,token},request,env);
 const key=n=>n.toString(16).padStart(32,"0");
