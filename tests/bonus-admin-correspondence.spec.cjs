@@ -70,7 +70,10 @@ test('admin custom kinds, quantitative grants, repeat QR creation and revocation
     form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
   });
   await expect.poll(()=>page.evaluate(()=>window.__calls.filter(x=>x.name==='issueBaliQuantity').length)).toBe(1);
-  expect(await page.evaluate(()=>window.__calls.find(x=>x.name==='issueBaliQuantity').data)).toEqual({uid:'guest_fixture_001',kind:'dessert',quantity:2,transferable:true,reason:'Подарок за посещение'});
+  const adminGrant=await page.evaluate(()=>window.__calls.find(x=>x.name==='issueBaliQuantity').data);
+  expect(adminGrant.requestId).toMatch(/^[a-f0-9]{32}$/);
+  const {requestId:adminNonce,...adminFields}=adminGrant;
+  expect(adminFields).toEqual({uid:'guest_fixture_001',kind:'dessert',quantity:2,transferable:true,reason:'Подарок за посещение'});
   expect(await page.evaluate(()=>{
     const form=document.getElementById('baliQrCreateForm');
     form.elements.kind.value='dessert';form.elements.action.value='debit';form.elements.mode.value='repeat';
@@ -97,7 +100,10 @@ test('director role loads active custom kinds and can grant them through the sam
   await page.locator('#directorBonusQuantity').fill('3');await page.locator('#directorBonusReason').fill('Подарок за посещение');
   await page.locator('#directorBonusGrantForm button[type=submit]').click();
   await expect(page.locator('#directorBonusGrantStatus')).toContainText('Успешно начислено');
-  expect(await page.evaluate(()=>window.__calls.find(x=>x.name==='issueBaliQuantity').data)).toEqual({uid:'guest_fixture_001',kind:'dessert',quantity:3,transferable:true,reason:'Подарок за посещение'});
+  const directorGrant=await page.evaluate(()=>window.__calls.find(x=>x.name==='issueBaliQuantity').data);
+  expect(directorGrant.requestId).toMatch(/^[a-f0-9]{32}$/);
+  const {requestId:directorNonce,...directorFields}=directorGrant;
+  expect(directorFields).toEqual({uid:'guest_fixture_001',kind:'dessert',quantity:3,transferable:true,reason:'Подарок за посещение'});
   await expect(page.locator('[data-bali-transfer-submit]')).toBeDisabled();
   await expect(page.locator('[data-bali-transfer-status]')).toContainText('собственную Bali Card');
 });
