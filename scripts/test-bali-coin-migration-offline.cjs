@@ -40,8 +40,8 @@ test("BALI COIN export can be audited offline without Firebase credentials",()=>
       "intermediate balance mismatch must fail even when the final balance matches");
     assert.notEqual(run([card],[{...earlier,count:20},later]).status,0,
       "a credit with impossible negative opening balance must fail");
-    assert.notEqual(run([card],[{...earlier,type:"transfer-in"}, {...later,type:"transfer-out"}]).status,0,
-      "transfer-in/out must use the same signed arithmetic as credit/debit");
+    assert.notEqual(run([card],[{...earlier,type:"transfer-out"}, {...later,type:"transfer-in"}]).status,0,
+      "inconsistent transfer signs must fail ledger arithmetic checks");
     assert.equal(run([card],[{...earlier,type:"transfer-in"}, {...later,type:"transfer-out",count:3}]).status,0,
       "balanced transfer-in and transfer-out history must pass");
     const importWithoutVerifiedDigest=spawnSync(process.execPath,[tool,"--apply","--input",input,
