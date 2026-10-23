@@ -9,11 +9,12 @@ db.exec(source("cloudflare-pages/d1/migrations/0002_staff_status.sql"));
 const wrap={
  prepare(sql){
   const stmt=db.prepare(sql);
-  return {bind(...args){return {
+  const result=(args=[])=>({
     first:async()=>stmt.get(...args)||null,
     all:async()=>({results:stmt.all(...args)}),
     run:async()=>({meta:{changes:stmt.run(...args).changes}})
-  }}};
+  });
+  return {...result(),bind(...args){return result(args)}};
  },
  async batch(statements){
   db.exec("BEGIN IMMEDIATE");
