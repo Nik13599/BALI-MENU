@@ -29,6 +29,10 @@ module.exports=({db,TS,fail,coinRollout})=>{
       return {amount:0,alreadyProcessed:true};
     if(!rate.exists||rate.data().active!==true||!Number.isSafeInteger(rate.data().amount)||
       rate.data().amount<=0)return {amount:0,notConfigured:true};
+    // QR attendance must succeed even if the guest's old wallet has
+    // not been reconciled. COIN is deferred until that balance exists.
+    if(rollout.phase==="live"&&!account.exists)
+      return {amount:0,sourceWalletUnverified:true};
     if(account.exists&&account.data().source==="legacy-sheets-migration"&&
       account.data().migrationComplete!==true)
       fail("failed-precondition","История BALI COIN ещё переносится.");

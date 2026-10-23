@@ -28,6 +28,13 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
     if(!coins(value))fail("failed-precondition","Нарушена целостность баланса BALI COIN.");
     return value;
   };
+  const verifiedWallet=snap=>{
+    // Do not invent a zero COIN balance for a guest whose original wallet
+    // has not yet been reconciled. Test-pilot identities are separately gated.
+    if(rollout.phase==="live"&&!snap.exists)
+      fail("failed-precondition","Баланс этой Bali Card ещё не перенесён.");
+    return balance(snap);
+  };
   async function role(uid){
     const [a,r,preorders]=await Promise.all([
       db.doc("admins/"+uid).get(),
@@ -72,13 +79,17 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
     ]);
     return {card:{uid,number:person.number,name:person.name,activated:true,agreed:true,
       tier:tier.exists?tier.data().tier:"Member",benefits:tier.exists?tier.data().benefits||[]:[],
-      coinBalance:balance(snap),coinWritable:rollout.eligible([uid])}};
+      coinBalance:snap.exists?balance(snap):null,
+        walletReady:snap.exists,coinWritable:rollout.eligible([uid])&&
+          (rollout.phase==="pilot"||snap.exists)}};
   });
   const coinAdminCard=api("coinAdminCard",async req=>{
     await director(req);const uid=text(req.data?.uid,128);
     if(!validUid(uid))fail("invalid-argument","Неверный UID.");
     const [person,snap]=await Promise.all([nameAndId(uid),acct(uid).get()]);
-    return {card:{...person,activated:true,coinBalance:balance(snap)}};
+    return {card:{...person,activated:true,
+      coinBalance:snap.exists?balance(snap):null,walletReady:snap.exists,
+      coinWritable:rollout.eligible([uid])&&(rollout.phase==="pilot"||snap.exists)}};
   });
   const coinHistory=api("coinHistory",async req=>{
     const uid=verified(req);await nameAndId(uid);
@@ -111,7 +122,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
           fail("already-exists","ID операции уже использован для других условий.");
         return {result:{ok:true,alreadyProcessed:true,balance:p.balance,recipientNumber:to.number}};
       }
-      const before=balance(left),other=balance(right);
+      const before=verifiedWallet(left),other=verifiedWallet(right);
       if(before<amount)fail("failed-precondition","Недостаточно BALI COIN.");
       if(!coins(other+amount))fail("resource-exhausted","Лимит баланса получателя.");
       const at=TS.now(),after=before-amount;
@@ -141,7 +152,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
           fail("already-exists","Этот ID операции занят.");
         return {result:{ok:true,alreadyProcessed:true,balance:p.balance}};
       }
-      const before=balance(old),next=before+(action==="credit"?amount:-amount);
+      const before=verifiedWallet(old),next=before+(action==="credit"?amount:-amount);
       if(!coins(next))fail("failed-precondition","Недостаточно BALI COIN или превышен лимит.");
       const at=TS.now();
       tx.set(account,{balance:next,updatedAt:at},{merge:true});
@@ -183,7 +194,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
           const count=p.reissues??0;
           if(!Number.isSafeInteger(count)||count<0||count>1000)
             fail("failed-precondition","Неверный счётчик повторных начислений.");
-          const issueCount=count+1,before=balance(old),next=before+checked.amount;
+          const issueCount=count+1,before=verifiedWallet(old),next=before+checked.amount;
           if(!coins(next))fail("resource-exhausted","Превышен лимит BALI COIN.");
           const at=TS.now();
           tx.set(account,{balance:next,updatedAt:at},{merge:true});
@@ -197,7 +208,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
       }
       // Read reward, verified attendance and balance before any writes.
       const checked=await validator(tx),old=await tx.get(account);
-      const next=balance(old)+checked.amount;
+      const next=verifiedWallet(old)+checked.amount;
       if(!coins(next))fail("resource-exhausted","Превышен лимит BALI COIN.");
       const at=TS.now();
       tx.set(account,{balance:next,updatedAt:at},{merge:true});
@@ -282,7 +293,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
       if(!listing.exists||!listing.data().active)fail("failed-precondition","Эта позиция недоступна.");
       const item=listing.data();
       if(item.sold>=item.stock)fail("failed-precondition","Лот закончился.");
-      const before=balance(old);
+      const before=verifiedWallet(old);
       if(before<item.price)fail("failed-precondition","Недостаточно BALI COIN.");
       const next=before-item.price,at=TS.now();
       const record={uid,campaignId,lotId,name:item.name,category:item.category,

@@ -68,7 +68,9 @@ async function reload(){
     coinWritable=card.card?.coinWritable===true;
     number=card.card?.number||"";
     if(!card.card?.activated)throw Error("Сначала активируйте личную Bali Card.");
-    $("coinsMarketBalance").textContent="Баланс всех ваших карт: "+money(balance);
+    $("coinsMarketBalance").textContent=card.card?.walletReady===false?
+      "Баланс BALI COIN требует сверки с прежним кошельком.":
+      "Баланс всех ваших карт: "+money(balance);
     if(currentCampaign){
       const [result,history]=await Promise.all([
         coinRequest("coinLots",{campaignId:currentCampaign}),
@@ -189,7 +191,9 @@ if(brsmToolbar){
     if(!coinEnabled()||!auth.currentUser?.emailVerified){balanceBadge.textContent="— BALI COIN";return;}
     try{
       const {card}=await coinRequest("card");
-      if(seq===balanceSerial)balanceBadge.textContent=money(card.coinBalance)+(card.coinWritable?"":" · операции приостановлены");
+      if(seq===balanceSerial)balanceBadge.textContent=card.walletReady===false?
+      "Баланс COIN требует сверки":
+      money(card.coinBalance)+(card.coinWritable?"":" · операции приостановлены");
     }catch{if(seq===balanceSerial)balanceBadge.textContent="Баланс недоступен";}
   }
   window.addEventListener("bali:auth-state",()=>void refreshBrsmBalance());
