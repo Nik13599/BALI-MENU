@@ -31,16 +31,31 @@ const compactWorkspace=document.body.classList.contains("bali-preorders-workspac
 const fmt=n=>Number(n||0).toFixed(2)+" BYN";
 const bookingReference=o=>[o?.tableNumber,o?.bookingId]
   .map(x=>String(x||"").trim()).filter(Boolean).join(" / ");
-function bookingReferenceParts(value,original=null){
+const bookingReferenceLabel=o=>{
+  const table=String(o?.tableNumber||"").trim();
+  const booking=String(o?.bookingId||"").trim();
+  const tablePart=table?"Столик №"+table.replace(/^(?:столик|стол|table)\s*(?:№|#|:)?\s*/i,""):"";
+  const bookingPart=booking?"ID "+booking.replace(/^(?:id|ид|бронь|booking)\s*(?:№|#|:)?\s*/i,""):"";
+  return [tablePart,bookingPart].filter(Boolean).join(" · ");
+};
+function bookingReferenceParts(value,original=null,kind=""){
   const ref=String(value||"").trim();
-  if(original&&ref===bookingReference(original))
+  const originalKind=original?.tableNumber&&!original?.bookingId?"table":
+    original?.bookingId&&!original?.tableNumber?"booking":"";
+  if(original&&ref===bookingReference(original)&&(!kind||kind===originalKind))
     return {tableNumber:String(original.tableNumber||""),bookingId:String(original.bookingId||"")};
   if(!ref||ref.length>60)return null;
-  return /^\d{1,20}$/.test(ref)?{tableNumber:ref,bookingId:""}:{tableNumber:"",bookingId:ref};
+  const type=kind||(/^\d{1,20}$/.test(ref)?"table":"booking");
+  const normalized=type==="table"
+    ?ref.replace(/^(?:столик|стол|table)\s*(?:№|#|:)?\s*/i,"")
+    :ref.replace(/^(?:id|ид|бронь|booking)\s*(?:№|#|:)?\s*/i,"");
+  if(!normalized||normalized.length>(type==="table"?20:60))return null;
+  return type==="table"?{tableNumber:normalized,bookingId:""}:
+    {tableNumber:"",bookingId:normalized};
 }
 const orderLabel = o => {
   const number = Number.isInteger(o.orderNumber) ? String(o.orderNumber) : o.id;
-  const reference=bookingReference(o);
+  const reference=bookingReferenceLabel(o);
   return eventTitle(o)+" №"+number+(reference?" · "+reference:"");
 };
 const setStatus=text=>{$("ordersAdminStatus").textContent=text;};
@@ -202,7 +217,7 @@ function printOrder(o){
     ["h1","BALI — ПРЕДЗАКАЗ"],["h2",orderLabel(o)],
     ["p","Дата: "+o.eventDate+" · Мероприятие: "+eventTitle(o)],
     ["p","Статус: "+(statuses[normalizedOrderStatus(o.status)]||o.status)],
-    ["p","ID брони / номер стола: "+(bookingReference(o)||"—")],
+    ["p",bookingReferenceLabel(o)||"Столик / ID не указан"],
     ["p","Гость: "+o.customerName+" · "+o.customerPhone],["p",o.email||"Предзаказ без личного кабинета"]
   ])area.append(node(tag,line));
   const table=node("table"),head=node("tr");
@@ -353,7 +368,7 @@ async function openOrderDetails(id){
     $("orderDetailsTitle").textContent=eventTitle(o)+" №"+
       (Number.isInteger(o.orderNumber)?o.orderNumber:o.id);
     const refs=$("orderDetailsReferences");
-    if(bookingReference(o))refs.append(node("span","ID брони / номер стола: "+bookingReference(o),"preorder-detail-reference"));
+    if(bookingReference(o))refs.append(node("span",bookingReferenceLabel(o),"preorder-detail-reference"));
     const content=$("orderDetailsContent");content.replaceChildren();
     const contacts=node("div","","preorder-detail-contacts");
     const phone=String(o.customerPhone||"").replace(/[^+\d]/g,"");
@@ -426,10 +441,8 @@ function compactOrderRow(o){
   const serial=Number(o.orderNumber);
   headline.append(node("strong",eventTitle(o)+" №"+
     (Number.isSafeInteger(serial)&&serial>0?serial:"—")));
-  if(String(o.tableNumber||"").trim())
-    headline.append(node("span","Столик №"+String(o.tableNumber).trim(),"preorder-queue-reference"));
-  if(String(o.bookingId||"").trim())
-    headline.append(node("span","ID "+String(o.bookingId).trim(),"preorder-queue-reference"));
+  if(bookingReference(o))
+    headline.append(node("span",bookingReferenceLabel(o),"preorder-queue-reference"));
   const date=node("time",compactOrderDate(o.eventDate),"preorder-queue-date");
   date.dateTime=o.eventDate||"";
   // Date, event number and table share one compact top line.
@@ -702,7 +715,7 @@ function renderOrders(){
     const card=node("article","","admin-order-card");
     card.append(node("h3",orderLabel(o)+" · "+(statuses[normalizedOrderStatus(o.status)]||o.status)+(o.archived?" · Архив":"")));
     card.append(node("p",o.eventDate+" · "+eventTitle(o)));
-    card.append(node("p","ID брони / номер стола: "+(bookingReference(o)||"—")));
+    card.append(node("p",bookingReferenceLabel(o)||"Столик / ID не указан"));
     card.append(node("p",o.customerName+" · "+o.customerPhone+" · "+o.email));
     for(const line of o.items)card.append(node("p",line.name+" × "+line.quantity+" — "+fmt(line.unitPrice*line.quantity),"admin-line-item"));
     card.append(node("strong","Итого: "+fmt(o.total)));
@@ -879,8 +892,9 @@ function openCreateOrder(){
   creatingOrder=true;editOrder=null;editLines=[];originalIds=new Set();
   createOrderRequestId=crypto.randomUUID();
   $("orderEditTitle").textContent="Новый предзаказ · по телефону";
-  $("orderEditEyebrow").textContent="СОЗДАНИЕ ПРЕДЗАКАЗА";
-  $("orderEditSubmit").textContent="Создать предзаказ";
+  if($("orderEditEyebrow"))$("orderEditEyebrow").textContent="СОЗДАНИЕ ПРЕДЗАКАЗА";
+  if($("orderEditSubmit"))$("orderEditSubmit").textContent="Создать предзаказ";
+  if($("editOrderReferenceType"))$("editOrderReferenceType").value="table";
   $("manualOrderGuestLink").hidden=preorderOnlyStaff;
   $("editOrderGuestEmail").value="";
   fillOrderDateOptions($("ordersDateFilter").value||
@@ -979,14 +993,16 @@ async function openEditor(id){
     editLines=o.items.map(x=>({...x,id:Number(x.id)}));
     originalIds=new Set(o.items.map(x=>String(x.id)));
     $("orderEditTitle").textContent="Заказ "+orderLabel(o);
-    $("orderEditEyebrow").textContent="РЕДАКТИРОВАНИЕ ПРЕДЗАКАЗА";
-    $("orderEditSubmit").textContent="Сохранить изменения";
+    if($("orderEditEyebrow"))$("orderEditEyebrow").textContent="РЕДАКТИРОВАНИЕ ПРЕДЗАКАЗА";
+    if($("orderEditSubmit"))$("orderEditSubmit").textContent="Сохранить изменения";
     fillOrderDateOptions(o.eventDate);
     fillOrderEventOptions(o.eventId||o.eventDate);
     $("editOrderStatus").value=normalizedOrderStatus(o.status);
     $("editOrderName").value=o.customerName;
     $("editOrderPhone").value=o.customerPhone;
     $("editOrderReference").value=bookingReference(o);
+    if($("editOrderReferenceType"))
+      $("editOrderReferenceType").value=o.bookingId&&!o.tableNumber?"booking":"table";
     $("editOrderNotes").value=o.notes;
     if($("editOrderExtra"))$("editOrderExtra").open=false;
     if($("editOrderCalendarHint"))$("editOrderCalendarHint").textContent="Обновляем мероприятия с основного календаря BALI…";
@@ -1013,7 +1029,8 @@ $("orderEditForm").addEventListener("submit",async event=>{
   const eventFields={eventId,...(chosenTitle?{eventTitle:chosenTitle}:{})};
   const customerName=$("editOrderName").value.trim();
   const customerPhone=$("editOrderPhone").value.trim();
-  const reference=bookingReferenceParts($("editOrderReference").value,creatingOrder?null:editOrder);
+  const reference=bookingReferenceParts($("editOrderReference").value,
+    creatingOrder?null:editOrder,$("editOrderReferenceType")?.value||"");
   const tableNumber=reference?.tableNumber||"";
   const bookingId=reference?.bookingId||"";
   const notes=$("editOrderNotes").value.trim();
@@ -1357,7 +1374,7 @@ async function exportEventReport(kind,format="csv"){
         const items=o.items.length?o.items:[{name:"",quantity:"",unitPrice:""}];
         return items.map(line=>[
           o.eventDate,eventTitle(o),orderLabel(o),statuses[normalizedOrderStatus(o.status)]||o.status,
-          bookingReference(o),o.customerName,o.customerPhone,o.email,
+          bookingReferenceLabel(o),o.customerName,o.customerPhone,o.email,
           line.name,line.quantity,line.unitPrice===""?"":Number(line.unitPrice).toFixed(2),
           line.unitPrice===""?"":(Number(line.unitPrice)*Number(line.quantity)).toFixed(2),
           total(o.items).toFixed(2),o.notes,o.id
