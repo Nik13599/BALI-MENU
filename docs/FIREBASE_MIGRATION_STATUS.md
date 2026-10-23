@@ -150,6 +150,31 @@ and does not activate COIN for real customers. Only the separate pilot release,
 selected explicitly with `ENABLE_TEST_COIN_PILOT`, may deploy test-only
 mutations; the final live release remains gated by imported, verified wallets.
 
+### Additional safeguards for the dedicated test pilot
+
+The protected manual deployment runs `scripts/verify-bali-coin-pilot.cjs`
+**after short-lived Google Cloud authentication but before any Firebase
+deployment**. It confirms that every UID in the protected secret belongs to
+an enabled, email-verified Firebase Authentication user with both
+`users/{uid}` and `baliIds/{uid}`, that card numbers are distinct, and that
+the UID does not belong to director/admin or preorder Staff. A preexisting
+non-pilot COIN wallet blocks deployment, preventing an existing guest's
+balance being used as a test account. This verification is read-only.
+
+Any new COIN wallet created under the pilot must include
+`source: "bali-coin-pilot"`. Every later test credit, debit, transfer,
+redeem or BRSM visit award refuses an existing wallet with another source.
+This protection is enforced **inside the Firestore transaction** as well as
+at deployment, even if a protected secret is changed after the audit.
+
+The separate GitHub IAM **diagnostic** deliberately shows missing
+`BALI_COIN_PILOT_UIDS` as an explicit `NOT READY` warning, so it can still
+independently test Google WIF and IAM. A successful diagnostic job is **not**
+pilot-release approval. The actual `ENABLE_TEST_COIN_PILOT` release rejects
+missing, invalid or non-existent test identities; no placeholder UIDs are
+accepted. The diagnostic automatically runs on reviewed updates to its own
+workflow file on main, but never deploys Firebase.
+
 ## Deployment checklist
 1. Run all backend, Firestore emulator, BRSM, admin and mobile tests.
 2. Validate source-to-target BALI IDs, final COIN sums and histories using a
