@@ -102,6 +102,9 @@ jobs:
       - name: Deploy COIN pilot mutations and voucher fulfilment
         run: |
           npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:coinTransfer,functions:bali-id:coinChange,functions:bali-id:coinClaimVisit,functions:bali-id:coinAwardActivity,functions:bali-id:coinLotManage,functions:bali-id:coinRedeemLot,functions:bali-id:coinVoucherFulfill"
+      - name: Deploy BRSM and COIN Firestore read protections
+        run: |
+          npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only firestore:rules
       - name: Deploy BRSM campaign read and setup callables
         run: |
           npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:getCurrentBrsmCampaign,functions:bali-id:createBrsmCampaign,functions:bali-id:updateBrsmCampaignDraft,functions:bali-id:activateBrsmCampaign,functions:bali-id:archiveBrsmCampaign,functions:bali-id:listBrsmCampaigns,functions:bali-id:addBrsmCampaignEvent,functions:bali-id:listBrsmCampaignEvents,functions:bali-id:getBrsmCampaignEntry"
