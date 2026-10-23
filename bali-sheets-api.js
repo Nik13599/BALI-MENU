@@ -1,16 +1,16 @@
-/* BALI MENU v3 · private Google Sheets, gated until Apps Script + Worker are configured.
- * Firebase Authentication remains the sole user identity. This module never exposes
- * Google Sheets credentials, a spreadsheet ID, or the Cloudflare bridge secret. */
+/* BALI MENU: Cloudflare D1 handles only preorder-related actions.
+ * Firebase Auth supplies verified identity; other optional Sheets services
+ * retain their own disabled-by-default flag.
+ */
 const API="/api/bali-v3";
-const D1_API="/api/d1-preorders";
-// The existing Staff component uses this historical flag for its non-Firestore
-// data adapter. Only preorders.html enables D1; guest and BALI ID are unchanged.
-export const sheetsEnabled=()=>window.BALI_SHEETS_API_ENABLED===true||
-  window.BALI_D1_PREORDERS_ENABLED===true;
+export const sheetsEnabled=()=>window.BALI_SHEETS_API_ENABLED===true;
+export const preordersD1Enabled=()=>window.BALI_D1_PREORDERS_ENABLED===true;
+export const preorderServiceEnabled=()=>preordersD1Enabled()||sheetsEnabled();
+const orderActions=new Set(["menu","createOrder","guestCreateOrder","editOrder","cancelOrder",
+  "myOrders","staffOrders","staffRecentOrders","staffCreateOrder","staffEditOrder","staffStatus",
+  "staffArchiveOrder","staffDeleteOrder","staffClearExpiredOrders"]);
 const pendingRoles=new Map();
 export async function sheetsRequest(action,payload={},options={}){
-  const orderActions=new Set(["menu","createOrder","guestCreateOrder","editOrder","cancelOrder",
-    "myOrders","staffOrders","staffRecentOrders","staffCreateOrder","staffEditOrder","staffStatus","staffArchiveOrder","staffDeleteOrder","staffClearExpiredOrders"]);
   if(!sheetsEnabled()&&!(preordersD1Enabled()&&orderActions.has(action)))
     throw Object.assign(new Error("Этот раздел базы не активирован."),{code:"not-configured"});
   const provider=window.BaliAuth?.getIdToken||window.BaliSheetsToken;
@@ -27,7 +27,7 @@ export async function sheetsRequest(action,payload={},options={}){
   return sendSheetsRequest(action,payload,options,token);
 }
 async function sendSheetsRequest(action,payload,options,token){
-  const response=await fetch(window.BALI_D1_PREORDERS_ENABLED===true?D1_API:API,{
+  const response=await fetch(API,{
     method:"POST",credentials:"same-origin",redirect:"follow",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({action,token,payload}),signal:options.signal,
