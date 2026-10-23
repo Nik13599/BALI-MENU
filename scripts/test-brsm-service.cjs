@@ -208,6 +208,7 @@ test("BRSM campaigns: configurable visits, ball pools, prizes, rounds and immuta
   records.set("users/alice",{name:"ALICE"});
   records.set("baliIds/alice",{uid:"alice",number:1});
   records.set("brsmCards/alice",{active:true,number:"000001",name:"ALICE"});
+  records.set("baliCoinAccounts/alice",{balance:0,migrationComplete:true});
   const custom={
     title:"KONTAKT · Winter 2026",requiredVisits:2,ballCount:30,
     ticketSize:5,winMatches:3,prizes:["iPhone","BALI VIP"]
@@ -314,6 +315,7 @@ test("shared Firebase BALI COIN: transfer, visit credit, bar voucher, staff issu
   for(const [uid,num] of [[a,101],[b,202]]){
     records.set("users/"+uid,{name:uid});
     records.set("baliIds/"+uid,{uid,number:num});
+    records.set("baliCoinAccounts/"+uid,{balance:0,migrationComplete:true});
   }
   records.set("admins/director",{active:true});
   records.set("staffRoles/"+staff,{active:true,role:"staff"});

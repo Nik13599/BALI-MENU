@@ -58,9 +58,9 @@ function setup(rolloutEnv){
   const functions=create({api:(_n,fn)=>fn,admin:{},db,TS:{now:stamp},
     verified:req=>{if(!req.auth?.uid)fail("unauthenticated","sign in");return req.auth.uid;},
     privileged:async uid=>uid==="director",fail,nameAndId,
-    coinRollout:createRollout({fail,env:rolloutEnv||{BALI_COIN_WRITE_MODE:"live",
-      BALI_COIN_VERIFIED_EXPORT_SHA256:"a".repeat(64),
-      BALI_COIN_LIVE_CONFIRM:"VERIFIED_SOURCE_AND_WALLETS"}})});
+    coinRollout:createRollout({fail,env:rolloutEnv||{BALI_COIN_WRITE_MODE:"pilot",
+      BALI_COIN_PILOT_CONFIRM:"ALLOW_TEST_COIN_WRITES",
+      BALI_COIN_PILOT_UIDS:"guest_alice_0001,guest_bobby_0002"}})});
   const call=(name,uid,data={})=>functions[name]({auth:{uid},data});
   function person(uid,number){
     records.set("users/"+uid,{name:uid});
@@ -192,4 +192,31 @@ test("BRSM visit can be credited once after revocation, reinstatement and frozen
   assert.equal(records.get("baliCoinAccounts/"+uid).balance,40);
   const history=[...records.keys()].filter(p=>p.startsWith("baliCoinAccounts/"+uid+"/history/"));
   assert.equal(history.length,2,"one original receipt and exactly one reissue receipt");
+});
+
+test("production COIN refuses zero initialization of unmigrated guest accounts",async()=>{
+  const live={BALI_COIN_WRITE_MODE:"live",
+    BALI_COIN_VERIFIED_EXPORT_SHA256:"a".repeat(64),
+    BALI_COIN_LIVE_CONFIRM:"VERIFIED_SOURCE_AND_WALLETS"};
+  const {records,call,person}=setup(live);
+  const uid="guest_alice_0001";
+  person(uid,1);records.set("admins/director",{active:true});
+  const unready=(await call("coinCard",uid)).card;
+  assert.equal(unready.walletReady,false);
+  assert.equal(unready.coinBalance,null);
+  assert.equal(unready.coinWritable,false);
+  await assert.rejects(call("coinChange","director",{
+    uid,operation:"credit",amount:10,reason:"verified reward",
+    requestId:"source_missing_0001"
+  }),e=>e.code==="failed-precondition");
+  assert.equal(records.has("baliCoinAccounts/"+uid),false);
+  // A verified preexisting balance can be used without zeroing it.
+  records.set("baliCoinAccounts/"+uid,{balance:72,migrationComplete:true});
+  const ready=(await call("coinCard",uid)).card;
+  assert.equal(ready.walletReady,true);
+  assert.equal(ready.coinWritable,true);
+  assert.equal((await call("coinChange","director",{
+    uid,operation:"credit",amount:10,reason:"verified reward",
+    requestId:"source_verified_0001"
+  })).result.balance,82);
 });

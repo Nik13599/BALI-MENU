@@ -44,6 +44,7 @@ try{
   seed.set(db.doc('users/'+uid),{name:'Emulator guest'});
   seed.set(db.doc('baliIds/'+uid),{uid,number:10000+i});
   seed.set(db.doc('guestPrivileges/'+uid),{uid,tier:i%2?'Gold':'Member',benefits:[]});
+  seed.set(db.doc('baliCoinAccounts/'+uid),{balance:0,migrationComplete:true});
  }
  for(const [i,uid] of buyers.entries()){
   seed.set(db.doc('users/'+uid),{name:'Emulator buyer'});
