@@ -42,7 +42,7 @@ function bookingReferenceParts(value,original=null,kind=""){
   const ref=String(value||"").trim();
   const originalKind=original?.tableNumber&&!original?.bookingId?"table":
     original?.bookingId&&!original?.tableNumber?"booking":"";
-  if(original&&ref===bookingReference(original)&&(!kind||kind===originalKind))
+  if(original&&ref===bookingReference(original)&&(!kind||kind===originalKind||!originalKind))
     return {tableNumber:String(original.tableNumber||""),bookingId:String(original.bookingId||"")};
   if(!ref||ref.length>60)return null;
   const type=kind||(/^\d{1,20}$/.test(ref)?"table":"booking");
