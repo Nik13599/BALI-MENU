@@ -2,7 +2,11 @@
  * Firebase Authentication remains the sole user identity. This module never exposes
  * Google Sheets credentials, a spreadsheet ID, or the Cloudflare bridge secret. */
 const API="/api/bali-v3";
-export const sheetsEnabled=()=>window.BALI_SHEETS_API_ENABLED===true;
+const D1_API="/api/d1-preorders";
+// The existing Staff component uses this historical flag for its non-Firestore
+// data adapter. Only preorders.html enables D1; guest and BALI ID are unchanged.
+export const sheetsEnabled=()=>window.BALI_SHEETS_API_ENABLED===true||
+  window.BALI_D1_PREORDERS_ENABLED===true;
 const pendingRoles=new Map();
 export async function sheetsRequest(action,payload={},options={}){
   if(!sheetsEnabled())throw Object.assign(new Error("База Google Sheets ещё не активирована."),{code:"not-configured"});
@@ -20,7 +24,8 @@ export async function sheetsRequest(action,payload={},options={}){
   return sendSheetsRequest(action,payload,options,token);
 }
 async function sendSheetsRequest(action,payload,options,token){
-  const response=await fetch(API,{method:"POST",credentials:"same-origin",redirect:"follow",
+  const response=await fetch(window.BALI_D1_PREORDERS_ENABLED===true?D1_API:API,{
+    method:"POST",credentials:"same-origin",redirect:"follow",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({action,token,payload}),signal:options.signal,
     ...(options.keepalive?{keepalive:true}:{})});
