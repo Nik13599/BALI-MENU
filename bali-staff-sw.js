@@ -14,7 +14,17 @@ self.addEventListener("push",event=>{
     data:{url:"/preorders.html"},
     renotify:false
   };
-  event.waitUntil(self.registration.showNotification(title,options));
+  event.waitUntil(Promise.all([
+    self.registration.showNotification(title,options),
+    self.clients.matchAll({type:"window",includeUncontrolled:true}).then(clients=>{
+      for(const client of clients){
+        try{
+          if(new URL(client.url).pathname==="/preorders.html")
+            client.postMessage({type:"bali-staff:new-order",orderId:String(detail.orderId||"").slice(0,128)});
+        }catch{}
+      }
+    })
+  ]));
 });
 self.addEventListener("notificationclick",event=>{
   event.notification.close();
