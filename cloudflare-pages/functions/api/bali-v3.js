@@ -2,7 +2,7 @@
  * Configure SHEETS_SCRIPT_URL and BALI_BRIDGE_KEY as encrypted runtime variables.
  * Calls are verified again by Apps Script against Firebase Auth, not by a claimed UID. */
 const actions=new Set(["health","me","consentAccept","profileSave","menu",
-  "myOrders","createOrder","guestCreateOrder","editOrder","cancelOrder","staffOrders","staffCreateOrder","staffEditOrder","staffStatus","staffReport",
+  "myOrders","createOrder","guestCreateOrder","editOrder","cancelOrder","staffOrders","staffCreateOrder","staffEditOrder","staffStatus","staffArchiveOrder","staffDeleteOrder","staffClearExpiredOrders","staffReport",
   "staffRecentOrders","staffList","staffManage","adminGuests","adminGuestOrders","catalogSync","card","activateCard","adminCard","coinHistory",
   "coinChange","privilegeAssign","privilegeRules","privilegeRulesSave","bonusGrant","bonusHistory","bonusRecipient",
   "bonusTransfer","plans","avatarGet","avatarSave"]);
@@ -64,7 +64,7 @@ export async function onRequestPost({request,env}){
   // Firestore. Fail closed until the migration is marked complete.
   const d1Actions=new Set(["guestCreateOrder","createOrder","editOrder","cancelOrder",
     "myOrders","staffRecentOrders","staffOrders","staffCreateOrder","staffEditOrder",
-    "staffStatus","menu"]);
+    "staffStatus","staffArchiveOrder","staffDeleteOrder","staffClearExpiredOrders","menu"]);
   if(d1Actions.has(input.action)){
     const {handleD1OrderAction}=await import("../_lib/d1-orders.js");
     const result=await handleD1OrderAction({...input,payload},request,env);
