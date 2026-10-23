@@ -34,6 +34,11 @@ export const authorizeStaff=async request=>{
   if(token!=="Bearer "+ "T".repeat(128))throw Object.assign(Error("unauthorized"),{status:403});
   return {uid:"valid_admin_uid",role:"admin"};
 };
+export const authorizeUser=async request=>{
+ const token=request.headers.get("Authorization");
+ if(token!=="Bearer "+ "T".repeat(128))throw Object.assign(Error("unauthorized"),{status:401});
+ return {uid:"valid_admin_uid",role:"guest"};
+};
 export const errorJson=(status,error)=>new Response(JSON.stringify({error}),{status});
 export const handlerError=e=>errorJson(e.status||503,e.message);
 `);
@@ -45,8 +50,10 @@ const staffSource=source("cloudflare-pages/functions/api/d1-preorders.js")
  .replace('from "../_lib/d1-preorders.js"','from "'+orderModule+'"')
  .replace('from "./staff-preorder-status.js"','from "'+statusModule+'"');
 const staff=await import(dataURI(staffSource));
+const ordersModule=dataURI(source("cloudflare-pages/functions/_lib/d1-orders.js")
+ .replace('from "./staff-auth.js"','from "'+authModule+'"'));
 const guest=await import(dataURI(source("cloudflare-pages/functions/api/bali-v3.js")
- .replace('from "../_lib/d1-preorders.js"','from "'+orderModule+'"')));
+ .replace('await import("../_lib/d1-orders.js")','await import("'+ordersModule+'")')));
 const menu=[{name:"projects/demo/documents/menu/101",fields:{
   name:{stringValue:"Салат"},available:{booleanValue:true},
   price:{integerValue:"25"},id:{integerValue:"101"}
