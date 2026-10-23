@@ -1,0 +1,31 @@
+name: BALI Staff appearance lock
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'preorders-workspace.css'
+      - 'preorders.html'
+      - 'admin-orders.js'
+      - 'preorders-access.js'
+      - 'scripts/test-staff-appearance-locked.mjs'
+      - '.github/workflows/staff-appearance-lock.yml'
+  pull_request:
+    paths:
+      - 'preorders-workspace.css'
+      - 'preorders.html'
+      - 'admin-orders.js'
+      - 'preorders-access.js'
+      - 'scripts/test-staff-appearance-locked.mjs'
+      - '.github/workflows/staff-appearance-lock.yml'
+permissions:
+  contents: read
+jobs:
+  no-staff-ui-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enforce approved desktop, tablet and mobile styling
+        run: node scripts/test-staff-appearance-locked.mjs
