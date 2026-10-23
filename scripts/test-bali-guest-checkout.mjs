@@ -27,13 +27,18 @@ const payload={requestId:"guest_request_1234567890",guestVerified:true,
   eventDate:"2026-10-30",eventId:"2026-10-30",tableNumber:"12",
   items:[{id:101,quantity:1}]};
 let response=await submit("guestCreateOrder",payload);
-assert.equal(response.status,200);
-assert.equal(requests.length,2);
-const forwarded=JSON.parse(requests[1].body);
-assert.equal(forwarded.payload.guestVerified,true); // only after Siteverify succeeded
-assert.equal(forwarded.token,"");
-assert(!forwarded.turnstileToken);
-assert(!requests[1].body.includes("turnstile-test-secret"));
+assert.equal(response.status,503,"Missing D1 must reject the order, not fall back to Sheets");
+assert.equal(response.body.error.code,"unavailable");
+assert.equal(requests.length,1,"Only Turnstile siteverify may run");
+assert(requests[0].url.includes("siteverify"));
+const fakeD1={prepare:()=>({first:async()=>({status:"pending"})})};
+env.BALI_OPERATIONS_DB=fakeD1;
+requests=[];
+response=await submit("guestCreateOrder",payload);
+assert.equal(response.status,503,"Pending migration must never write to Sheets");
+assert.equal(response.body.error.code,"preorder-cutover-not-ready");
+assert.equal(requests.length,1,"No legacy order destination under a failed cutover");
+delete env.BALI_OPERATIONS_DB;
 requests=[];
 response=await submit("guestCreateOrder",payload,"","");
 assert.equal(response.status,400);
@@ -58,4 +63,4 @@ response=await submit("card",{}, "x".repeat(60), "", "https://evil.example");
 assert.equal(response.status,403);
 response=await submit("guestCreateOrder",{...payload,requestId:"!"});
 assert.equal(response.status,400);
-console.log("BALI guest checkout: Turnstile verified server-side, private bridge proof, required consent, no-account orders and origin protections PASS");
+console.log("BALI guest checkout: Turnstile verified server-side, D1-only fail-closed routing, required consent and origin protections PASS");

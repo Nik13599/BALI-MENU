@@ -1,0 +1,29 @@
+name: BALI D1 fail-closed guest checkout
+on:
+  push:
+    branches: [fix/d1-no-legacy-order-fallback-20261023]
+  pull_request:
+    paths:
+      - 'cloudflare-pages/functions/api/bali-v3.js'
+      - 'scripts/test-bali-guest-checkout.mjs'
+      - '.github/workflows/d1-guest-fail-closed.yml'
+permissions:
+  contents: read
+jobs:
+  guest-and-staff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify guest Turnstile and no Sheets fallback
+        run: |
+          node --input-type=module --check < cloudflare-pages/functions/api/bali-v3.js
+          node scripts/test-bali-guest-checkout.mjs
+      - name: Verify atomic guest and Staff D1 transactions
+        run: |
+          node --experimental-sqlite scripts/test-d1-live-preorders.mjs
+          node --experimental-sqlite scripts/test-d1-live-orders.mjs
+      - name: BALI Staff desktop and mobile appearance unchanged
+        run: node scripts/test-staff-appearance-locked.mjs
