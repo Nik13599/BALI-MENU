@@ -14,7 +14,7 @@ import {
 
 import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1";
 import {withinOrderRetention} from "./bali-order-retention.js";
-import {preorderServiceEnabled,sheetsRequest} from "./bali-sheets-api.js";
+import {preorderServiceEnabled,sheetsRequest} from "./bali-sheets-api.js?v=20261023-d1-live1";
 
 const app = getApps().length ? getApp() : initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth = getAuth(app);
