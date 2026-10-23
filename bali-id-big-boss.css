@@ -1,0 +1,139 @@
+/* BIG BOSS: owner-only visual treatment. All card geometry comes from
+   bali-id-flip.css, so front/back retain the same 1.68 aspect ratio,
+   645px max width, flip behaviour and responsive breakpoints as other tiers.
+   Reference: dark brushed metal, bright champagne gold and sweeping rings. */
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"]{
+  --bali-card-ink:#ffe4a0;
+  --bali-card-main:#eab64e;
+  --bali-card-shine:rgba(255,184,65,.55);
+  --bali-card-halo:rgba(241,159,39,.32);
+  --bali-card-body:#090705;
+  --bali-card-bloom:rgba(242,156,27,.32);
+  --bali-card-ring:rgba(255,210,121,.47);
+  --bali-card-logo-filter:brightness(0) saturate(100%) invert(85%) sepia(34%) saturate(1079%) hue-rotate(339deg) brightness(105%);
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-card{
+  color:var(--bali-card-ink)!important;
+  border:1.5px solid #ffd880!important;
+  background:
+    radial-gradient(ellipse at 75% 18%,rgba(255,201,88,.34) 0,rgba(114,66,8,.20) 18%,transparent 46%),
+    radial-gradient(ellipse at 10% 98%,rgba(190,103,16,.23),transparent 43%),
+    repeating-linear-gradient(155deg,rgba(255,220,146,.026) 0 1px,transparent 1px 5px),
+    linear-gradient(120deg,#100d0a 5%,#030304 48%,#241604 78%,#050506 100%)!important;
+  box-shadow:
+    0 13px 30px rgba(0,0,0,.52),
+    0 0 0 1px rgba(251,208,122,.46),
+    0 0 20px rgba(255,178,49,.30),
+    inset 0 0 17px rgba(254,208,106,.23)!important;
+}
+/* Graphic rings are decorative only and cannot change the card's box. */
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-card::before{
+  width:124%;aspect-ratio:1;
+  left:25%;bottom:-105%;
+  border:1px solid rgba(254,208,109,.72);
+  border-radius:50%;
+  box-shadow:
+    0 0 0 21px rgba(203,133,35,.13),
+    0 0 0 57px rgba(255,185,59,.14),
+    0 0 0 104px rgba(166,90,15,.12),
+    0 0 0 162px rgba(255,202,108,.055);
+  background:radial-gradient(ellipse at 25% 27%,rgba(255,206,112,.07),transparent 60%);
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-card::after{
+  inset:-82% -38% auto auto;
+  width:96%;aspect-ratio:1;
+  border-color:rgba(255,201,105,.40);
+  background:radial-gradient(circle at 40% 55%,rgba(255,195,66,.24),transparent 58%);
+  pointer-events:none;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] :is(.bali-id-brand-label,.bali-id-back-brand){
+  text-transform:uppercase;
+  font-weight:570!important;
+  letter-spacing:.14em!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-back-brand{display:none}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-back-brand{
+  display:block;
+  font-size:var(--bali-card-meta-size,clamp(11px,3cqw,22px))!important;
+  color:var(--bali-card-ink)!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] :is(#baliCardTier,#baliCardHeaderTier){
+  color:#ffe5a3!important;
+  font-weight:900!important;
+  letter-spacing:.015em!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] svg.bali-id-inline-mark{
+  color:#f5c65d!important;
+  filter:drop-shadow(0 1px 5px rgba(255,193,56,.34))!important;
+}
+/* Bespoke privilege typography, still using the same existing back. */
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-card-back .bali-id-benefits{
+  padding:clamp(4px,1.2cqw,10px) 0 2px!important;
+  overflow-y:auto!important;
+  scrollbar-width:none;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-card-back .bali-id-benefits::-webkit-scrollbar{display:none}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-card-back .bali-id-benefits ul{
+  max-height:none!important;
+  overflow:visible!important;
+  gap:clamp(2px,.75cqw,7px)!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-card-back .bali-id-benefits li.bali-boss-privilege{
+  display:grid!important;
+  grid-template-columns:clamp(15px,4.4cqw,35px) minmax(0,1fr)!important;
+  grid-template-rows:auto auto;
+  column-gap:clamp(4px,1.3cqw,11px)!important;
+  align-items:center;
+  color:var(--bali-card-ink)!important;
+  min-height:0!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-card-back .bali-id-benefits li.bali-boss-privilege::before{
+  content:"♛"!important;
+  grid-column:1;grid-row:1/3;
+  font:700 clamp(15px,4cqw,30px)/1 Georgia,serif!important;
+  color:#f9cf6d!important;
+  align-self:center!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-benefits li.bali-boss-privilege[data-boss-index="1"]::before{content:"◇"!important}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-benefits li.bali-boss-privilege[data-boss-index="2"]::before{content:"♣"!important}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-benefits li.bali-boss-privilege[data-boss-index="3"]::before{content:"⚙"!important}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-boss-privilege strong{
+  grid-column:2;grid-row:1;
+  color:#ffe3a0!important;
+  font:750 clamp(9px,2.45cqw,18px)/1.17 Manrope,Inter,sans-serif!important;
+  overflow-wrap:anywhere;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-boss-privilege small{
+  grid-column:2;grid-row:2;
+  color:#e7d6b3!important;
+  font:480 clamp(8px,1.95cqw,14px)/1.2 Manrope,Inter,sans-serif!important;
+  overflow-wrap:anywhere;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-card-back .bali-id-back-bonuses{
+  border-top:1px solid rgba(255,214,130,.8)!important;
+  gap:0!important;
+  padding-top:clamp(4px,1.1cqw,9px)!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-bonus{
+  border-right:1px solid rgba(255,217,140,.65);
+  text-align:center;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-bonus:last-child{border:0}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-bonus strong{
+  font:800 clamp(16px,5cqw,34px)/.86 Manrope,Inter,sans-serif!important;
+  color:#ffe49f!important;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-bonus::after{
+  color:#ffe4a0;
+  font:650 clamp(6px,1.45cqw,11px)/1.14 Manrope,Inter,sans-serif;
+  text-transform:uppercase;
+  max-width:96%;
+}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] [data-bali-bonus="entry"]::after{content:"Безлимитный вход"}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] [data-bali-bonus="shot"]::after{content:"Безлимитные шоты"}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] [data-bali-bonus="cocktail"]::after{content:"Безлимитные коктейли"}
+body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] [data-bali-bonus="hookah"]::after{content:"Безлимитный кальян"}
+@media(max-width:440px){
+  body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-card-back{padding:clamp(9px,2.8vw,13px)!important}
+  body.bali-guest-theme #baliIdSection .bali-id-flip-scene[data-bali-tier="bigboss"] .bali-id-benefits-head h2{font-size:clamp(14px,4cqw,18px)!important}
+}

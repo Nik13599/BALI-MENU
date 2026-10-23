@@ -62,7 +62,22 @@ function renderBalance(){
   host.replaceChildren();
   const wallet=host.closest(".bali-bank-wallet");
   if(wallet)wallet.hidden=true;
-  if(!logged()||!walletReady)return;
+  if(!logged())return;
+  // Big Boss infinity icons describe owner-tier privileges. They do not
+  // mint balance grants or bypass server-side redeem/transfer validation.
+  const isBigBoss=$("baliIdFlipScene")?.dataset.baliTier==="bigboss";
+  if(isBigBoss){
+    for(const kind of ["entry","shot","cocktail","hookah"]){
+      const output=document.querySelector('[data-bali-bonus-count="'+kind+'"]');
+      if(!output)continue;
+      if(output.previousSibling?.nodeType===3)output.previousSibling.nodeValue="";
+      output.textContent="∞";
+      output.closest(".bali-id-bonus")?.setAttribute("aria-label",(names[kind]||kind)+": безлимитная привилегия статуса BIG BOSS");
+    }
+    if(strip)strip.hidden=false;
+    return;
+  }
+  if(!walletReady)return;
   const aggregates=new Map();
   for(const grant of grants){
     if(!current(grant))continue;
@@ -71,7 +86,9 @@ function renderBalance(){
   }
   for(const kind of ["entry","shot","cocktail","hookah"]){
     const output=document.querySelector(`[data-bali-bonus-count="${kind}"]`);
-    if(output){const amount=aggregates.get(kind)||0;output.textContent=amount>999?"999+":String(amount);
+    if(output){const amount=aggregates.get(kind)||0;
+      if(output.previousSibling?.nodeType===3)output.previousSibling.nodeValue="×";
+      output.textContent=amount>999?"999+":String(amount);
       output.closest(".bali-id-bonus")?.setAttribute("aria-label",(names[kind]||kind)+": "+amount);}
   }
   if(strip)strip.hidden=false;
@@ -383,6 +400,7 @@ function startWallet(user){
 }
 onAuthStateChanged(auth,startWallet);
 window.addEventListener("bali:guest-page",()=>startWallet(auth.currentUser));
+window.addEventListener("bali:card-tier",renderBalance);
 window.addEventListener("bali:sheets-card",event=>{
   if(!sheetsEnabled()||!event.detail?.card||event.detail.uid!==uid)return;
   grants=Array.isArray(event.detail.card.bonuses)?event.detail.card.bonuses:[];

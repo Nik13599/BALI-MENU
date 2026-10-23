@@ -160,7 +160,7 @@ service cloud.firestore {
       return data.keys().hasAll(['uid','tier','benefits','updatedAt','updatedBy'])
         && data.keys().hasOnly(['uid','tier','benefits','updatedAt','updatedBy'])
         && data.uid == uid
-        && data.tier in ['Member','Silver','Gold','Platinum','Black','Private','ResidentDJ']
+        && data.tier in ['Member','Silver','Gold','Platinum','Black','Private','ResidentDJ','BigBoss','BigBoss','BigBoss']
         && data.benefits is list && data.benefits.size() <= 5
         && data.updatedAt == request.time
         && data.updatedBy == request.auth.uid;
