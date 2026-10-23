@@ -30,10 +30,11 @@ db.prepare("INSERT INTO migration_state (id,source,status,record_count,updated_a
  .run("preorders","test-fixture","complete",0,Date.now());
 const orderModule=dataURI(source("cloudflare-pages/functions/_lib/d1-preorders.js"));
 const authModule=dataURI(`
-export const authorizeStaff=async request=>{
+export const authorizeStaff=async (request,options={})=>{
   const token=request.headers.get("Authorization");
   if(token!=="Bearer "+ "T".repeat(128))throw Object.assign(Error("unauthorized"),{status:403});
-  return {uid:"valid_admin_uid",role:"admin"};
+  if(options.adminOnly)throw Object.assign(Error("Staff must not have owner rights"),{status:403});
+  return {uid:"valid_staff_uid",role:"staff"};
 };
 export const authorizeUser=async request=>{
  const token=request.headers.get("Authorization");
@@ -155,7 +156,43 @@ const numbers=all.body.data.orders.map(x=>x.orderNumber).sort();
 assert.deepEqual(numbers,[1,2,3]);
 const sums=all.body.data.orders.map(x=>x.total).sort((a,b)=>a-b);
 assert.deepEqual(sums,[50,50,75]);
+// A plain employee may permanently delete a specific order after explicit
+// confirmation. The stale version must not erase a newer edit.
+const other=all.body.data.orders.find(x=>x.id==="o_"+"b".repeat(32));
+assert(other);
+let staleDelete=await run("staffDeleteOrder",{
+  id:other.id,expectedUpdatedAt:"2001-01-01T00:00:00.000Z"
+});
+assert.equal(staleDelete.status,409,"Never delete a newer version");
+assert(db.prepare("SELECT id FROM preorder_orders WHERE id=?").get(other.id));
+const removed=await run("staffDeleteOrder",{
+  id:other.id,expectedUpdatedAt:other.updatedAt
+});
+assert.equal(removed.status,200,JSON.stringify(removed));
+assert.equal(removed.body.data.deleted,other.id);
+assert.equal(db.prepare("SELECT id FROM preorder_orders WHERE id=?").get(other.id),undefined);
+assert.equal(db.prepare("SELECT COUNT(*) AS n FROM preorder_items WHERE order_id=?").get(other.id).n,0);
+assert.equal(db.prepare("SELECT action FROM preorder_audit ORDER BY id DESC LIMIT 1").get().action,"staff-delete");
+// The legacy-compatible shared /api/bali-v3 Staff gateway must obey the same
+// role, id and version contract, without elevating the Staff role to admin.
+const sharedDelete=async(id,expectedUpdatedAt)=>{
+  const request=new Request(base+"/api/bali-v3",{
+    method:"POST",headers:{"Origin":base,"Content-Type":"application/json"},
+    body:JSON.stringify({action:"staffDeleteOrder",token:"T".repeat(128),
+      payload:{id,expectedUpdatedAt}})
+  });
+  const response=await guest.onRequestPost({request,env});
+  return {status:response.status,body:await response.json()};
+};
+const latest=all.body.data.orders.find(x=>x.id==="o_"+"d".repeat(32));
+assert(latest);
+assert.equal((await sharedDelete(latest.id,"2001-01-01T00:00:00.000Z")).status,409);
+const sharedResult=await sharedDelete(latest.id,latest.updatedAt);
+assert.equal(sharedResult.status,200,JSON.stringify(sharedResult));
+assert.equal(sharedResult.body.data.deleted,latest.id);
+assert.equal(db.prepare("SELECT COUNT(*) AS n FROM preorder_orders WHERE id=?").get(latest.id).n,0);
+assert.equal(db.prepare("SELECT COUNT(*) AS n FROM preorder_items WHERE order_id=?").get(latest.id).n,0);
 const auditCount=db.prepare("SELECT COUNT(*) AS n FROM preorder_audit").get().n;
-assert(auditCount>=4);
+assert(auditCount>=6);
 db.close();
-console.log("BALI D1 live orders: Turnstile, guest create, retries, shared Staff queue, serials, optimistic edits, status replay PASS");
+console.log("BALI D1 live orders: Turnstile, guest create, retries, shared Staff queue, serials, optimistic edits, Staff-only permanent deletion and status replay PASS");
