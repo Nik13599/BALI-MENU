@@ -754,12 +754,7 @@ function renderDates(){
   renderEventFilter();
 }
 function renderEventFilter(){
-  const dateInput=$("ordersDateFilter");
-  const select=$("ordersEventFilter"),date=dateInput.value,old=select.value;
-  // Today is gold, future events lime; old dates remain identifiable in the admin.
-  const state=date?(date===minskToday()?"today":date<minskToday()?"past":"upcoming"):"";
-  if(state)dateInput.dataset.dateState=state;
-  else delete dateInput.dataset.dateState;
+  const select=$("ordersEventFilter"),date=$("ordersDateFilter").value,old=select.value;
   select.replaceChildren(new Option("Все мероприятия",""));
   const found=new Map();
   for(const [id,event] of events)
