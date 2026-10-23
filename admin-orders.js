@@ -264,14 +264,23 @@ async function setOrderStatus(o,status) {
 }
 async function archiveOrder(o,archive=true) {
   ensureAdmin();
-  if(preorderServiceEnabled())throw new Error("Архивация будет подключена к новому серверу отдельно.");
   if(!confirm(archive
     ?"Убрать заказ "+orderLabel(o)+" в архив? Заказ отменится, но история гостя сохранится."
     :"Вернуть заказ "+orderLabel(o)+" из архива? Его статус останется «Отменён»."))return;
   try {
-    await updateDoc(doc(db,"orders",o.id),
-      archive?{archived:true,status:"cancelled",updatedAt:serverTimestamp()}
-        :{archived:false,updatedAt:serverTimestamp()});
+    if(preorderServiceEnabled()){
+      const saved=(await sheetsRequest("staffArchiveOrder",{id:o.id,archived:archive})).order;
+      if(!saved?.id)throw new Error("Сервер не подтвердил архивацию.");
+      for(const list of [orders,dateOrders]){
+        const idx=list.findIndex(x=>x.id===saved.id);
+        if(idx!==-1)list[idx]=normalizeStaffOrder(saved);
+      }
+      renderOrders();
+    }else{
+      await updateDoc(doc(db,"orders",o.id),
+        archive?{archived:true,status:"cancelled",updatedAt:serverTimestamp()}
+          :{archived:false,updatedAt:serverTimestamp()});
+    }
     setStatus(archive?"Заказ отправлен в архив.":"Заказ восстановлен из архива.");
   }catch(e){setStatus("Ошибка архива: "+(e.code||e.message));}
 }
@@ -282,13 +291,20 @@ async function deleteOrder(o) {
   if(answer!=="УДАЛИТЬ")return;
   setStatus("Удаляем заказ и все его блюда...");
   try{
-    if(preorderServiceEnabled())throw new Error("Безвозвратное удаление в Google Таблицах отключено.");
-    const ref=doc(db,"orders",o.id),lines=await getDocs(collection(ref,"items"));
-    if(lines.size>400)throw new Error("Слишком много позиций для безопасного удаления.");
-    const batch=writeBatch(db);
-    lines.forEach(x=>batch.delete(x.ref));
-    batch.delete(ref);
-    await batch.commit();
+    if(preorderServiceEnabled()){
+      const saved=await sheetsRequest("staffDeleteOrder",{id:o.id});
+      if(saved?.deleted!==o.id)throw new Error("Сервер не подтвердил удаление.");
+      orders=orders.filter(x=>x.id!==o.id);
+      dateOrders=dateOrders.filter(x=>x.id!==o.id);
+      renderOrders();
+    }else{
+      const ref=doc(db,"orders",o.id),lines=await getDocs(collection(ref,"items"));
+      if(lines.size>400)throw new Error("Слишком много позиций для безопасного удаления.");
+      const batch=writeBatch(db);
+      lines.forEach(x=>batch.delete(x.ref));
+      batch.delete(ref);
+      await batch.commit();
+    }
     window.dispatchEvent(new CustomEvent("bali:admin:order-deleted",{detail:{id:o.id}}));
     setStatus("Заказ и позиции полностью удалены из базы.");
   }catch(e){setStatus("Ошибка удаления: "+(e.code||e.message));}
@@ -300,6 +316,19 @@ async function clearExpiredOrderHistory() {
   if(control)control.disabled=true;
   let removed=0;
   try{
+    if(preorderServiceEnabled()){
+      for(let i=0;i<100;i++){
+        const response=await sheetsRequest("staffClearExpiredOrders");
+        const count=Number(response?.removed||0);
+        removed+=count;
+        if(count<50)break;
+      }
+      orders=orders.filter(x=>Date.parse(x.createdAt)>=Date.now()-ORDER_RETENTION_MS);
+      dateOrders=dateOrders.filter(x=>Date.parse(x.createdAt)>=Date.now()-ORDER_RETENTION_MS);
+      renderOrders();
+      setStatus("Очистка завершена. Удалено заказов: "+removed+".");
+      return;
+    }
     for(let page=0;page<100;page++){
       const cutoff=Timestamp.fromMillis(Date.now()-ORDER_RETENTION_MS);
       const expired=await getDocs(query(collection(db,"orders"),where("createdAt","<",cutoff),limit(25)));
@@ -501,12 +530,10 @@ function compactOrderRow(o){
   const menuButton=(label,fn,cls="")=>button(label,()=>{dropdown.open=false;fn();},cls);
   if(!o.archived&&!o._statusQueued&&state!=="cancelled")menu.append(menuButton("Отменить заказ",()=>void setOrderStatus(o,"cancelled")));
   menu.append(menuButton("Печать",()=>printOrder(o)));
-  if(!preorderServiceEnabled()){
-    menu.append(o.archived
-      ?menuButton("Вернуть из архива",()=>void archiveOrder(o,false))
-      :menuButton("В архив",()=>void archiveOrder(o,true)));
-    menu.append(menuButton("Удалить навсегда",()=>void deleteOrder(o),"danger-action"));
-  }
+  menu.append(o.archived
+    ?menuButton("Вернуть из архива",()=>void archiveOrder(o,false))
+    :menuButton("В архив",()=>void archiveOrder(o,true)));
+  menu.append(menuButton("Удалить навсегда",()=>void deleteOrder(o),"danger-action"));
   dropdown.append(trigger,menu);actions.append(dropdown);
   row.append(primary,summary,statusBox,actions);
   return row;
