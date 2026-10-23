@@ -164,8 +164,12 @@
   </dialog>
 </main>
 <script src="bali-guest-preorder-config.js?v=20261022-guest-public1"></script>
-<script>if(window.BALI_GUEST_PREORDER_ENABLED===true)window.BALI_SHEETS_API_ENABLED=true;</script>
+<script>
+// Backend selection only. All existing Staff HTML, CSS and controls are preserved.
+// Server migration_state guards every protected D1 action.
+window.BALI_D1_PREORDERS_ENABLED=true;
+</script>
 <script src="firebase-config.js?v=20261020-2"></script>
-<script type="module" src="preorders-access.js?v=20261023-auth-light1"></script>
-<script type="module" src="admin-orders.js?v=20261023-reference-kind5"></script>
+<script type="module" src="preorders-access.js?v=20261023-d1-cutover1"></script>
+<script type="module" src="admin-orders.js?v=20261023-d1-cutover1"></script>
 </body></html>
