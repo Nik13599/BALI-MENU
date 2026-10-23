@@ -180,7 +180,7 @@ test('original homepage and desktop sidebar are untouched by isolated ID/calenda
 test('BALI ID has no redundant heading or grey panel, and the flip keeps real depth',async({page})=>{
   await showId(page);
   await expect(page.locator('#baliIdPageHeading')).toHaveCount(0);
-  await expect(page.locator('#baliIdSection')).toHaveAttribute('aria-label','BALI ID');
+  await expect(page.locator('#baliIdSection')).toHaveAttribute('aria-label','Bali Card');
   await expect(page.locator('#baliIdSection .bali-id-heading')).toHaveCount(0);
   const backing=await page.locator('#baliIdSection .bali-profile-card').evaluate(n=>{
     const s=getComputedStyle(n);return {color:s.backgroundColor,image:s.backgroundImage,border:s.borderWidth,shadow:s.boxShadow};

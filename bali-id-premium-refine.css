@@ -133,7 +133,7 @@ body.bali-guest-theme #baliIdSection .bali-id-flip-scene:is([data-bali-loading="
   visibility:hidden!important;
 }
 body.bali-guest-theme #baliIdSection .bali-id-flip-scene:is([data-bali-loading="true"],[data-bali-loading="error"])::after {
-  content:"Загружаем вашу BALI ID…";position:absolute;inset:0;z-index:8;
+  content:"Загружаем вашу Bali Card…";position:absolute;inset:0;z-index:8;
   display:grid;place-items:center;color:#c6cdd0;pointer-events:none;
   font:600 clamp(12px,2.5cqw,18px)/1.5 Manrope,Inter,sans-serif;
 }

@@ -119,12 +119,12 @@
     giftUid=d.uid||null;
     let read=[];try{read=JSON.parse(localStorage.getItem("bali-gifts-read:"+giftUid)||"[]")}catch(_){}
     gifts=(d.items||[]).map(x=>({id:x.id,read:read.includes(x.id),text:
-      (x.senderName||"Гость BALI")+" · BALI ID "+(x.senderNumber||"—")+" перевёл вам "+
+      (x.senderName||"Гость BALI")+" · Bali Card "+(x.senderNumber||"—")+" перевёл вам "+
       (x.items||[]).map(i=>i.quantity+" "+({shot:"шотов",cocktail:"коктейлей",hookah:"кальянов",entry:"входов"}[i.kind]||i.kind)).join(", ")+
       (x.comment?" · Пожелание: «"+x.comment+"»":"")}));
     for(const g of d.fresh||[])if(!read.includes(g.id)){
       const quantities=(g.items||[]).map(i=>i.quantity+" "+({shot:"шотов",cocktail:"коктейлей",hookah:"кальянов",entry:"входов"}[i.kind]||i.kind)).join(", ");
-      announce("BALI ID "+(g.senderNumber||"—")+" · "+(g.senderName||"Гость BALI")+" перевёл вам "+quantities+(g.comment?" · «"+g.comment+"»":""));
+      announce("Bali Card "+(g.senderNumber||"—")+" · "+(g.senderName||"Гость BALI")+" перевёл вам "+quantities+(g.comment?" · «"+g.comment+"»":""));
     }
     render();
   });

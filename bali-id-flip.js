@@ -10,7 +10,7 @@ const scene=$("baliIdFlipScene"),track=$("baliIdFlipTrack"),front=$("baliIdFront
 const dialog=$("baliQrDialog"),showBtn=$("baliShowQr"),closeBtn=$("baliQrClose");
 const image=$("baliQrImage"),message=$("baliQrMessage"),expiry=$("baliQrExpires"),refresh=$("baliQrRefresh");
 if(!scene||!track||!front||!back||!dialog||!showBtn||!image){
-  throw new Error("BALI ID flip markup is missing.");
+  throw new Error("Bali Card flip markup is missing.");
 }
 
 // Motion and touch gestures are owned by bali-id-motion.js, which does not
@@ -52,7 +52,7 @@ function readableError(error){
   if(code==="functions/resource-exhausted")
     return "Подождите несколько секунд перед повторным запросом QR.";
   if(code==="functions/failed-precondition"||code==="functions/not-found")
-    return "Сначала активируйте персональную карту BALI ID.";
+    return "Сначала активируйте персональную карту Bali Card.";
   return "Не удалось получить защищённый QR-код. Повторите попытку позже.";
 }
 async function issueQr(){

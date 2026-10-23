@@ -14,7 +14,7 @@
 <body>
 <header class="director-header">
   <a href="index.html" aria-label="BALI Nightclub — главная"><img src="assets/bali-nightclub-logo.png" alt="BALI NIGHTCLUB"></a>
-  <span>DIRECTOR · BALI ID</span>
+  <span>DIRECTOR · Bali Card</span>
 </header>
 <main>
   <section class="director-card" id="directorLogin">
@@ -26,12 +26,12 @@
   </section>
   <div id="directorWorkspace" hidden>
     <div class="director-work-top">
-      <div><p class="director-eyebrow">BALI ID · PRIVILEGE</p><h1>КАТЕГОРИИ ГОСТЕЙ</h1></div>
+      <div><p class="director-eyebrow">Bali Card</p><h1>КАТЕГОРИИ ГОСТЕЙ</h1></div>
       <button id="directorSignOut" class="director-ghost" type="button">Выйти</button>
     </div>
     <section class="director-card">
       <h2>Найти гостя</h2>
-      <label for="directorGuestNumber">Персональный номер BALI ID</label>
+      <label for="directorGuestNumber">Персональный номер Bali Card</label>
       <div class="director-search">
         <input id="directorGuestNumber" inputmode="numeric" autocomplete="off" placeholder="000001" maxlength="9">
         <button id="directorFind" class="director-primary" type="button">Найти</button>
@@ -46,7 +46,7 @@
     </section>
     <section class="director-card" id="directorAssignPanel" hidden>
       <h2>Назначить категорию</h2>
-      <p>Статус привязан к личному BALI ID и обновляется на карте гостя после сохранения.</p>
+      <p>Статус привязан к личной Bali Card и обновляется на карте гостя после сохранения.</p>
       <form id="directorAssignForm">
         <label for="directorTier">Категория</label>
         <select id="directorTier" required>
@@ -65,12 +65,12 @@
       <p id="directorSaveStatus" role="status" aria-live="polite"></p>
       <form id="directorBonusGrantForm" class="director-bonus-grant" autocomplete="off">
         <h3>Начислить количественные привилегии</h3>
-        <p>Создаёт настоящий остаток на BALI ID гостя, а не текстовое описание.</p>
+        <p>Создаёт настоящий остаток на Bali Card гостя, а не текстовое описание.</p>
         <label for="directorBonusType">Вид привилегии</label>
         <select id="directorBonusType" required><option value="shot">Шоты</option><option value="cocktail">Коктейли</option><option value="hookah">Кальяны</option><option value="entry">Бесплатные проходы</option></select>
         <label for="directorBonusQuantity">Количество</label>
         <input type="number" id="directorBonusQuantity" min="1" max="999" step="1" value="1" required>
-        <label class="director-bonus-switch"><input id="directorBonusTransferable" type="checkbox" checked> Разрешить гостю передавать бонусы по BALI ID</label>
+        <label class="director-bonus-switch"><input id="directorBonusTransferable" type="checkbox" checked> Разрешить гостю передавать бонусы по Bali Card</label>
         <label for="directorBonusReason">Основание начисления (не менее 5 символов)</label>
         <input type="text" id="directorBonusReason" maxlength="200" placeholder="Например: подарок за посещение клуба" required>
         <button type="submit" class="director-primary">Начислить гостю</button>
@@ -79,16 +79,16 @@
     </section>
     <section class="director-card"><section class="bali-transfer-scaffold" aria-labelledby="baliTransferTitle">
   <h3 id="baliTransferTitle">Переводы накопленных бонусов</h3>
-  <p>Гости переводят доступные бонусы из своей BALI ID по кнопке «Перевести». Служебный перевод от имени гостя здесь пока недоступен.</p>
+  <p>Гости переводят доступные бонусы из своей Bali Card по кнопке «Перевести». Служебный перевод от имени гостя здесь пока недоступен.</p>
   <form data-bali-transfer-form autocomplete="off">
     <div class="bali-transfer-fields">
-      <label>Отправитель — номер BALI ID<input type="text" inputmode="numeric" pattern="[0-9]{1,9}" maxlength="9" placeholder="000001" name="fromCardNumber"></label>
-      <label>Получатель — номер BALI ID<input type="text" inputmode="numeric" pattern="[0-9]{1,9}" maxlength="9" placeholder="000025" name="toCardNumber"></label>
+      <label>Отправитель — номер Bali Card<input type="text" inputmode="numeric" pattern="[0-9]{1,9}" maxlength="9" placeholder="000001" name="fromCardNumber"></label>
+      <label>Получатель — номер Bali Card<input type="text" inputmode="numeric" pattern="[0-9]{1,9}" maxlength="9" placeholder="000025" name="toCardNumber"></label>
       <label>Тип накопленного бонуса<select name="kind"><option value="cocktail">Коктейли · шт.</option><option value="shot">Шоты · шт.</option><option value="hookah">Кальяны · шт.</option><option value="entry">Проходки · шт. (если разрешены)</option></select></label>
       <label>Количество, шт.<input name="quantity" type="number" min="1" max="500" step="1" value="1"></label>
     </div>
     <button type="submit" data-bali-transfer-submit disabled title="Служебные переводы от имени гостя не подключены">Служебный перевод недоступен</button>
-    <p data-bali-transfer-status role="status" aria-live="polite">Для перевода гость использует собственную BALI ID.</p>
+    <p data-bali-transfer-status role="status" aria-live="polite">Для перевода гость использует собственную Bali Card.</p>
   </form>
   <p class="bali-transfer-footnote">Подтверждённые переводы отображаются в истории отправителя и получателя. Статусы карт, скидки и безлимитные привилегии не передаются.</p>
 </section></section>

@@ -19,7 +19,7 @@ async function loadBalance(uid){
     const {card}=await sheetsRequest("adminCard",{uid});
     if(seq!==run||uid!==currentUid)return;
     $("baliCoinAdminBalance").textContent=display(card.coinBalance);
-    say(card.activated?"Баланс актуален. Все операции сохраняются в журнале.":"Карта BALI ID ещё не активирована.");
+    say(card.activated?"Баланс актуален. Все операции сохраняются в журнале.":"Карта Bali Card ещё не активирована.");
   }catch(e){if(seq===run)say("Ошибка загрузки баланса: "+(e.message||e.code||"неизвестно"))}
   finally{setReady();}
 }

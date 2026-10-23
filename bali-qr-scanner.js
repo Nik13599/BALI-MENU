@@ -72,7 +72,7 @@ function parse(text){
 }
 function message(error){
   const code=String(error?.code||"");
-  if(code.includes("unauthenticated"))return "Войдите в подтверждённый BALI ID.";
+  if(code.includes("unauthenticated"))return "Войдите в подтверждённый Bali Card.";
   if(code.includes("permission-denied"))return "Доступ к операции запрещён.";
   if(code.includes("resource-exhausted"))return "Лимит или защита от повторного сканирования. Попробуйте позднее.";
   if(code.includes("failed-precondition"))return String(error?.message||"Код использован, истёк или недостаточно бонусов.").slice(0,180);
@@ -141,7 +141,7 @@ function showReceipt(data){
   const credit=data.type==="grant",headline=el("strong","",credit?"НАЧИСЛЕНО":"СПИСАНО");
   const summary=el("div","bali-qr-receipt-main",(credit?"+":"−")+data.count+" "+(data.name||"бонусов"));
   const stamped=el("p","",fmt.format(new Date(data.createdAt))+" · Минск");
-  const balanceLabel=el("p","",Number.isInteger(data.balanceAfter)?"Остаток: "+data.balanceAfter+" шт.":"BALI ID · PRIVILEGE");
+  const balanceLabel=el("p","",Number.isInteger(data.balanceAfter)?"Остаток: "+data.balanceAfter+" шт.":"Bali Card");
   const number=el("small","bali-qr-receipt-number","Операция № "+data.id);
   const until=el("p","","Подтверждение доступно до "+fmt.format(new Date(data.expiresAt||data.createdAt+30*86400000)));
   receiptBody.append(headline,summary,stamped,balanceLabel,number,until);

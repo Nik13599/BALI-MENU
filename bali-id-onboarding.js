@@ -83,7 +83,7 @@ async function open(){
       }
     }catch(e){
       // A failed read must not be interpreted as an absent acknowledgement.
-      error.textContent="Не удалось проверить вашу BALI ID. Проверьте подключение и попробуйте снова.";
+      error.textContent="Не удалось проверить вашу Bali Card. Проверьте подключение и попробуйте снова.";
       if(!dialog.open)dialog.showModal();
       accept.disabled=true;
       cancel.focus();
@@ -115,7 +115,7 @@ accept?.addEventListener("click",async()=>{
   try{
     if(sheetsEnabled()){
       const response=await sheetsRequest("activateCard",{accepted:true});
-      if(response.card?.activated!==true)throw Error("BALI ID registration not confirmed");
+      if(response.card?.activated!==true)throw Error("Bali Card registration not confirmed");
     }else{
       try{
         await setDoc(agreementRef(user.uid),{version:VERSION,acceptedAt:serverTimestamp()});
@@ -124,7 +124,7 @@ accept?.addEventListener("click",async()=>{
         if(!await checkAgreement(user.uid))throw writeError;
       }
     }
-    if(auth.currentUser?.uid!==user.uid)throw Error("Сменился аккаунт. Откройте BALI ID заново.");
+    if(auth.currentUser?.uid!==user.uid)throw Error("Сменился аккаунт. Откройте Bali Card заново.");
     acceptedUid=user.uid;
     window.dispatchEvent(new CustomEvent("bali:id-accepted",{detail:{uid:user.uid}}));
     finishReview(true);
