@@ -294,6 +294,41 @@ const websiteGuest=ok("","guestCreateOrder",{
 }).order;
 assert.equal(websiteGuest.orderNumber,2);
 assert.equal(sheets.get("Мероприятия").some(row=>row[0]===liveDate),false);
+
+// BALI STAFF can create a phone/manual preorder directly in Google Sheets.
+// It must not become the employee's own personal-cabinet order.
+assert.equal(ok("staff","staffRecentOrders").canCreateOrders,true);
+const staffRequestId="staff_manual_create_live_001";
+const staffInput={
+  requestId:staffRequestId,eventDate:liveDate,eventId:liveDate,
+  customerName:"Звонок гостя",customerPhone:"+375291234574",
+  tableNumber:"27",bookingId:"",notes:"Доставить к началу",
+  status:"confirmed",items:[{id:101,quantity:2}]
+};
+const staffCreated=ok("staff","staffCreateOrder",staffInput).order;
+assert.equal(staffCreated.orderNumber,3);
+assert.equal(staffCreated.eventTitle,"BALI Live Website Event");
+assert.equal(staffCreated.total,30);
+assert.equal(staffCreated.status,"confirmed");
+assert.equal(staffCreated.ownerUid,"");
+assert.equal(staffCreated.email,"");
+assert.equal(staffCreated.items.length,1);
+assert.equal(staffCreated.items[0].quantity,2);
+const countAfterStaffCreate=sheets.get("Заказы").length;
+const retriedStaff=ok("staff","staffCreateOrder",staffInput).order;
+assert.equal(retriedStaff.id,staffCreated.id);
+assert.equal(retriedStaff.alreadyCreated,true);
+assert.equal(sheets.get("Заказы").length,countAfterStaffCreate);
+assert.equal(ok("staff","staffOrders",{date:liveDate,eventId:liveDate}).orders
+  .some(x=>x.id===staffCreated.id),true);
+assert.equal(sheets.get("История изменений").some(r=>
+  r[1]===staffCreated.id&&r[3]==="staff-create"),true);
+fail("guestA","staffCreateOrder",staffInput,"permission-denied");
+fail("staff","staffCreateOrder",{...staffInput,requestId:"staff_fake_event_002",
+  eventId:"nonexistent"},"failed-precondition");
+fail("staff","staffCreateOrder",{...staffInput,requestId:staffRequestId,
+  customerName:"Изменение созданного заказа"},"failed-precondition");
+
 const disabledEventDate=new Date(Date.now()+10*86400000).toISOString().slice(0,10);
 publishedOnlyEvents.push({id:disabledEventDate,date:disabledEventDate,
   title:"Closed Event",closesAt:new Date(Date.now()+11*86400000).toISOString(),
