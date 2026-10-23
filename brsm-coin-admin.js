@@ -102,10 +102,13 @@ onAuthStateChanged(auth,async user=>{
   if(!coinEnabled()){say("Firebase API пока выключен. Начисления, переводы и бар станут доступны после подключения.");return;}
   if(!user?.emailVerified)return say("Для управления BALI COIN войдите в Google.");
   try{
-    const {role}=await coinRequest("me");
+    const {role,coinLaunchPhase}=await coinRequest("me");
     if(auth.currentUser?.uid!==user.uid)return;
     permitted=["admin","director"].includes(role);
-    say(permitted?"Управление общим балансом BALI COIN активно.":"В Firebase требуется роль admin или director.");
+    say(!permitted?"В Firebase требуется роль admin или director.":
+      coinLaunchPhase==="live"?"BALI COIN: рабочий режим. Проверьте каждое начисление.":
+      coinLaunchPhase==="pilot"?"BALI COIN: тестовый режим, начисления разрешены только тестовым картам.":
+      "Настройки COIN доступны. Начисления и обмен пока отключены до сверки балансов.");
     if(permitted){void fillEvents();void loadMenu();}
   }catch(e){say("Не удалось проверить доступ: "+(e.message||"Ошибка"));}
 });

@@ -6,6 +6,7 @@ const policy=env=>create({fail,env});
 const a="pilot_guest_00001",b="pilot_guest_00002",other="real_guest_00001";
 test("writes default to frozen; partial production configuration cannot activate them",()=>{
   const disabled=policy({});
+  assert.equal(disabled.phase,"frozen");
   assert.equal(disabled.eligible([a]),false);
   assert.throws(()=>disabled.assertWrite([a]),e=>e.code==="failed-precondition");
   assert.equal(policy({BALI_COIN_WRITE_MODE:"live",
@@ -18,6 +19,7 @@ test("pilot cannot transfer to or credit a non-test card",()=>{
   const p=policy({BALI_COIN_WRITE_MODE:"pilot",
     BALI_COIN_PILOT_CONFIRM:"ALLOW_TEST_COIN_WRITES",
     BALI_COIN_PILOT_UIDS:a+","+b});
+  assert.equal(p.phase,"pilot");
   assert.equal(p.eligible([a,b]),true);
   assert.equal(p.eligible([a,other]),false);
   assert.equal(p.eligible([other]),false);
@@ -27,6 +29,7 @@ test("full launch requires explicit confirmation and the reviewed export hash",(
   const p=policy({BALI_COIN_WRITE_MODE:"live",
     BALI_COIN_VERIFIED_EXPORT_SHA256:"a".repeat(64),
     BALI_COIN_LIVE_CONFIRM:"VERIFIED_SOURCE_AND_WALLETS"});
+  assert.equal(p.phase,"live");
   assert.equal(p.eligible([a,other]),true);
   assert.doesNotThrow(()=>p.assertWrite([a,b]));
 });

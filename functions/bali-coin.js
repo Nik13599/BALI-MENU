@@ -63,7 +63,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
     return person;
   }
   const coinMe=api("coinMe",async req=>{
-    const uid=verified(req);return {role:await role(uid)};
+    const uid=verified(req);return {role:await role(uid),coinLaunchPhase:rollout.phase};
   });
   const coinCard=api("coinCard",async req=>{
     const uid=verified(req);
