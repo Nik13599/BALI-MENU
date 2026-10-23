@@ -50,7 +50,8 @@ test('all calendar states use outline-only rings without date fills',async({page
   await expect(dot).toHaveCSS('outline-style','none');
   await expect(dot).toHaveCSS('box-shadow','none');
  }
- await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(0,false));
+ // A genuinely user-initiated poster change activates the red ring.
+ await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(0,false,true,true));
  await expect(past).toHaveAttribute('data-selected','true');
  await expect(past).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
  await expect(past).toHaveAttribute('data-ring','past');
