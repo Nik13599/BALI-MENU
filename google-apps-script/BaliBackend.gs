@@ -267,7 +267,7 @@ function baliStaffCreateOrder(user,data){
     notes=BALI_TEXT(data.notes,500),status=BALI_TEXT(data.status,20)||"pending",
     requestId=BALI_TEXT(data.requestId,80);
   if(!BALI_DATE(date)||!eventId||name.length<2||name.length>100||
-    !/^\\+[1-9][0-9]{7,14}$/.test(phone)||(!table&&!booking)||
+    !/^\+[1-9][0-9]{7,14}$/.test(phone)||(!table&&!booking)||
     !["pending","confirmed"].includes(status)||
     !/^[-_a-zA-Z0-9]{12,80}$/.test(requestId)||
     !Array.isArray(data.items)||data.items.length<1||data.items.length>12)
