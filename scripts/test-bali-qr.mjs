@@ -47,6 +47,7 @@ function harness(){
     where:(field,op,value)=>{assert.equal(op,"==");return query(path,[...filters,[field,value]],sort,limit);},
     orderBy:(field,direction)=>query(path,filters,[field,direction],limit),
     limit:value=>query(path,filters,sort,value),
+    count:()=>({get:async()=>{const rows=await query(path,filters,sort,limit).get();return {data:()=>({count:rows.size})};}}),
     get:async()=>{
       let docs=[...memory.keys()].filter(key=>key.startsWith(path+"/")&&key.split("/").length===2).map(snapshot);
       docs=docs.filter(d=>filters.every(([field,value])=>d.data()[field]===value));
@@ -71,7 +72,11 @@ function harness(){
   vm.runInNewContext(readFileSync("functions/index.js","utf8"),{...globals,exports:api,require:name=>
     name==="firebase-admin"?{apps:[{}],firestore}:
     name==="firebase-functions/v2/https"?{onCall:(_options,handler)=>handler,HttpsError}:
-    name==="./bonus-qr"?bonus.exports:name==="qrcode"?functionsRequire(name):require(name)
+    name==="./bonus-qr"?bonus.exports:
+    name==="./preorders"?()=>async()=>({}):
+    name==="./preorder-staff"?()=>({}):
+    name==="firebase-functions/v2/scheduler"?{onSchedule:(_config,handler)=>handler}:
+    name==="qrcode"?functionsRequire(name):require(name)
   },{filename:"functions/index.js"});
   const call=(name,data={},uid=guest,verified=true)=>api[name]({data,auth:uid?{uid,token:{email_verified:verified}}:null});
   const batch=async changes=>(await call("createBaliQrBatch",{kind:"shot",action:"credit",mode:"once",quantity:3,count:1,cooldownSeconds:30,...changes},staff)).codes;
@@ -179,7 +184,27 @@ await test("repeat-code cooldown is per guest, honours elapsed time, and credits
   const [{code:small}]=await h.batch({mode:"repeat",quantity:1});
   assert.equal((await h.apply(small,"e")).receipt.balanceAfter,501);
   h.advance(30000);assert.equal((await h.apply(small,"f")).receipt.balanceAfter,502);
-  assert.equal(h.memory.get("baliBonusQRCodes/"+small).uses,2);
+  assert.equal(h.memory.get("baliBonusQRCodes/"+small).uses,0,
+    "multi-use redemptions must never update the shared QR document");
+  const listed=await h.call("listBaliQrCodes",{},staff);
+  assert.equal(listed.codes.find(row=>row.code===small).uses,2,
+    "admin counts real committed receipts without a hot counter");
+});
+
+await test("800 distinct guests can redeem one repeat QR without modifying its shared document",async()=>{
+  const h=harness(),[{code}]=await h.batch({mode:"repeat",quantity:1});
+  const guests=Array.from({length:800},(_,i)=>"BALI_mass_guest_"+String(i).padStart(4,"0"));
+  for(const [i,uid] of guests.entries()){
+    h.memory.set("users/"+uid,{name:"Гость "+i});
+    h.memory.set("baliIds/"+uid,{uid,number:i+100});
+  }
+  const results=await Promise.all(guests.map(uid=>h.apply(code,"a",1,uid)));
+  assert.equal(results.filter(x=>x.ok===true).length,800);
+  const shared=h.memory.get("baliBonusQRCodes/"+code);
+  assert.equal(shared.uses,0,"No repeat guest updates the shared QR document");
+  assert.equal([...h.memory.keys()].filter(k=>k.startsWith("walletOperations/")).length,800);
+  const inventory=await h.call("listBaliQrCodes",{},staff);
+  assert.equal(inventory.codes.find(x=>x.code===code)?.uses,800);
 });
 
 await test("invalid, unknown and revoked vouchers fail without writes; custom bonus kinds remain usable",async()=>{
