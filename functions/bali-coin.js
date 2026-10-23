@@ -4,7 +4,8 @@
  * No Cloudflare Worker / Apps Script / browser writes.
  */
 const {randomBytes,createHash}=require("node:crypto");
-module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId})=>{
+module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout})=>{
+  const rollout=coinRollout||require("./coin-rollout")({fail});
   const hash=s=>createHash("sha256").update(s).digest("hex");
   const text=(s,n=100)=>typeof s==="string"?s.trim().slice(0,n):"";
   const validId=s=>typeof s==="string"&&/^[A-Za-z0-9_-]{3,80}$/.test(s);
@@ -100,6 +101,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId})=>{
     const amount=req.data?.amount,requestId=req.data?.requestId;
     const comment=text(req.data?.comment,100);
     if(!positive(amount)||!validNonce(requestId))fail("invalid-argument","Неверная сумма или ID перевода.");
+    rollout.assertWrite([uid,to.uid]);
     const op=nonceRef(uid,requestId),from=acct(uid),target=acct(to.uid),id=hash(uid+"|"+requestId);
     return db.runTransaction(async tx=>{
       const [previous,left,right]=await Promise.all([tx.get(op),tx.get(from),tx.get(target)]);
@@ -129,6 +131,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId})=>{
     if(!validUid(uid)||!positive(amount)||!["credit","debit"].includes(action)||
       reason.length<5||!validNonce(nonce))fail("invalid-argument","Проверьте гостя, сумму и причину.");
     await nameAndId(uid);
+    rollout.assertWrite([uid]);
     const account=acct(uid),op=nonceRef(staff,nonce),id=hash(staff+"|"+nonce);
     return db.runTransaction(async tx=>{
       const [previous,old]=await Promise.all([tx.get(op),tx.get(account)]);
@@ -160,6 +163,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId})=>{
     return {result:{ok:true,amount}};
   });
   async function creditOnce(uid,operationId,reason,validator){
+    rollout.assertWrite([uid]);
     const account=acct(uid),op=nonceRef(uid,operationId),id=hash(uid+"|"+operationId);
     return db.runTransaction(async tx=>{
       // First check durable idempotency. A reward can be disabled or repriced
@@ -244,6 +248,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId})=>{
     if(!validId(campaignId)||!validId(lotId)||!validNonce(nonce))
       fail("invalid-argument","Неверная позиция или операция.");
     await nameAndId(uid);
+    rollout.assertWrite([uid]);
     const id=hash(uid+"|"+nonce),op=nonceRef(uid,nonce),account=acct(uid),lot=lotRef(campaignId,lotId);
     const code="LOT:"+campaignId+":"+lotId+":"+randomBytes(16).toString("hex");
     const voucher=voucherRef(code),mine=ownVoucher(uid,id);

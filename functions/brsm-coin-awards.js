@@ -4,7 +4,8 @@
  */
 const {createHash}=require("node:crypto");
 const sha=value=>createHash("sha256").update(value).digest("hex");
-module.exports=({db,TS,fail})=>{
+module.exports=({db,TS,fail,coinRollout})=>{
+  const rollout=coinRollout||require("./coin-rollout")({fail});
   const refs=(uid,campaignId,eventId)=>{
     const requestId="visit_"+sha(campaignId+"|"+eventId);
     const id=sha(uid+"|"+requestId);
@@ -18,6 +19,8 @@ module.exports=({db,TS,fail})=>{
   };
   const validBalance=value=>Number.isSafeInteger(value)&&value>=0&&value<=999999999;
   async function award(tx,{uid,campaignId,eventId}){
+    // Preserve attendance even if the financial ledger has not been released.
+    if(!rollout.eligible([uid]))return {amount:0,rolloutFrozen:true};
     const r=refs(uid,campaignId,eventId);
     const [rate,previous,account]=await Promise.all([
       tx.get(r.reward),tx.get(r.op),tx.get(r.account)
@@ -54,6 +57,8 @@ module.exports=({db,TS,fail})=>{
     const r=refs(uid,campaignId,eventId);
     const [previous,account]=await Promise.all([tx.get(r.op),tx.get(r.account)]);
     if(!previous.exists||previous.data().revoked)return {amount:0};
+    // Do not cancel credited attendance without reversing its COIN receipt.
+    rollout.assertWrite([uid]);
     if(account.exists&&account.data().source==="legacy-sheets-migration"&&
       account.data().migrationComplete!==true)
       fail("failed-precondition","История BALI COIN ещё переносится.");

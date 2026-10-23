@@ -29,7 +29,7 @@ function config(raw,fail){
   return {title,requiredVisits,ballCount,ticketSize,winMatches,idMode,
     rounds:prizes.map((p,i)=>({id:"r"+(i+1),prize:clean(p,120)}))};
 }
-module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId})=>{
+module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout})=>{
   const campaigns=db.collection("brsmCampaigns");
   const pointer=db.doc("brsmCampaignState/active");
   const cards=db.collection("brsmCards");
@@ -72,7 +72,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId})=>{
     ballCount:d.ballCount,ticketSize:d.ticketSize,winMatches:d.winMatches,
     idMode:d.idMode||"firestore",rounds:d.rounds,roundIndex:d.roundIndex??-1,createdAtMillis:d.createdAt?.toMillis?.()||null
   });
-  const coinAwards=require("./brsm-coin-awards")({db,TS,fail});
+  const coinAwards=require("./brsm-coin-awards")({db,TS,fail,coinRollout});
   const getCurrentBrsmCampaign=api("getCurrentBrsmCampaign",async req=>{
     verified(req);
     const p=await pointer.get();

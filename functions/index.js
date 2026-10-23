@@ -304,10 +304,11 @@ exports.issueBaliQuantity=api("issueBaliQuantity",async req=>{
   return result;
 });
 
+const coinRollout=require("./coin-rollout")({fail});
 Object.assign(exports,require("./bonus-qr")({api,admin,db,TS,verified,privileged,fail,nameAndId,wallet}));
 Object.assign(exports,require("./brsm")({api,admin,db,TS,verified,privileged,fail,nameAndId}));
-Object.assign(exports,require("./brsm-campaigns")({api,admin,db,TS,verified,privileged,fail,nameAndId}));
-Object.assign(exports,require("./bali-coin")({api,admin,db,TS,verified,privileged,fail,nameAndId}));
+Object.assign(exports,require("./brsm-campaigns")({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}));
+Object.assign(exports,require("./bali-coin")({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}));
 
 // New order API is deployed first. Clients switch only after production verification.
 exports.submitBaliPreorder=api("submitBaliPreorder",require("./preorders")({db,admin,verified,fail}));
