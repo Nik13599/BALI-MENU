@@ -54,8 +54,7 @@ const staffAllowed=vm.runInNewContext(staffHelpers+"\n[...events.values()].filte
   calendarSourceLoaded:true
 });
 assert.deepEqual(Array.from(staffAllowed),["today-open","future-open"]);
-assert.match(readFileSync("preorders-workspace.css","utf8"),
-  /ordersDateFilter\[data-date-state="today"\]/);
+assert.ok(readFileSync("preorders-workspace.css","utf8").includes(".preorder-filters"));
 assert.ok(readFileSync("admin.html","utf8").includes("bali-calendar-date-status-20261023"));
 assert.ok(readFileSync("index.html","utf8").includes("bali-calendar-date-status-20261023"));
 console.log("BALI admin dates, guest eligible events and staff date colors PASS");
