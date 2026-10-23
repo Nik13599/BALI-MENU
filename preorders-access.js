@@ -1,97 +1,143 @@
 import {initializeApp,getApps} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signInWithEmailAndPassword,signOut,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {preorderServiceEnabled,sheetsRequest} from "./bali-sheets-api.js?v=20261023-d1-live1";
-// D1 staff sessions use Firebase Auth for identity; legacy Firestore mode reads roles directly.
-const {getFirestore,doc,getDoc}=preorderServiceEnabled()?{}:await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
-const app=getApps().find(app=>app.name==="bali-staff")||initializeApp(window.BALI_FIREBASE_CONFIG,"bali-staff");
-const auth=getAuth(app),db=preorderServiceEnabled()?null:getFirestore(app),$=id=>document.getElementById(id);
+import {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,
+  signInWithEmailAndPassword,signOut,setPersistence,browserLocalPersistence}
+  from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {preorderServiceEnabled} from "./bali-sheets-api.js?v=20261023-d1-live1";
+const {getFirestore,doc,getDoc}=preorderServiceEnabled()?{}:
+  await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+const app=getApps().find(entry=>entry.name==="bali-staff")||
+  initializeApp(window.BALI_FIREBASE_CONFIG,"bali-staff");
+const auth=getAuth(app),db=preorderServiceEnabled()?null:getFirestore(app);
+const $=id=>document.getElementById(id);
 window.BaliSheetsToken=()=>auth.currentUser?.getIdToken()||null;
+let generation=0,signingIn=false,checkingRole=false;
 const sessionReady=setPersistence(auth,browserLocalPersistence);
-// Attach a rejection handler immediately; sign-in also awaits this promise.
-sessionReady.catch(()=>status("Разрешите сохранение данных сайта в браузере для сохранения входа."));
-let seq=0;
-const status=text=>{
-  $("loginStatus").textContent=text;
-  $("staffSessionLoading").hidden=true;
-  if(text){$("loginView").hidden=false;$("adminView").hidden=true;$("staffHeaderAccount").hidden=true;}
+const message=text=>{$("loginStatus").textContent=text||"";};
+const busy=enabled=>{
+  $("staffPasswordSignIn").disabled=enabled;
+  $("adminSignIn").disabled=enabled;
 };
-if(preorderServiceEnabled()){
-  $("loginIdentity").textContent="Доступ к предзаказам проверяется по назначенной сотруднику роли на сервере.";
-}
-$("preorderStaffLogin").addEventListener("submit",async e=>{
-  e.preventDefault();
+const display=state=>{
+  $("staffSessionLoading").hidden=state!=="loading";
+  $("loginView").hidden=state!=="login";
+  $("adminView").hidden=state!=="ready";
+  $("staffHeaderAccount").hidden=state!=="ready";
+};
+const showLogin=text=>{
+  display("login");message(text);busy(false);
+};
+const explain=error=>{
+  switch(error?.code){
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+    case "auth/invalid-email":return "Неверный логин или пароль.";
+    case "auth/too-many-requests":return "Слишком много попыток входа. Попробуйте позже.";
+    case "auth/network-request-failed":return "Нет соединения с Firebase. Проверьте интернет.";
+    case "auth/popup-closed-by-user":return "Вход через Google отменён.";
+    case "auth/popup-blocked":return "Браузер заблокировал вход Google. Разрешите всплывающее окно для BALI.";
+    case "auth/cancelled-popup-request":return "Вход через Google уже выполняется.";
+    case "auth/operation-not-allowed":return "Данный способ входа отключён в Firebase.";
+    default:return "Вход не выполнен. Повторите попытку. ("+(error?.code||"ошибка связи")+")";
+  }
+};
+sessionReady.catch(()=>showLogin("Не удалось сохранить вход на этом устройстве. Разрешите данные сайта."));
+$("preorderStaffLogin").addEventListener("submit",async event=>{
+  event.preventDefault();
+  if(signingIn||checkingRole)return;
   const login=$("staffLoginName").value.trim().toLowerCase();
   const password=$("staffLoginPassword").value;
   if(!/^[a-z][a-z0-9_-]{2,31}$/.test(login)||password.length<12){
-    status("Проверьте логин и пароль.");return;
+    message("Проверьте логин и пароль.");return;
   }
-  const button=$("staffPasswordSignIn");button.disabled=true;status("Проверяем данные...");
+  signingIn=true;busy(true);message("Проверяем логин и пароль…");
   try{
-    // Firebase Auth manages salted password hashes; no email inbox is involved.
     await sessionReady;
     await signInWithEmailAndPassword(auth,"staff+"+login+"@staff.baliminsk.by",password);
     $("staffLoginPassword").value="";
-  }catch(error){
-    status(error.code==="auth/operation-not-allowed"
-      ?"В Firebase ещё не включена авторизация по паролю. Обратитесь к администратору."
-      :"Неверный логин/пароль или доступ сотрудника отключён.");
-  }finally{button.disabled=false;}
+  }catch(error){showLogin(explain(error));}
+  finally{signingIn=false;if(!checkingRole)busy(false);}
 });
 $("adminSignIn").addEventListener("click",async()=>{
-  $("adminSignIn").disabled=true;status("Вход через Google...");
-  try{await sessionReady;await signInWithPopup(auth,new GoogleAuthProvider());}
-  catch(error){status("Вход не завершён: "+(error.code||error.message));}
-  finally{$("adminSignIn").disabled=false;}
-});
-const closeStaffSession=async()=>{
-  try{await window.BaliStaffPushDisable?.();}
-  catch(error){console.warn("BALI Staff device push unsubscription failed.");}
-  await signOut(auth);
-};
-$("adminSignOut").addEventListener("click",()=>void closeStaffSession());
-$("adminSwitchAccount").addEventListener("click",()=>void closeStaffSession());
-onAuthStateChanged(auth,async user=>{
-  const current=++seq;
-  $("adminView").hidden=true;$("loginView").hidden=true;
-  $("staffSessionLoading").hidden=false;
-  $("staffHeaderAccount").hidden=true;
-  $("adminSwitchAccount").hidden=!user;
-  if(!user){window.dispatchEvent(new Event("bali-staff-signed-out"));status("Введите логин и пароль сотрудника или используйте вход через Google.");return;}
-  if(!user.emailVerified){status("Нет подтверждённого доступа к предзаказам.");return;}
-  // Never reveal the order workspace before the backend has confirmed
-  // the current staff role. Keep the session splash visible until authorization.
+  if(signingIn||checkingRole)return;
+  signingIn=true;busy(true);message("Выполняется вход через Google…");
   try{
-    if(preorderServiceEnabled()){
-      // This endpoint checks the current admin/staff role before returning data.
-      await sheetsRequest("staffRecentOrders");
-      if(current!==seq)return;
-      $("adminEmail").textContent=user.displayName||user.email||"Сотрудник BALI";
-      $("adminView").hidden=false;$("loginView").hidden=true;
-      $("staffHeaderAccount").hidden=false;status("");
-      window.dispatchEvent(new Event("bali-staff-authorized"));
-      return;
-    }
-    const adminRole=await getDoc(doc(db,"admins",user.uid));
-    if(current!==seq)return;
-    const owner=adminRole.exists()&&adminRole.data().active===true;
-    const staffRole=owner?null:await getDoc(doc(db,"preorderStaff",user.uid));
-    if(current!==seq)return;
-    const staff=staffRole?.exists()&&staffRole.data().active===true&&staffRole.data().role==="preorders";
-    if(!owner&&!staff){status("Учётная запись не имеет доступа к предзаказам.");return;}
-    $("adminEmail").textContent=staff?staffRole.data().name:(user.displayName||user.email||"Администратор");
-    $("adminView").hidden=false;$("loginView").hidden=true;
-    $("staffHeaderAccount").hidden=false;status("");
-  }catch(error){
-    if(current!==seq)return;
-    if(error?.code==="permission-denied"){
-      const staffAccount=/^staff\+[a-z][a-z0-9_-]{2,31}@staff\.baliminsk\.by$/i.test(user.email||"");
-      status(staffAccount
-        ?"Пароль принят, но сервер не подтвердил роль сотрудника. Руководителю необходимо проверить роль доступа в BALI STAFF."
-        :"У текущей учётной записи нет прав на предзаказы. Введите логин и пароль сотрудника.");
-    }else if(error?.code==="unauthenticated"){
-      status("Сессия устарела. Войдите в предзаказы повторно.");
-    }else{
-      status("Не удалось проверить доступ к предзаказам. Повторите вход. ("+(error?.code||"ошибка сервера")+")");
-    }
-  }
+    await sessionReady;
+    await signInWithPopup(auth,new GoogleAuthProvider());
+  }catch(error){showLogin(explain(error));}
+  finally{signingIn=false;if(!checkingRole)busy(false);}
 });
+$("adminSignOut").addEventListener("click",async()=>{
+  $("adminSignOut").disabled=true;
+  try{
+    // Remove the device's subscription where possible, then close the session.
+    await window.BaliStaffPushDisable?.().catch(()=>{});
+    await signOut(auth);
+  }catch{showLogin("Не получилось завершить сеанс. Повторите выход.");}
+  finally{$("adminSignOut").disabled=false;}
+});
+async function verifyRole(user){
+  if(!user.emailVerified)throw Object.assign(Error("email-unverified"),{code:"email-unverified"});
+  if(preorderServiceEnabled()){
+    const token=await user.getIdToken();
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+    try{
+      const response=await fetch("/api/staff-session",{
+        method:"GET",credentials:"same-origin",cache:"no-store",
+        headers:{"Authorization":"Bearer "+token,"Accept":"application/json"},
+        signal:controller.signal
+      });
+      if(!response.ok){
+        const code=response.status===403?"permission-denied":
+          response.status===401?"unauthenticated":"unavailable";
+        throw Object.assign(Error(code),{code});
+      }
+      const data=await response.json();
+      if(!data.ok||!["staff","admin"].includes(data.role))
+        throw Object.assign(Error("permission-denied"),{code:"permission-denied"});
+      return data.role;
+    }finally{clearTimeout(timer);}
+  }
+  const administrator=await getDoc(doc(db,"admins",user.uid));
+  if(administrator.exists()&&administrator.data().active===true)return "admin";
+  const employee=await getDoc(doc(db,"preorderStaff",user.uid));
+  if(employee.exists()&&employee.data().active===true&&employee.data().role==="preorders")
+    return "staff";
+  throw Object.assign(Error("permission-denied"),{code:"permission-denied"});
+}
+function roleError(error){
+  if(error?.code==="permission-denied")return "У вашей учётной записи нет прав на предзаказы. Обратитесь к руководителю.";
+  if(error?.code==="unauthenticated")return "Сессия недействительна. Войдите заново.";
+  if(error?.code==="email-unverified")return "Email не подтверждён. Доступ к предзаказам не предоставлен.";
+  if(error?.name==="AbortError")return "Проверка доступа заняла слишком много времени. Повторите вход.";
+  return "Не удалось проверить права на сервере. Проверьте соединение и повторите вход.";
+}
+onAuthStateChanged(auth,async user=>{
+  const current=++generation;
+  if(!user){
+    checkingRole=false;
+    window.dispatchEvent(new Event("bali-staff-signed-out"));
+    showLogin("");return;
+  }
+  checkingRole=true;
+  busy(true);
+  if(signingIn||!$("staffSessionLoading").hidden){
+    // Returning employee sees one loading surface; new sign-in stays in the
+    // same login panel, never duplicated as an overlay or another dialog.
+    if(signingIn){display("login");message("Проверяем права сотрудника…");}
+    else display("loading");
+  }else{display("login");message("Проверяем права сотрудника…");}
+  try{
+    await verifyRole(user);
+    if(current!==generation)return;
+    $("adminEmail").textContent=user.displayName||user.email||"Сотрудник BALI";
+    message("");
+    display("ready");
+    window.dispatchEvent(new Event("bali-staff-authorized"));
+  }catch(error){
+    if(current!==generation)return;
+    showLogin(roleError(error));
+  }finally{
+    if(current===generation){checkingRole=false;busy(false);}
+  }
+},error=>showLogin("Ошибка авторизации Firebase. Перезагрузите страницу или войдите заново."));
