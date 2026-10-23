@@ -1,0 +1,50 @@
+*{box-sizing:border-box}body{margin:0;background:#070a09;color:#f5f8f6;font:14px/1.5 Manrope,Inter,system-ui,sans-serif}button,input,select{font:inherit}button{background:#173925;color:#fff;border:1px solid #39845e;border-radius:9px;padding:9px 13px;cursor:pointer}button:hover{background:#235a38}button:disabled{opacity:.5;cursor:not-allowed}a{color:#cefce2;text-decoration:none}.top{height:58px;padding:10px clamp(14px,3vw,38px);display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #315543;background:#0b120e;position:sticky;top:0;z-index:3}.top strong{font-size:16px;letter-spacing:.09em}.top a{font-size:12px}main{max-width:1460px;margin:0 auto;padding:16px}h1,h2,p{margin:0 0 10px}h1{font-size:25px}h2{font-size:17px}p{color:#adbdaf}.box{padding:16px;border:1px solid #2e4936;border-radius:14px;background:#111a15;margin-bottom:12px}.page-heading{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:12px}.page-heading p{margin:0}.brsm-login{max-width:510px;margin:10vh auto}.admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.inline-form{display:flex;flex-wrap:wrap;gap:8px;align-items:end}.inline-form input,.inline-form select{min-width:140px;max-width:100%;flex:1 1 145px;color:#fff;background:#07110b;border:1px solid #4b7157;padding:10px;border-radius:9px}.inline-form label{display:grid;gap:4px;font-size:12px;color:#c8ddcf}.inline-form label input{min-width:80px;width:110px}.notice{min-height:24px;color:#caf5d7}.summary-list{margin-top:12px;max-height:180px;overflow-y:auto;font-size:12px;color:#bed7c5}.summary-list>div{padding:5px 0;border-bottom:1px solid #2a4232}.new-code{display:block;user-select:all;font-size:18px;color:#adffb0;margin:6px 0}.action-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.live-stage{background:radial-gradient(ellipse at top,#1f492f,#0c0d0c 72%);border:2px solid #55ae74;text-align:center;min-height:190px}.live-stage:fullscreen{overflow:auto;padding:5vh 5vw}.stage-title{font-weight:900;letter-spacing:.13em;font-size:clamp(20px,4vw,43px)}.stage-info{color:#c8e8d2;font-size:clamp(13px,2vw,23px)}.number-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:20px auto;max-width:1250px}.number-grid span{display:grid;place-items:center;border-radius:50%;width:clamp(30px,4vw,57px);height:clamp(30px,4vw,57px);border:2px solid #d9ae63;color:#ffefcf;font-size:clamp(15px,2.5vw,25px);font-weight:900;background:#231909}.winner{color:#9cffc7;font-size:clamp(18px,4vw,38px);font-weight:900}.table-scroller{overflow:auto}table{width:100%;border-collapse:collapse;text-align:left}td,th{padding:9px;border-bottom:1px solid #314c3a}td{color:#e6f4e9;font-size:12px}#brsmPrintArea{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:15px}#brsmPrintArea .ticket{display:grid;place-items:center;text-align:center;gap:6px;background:white;color:black;border-radius:8px;padding:12px;overflow:hidden}#brsmPrintArea img{width:210px;max-width:100%}#brsmPrintArea small{overflow-wrap:anywhere;font-size:9px}@media(max-width:780px){.admin-grid{grid-template-columns:1fr}main{padding:9px}.box{padding:12px}.top strong{font-size:12px}h1{font-size:19px}#brsmPrintArea{grid-template-columns:repeat(2,minmax(0,1fr))}}@media print{body{background:white}body>*:not(main){display:none!important}main>*:not(#brsmWorkspace){display:none!important}#brsmWorkspace>*:not(#brsmPrintArea):not(#brsmCampaignWorkspace){display:none!important}#brsmPrintArea{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}#brsmPrintArea .ticket{border:1px solid #ccc;page-break-inside:avoid}}
+/* Campaign manager: compact on mobile, deliberate form groups on large screens. */
+.campaign-workspace{border-color:#477f5c;background:linear-gradient(125deg,#16221a,#0c110e)}
+.campaign-workspace h2{letter-spacing:.035em;color:#effff2}
+.campaign-workspace h3{font-size:15px;margin:0 0 10px}
+.campaign-line,.campaign-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin:10px 0}
+.campaign-line label{display:grid;gap:4px;min-width:230px;flex:1}
+.campaign-workspace input,.campaign-workspace textarea,.campaign-workspace select{
+  background:#09120d;color:#f2fff6;border:1px solid #5b7f65;border-radius:8px;padding:10px;min-width:0
+}
+.campaign-workspace label{font-size:12px;line-height:1.4;color:#cee9d5}
+.campaign-config{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;gap:9px;
+  margin:12px 0;padding:12px;border-radius:12px;background:#0b170f;border:1px solid #264b30}
+.campaign-config h3,.campaign-config .campaign-wide,.campaign-config .campaign-actions{grid-column:1/-1}
+.campaign-config label{display:grid;gap:6px}
+.campaign-config textarea{min-height:84px;resize:vertical;font:inherit}
+.campaign-workspace .admin-grid{margin:10px 0}
+.campaign-print{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.campaign-print .ticket{background:#fff;color:#111;display:grid;justify-items:center;gap:8px;padding:12px;border-radius:10px}
+.campaign-print .ticket img{width:min(100%,220px)}
+.campaign-print .ticket small{overflow-wrap:anywhere;font-size:9px}
+#brsmCampaignStage{padding:18px;min-height:190px;border-radius:12px;border:1px solid #4f9b69}
+#brsmCampaignStage:fullscreen{overflow:auto;padding:5vh 4vw;background:#050b07;color:#fff}
+#brsmCampaignOperations[hidden],.campaign-workspace[hidden]{display:none!important}
+@media(max-width:850px){.campaign-config{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .campaign-print{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.campaign-config{grid-template-columns:1fr 1fr;padding:9px}
+  .campaign-config label:first-of-type{grid-column:1/-1}
+  .campaign-config input{width:100%}
+  .campaign-line label{min-width:100%}
+  .campaign-workspace{padding:10px}
+  .campaign-workspace button{font-size:12px;padding:8px 9px}}
+@media print{body>*:not(main){display:none!important}
+  main>*:not(#brsmWorkspace){display:none!important}
+  #brsmWorkspace>*:not(#brsmCampaignWorkspace){display:none!important}
+  #brsmCampaignWorkspace>*:not(#brsmCampaignPrintArea){display:none!important}
+  #brsmCampaignPrintArea{display:grid;grid-template-columns:repeat(3,1fr)}
+  .campaign-print .ticket{page-break-inside:avoid;border:1px solid #aaa}}
+
+@media print{
+  #brsmWorkspace > #brsmCampaignWorkspace{display:block!important}
+  #brsmCampaignPrintArea{display:grid!important}
+  #brsmCampaignWorkspace > #brsmCampaignPrintArea{visibility:visible!important}
+  #brsmCampaignWorkspace > button{display:none!important}
+}
+
+#brsmCoinSettingsDetails>summary{list-style:revert;padding:10px;border:1px solid #39684c;border-radius:10px;background:#13281a;color:#d3f8db;font-weight:750;cursor:pointer}
+#brsmCoinSettingsDetails[open]>summary{margin-bottom:12px}
+#brsmCoinWorkspace{padding:11px}
+#brsmCoinWorkspace h2{font-size:17px}

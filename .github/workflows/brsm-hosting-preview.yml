@@ -1,0 +1,71 @@
+name: BRSM — Firebase Hosting preview (branch only)
+
+# A temporary front-end preview. It NEVER deploys Cloud Functions,
+# Firestore rules or indexes, and it never changes baliminsk.by.
+# Manual fallback only. Cloudflare Pages handles GitHub branch preview deploys;
+# do not run Firebase Hosting until firebase-preview vars/WIF are set.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: bali-brsm-hosting-preview
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    name: Publish seven-day BRSM preview
+    if: github.ref == 'refs/heads/feature/brsm-card-lotto-20261023'
+    runs-on: ubuntu-latest
+    environment: firebase-preview
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+      FIREBASE_API_KEY: ${{ vars.FIREBASE_API_KEY }}
+      FIREBASE_AUTH_DOMAIN: ${{ vars.FIREBASE_AUTH_DOMAIN }}
+      FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify BRSM front-end and existing entrypoints
+        run: |
+          node scripts/verify-source.mjs
+          node --input-type=module --check < brsm-card.js
+          node --input-type=module --check < brsm-admin.js
+          node --input-type=module --check < brsm-campaign-admin.js
+          node --input-type=module --check < bali-coin-market.js
+      - name: Ensure Firebase preview credentials are configured
+        run: |
+          test "$FIREBASE_PROJECT_ID" = 'bali-menu-5a48b'
+          test -n "$FIREBASE_API_KEY"
+          test -n "$FIREBASE_AUTH_DOMAIN"
+          test -n "$FIREBASE_APP_ID"
+      - name: Prepare preview Firebase web configuration
+        run: |
+          node scripts/prepare-firebase-config.mjs
+          node --check firebase-config.js
+      - name: Add no-index staging notice (preview only)
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          for(const name of ['index.html','brsm-admin.html','bali-coin-staff.html']){
+            if(!fs.existsSync(name)) continue;
+            const html=fs.readFileSync(name,'utf8');
+            const notice='<meta name="robots" content="noindex,nofollow"><meta name="bali-preview" content="staging; shares Firebase auth; never enter real payments">';
+            fs.writeFileSync(name,html.replace('</head>',notice+'</head>'));
+          }
+          NODE
+      - name: Short-lived Google Cloud credentials
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.FIREBASE_WIF_PROVIDER }}
+          service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@15.34.0
+      - name: Deploy Hosting-only temporary preview
+        run: |
+          firebase hosting:channel:deploy bali-brsm-review --project "$FIREBASE_PROJECT_ID" --expires 7d --non-interactive

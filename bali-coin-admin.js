@@ -1,22 +1,22 @@
 /* BALI COIN: admin-only ledger operations through the private Sheets API.
- * Nothing is written directly to Google Sheets or Firestore from the browser. */
+ * Nothing is written directly to Firebase or Firestore from the browser. */
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
+import {coinEnabled,coinRequest} from "./bali-coin-firebase-api.js";
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app);
 const $=id=>document.getElementById(id);
 let currentUid=null,verifiedAdmin=false,busy=false,run=0;
 const say=message=>{if($("baliCoinAdminStatus"))$("baliCoinAdminStatus").textContent=message;};
-const setReady=()=>{$("baliCoinSubmit").disabled=!sheetsEnabled()||!verifiedAdmin||!currentUid||busy;};
+const setReady=()=>{$("baliCoinSubmit").disabled=!coinEnabled()||!verifiedAdmin||!currentUid||busy;};
 const display=n=>Number.isSafeInteger(n)&&n>=0?new Intl.NumberFormat("ru-RU").format(n):"—";
 async function loadBalance(uid){
   const seq=++run;
   $("baliCoinAdminBalance").textContent="—";
-  if(!sheetsEnabled()||!verifiedAdmin||!uid){setReady();return;}
-  say("Получаем баланс из Google Таблиц...");
+  if(!coinEnabled()||!verifiedAdmin||!uid){setReady();return;}
+  say("Получаем баланс из Firebase...");
   try{
-    const {card}=await sheetsRequest("adminCard",{uid});
+    const {card}=await coinRequest("adminCard",{uid});
     if(seq!==run||uid!==currentUid)return;
     $("baliCoinAdminBalance").textContent=display(card.coinBalance);
     say(card.activated?"Баланс актуален. Все операции сохраняются в журнале.":"Карта BALI ID ещё не активирована.");
@@ -38,7 +38,7 @@ function requestId(){
 }
 $("baliCoinChangeForm")?.addEventListener("submit",async event=>{
   event.preventDefault();
-  if(busy||!verifiedAdmin||!currentUid||!sheetsEnabled())return;
+  if(busy||!verifiedAdmin||!currentUid||!coinEnabled())return;
   const uid=currentUid;
   const operation=$("baliCoinOperation").value;
   const amount=Number($("baliCoinQuantity").value);
@@ -51,7 +51,7 @@ $("baliCoinChangeForm")?.addEventListener("submit",async event=>{
   busy=true;setReady();say("Сохраняем операцию в журнал BALI COIN...");
   const nonce=requestId();
   try{
-    const {result}=await sheetsRequest("coinChange",{uid,operation,amount,reason,requestId:nonce});
+    const {result}=await coinRequest("coinChange",{uid,operation,amount,reason,requestId:nonce});
     if(uid!==currentUid)return;
     $("baliCoinAdminBalance").textContent=display(result.balance);
     $("baliCoinQuantity").value="";
@@ -65,12 +65,12 @@ $("baliCoinChangeForm")?.addEventListener("submit",async event=>{
 onAuthStateChanged(auth,async user=>{
   verifiedAdmin=false;currentUid=null;run++;setReady();
   if(!user?.emailVerified)return;
-  if(!sheetsEnabled()){
+  if(!coinEnabled()){
     say("Новая таблица BALI подготовлена. Начисления включатся после публикации Apps Script и API.");
     return;
   }
   try{
-    const {role}=await sheetsRequest("me");
+    const {role}=await coinRequest("me");
     if(auth.currentUser?.uid!==user.uid)return;
     verifiedAdmin=role==="admin";
     say(verifiedAdmin?"Выберите гостя из списка клиентов, чтобы управлять BALI COIN.":"Требуется аккаунт администратора BALI.");

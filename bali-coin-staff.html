@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>BALI COIN · Выдача бара</title>
+<link rel="icon" href="assets/bali-favicon.svg"><link rel="stylesheet" href="brsm-admin.css?v=1">
+<script src="firebase-config.js"></script><script src="bali-sheets-config.js"></script>
+<style>
+body{background:#09120c}.coin-staff{max-width:510px;margin:min(10vh,60px) auto;padding:13px}
+.coin-staff h1{font-size:clamp(18px,5vw,27px)}
+.coin-staff .box{background:#102019;border:1px solid #417a53;padding:20px}
+.coin-staff form{display:grid;gap:10px}.coin-staff label{display:grid;gap:5px}
+.coin-staff input{background:#060e0a;color:#fff;border:1px solid #447b54;border-radius:9px;padding:13px;width:100%}
+.coin-staff button{padding:12px;font-weight:800}
+.coin-staff .notice{color:#ceffde;font-size:13px;min-height:30px}
+[hidden]{display:none!important}
+</style></head><body>
+<header class="top"><a href="brsm-admin.html">← BRSM</a><strong>BALI COIN · БАР</strong><button type="button" id="barStaffSignOut" hidden>Выйти</button></header>
+<main class="coin-staff">
+<section class="box" id="barStaffLogin">
+  <h1>ВЫДАЧА ЗАКАЗА ЗА BALI COIN</h1>
+  <p>Для сотрудников BALI. Доступ только к подтверждению уже оплаченных баллами позиций.</p>
+  <form id="barStaffPasswordForm">
+    <label>Логин сотрудника
+      <input name="login" autocomplete="username" minlength="3" maxlength="32"
+        pattern="[a-z][a-z0-9_-]{2,31}" placeholder="staff01" required>
+    </label>
+    <label>Пароль
+      <input name="password" type="password" autocomplete="current-password"
+        minlength="12" placeholder="Пароль сотрудника" required>
+    </label>
+    <button type="submit">Войти по логину и паролю</button>
+  </form>
+  <p style="margin:10px 0;color:#b6d5c1">Или использовать рабочий Google-аккаунт:</p>
+  <button id="barStaffSignIn" type="button">Войти через Google</button>
+  <p id="barStaffLoginStatus" class="notice" role="status">Проверка входа…</p>
+</section>
+<section class="box" id="barStaffWorkspace" hidden>
+  <h1>ПОДТВЕРЖДЕНИЕ ВЫДАЧИ</h1>
+  <p>Перед выдачей сверьте код ваучера и номер BALI ID гостя. Повторно получить позицию по использованному коду нельзя.</p>
+  <form id="barStaffForm">
+    <label>Номер BALI ID<input name="number" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="000001" autocomplete="off" required></label>
+    <label>Код заказа<input name="voucher" placeholder="LOT:brsm_...:bar_..." autocomplete="off" required></label>
+    <button type="submit">ПОДТВЕРДИТЬ ВЫДАЧУ</button>
+  </form>
+  <p id="barStaffStatus" class="notice" role="status" aria-live="polite"></p>
+</section></main>
+<script type="module" src="bali-coin-staff.js?v=1"></script></body></html>

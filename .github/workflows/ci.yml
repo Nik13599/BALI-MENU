@@ -41,6 +41,16 @@ jobs:
           node --input-type=module --check < bali-id.js
           node --input-type=module --check < bali-id-bank.js
           node --check functions/index.js
+          node --check functions/brsm.js
+          node --check functions/brsm-campaigns.js
+          node --check functions/brsm-identity.js
+          node --check functions/bali-coin.js
+          node --check functions/brsm-coin-awards.js
+          node --input-type=module --check < bali-coin-firebase-api.js
+          node --check functions/brsm-core.js
+          node --input-type=module --check < brsm-card.js
+          node --input-type=module --check < brsm-admin.js
+          node --input-type=module --check < brsm-id-resolver.js
           node --check functions/preorders.js
           node --check functions/preorder-staff.js
           node --input-type=module --check < preorders-access.js
@@ -103,7 +113,11 @@ jobs:
         run: |
           node scripts/verify-bali-transfers.mjs
           node scripts/test-bali-backend.mjs
-          node scripts/test-bali-sheets-backend.mjs
+          node --test scripts/test-bali-coin.cjs
+          node --test scripts/test-brsm.cjs
+          node --test scripts/test-brsm-service.cjs
+          # Legacy Sheets COIN test intentionally excluded: that backend is no longer authoritative.
+          # All operational COIN scenarios are checked by scripts/test-bali-coin.cjs.
           node scripts/test-staff-status-queue.mjs
           node scripts/test-bali-event-dates.mjs
           node scripts/test-preorders.mjs
