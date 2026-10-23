@@ -86,7 +86,11 @@ const firestore=()=>({
   };
   return root;
  },
- collectionGroup(){throw Error('Global collection-group reads are prohibited');}
+ collectionGroup(name){
+  assert(['baliIdAgreements','eventCheckins'].includes(name),
+   'Generic collectionGroup reads are prohibited: '+name);
+  return query(path=>path.split('/').at(-2)===name);
+ }
 });
 firestore.FieldPath={documentId:()=> '__name__'};
 const fakeAdmin={credential:{applicationDefault:()=>({fixture:true})},
