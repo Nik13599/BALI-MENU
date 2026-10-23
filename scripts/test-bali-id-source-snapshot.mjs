@@ -48,6 +48,8 @@ assert.equal(manifest([...source,profile(uidWithoutCard),pendingConsent]).scopes
  "Save consent even when card allocation has not completed");
 assert.throws(()=>manifest([...source,pendingConsent]),/nested-record-without-profile/);
 assert.equal(m.digest.length,64);
+assert.equal(manifest([...source,record("card-counters","baliCounters/guests",{count:1002})]).scopes["card-counters"],1);
+assert.throws(()=>manifest([...source,record("card-counters","baliCounters/guests",{count:1001})]),/card-counter-behind-existing-numbers/);
 assert.equal(manifest([...source].reverse()).digest,m.digest,"Stable order-independent source checksum");
 assert.notEqual(manifest([...source.slice(0,4),
  record("wallets","guestWallets/"+uidA,{uid:uidA,grants:[{

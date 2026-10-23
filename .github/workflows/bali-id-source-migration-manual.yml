@@ -8,6 +8,9 @@ on:
       - '.github/workflows/bali-id-source-migration-manual.yml'
       - 'scripts/export-bali-id-to-d1.mjs'
       - 'scripts/bali-id-source-snapshot.mjs'
+      - 'scripts/bali-id-sealed-snapshot.mjs'
+      - 'scripts/bali-id-snapshot-recipient.pem'
+      - 'scripts/audit-published-bali-qr.mjs'
   workflow_dispatch:
     inputs:
       apply_staging:
@@ -49,6 +52,7 @@ jobs:
         run: |
           node --experimental-sqlite scripts/test-bali-id-source-snapshot.mjs
           node --experimental-sqlite scripts/test-bali-id-export-runner.mjs
+          node scripts/test-bali-id-sealed-snapshot.mjs
           node scripts/test-staff-appearance-locked.mjs
       - name: Obtain short-lived Google identity (no service account key)
         uses: google-github-actions/auth@v2
@@ -68,4 +72,18 @@ jobs:
       - name: Inventory and optionally stage Firebase records with source parity
         env:
           CF_API_TOKEN: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_staging == 'true' && secrets.CF_API_TOKEN || '' }}
+          # Explicit one-off export requested in a reviewed main merge title.
+          BALI_SNAPSHOT_SEAL_PATH: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[sealed-snapshot]') && 'private-export/bali-source.sealed.json' || '' }}
+          BALI_SNAPSHOT_PUBLIC_KEY_FILE: scripts/bali-id-snapshot-recipient.pem
         run: node scripts/export-bali-id-to-d1.mjs
+      - name: Upload encrypted source only (never profiles or credential files)
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[sealed-snapshot]')
+        uses: actions/upload-artifact@v4
+        with:
+          name: bali-source-sealed
+          path: private-export/bali-source.sealed.json
+          retention-days: 1
+          if-no-files-found: error
+          overwrite: true
+      - name: Inspect published QR source (read-only, no bonus operations)
+        run: node scripts/audit-published-bali-qr.mjs

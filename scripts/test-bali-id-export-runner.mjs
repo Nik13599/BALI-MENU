@@ -6,8 +6,14 @@ import {mkdtempSync,writeFileSync,readFileSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {spawnSync} from 'node:child_process';
+import {generateKeyPairSync} from 'node:crypto';
+import {openSnapshot} from './bali-id-sealed-snapshot.mjs';
 const directory=mkdtempSync(join(tmpdir(),'bali-snapshot-runner-'));
 const preload=join(directory,'fake-admin.cjs');
+const keys=generateKeyPairSync('rsa',{modulusLength:3072,
+ publicKeyEncoding:{type:'spki',format:'pem'},privateKeyEncoding:{type:'pkcs8',format:'pem'}});
+const publicKeyPath=join(directory,'recipient.pem');
+writeFileSync(publicKeyPath,keys.publicKey);
 writeFileSync(preload,String.raw`
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -21,6 +27,7 @@ let reads=0,calls=0,corrupted=false;
 const input=[
  ['users/'+uid,{uid,name:'Fixture Guest',retainedField:'original'}],
  ['baliIds/'+uid,{uid,number:123456}],
+ ['baliCounters/guests',{count:123456,lastUid:uid}],
  ['guestWallets/'+uid,{uid,grants:[{id:'test',kind:'shot',originalCount:3,remaining:2}]}],
  ['walletOperations/qr_fixture',{guestUid:uid,count:2,qrId:'fixture-qr'}],
  ['baliBonusQRCodes/fixture-qr',{active:true,kind:'shot'}],
@@ -97,7 +104,9 @@ function run(scenario,apply){
   env:{...process.env,FIREBASE_PROJECT_ID:'bali-menu-5a48b',BALI_ID_STAGE_APPLY:String(apply),
    CF_ACCOUNT_ID:'399972c0a0358037b0cb4d0d46ce69a3',
    CF_D1_DATABASE_ID:'6ec5e063-e2b7-48ce-beb9-d59af7207353',CF_API_TOKEN:'fixture-only',
-   BALI_FIXTURE_CASE:scenario,BALI_FIXTURE_REPORT:reportPath}
+   BALI_FIXTURE_CASE:scenario==='sealed-changing'?'source-change':scenario,BALI_FIXTURE_REPORT:reportPath,
+   BALI_SNAPSHOT_SEAL_PATH:scenario.startsWith('sealed')?join(directory,scenario+'.sealed.json'):'',
+   BALI_SNAPSHOT_PUBLIC_KEY_FILE:publicKeyPath}
  });
  assert(!result.error,result.error?.message);
  const report=JSON.parse(readFileSync(reportPath,'utf8'));
@@ -112,16 +121,26 @@ try{
  assert.equal(report.calls,0,'Dry-run must never call Cloudflare');
  assert.deepEqual(report.counts,[0,0,0]);
  const inventory=JSON.parse(result.stdout.split('\n')[0]);
- assert.equal(inventory.totalDocuments,278);
+ assert.equal(inventory.totalDocuments,279);
+ assert.equal(inventory.scopes['card-counters'],1);
  assert.equal(inventory.scopes.operations,261);
  assert.equal(inventory.scopes['qr-codes'],1);
  assert.equal(inventory.scopes['coin-history'],1);
  assert.equal(inventory.scopes['brsm-round-private'],1);
+ ({result,report}=run('sealed',false));
+ assert.equal(result.status,0,result.stderr);
+ assert.equal(report.calls,0,'Encrypted export remains write-free for D1');
+ const transported=openSnapshot(JSON.parse(readFileSync(join(directory,'sealed.sealed.json'),'utf8')),keys.privateKey);
+ assert.equal(transported.records.length,279);
+ assert.equal(transported.manifest.digest,inventory.sourceManifest);
+ ({result,report}=run('sealed-changing',false));
+ assert.notEqual(result.status,0,'Changed source cannot release an encrypted copy');
+ assert.equal(report.calls,0);
  ({result,report}=run('verified',true));
  assert.equal(result.status,0,result.stderr);
  assert.equal(report.manifests[0].state,'verified');
- assert.equal(report.manifests[0].document_count,278);
- assert.equal(report.counts.reduce((a,b)=>a+b),278);
+ assert.equal(report.manifests[0].document_count,279);
+ assert.equal(report.counts.reduce((a,b)=>a+b),279);
  for(const scenario of ['source-change','payload-corruption','write-failure','missing-nested']){
   ({result,report}=run(scenario,true));
   assert.notEqual(result.status,0,scenario+' must fail closed');
