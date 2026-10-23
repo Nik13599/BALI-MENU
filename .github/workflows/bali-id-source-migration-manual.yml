@@ -27,6 +27,9 @@ concurrency:
   cancel-in-progress: false
 jobs:
   firebase-to-d1-staging:
+    # Expensive Firestore inventory must never start from routine merges.
+    # Only an owner's manual action or an explicit reviewed sealed export may read production.
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[sealed-snapshot]'))
     runs-on: ubuntu-latest
     environment: firebase-production
     env:
@@ -85,5 +88,3 @@ jobs:
           retention-days: 1
           if-no-files-found: error
           overwrite: true
-      - name: Inspect published QR source (read-only, no bonus operations)
-        run: node scripts/audit-published-bali-qr.mjs
