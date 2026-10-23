@@ -1492,7 +1492,12 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
         <label>Контактный телефон<input id="editOrderPhone" type="tel" placeholder="+375291234567" required></label>
       </div>
       <label id="manualOrderGuestLink" hidden>Email аккаунта гостя (необязательно, для отображения предзаказа в личном кабинете)<input id="editOrderGuestEmail" type="email" autocomplete="off" placeholder="guest@example.com"><small>Без email заказ остаётся в административной очереди, но не привязывается к аккаунту.</small></label>
-      <label>ID брони / номер стола *<input id="editOrderReference" maxlength="100" required placeholder="Например, BALI-456 или 12" autocomplete="off"></label>
+      <label>Столик / ID брони *
+        <div class="order-reference-entry" style="display:flex;gap:8px;align-items:stretch">
+          <select id="editOrderReferenceType" aria-label="Тип записи" style="flex:0 0 120px;min-width:0"><option value="table">Столик №</option><option value="booking">ID брони</option></select>
+          <input id="editOrderReference" maxlength="60" required placeholder="Номер или ID" autocomplete="off" style="flex:1;min-width:0">
+        </div>
+      </label>
       <label>Пожелания к заказу<textarea id="editOrderNotes" maxlength="500"></textarea></label>
       <div class="card-heading"><h3>Состав заказа</h3><span class="hint">Добавьте блюда из каталога</span></div>
       <div class="order-edit-add">
@@ -1602,7 +1607,7 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
 <script type="module" src="bali-admin-promos.js?v=20261022-browser-publication1"></script>
 <script type="module" src="bali-home-design-admin.js?v=20261022-browser-publication1"></script>
 <script type="module" src="bali-home-placeholder-admin.js?v=20261022-browser-publication1"></script>
-<script type="module" src="admin-orders.js?v=20261023-fast-status-calendar2"></script>
+<script type="module" src="admin-orders.js?v=20261023-reference-kind2"></script>
 <script type="module" src="admin-clients.js?v=20261022-sheets-stage1"></script>
 <script type="module" src="preorder-staff-admin.js?v=20261022-firebase-status2"></script>
 <script type="module" src="bali-privilege-admin.js?v=20261022-sheets-stage1"></script>
