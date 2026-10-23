@@ -747,7 +747,7 @@ body.bali-preorders-workspace{
    horizontally aligned with the dishes/portions. Shared desktop + mobile. */
 .bali-preorders-workspace .preorder-compact-row{
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(205px,255px) max-content;
+  grid-template-columns:minmax(0,1fr) minmax(175px,205px) minmax(0,300px);
   grid-template-areas:"primary summary actions";
   gap:10px;
   align-items:center;
@@ -951,3 +951,9 @@ body.bali-preorders-workspace{
     min-width:28px;padding:0 4px;
   }
 }
+
+/* Consistent Staff date state, applied to the existing single date selector. */
+.bali-preorders-workspace #ordersDateFilter[data-date-state="today"]{border-color:#f4c84b!important;box-shadow:inset 3px 0 0 #f4c84b;color:#ffe08b}
+.bali-preorders-workspace #ordersDateFilter[data-date-state="upcoming"]{border-color:#9fdd57!important;box-shadow:inset 3px 0 0 #b9ff51}
+.bali-preorders-workspace #ordersDateFilter[data-date-state="past"]{border-color:#fa6070!important;box-shadow:inset 3px 0 0 #fa6070;color:#ffb6bd}
+@media(max-width:365px){.bali-preorders-workspace .preorder-compact-row .preorder-queue-headline strong{min-width:76px}}

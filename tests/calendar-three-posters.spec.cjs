@@ -148,7 +148,7 @@ test('phone scene and calendar use all viewport width, square posters and swipe-
   await expect(page.locator('#baliPosterNext')).toHaveCSS('display','none');
 });
 
-test('planned future date stays green with three dark dots until unplanned',async({page})=>{
+test('planned future date keeps three independently colored dots without filling the calendar',async({page})=>{
   await prepare(page,4);
   await page.evaluate(()=>{
     const events=[
@@ -180,12 +180,13 @@ test('planned future date stays green with three dark dots until unplanned',asyn
   await expect(day.locator('.bali-calendar-event-dot')).toHaveCount(3);
   await expect(day).toHaveAttribute('data-lifecycle-status','upcoming');
   await expect(day).toHaveCSS('background-image','none');
-  await expect(day).toHaveCSS('background-color','rgb(185, 255, 81)');
-  await expect(day).toHaveCSS('border-color','rgb(185, 255, 81)');
+  await expect(day).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
+  await expect(day).toHaveAttribute('data-ring','none');
+  await expect(day).toHaveCSS('border-color','rgba(0, 0, 0, 0)');
   expect(await day.locator('.bali-calendar-day-number').evaluate(n=>getComputedStyle(n).color))
-    .toBe('rgb(21, 25, 16)');
-  for(const dot of await day.locator('.bali-calendar-event-dot').all())
-    expect(await dot.evaluate(n=>getComputedStyle(n).backgroundColor)).toBe('rgb(21, 25, 16)');
+    .toBe('rgb(237, 244, 234)');
+  const before=await day.locator('.bali-calendar-event-dot').evaluateAll(nodes=>nodes.map(n=>getComputedStyle(n).backgroundColor));
+  expect(before).toEqual(['rgb(18, 52, 86)','rgb(238, 136, 85)','rgb(119, 68, 204)']);
   await page.evaluate(()=>window.dispatchEvent(new CustomEvent('bali:interests',{detail:{dates:[]}})));
   await expect(day).toHaveAttribute('data-planned','false');
   await expect(day).toHaveCSS('background-color','rgba(0, 0, 0, 0)');

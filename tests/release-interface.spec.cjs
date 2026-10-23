@@ -16,7 +16,7 @@ async function calendar(page){
  await expect(page.locator('#eventsGrid .event-card')).toHaveCount(5);
 }
 const day=(page,date)=>page.locator('#baliCalendarDays [data-date="'+date+'"]');
-test('all calendar states use contours, bold dots and only the active future date fills',async({page})=>{
+test('all calendar states use outline-only rings without date fills',async({page})=>{
  await calendar(page);
  await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(1,false));
  for(const today of await page.locator('.bali-calendar-day[data-date="2026-10-21"]').all()){
@@ -24,11 +24,13 @@ test('all calendar states use contours, bold dots and only the active future dat
   await expect(today).toHaveCSS('border-top-width','1px');
   await expect(today).toHaveCSS('border-radius','5px');
   await expect(today).toHaveCSS('outline-style','none');
-  await expect(today).toHaveCSS('background-color','rgb(185, 255, 81)');
+  await expect(today).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
+  await expect(today).toHaveAttribute('data-ring','today');
  }
  const future=day(page,'2026-10-22'),past=day(page,'2026-10-20');
  await expect(future).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
- await expect(future).toHaveCSS('border-color','rgb(185, 255, 81)');
+ await expect(future).toHaveAttribute('data-ring','none');
+ await expect(future).toHaveCSS('border-color','rgba(0, 0, 0, 0)');
  await expect(future).toHaveCSS('border-top-width','1px');
  await expect(future).toHaveCSS('border-radius','5px');
  // Today and the neighbouring green date use exactly the same border geometry.
@@ -48,21 +50,25 @@ test('all calendar states use contours, bold dots and only the active future dat
   await expect(dot).toHaveCSS('outline-style','none');
   await expect(dot).toHaveCSS('box-shadow','none');
  }
- await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(0,false));
+ // A genuinely user-initiated poster change activates the red ring.
+ await page.evaluate(()=>window.BaliCalendarShowcase.focusIndex(0,false,true,true));
  await expect(past).toHaveAttribute('data-selected','true');
  await expect(past).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
+ await expect(past).toHaveAttribute('data-ring','past');
  await expect(past).toHaveCSS('border-color','rgb(250, 96, 112)');
  await day(page,'2026-10-24').click();
  await expect(day(page,'2026-10-24')).toHaveAttribute('data-selected','true');
  await expect(day(page,'2026-10-24')).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
  // There must be no old 900/1100ms lock after opening or selecting a day.
  const instant=await page.evaluate(()=>{
-  window.BaliCalendarShowcase.focusIndex(2,true);
+  window.BaliCalendarShowcase.focusIndex(2,true,true,true);
   return {animating:window.BaliCalendarShowcase.getState().animating,
    date:document.querySelector('#baliCalendarDays [data-selected="true"]').dataset.date};
  });
  expect(instant).toEqual({animating:true,date:'2026-10-22'});
- await expect(future).toHaveCSS('background-color','rgb(185, 255, 81)');
+ await expect(future).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
+ await expect(future).toHaveAttribute('data-ring','event');
+ await expect(future).toHaveCSS('border-color','rgb(185, 255, 81)');
 });
 test('custom event dot colours and saved plans survive calendar navigation',async({page})=>{
  await calendar(page);
@@ -75,8 +81,9 @@ test('custom event dot colours and saved plans survive calendar navigation',asyn
  await expect(future).toHaveAttribute('data-selected','false');
  await expect(future.locator('.bali-calendar-event-dot').first()).toHaveCSS('background-color','rgb(255, 0, 170)');
  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('bali:calendar:plans-changed',{detail:{dates:['2026-10-22']}})));
- await expect(future).toHaveCSS('background-color','rgb(185, 255, 81)');
- await expect(future.locator('.bali-calendar-event-dot').first()).toHaveCSS('background-color','rgb(21, 25, 16)');
+ await expect(future).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
+ await expect(future).toHaveAttribute('data-ring','none');
+ await expect(future.locator('.bali-calendar-event-dot').first()).toHaveCSS('background-color','rgb(255, 0, 170)');
  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('bali:calendar:plans-changed',{detail:{dates:[]}})));
  await expect(future).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
  await expect(future.locator('.bali-calendar-event-dot').first()).toHaveCSS('background-color','rgb(255, 0, 170)');

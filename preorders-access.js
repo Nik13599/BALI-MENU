@@ -53,11 +53,8 @@ onAuthStateChanged(auth,async user=>{
   $("adminSwitchAccount").hidden=!user;
   if(!user){status("Введите логин и пароль сотрудника или используйте вход через Google.");return;}
   if(!user.emailVerified){status("Нет подтверждённого доступа к предзаказам.");return;}
-  // Keep the login form hidden while the restored session is authorized.
-  $("staffSessionLoading").hidden=true;
-  $("adminView").hidden=false;
-  $("staffHeaderAccount").hidden=false;
-  $("adminEmail").textContent=user.displayName||user.email||"Сотрудник BALI";
+  // Never reveal the order workspace before the backend has confirmed
+  // the current staff role. Keep the session splash visible until authorization.
   try{
     if(sheetsEnabled()){
       // This endpoint checks the current admin/staff role before returning data.

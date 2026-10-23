@@ -10,6 +10,9 @@ function cartTrigger(page) { return page.locator(page.viewportSize().width >= 11
 async function menu(page) {
   await page.goto('/index.html#menu');
   await page.evaluate(() => {
+    // Legacy order-service tests use a fixture; anonymous checkout and
+    // Turnstile are separately covered by guest-preorder-staging.spec.
+    window.BALI_GUEST_PREORDER_ENABLED=false;
     window.BaliAuth = {requireProfile: async () => true, isRegistered: () => true,
       getProfile: () => ({uid: 'test-only', name: 'Тестовый гость', phone: '+375291234567', email: 'test@example.com'})};
     window.BaliOrders = {maxItems: 12, errorText: e => e.message};
@@ -224,6 +227,7 @@ test('cancelled editing creates a new order and failed submit stays usable', asy
   // and the specific event, then test the recoverable server error.
   await page.locator('#eventDateSelect').selectOption('2099-10-24');
   await page.locator('#eventSelect').selectOption('2099-10-24');
+  await page.locator('#orderReference').fill('12');
   await page.locator('.submit-order-btn').click();
   await expect(page.locator('.submit-order-btn')).toBeEnabled();
   await expect(page.locator('.submit-order-btn')).toHaveText('Отправить предзаказ');
