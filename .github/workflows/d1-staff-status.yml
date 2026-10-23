@@ -1,0 +1,27 @@
+name: BALI D1 staff status safety
+on:
+  push:
+    branches:
+      - feature/d1-staff-status-20261023
+  pull_request:
+    paths:
+      - 'cloudflare-pages/functions/api/staff-preorder-status.js'
+      - 'cloudflare-pages/d1/migrations/0002_staff_status.sql'
+      - 'scripts/test-d1-staff-status.mjs'
+      - '.github/workflows/d1-staff-status.yml'
+permissions:
+  contents: read
+jobs:
+  verify-d1-status:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check route module syntax
+        run: node --input-type=module --check < cloudflare-pages/functions/api/staff-preorder-status.js
+      - name: Verify D1 guarded status and idempotency on real SQLite
+        run: node --experimental-sqlite scripts/test-d1-staff-status.mjs
+      - name: Cloudflare Pages static build
+        run: node cloudflare-pages/build.mjs
