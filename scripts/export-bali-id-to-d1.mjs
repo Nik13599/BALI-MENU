@@ -42,12 +42,15 @@ async function source(){
     {updateTime:item.updateTime}));
   if(records.length>MAX_ALL)throw Error("Total source exceeds safety bound");
  }
- const cards=records.filter(x=>x.scope==="cards");
- for(const card of cards){
-  const path="users/"+card.uid+"/baliIdAgreements/privilege";
-  const snap=await firestore.doc(path).get();
-  if(snap.exists)records.push(record("agreements",path,snap.data(),
-    {updateTime:snap.updateTime}));
+ const profiles=records.filter(x=>x.scope==="profiles");
+ for(const profile of profiles){
+  // Agreements can exist even if card allocation later fails. Capture
+  // every version, not only the current `privilege` acknowledgement.
+  const list=await firestore.collection("users/"+profile.uid+"/baliIdAgreements")
+    .orderBy(admin.firestore.FieldPath.documentId()).limit(100).get();
+  if(list.size===100)throw Error("Agreement history may be truncated");
+  for(const doc of list.docs)records.push(record("agreements",doc.ref.path,
+    doc.data(),{updateTime:doc.updateTime}));
  }
  if(records.length>MAX_ALL)throw Error("Total source exceeds safety bound");
  return records;
