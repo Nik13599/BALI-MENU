@@ -10,7 +10,7 @@ function cartTrigger(page) { return page.locator(page.viewportSize().width >= 11
 async function menu(page) {
   await page.goto('/index.html#menu');
   await page.evaluate(() => {
-    // Legacy order-service tests use this explicit fixture; anonymous\n    // production checkout and Turnstile are exercised in guest-preorder-staging.spec.\n    window.BALI_GUEST_PREORDER_ENABLED=false;\n    window.BaliAuth = {requireProfile: async () => true, isRegistered: () => true,
+    // Legacy order-service tests use a fixture; anonymous checkout and\n    // Turnstile are separately covered by guest-preorder-staging.spec.\n    window.BALI_GUEST_PREORDER_ENABLED=false;\n    window.BaliAuth = {requireProfile: async () => true, isRegistered: () => true,
       getProfile: () => ({uid: 'test-only', name: 'Тестовый гость', phone: '+375291234567', email: 'test@example.com'})};
     window.BaliOrders = {maxItems: 12, errorText: e => e.message};
     window.dispatchEvent(new CustomEvent('bali:menu', {detail: {items: Array.from({length: 14}, (_, i) => ({
