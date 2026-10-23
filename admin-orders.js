@@ -11,7 +11,7 @@ import {createDurableStaffStatusQueue} from "./bali-staff-status-queue.js?v=2026
 // The Sheets workspace uses Firebase Auth only; load Firestore for its legacy mode.
 const {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBatch,
   serverTimestamp,runTransaction,query,limit,orderBy,where,Timestamp}=sheetsEnabled()?{}:await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
-import {composeBaliPreorderReport,composeBaliSinglePreorder,downloadBaliPreorderReport,showBaliPreorderTelegram} from "./bali-preorder-reports.js?v=20261023-reference-kind1";
+import {composeBaliPreorderReport,composeBaliSinglePreorder,downloadBaliPreorderReport,showBaliPreorderTelegram} from "./bali-preorder-reports.js?v=20261023-reference-kind2";
 const readOrderLines=async row=>{
   const lines=await getDocs(collection(row.ref,"items"));
   return lines.docs.map(line=>line.data());
