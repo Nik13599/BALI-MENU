@@ -106,13 +106,21 @@ async function list(db,{date="",eventId="",uid="",limit=100}={}){
  args.push(Math.min(limit,1500));
  const orders=(await db.prepare(sql).bind(...args).all()).results||[];
  if(!orders.length)return [];
- const ids=orders.map(o=>o.id),placeholders=ids.map(()=>"?").join(",");
- const rows=(await db.prepare("SELECT * FROM preorder_items WHERE order_id IN ("+placeholders+") ORDER BY item_name")
-  .bind(...ids).all()).results||[];
- const byId=new Map();
- for(const line of rows){
-  if(!byId.has(line.order_id))byId.set(line.order_id,[]);
-  byId.get(line.order_id).push(line);
+ // Cloudflare D1 places a cap on SQL bound parameters and rows returned
+ // per statement. Chunk order lines so a busy Staff queue cannot break when
+ // hundreds of guests preorder during the same event.
+ const ids=orders.map(o=>o.id),byId=new Map();
+ const BATCH_SIZE=80;
+ for(let offset=0;offset<ids.length;offset+=BATCH_SIZE){
+  const batch=ids.slice(offset,offset+BATCH_SIZE);
+  const placeholders=batch.map(()=>"?").join(",");
+  const rows=(await db.prepare(
+    "SELECT * FROM preorder_items WHERE order_id IN ("+placeholders+") ORDER BY item_name"
+  ).bind(...batch).all()).results||[];
+  for(const line of rows){
+   if(!byId.has(line.order_id))byId.set(line.order_id,[]);
+   byId.get(line.order_id).push(line);
+  }
  }
  return orders.map(o=>normalized(o,byId.get(o.id)||[]));
 }
