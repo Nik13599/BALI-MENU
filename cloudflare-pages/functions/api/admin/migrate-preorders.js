@@ -58,7 +58,7 @@ const fieldsBool=(fields,key)=>fields?.[key]?.booleanValue===true;
 
 export async function onRequestPost({request,env}){
   try{
-    const admin=await authorizeStaff(request,{adminOnly:true});
+    const admin=await authorizeStaff(request,{adminOnly:true,env});
     const db=env?.BALI_OPERATIONS_DB;
     if(!db)return errorJson(503,"database-unavailable");
     const original=request.headers.get("Origin");
