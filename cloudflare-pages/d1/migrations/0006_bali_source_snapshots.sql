@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS bali_source_snapshots (
   source_path TEXT NOT NULL,
   scope TEXT NOT NULL CHECK(scope IN (
     'profiles','cards','privileges','wallets','operations','transfers',
-    'bonus-kinds','privilege-rules','agreements')),
+    'bonus-kinds','privilege-rules','agreements','event-checkins','transfer-inbox')),
   firebase_uid TEXT,
   payload_json TEXT NOT NULL CHECK(json_valid(payload_json)),
   source_digest TEXT NOT NULL CHECK(length(source_digest)=64),
