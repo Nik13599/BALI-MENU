@@ -285,7 +285,8 @@ test('completed parties retain an unfilled red outline; today has a white contou
   await expect(past).toHaveAttribute('data-event-count','2');
   await expect(past).toHaveAttribute('data-lifecycle-status','past');
   await expect(past).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
-  await expect(past).toHaveCSS('border-color','rgb(250, 96, 112)');
+  await expect(past).toHaveAttribute('data-ring','none');
+  await expect(past).toHaveCSS('border-color','rgba(0, 0, 0, 0)');
   await expect(past).toHaveCSS('background-image','none');
   await expect(past.locator('.bali-calendar-event-dot')).toHaveCount(2);
   for(const dot of await past.locator('.bali-calendar-event-dot').all())
@@ -294,8 +295,11 @@ test('completed parties retain an unfilled red outline; today has a white contou
   await expect(past).toHaveAttribute('data-selected','true');
   // Selecting or planning an archived event must never fill its date.
   await expect(past).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
-  await expect(past).toHaveCSS('border-color','rgb(250, 96, 112)');
-  await expect(past.locator('.bali-calendar-day-number')).toHaveCSS('color','rgb(255, 182, 189)');
+  // Only the actively browsed poster receives a red ring; saving an old plan
+  // must never fill the cell or change the archival color of its event dots.
+  expect(['past','none']).toContain(await past.getAttribute('data-ring'));
+  for(const dot of await past.locator('.bali-calendar-event-dot').all())
+    await expect(dot).toHaveCSS('background-color','rgb(250, 96, 112)');
   const future=await locate(dates.future);
   await expect(future).toHaveAttribute('data-past','false');
   await expect(future.locator('.bali-calendar-event-dot')).toHaveCSS('background-color','rgb(185, 255, 81)');
