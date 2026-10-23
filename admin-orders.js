@@ -6,11 +6,11 @@ import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.
 import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1";
 import {withinOrderRetention,ORDER_RETENTION_MS} from "./bali-order-retention.js";
 import {createBaliStaffPreorder} from "./bali-staff-preorder-create.js?v=20261021-1";
-import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
+import {preorderServiceEnabled,sheetsRequest} from "./bali-sheets-api.js";
 import {createDurableStaffStatusQueue} from "./bali-staff-status-queue.js?v=20261023-durable1";
 // The Sheets workspace uses Firebase Auth only; load Firestore for its legacy mode.
 const {getFirestore,collection,doc,getDoc,getDocs,onSnapshot,updateDoc,writeBatch,
-  serverTimestamp,runTransaction,query,limit,orderBy,where,Timestamp}=sheetsEnabled()?{}:await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+  serverTimestamp,runTransaction,query,limit,orderBy,where,Timestamp}=preorderServiceEnabled()?{}:await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
 import {composeBaliPreorderReport,composeBaliSinglePreorder,downloadBaliPreorderReport,showBaliPreorderTelegram} from "./bali-preorder-reports.js?v=20261023-reference-kind2";
 const readOrderLines=async row=>{
   const lines=await getDocs(collection(row.ref,"items"));
@@ -18,7 +18,7 @@ const readOrderLines=async row=>{
 };
 const authAppName=document.body.classList.contains("bali-preorders-workspace")?"bali-staff":"[DEFAULT]";
 const app=getApps().find(app=>app.name===authAppName)||initializeApp(window.BALI_FIREBASE_CONFIG,authAppName);
-const auth=getAuth(app),db=sheetsEnabled()?null:getFirestore(app),$=id=>document.getElementById(id);
+const auth=getAuth(app),db=preorderServiceEnabled()?null:getFirestore(app),$=id=>document.getElementById(id);
 let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=false,orders=[],catalog=[];
 let events=new Map(),dateOrders=[],loadedDate="",unsubDateOrders=null,dateRevision=0;
 let calendarSourceLoaded=false,calendarLastRead=0,calendarReadPromise=null;
@@ -86,7 +86,7 @@ const statusOutbox=createDurableStaffStatusQueue({
     setStatus("Не удалось сохранить статус заказа "+op.id+": "+(error.message||error.code)+
       ". Обновите заказ по данным сервера.");
     void sheetsRequest("staffRecentOrders").then(({orders:incoming})=>{
-      if(!authorized||!sheetsEnabled())return;
+      if(!authorized||!preorderServiceEnabled())return;
       orders=staffOrdersFromApi(incoming);
       renderOrders();
     }).catch(()=>{});
@@ -96,10 +96,10 @@ const statusOutbox=createDurableStaffStatusQueue({
   }
 });
 const effectiveOrder=o=>{
-  const op=sheetsEnabled()?statusOutbox.get(o.id):null;
+  const op=preorderServiceEnabled()?statusOutbox.get(o.id):null;
   return op?{...o,status:op.status,_statusQueued:true}:o;
 };
-if(sheetsEnabled()){
+if(preorderServiceEnabled()){
   window.addEventListener("online",()=>statusOutbox.flush());
   window.addEventListener("focus",()=>statusOutbox.flush());
   document.addEventListener("visibilitychange",()=>{
@@ -147,7 +147,7 @@ function activePreorderEvent(id,date){
 const calendarValue=field=>field?.stringValue??field?.timestampValue??
   field?.booleanValue??field?.integerValue??field?.doubleValue??"";
 async function refreshCalendarEvents({force=false,quiet=false}={}){
-  if(!sheetsEnabled())return;
+  if(!preorderServiceEnabled())return;
   if(calendarReadPromise)return calendarReadPromise;
   if(!force&&calendarSourceLoaded&&Date.now()-calendarLastRead<45000)return;
   const job=(async()=>{
@@ -200,7 +200,7 @@ function ensureAdmin(){if(!authorized||!auth.currentUser)throw new Error("Дос
 function total(items){return items.reduce((sum,x)=>sum+Number(x.unitPrice||0)*Number(x.quantity||0),0);}
 async function fetchComplete(id) {
   ensureAdmin();
-  if(sheetsEnabled()){
+  if(preorderServiceEnabled()){
     const found=[...dateOrders,...orders].find(o=>o.id===id);
     if(!found)throw new Error("Заказ не найден в загруженной очереди.");
     return effectiveOrder(found);
@@ -239,7 +239,7 @@ window.addEventListener("afterprint",()=>{$("orderPrintSheet").hidden=true;});
 async function setOrderStatus(o,status) {
   ensureAdmin();
   if(!["pending","confirmed","cancelled"].includes(status))throw new Error("Недопустимый статус заказа.");
-  if(sheetsEnabled()&&compactWorkspace){
+  if(preorderServiceEnabled()&&compactWorkspace){
     if(statusOutbox.get(o.id)){
       setStatus("Дождитесь синхронизации предыдущего изменения этого заказа.");return;
     }
@@ -254,7 +254,7 @@ async function setOrderStatus(o,status) {
   if(!confirm("Изменить статус заказа "+orderLabel(o)+" на «"+statuses[status]+"»?"))return;
   setStatus("Сохраняем статус...");
   try {
-    if(sheetsEnabled()){
+    if(preorderServiceEnabled()){
       await sheetsRequest("staffStatus",{id:o.id,status});
       for(const entry of [...orders,...dateOrders])if(entry.id===o.id)entry.status=status;
       renderOrders();
@@ -264,14 +264,23 @@ async function setOrderStatus(o,status) {
 }
 async function archiveOrder(o,archive=true) {
   ensureAdmin();
-  if(sheetsEnabled())throw new Error("Архивация будет подключена к новому серверу отдельно.");
   if(!confirm(archive
     ?"Убрать заказ "+orderLabel(o)+" в архив? Заказ отменится, но история гостя сохранится."
     :"Вернуть заказ "+orderLabel(o)+" из архива? Его статус останется «Отменён»."))return;
   try {
-    await updateDoc(doc(db,"orders",o.id),
-      archive?{archived:true,status:"cancelled",updatedAt:serverTimestamp()}
-        :{archived:false,updatedAt:serverTimestamp()});
+    if(preorderServiceEnabled()){
+      const saved=(await sheetsRequest("staffArchiveOrder",{id:o.id,archived:archive})).order;
+      if(!saved?.id)throw new Error("Сервер не подтвердил архивацию.");
+      for(const list of [orders,dateOrders]){
+        const idx=list.findIndex(x=>x.id===saved.id);
+        if(idx!==-1)list[idx]=normalizeStaffOrder(saved);
+      }
+      renderOrders();
+    }else{
+      await updateDoc(doc(db,"orders",o.id),
+        archive?{archived:true,status:"cancelled",updatedAt:serverTimestamp()}
+          :{archived:false,updatedAt:serverTimestamp()});
+    }
     setStatus(archive?"Заказ отправлен в архив.":"Заказ восстановлен из архива.");
   }catch(e){setStatus("Ошибка архива: "+(e.code||e.message));}
 }
@@ -282,13 +291,20 @@ async function deleteOrder(o) {
   if(answer!=="УДАЛИТЬ")return;
   setStatus("Удаляем заказ и все его блюда...");
   try{
-    if(sheetsEnabled())throw new Error("Безвозвратное удаление в Google Таблицах отключено.");
-    const ref=doc(db,"orders",o.id),lines=await getDocs(collection(ref,"items"));
-    if(lines.size>400)throw new Error("Слишком много позиций для безопасного удаления.");
-    const batch=writeBatch(db);
-    lines.forEach(x=>batch.delete(x.ref));
-    batch.delete(ref);
-    await batch.commit();
+    if(preorderServiceEnabled()){
+      const saved=await sheetsRequest("staffDeleteOrder",{id:o.id});
+      if(saved?.deleted!==o.id)throw new Error("Сервер не подтвердил удаление.");
+      orders=orders.filter(x=>x.id!==o.id);
+      dateOrders=dateOrders.filter(x=>x.id!==o.id);
+      renderOrders();
+    }else{
+      const ref=doc(db,"orders",o.id),lines=await getDocs(collection(ref,"items"));
+      if(lines.size>400)throw new Error("Слишком много позиций для безопасного удаления.");
+      const batch=writeBatch(db);
+      lines.forEach(x=>batch.delete(x.ref));
+      batch.delete(ref);
+      await batch.commit();
+    }
     window.dispatchEvent(new CustomEvent("bali:admin:order-deleted",{detail:{id:o.id}}));
     setStatus("Заказ и позиции полностью удалены из базы.");
   }catch(e){setStatus("Ошибка удаления: "+(e.code||e.message));}
@@ -300,6 +316,19 @@ async function clearExpiredOrderHistory() {
   if(control)control.disabled=true;
   let removed=0;
   try{
+    if(preorderServiceEnabled()){
+      for(let i=0;i<100;i++){
+        const response=await sheetsRequest("staffClearExpiredOrders");
+        const count=Number(response?.removed||0);
+        removed+=count;
+        if(count<50)break;
+      }
+      orders=orders.filter(x=>Date.parse(x.createdAt)>=Date.now()-ORDER_RETENTION_MS);
+      dateOrders=dateOrders.filter(x=>Date.parse(x.createdAt)>=Date.now()-ORDER_RETENTION_MS);
+      renderOrders();
+      setStatus("Очистка завершена. Удалено заказов: "+removed+".");
+      return;
+    }
     for(let page=0;page<100;page++){
       const cutoff=Timestamp.fromMillis(Date.now()-ORDER_RETENTION_MS);
       const expired=await getDocs(query(collection(db,"orders"),where("createdAt","<",cutoff),limit(25)));
@@ -394,7 +423,7 @@ async function openOrderDetails(id){
     totalRow.append(node("span","Итого"),node("strong",fmt(total(o.items))));
     content.append(totalRow);
     if(o.notes)content.append(orderDetailsField("Пожелания к заказу",o.notes));
-    $("orderDetailsEdit").hidden=Boolean(o.archived)||Boolean(o._statusQueued)||(sheetsEnabled()&&!sheetsCanEditOrders);
+    $("orderDetailsEdit").hidden=Boolean(o.archived)||Boolean(o._statusQueued)||(preorderServiceEnabled()&&!sheetsCanEditOrders);
     $("orderDetailsEdit").onclick=()=>{dialog.close();void openEditor(id);};
     $("orderDetailsPrint").disabled=false;
     $("orderDetailsPrint").onclick=()=>printOrder(o);
@@ -490,7 +519,7 @@ function compactOrderRow(o){
   actions.append(view);
   if(!o.archived){
     if(!o._statusQueued){
-      if(!sheetsEnabled()||sheetsCanEditOrders)
+      if(!preorderServiceEnabled()||sheetsCanEditOrders)
         actions.append(button("Редактировать",()=>void openEditor(o.id),"preorder-edit-button"));
       if(state==="pending")actions.append(button("Подтвердить",()=>void setOrderStatus(o,"confirmed"),"confirm"));
     }
@@ -501,12 +530,10 @@ function compactOrderRow(o){
   const menuButton=(label,fn,cls="")=>button(label,()=>{dropdown.open=false;fn();},cls);
   if(!o.archived&&!o._statusQueued&&state!=="cancelled")menu.append(menuButton("Отменить заказ",()=>void setOrderStatus(o,"cancelled")));
   menu.append(menuButton("Печать",()=>printOrder(o)));
-  if(!sheetsEnabled()){
-    menu.append(o.archived
-      ?menuButton("Вернуть из архива",()=>void archiveOrder(o,false))
-      :menuButton("В архив",()=>void archiveOrder(o,true)));
-    menu.append(menuButton("Удалить навсегда",()=>void deleteOrder(o),"danger-action"));
-  }
+  menu.append(o.archived
+    ?menuButton("Вернуть из архива",()=>void archiveOrder(o,false))
+    :menuButton("В архив",()=>void archiveOrder(o,true)));
+  menu.append(menuButton("Удалить навсегда",()=>void deleteOrder(o),"danger-action"));
   dropdown.append(trigger,menu);actions.append(dropdown);
   row.append(primary,summary,statusBox,actions);
   return row;
@@ -547,7 +574,7 @@ async function fetchWorkspaceReport(kind){
   const date=$("ordersDateFilter").value;
   const id=$("ordersEventFilter").value;
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error("Выберите дату отчёта.");
-  if(sheetsEnabled()){
+  if(preorderServiceEnabled()){
     const {orders:loaded}=await sheetsRequest("staffOrders",{date,eventId:id});
     const included=$("preorderReportIncludeCancelled").checked;
     const filtered=staffOrdersFromApi(loaded).filter(o=>
@@ -798,7 +825,7 @@ function watchDateOrders(){
   renderEventFilter();
   if(!date){dateOrders=[];renderOrders();return;}
   if(!authorized)return;
-  if(sheetsEnabled()){
+  if(preorderServiceEnabled()){
     renderOrders();
     void sheetsRequest("staffOrders",{date}).then(({orders:received})=>{
       if(revision!==dateRevision)return;
@@ -890,7 +917,7 @@ $("editOrderDate").addEventListener("change",()=>{
 function openCreateOrder(){
   ensureAdmin();
   creatingOrder=true;editOrder=null;editLines=[];originalIds=new Set();
-  createOrderRequestId=crypto.randomUUID();
+  createOrderRequestId=crypto.randomUUID().replace(/-/g,"");
   $("orderEditTitle").textContent="Новый предзаказ · по телефону";
   if($("orderEditEyebrow"))$("orderEditEyebrow").textContent="СОЗДАНИЕ ПРЕДЗАКАЗА";
   if($("orderEditSubmit"))$("orderEditSubmit").textContent="Создать предзаказ";
@@ -908,10 +935,10 @@ function openCreateOrder(){
   // Guests and table number are mandatory for a new order, so expose the
   // fields immediately instead of hiding them in the edit-only disclosure.
   if($("editOrderExtra"))$("editOrderExtra").open=true;
-  $("orderEditStatus").textContent=sheetsEnabled()&&!sheetsCanCreateOrders
+  $("orderEditStatus").textContent=preorderServiceEnabled()&&!sheetsCanCreateOrders
     ?"Создание заказа требует новой версии Google Apps Script. Обновите сервер, затем сохраните заказ."
     :"Выберите мероприятие, укажите гостя и добавьте блюда.";
-  if(sheetsEnabled()&&!catalog.length){
+  if(preorderServiceEnabled()&&!catalog.length){
     void sheetsRequest("menu").then(({menu})=>{
       if(!creatingOrder)return;
       catalog=(menu||[]).map(item=>({...item,id:Number(item.id),available:true}))
@@ -982,7 +1009,7 @@ $("closeOrderEdit").addEventListener("click",()=>$("orderEditDialog").close());
 $("cancelOrderEdit").addEventListener("click",()=>$("orderEditDialog").close());
 async function openEditor(id){
   ensureAdmin();
-  if(sheetsEnabled()&&!sheetsCanEditOrders){setStatus("Сервер редактирования заказов пока не обновлён.");return;}
+  if(preorderServiceEnabled()&&!sheetsCanEditOrders){setStatus("Сервер редактирования заказов пока не обновлён.");return;}
   $("orderEditStatus").textContent="Загружаем заказ...";
   try{
     const o=await fetchComplete(id);
@@ -1009,7 +1036,7 @@ async function openEditor(id){
     $("orderEditStatus").textContent="";
     menuSelect();renderEditLines();
     $("orderEditDialog").showModal();
-    if(sheetsEnabled())void refreshCalendarEvents({force:true}).catch(()=>{});
+    if(preorderServiceEnabled())void refreshCalendarEvents({force:true}).catch(()=>{});
   }catch(e){setStatus("Не удалось открыть заказ: "+(e.code||e.message||"unknown"));}
 }
 window.addEventListener("bali:admin:open-order",({detail})=>{
@@ -1051,7 +1078,7 @@ $("orderEditForm").addEventListener("submit",async event=>{
   $("orderEditStatus").textContent="Сохраняем изменения...";
   try{
     if(creatingOrder){
-      if(sheetsEnabled()){
+      if(preorderServiceEnabled()){
         if(!sheetsCanCreateOrders)
           throw new Error("Новая функция ещё не опубликована в Google Apps Script. Опубликуйте новую версию сервера.");
         const {order:created}=await sheetsRequest("staffCreateOrder",{
@@ -1103,7 +1130,7 @@ $("orderEditForm").addEventListener("submit",async event=>{
       setStatus("Ручной предзаказ «"+chosenTitle+" №"+assignedNumber+"» создан. Сумма: "+fmt(total(editLines)));
       return;
     }
-    if(sheetsEnabled()){
+    if(preorderServiceEnabled()){
       const {order:saved}=await sheetsRequest("staffEditOrder",{
         id:editOrder.id,expectedUpdatedAt:editOrder.updatedAt,
         eventDate,eventId,customerName,customerPhone,tableNumber,bookingId,
@@ -1200,7 +1227,7 @@ async function subscribe(user) {
   $("ordersAdminList").textContent="Проверяем права...";
   if(!user||!user.emailVerified)return;
   try{
-    if(sheetsEnabled()){
+    if(preorderServiceEnabled()){
       $("ordersAdminList").textContent="Загружаем предзаказы…";
       // The queue route enforces the current staff role on the server itself.
       // Menu metadata must not delay the independently authorized order list.

@@ -14,7 +14,7 @@ import {
 
 import {createOrderSnapshotReader} from "./bali-order-snapshots.js?v=20261021-1";
 import {withinOrderRetention} from "./bali-order-retention.js";
-import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
+import {preorderServiceEnabled,sheetsRequest} from "./bali-sheets-api.js";
 
 const app = getApps().length ? getApp() : initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth = getAuth(app);
@@ -148,7 +148,7 @@ async function save(payload, editId = null) {
     throw new Error("Выберите мероприятие и укажите столик или ID бронирования.");
   }
   const lines = normalizeItems(payload.items);
-  if(sheetsEnabled()){
+  if(preorderServiceEnabled()){
     const signature=await requestHash({uid:user.uid,eventDate,eventId,tableNumber,bookingId,notes,lines,editId});
     let pending=null;
     try{pending=JSON.parse(sessionStorage.getItem(sessionKey(user.uid))||"null");}catch(_){}
@@ -253,7 +253,7 @@ async function save(payload, editId = null) {
 }
 async function getOrderWithItems(id) {
   const user = signedUser();
-  if(sheetsEnabled()){
+  if(preorderServiceEnabled()){
     const {orders}=await sheetsRequest("myOrders");
     const record=orders?.find(o=>o.id===id);
     if(!record)throw new Error("Заказ не найден.");
@@ -267,7 +267,7 @@ async function getOrderWithItems(id) {
 }
 async function cancel(id) {
   signedUser();
-  if(sheetsEnabled()){
+  if(preorderServiceEnabled()){
     await sheetsRequest("cancelOrder",{id});
     return;
   }
@@ -283,7 +283,7 @@ function watchUserOrders(user) {
   });
   emit("bali:orders",{orders:[],ownerUid:user?.uid||null,loading:!!user});
   if(!user) return;
-  if(sheetsEnabled()){
+  if(preorderServiceEnabled()){
     orderListener=()=>{};
     void sheetsRequest("myOrders").then(({orders})=>{
       if(current!==generation||auth.currentUser?.uid!==user.uid)return;

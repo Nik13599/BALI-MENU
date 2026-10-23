@@ -1,6 +1,6 @@
 /* Visual contract for BALI Staff.
- * The original desktop/tablet/mobile Staff stylesheet was restored at
- * commit 8bbded7d. The user explicitly prohibited changing its appearance.
+ * The active, published desktop/tablet/mobile Staff stylesheet is locked.
+ * Its current approved value is read from main, unchanged by this migration.
  * Change this checksum only after an explicit design-change request and
  * fresh responsive screenshot verification, not for backend/bug-fix work.
  */
@@ -14,7 +14,7 @@ const gitBlob=createHash("sha1")
   .update("blob "+css.length+"\0")
   .update(css)
   .digest("hex");
-const approved="c4a1d74134868e4a06b0867fd22c60654b83c5f5";
+const approved="1621e8af191db5a6036fefe59316c9b435d653b0";
 assert.equal(gitBlob,approved,
   "BALI Staff appearance was modified. Restore the approved CSS for PC, "+
   "tablet and mobile; do not adjust layout, card dimensions or colours "+

@@ -1,0 +1,40 @@
+name: BALI live D1 orders release gate
+on:
+  push:
+    branches:
+      - feature/d1-live-preorders-cutover-20261023
+  pull_request:
+    paths:
+      - 'cloudflare-pages/functions/_lib/d1-preorders.js'
+      - 'cloudflare-pages/functions/api/d1-preorders.js'
+      - 'cloudflare-pages/functions/api/bali-v3.js'
+      - 'bali-sheets-api.js'
+      - 'preorders.html'
+      - 'scripts/test-d1-live-preorders.mjs'
+      - '.github/workflows/d1-live-preorders.yml'
+permissions:
+  contents: read
+jobs:
+  full-order-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Ensure all new modules parse
+        run: |
+          node --input-type=module --check < cloudflare-pages/functions/_lib/d1-preorders.js
+          node --input-type=module --check < cloudflare-pages/functions/api/d1-preorders.js
+          node --input-type=module --check < cloudflare-pages/functions/api/bali-v3.js
+          node --input-type=module --check < bali-sheets-api.js
+      - name: Run atomic D1 and role-aware guest/Staff integration
+        run: |
+          node --experimental-sqlite scripts/test-d1-live-preorders.mjs
+          node --experimental-sqlite scripts/test-d1-staff-status.mjs
+      - name: Assert Staff desktop and mobile appearance unchanged
+        run: node scripts/test-staff-appearance-locked.mjs
+      - name: Build Cloudflare site
+        run: node cloudflare-pages/build.mjs

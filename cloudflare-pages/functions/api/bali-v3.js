@@ -2,7 +2,7 @@
  * Configure SHEETS_SCRIPT_URL and BALI_BRIDGE_KEY as encrypted runtime variables.
  * Calls are verified again by Apps Script against Firebase Auth, not by a claimed UID. */
 const actions=new Set(["health","me","consentAccept","profileSave","menu",
-  "myOrders","createOrder","guestCreateOrder","editOrder","cancelOrder","staffOrders","staffCreateOrder","staffEditOrder","staffStatus","staffReport",
+  "myOrders","createOrder","guestCreateOrder","editOrder","cancelOrder","staffOrders","staffCreateOrder","staffEditOrder","staffStatus","staffArchiveOrder","staffDeleteOrder","staffClearExpiredOrders","staffReport",
   "staffRecentOrders","staffList","staffManage","adminGuests","adminGuestOrders","catalogSync","card","activateCard","adminCard","coinHistory",
   "coinChange","privilegeAssign","privilegeRules","privilegeRulesSave","bonusGrant","bonusHistory","bonusRecipient",
   "bonusTransfer","plans","avatarGet","avatarSave"]);
@@ -35,8 +35,6 @@ const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:
 export async function onRequestPost({request,env}){
   if(new URL(request.url).origin!==request.headers.get("Origin")&&request.headers.get("Origin"))
     return json({ok:false,error:{code:"origin",message:"Недопустимый источник."}},403);
-  if(!env.SHEETS_SCRIPT_URL||!env.BALI_BRIDGE_KEY)
-    return json({ok:false,error:{code:"not-configured",message:"BALI Sheets API пока не подключён."}},503);
   let input;
   try{
     if(Number(request.headers.get("Content-Length"))>110000)return json({ok:false},413);
@@ -60,7 +58,32 @@ export async function onRequestPost({request,env}){
     if(!verification.ok)
       return json({ok:false,error:{code:verification.code,message:verification.message}},verification.status);
     payload.guestVerified=true;
+
   }
+  // Every order action shares one D1 database, never Google Sheets or
+  // Firestore. Fail closed until the migration is marked complete.
+  const d1Actions=new Set(["guestCreateOrder","createOrder","editOrder","cancelOrder",
+    "myOrders","staffRecentOrders","staffOrders","staffCreateOrder","staffEditOrder",
+    "staffStatus","staffArchiveOrder","staffDeleteOrder","staffClearExpiredOrders","menu"]);
+  if(d1Actions.has(input.action)){
+    // Before cutover keep the existing Sheets route working. Afterwards every
+    // order action is D1-only; a D1 outage can never silently create orders
+    // in a second database.
+    const db=env?.BALI_OPERATIONS_DB;
+    if(!db)return json({ok:false,error:{code:"unavailable",
+      message:"База предзаказов временно недоступна."}},503);
+    let migration;
+    try{migration=await db.prepare("SELECT status FROM migration_state WHERE id='preorders'").first();}
+    catch{return json({ok:false,error:{code:"unavailable",
+      message:"Невозможно проверить состояние базы предзаказов."}},503);}
+    if(migration?.status==="complete"){
+      const {handleD1OrderAction}=await import("../_lib/d1-orders.js");
+      const result=await handleD1OrderAction({...input,payload},request,env);
+      return json({ok:result.ok,...(result.ok?{data:result.data}:{error:result.error})},result.status);
+    }
+  }
+  if(!env.SHEETS_SCRIPT_URL||!env.BALI_BRIDGE_KEY)
+    return json({ok:false,error:{code:"not-configured",message:"BALI Sheets API пока не подключён."}},503);
   try{
     const res=await fetch(env.SHEETS_SCRIPT_URL,{method:"POST",redirect:"follow",
       headers:{"Content-Type":"text/plain;charset=UTF-8"},
