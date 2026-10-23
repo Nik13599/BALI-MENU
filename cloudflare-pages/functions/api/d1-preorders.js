@@ -88,7 +88,7 @@ export async function onRequestPost({request,env}){
     const {action,payload:p,token}=parseRequest(body);
     const signed=new Request(request.url,{headers:{Authorization:"Bearer "+token}});
     const actor=await authorizeStaff(signed,{
-      adminOnly:action==="staffDeleteOrder"
+      adminOnly:action==="staffDeleteOrder",env
     });
     const db=env?.BALI_OPERATIONS_DB;
     if(!db)throw abort("unavailable","D1 недоступна.",503);

@@ -4,7 +4,7 @@ import {authorizeStaff,handlerError,errorJson} from "../_lib/staff-auth.js";
  */
 export async function onRequestGet({request,env}){
   try{
-    const identity=await authorizeStaff(request);
+    const identity=await authorizeStaff(request,{env});
     const db=env?.BALI_OPERATIONS_DB;
     if(!db)return errorJson(503,"database-unavailable");
     const migration=await db.prepare(
