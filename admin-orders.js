@@ -1211,6 +1211,33 @@ $("orderEditForm").addEventListener("submit",async event=>{
       $("orderEditStatus").textContent="Другой сотрудник изменил данные заказа. Повторите сохранение.";
   }finally{submit.disabled=false;}
 });
+function showNewStaffOrders(added){
+  $("baliStaffNewOrderToast")?.remove();
+  const toast=node("div","","bali-staff-new-order-toast");
+  toast.id="baliStaffNewOrderToast";
+  toast.setAttribute("role","status");
+  toast.setAttribute("aria-live","polite");
+  toast.append(node("strong",added.length===1?"🔔 Новый предзаказ":
+    "🔔 Новых предзаказов: "+added.length));
+  if(added.length===1){
+    const o=added[0];
+    toast.append(node("span",eventTitle(o)+" №"+(o.orderNumber||"—")));
+  }
+  toast.append(button("Показать",()=>{
+    const date=$("ordersDateFilter"),event=$("ordersEventFilter");
+    if(date)date.value="";
+    if(event)event.value="";
+    loadedDate="";dateOrders=[];
+    renderDates();renderOrders();
+    toast.remove();
+    $("ordersAdminList")?.scrollTo?.({top:0,behavior:"smooth"});
+  }));
+  toast.append(button("×",()=>toast.remove(),"bali-staff-toast-dismiss"));
+  document.body.append(toast);
+  window.dispatchEvent(new CustomEvent("bali-staff:new-orders",{
+    detail:{count:added.length,ids:added.map(o=>o.id)}
+  }));
+}
 async function subscribe(user) {
   if(unsubOrders){unsubOrders();unsubOrders=null;}
   if(unsubMenu){unsubMenu();unsubMenu=null;}
@@ -1219,6 +1246,7 @@ async function subscribe(user) {
   dateRevision++;dateOrders=[];loadedDate="";
   reportScopeKey="";clearDishOnlinePreview();
   const current=++generation;
+  $("baliStaffNewOrderToast")?.remove();
   statusOutbox.deactivate();
   orders=[];catalog=[];events=new Map();calendarSourceLoaded=false;calendarLastRead=0;
   createOrderRequestId=null;creatingOrder=false;sheetsCanCreateOrders=false;
@@ -1261,33 +1289,88 @@ async function subscribe(user) {
         " актуальных предзаказов. "+
         (sheetsCanEditOrders?"Редактирование, подтверждение и отчёты доступны.":
           "Отчёты доступны. Для редактирования необходимо опубликовать новую версию Apps Script."));
-      let refreshing=false,lastRefreshAt=Date.now();
-      const refresh=async()=>{
-        if(refreshing||Date.now()-lastRefreshAt<15000)return;
+      // Web Push opens the fast path; the authenticated revision probe is an
+      // economical 10-second fallback, not a full list download every 2s.
+      let refreshing=false,probeRunning=false,pushActive=false;
+      let lastProbeAt=0,lastFullAt=Date.now(),lastRevision=null,queuedRefresh=false;
+      const seenIds=new Set(orders.map(o=>o.id));
+      const refresh=async({notify=true}={})=>{
+        if(refreshing){queuedRefresh=true;return;}
         refreshing=true;
         try{
           const {orders:incoming,canEditOrders,canCreateOrders}=await sheetsRequest("staffRecentOrders");
+          if(current!==generation||!authorized)return;
           sheetsCanEditOrders=canEditOrders===true;
           sheetsCanCreateOrders=canCreateOrders===true;
-          if(current!==generation)return;
-          orders=staffOrdersFromApi(incoming);
+          const next=staffOrdersFromApi(incoming);
+          const added=next.filter(o=>!seenIds.has(o.id)&&!o.archived);
+          for(const row of next)seenIds.add(row.id);
+          if(seenIds.size>600){
+            seenIds.clear();for(const row of next)seenIds.add(row.id);
+          }
+          orders=next;lastFullAt=Date.now();
           renderDates();renderOrders();
-        }catch(e){if(current===generation)setStatus("Не удалось обновить очередь: "+(e.message||e.code));}
-        finally{refreshing=false;lastRefreshAt=Date.now();}
-      };
-      const timer=setInterval(()=>{
-        if(document.visibilityState==="visible"){
-          void refresh();
-          void refreshCalendarEvents({quiet:true}).catch(()=>{});
+          if(notify&&added.length&&compactWorkspace)showNewStaffOrders(added);
+        }catch(e){
+          if(current===generation)setStatus("Не удалось обновить очередь: "+(e.message||e.code));
+        }finally{
+          refreshing=false;
+          if(queuedRefresh&&current===generation){
+            queuedRefresh=false;void refresh();
+          }
         }
-      },20000);
-      unsubOrders=()=>clearInterval(timer);
+      };
+      const probe=async(force=false)=>{
+        if(probeRunning||current!==generation||!authorized)return;
+        const now=Date.now(),minimum=pushActive?45000:10000;
+        if(!force&&now-lastProbeAt<minimum)return;
+        if(!force&&document.visibilityState!=="visible")return;
+        probeRunning=true;lastProbeAt=now;
+        try{
+          const token=await auth.currentUser?.getIdToken();
+          if(!token||current!==generation)return;
+          const response=await fetch("/api/staff-order-revision",{
+            headers:{"Authorization":"Bearer "+token,"Accept":"application/json"},
+            cache:"no-store",credentials:"same-origin"
+          });
+          if(!response.ok)throw new Error("revision-"+response.status);
+          const result=await response.json();
+          if(result.ok!==true||typeof result.revision!=="string")
+            throw new Error("revision-unavailable");
+          if(current!==generation)return;
+          const changed=lastRevision!==null&&lastRevision!==result.revision;
+          lastRevision=result.revision;
+          if(changed||now-lastFullAt>=60000)await refresh();
+        }catch(e){
+          // Graceful fallback during a deployment or transient D1 outage.
+          if(now-lastFullAt>=15000)await refresh();
+        }finally{probeRunning=false;}
+      };
+      const pushMessage=event=>{
+        if(event.data?.type==="bali-staff:new-order"&&current===generation&&authorized)
+          void refresh();
+      };
+      const pushState=event=>{pushActive=event.detail?.enabled===true;lastProbeAt=0;};
+      navigator.serviceWorker?.addEventListener("message",pushMessage);
+      window.addEventListener("bali-staff-push-status",pushState);
+      const tick=()=>{if(document.visibilityState==="visible")void probe();};
+      const timer=setInterval(tick,5000); // local ticks do not hit the server
       const focus=()=>{
-        void refresh();
+        if(document.visibilityState!=="visible")return;
+        void probe(true);
         void refreshCalendarEvents({quiet:true}).catch(()=>{});
       };
       window.addEventListener("focus",focus);
-      unsubEvents=()=>window.removeEventListener("focus",focus);
+      document.addEventListener("visibilitychange",focus);
+      unsubOrders=()=>{
+        clearInterval(timer);
+        navigator.serviceWorker?.removeEventListener("message",pushMessage);
+        window.removeEventListener("bali-staff-push-status",pushState);
+        window.removeEventListener("focus",focus);
+        document.removeEventListener("visibilitychange",focus);
+      };
+      unsubEvents=null;
+      void probe(true);
       return;
     }
     const adminRole=await getDoc(doc(db,"admins",user.uid));
