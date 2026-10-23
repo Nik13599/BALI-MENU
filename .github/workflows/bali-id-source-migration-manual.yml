@@ -1,5 +1,11 @@
 name: BALI ID — protected Firebase to D1 staging (manual)
 on:
+  push:
+    branches: [feature/bali-id-firestore-d1-snapshot-20261023]
+    paths:
+      - '.github/workflows/bali-id-source-migration-manual.yml'
+      - 'scripts/export-bali-id-to-d1.mjs'
+      - 'scripts/bali-id-source-snapshot.mjs'
   workflow_dispatch:
     inputs:
       apply_staging:
@@ -24,8 +30,7 @@ jobs:
       FIREBASE_DEPLOY_SERVICE_ACCOUNT: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
       CF_ACCOUNT_ID: ${{ vars.CF_ACCOUNT_ID }}
       CF_D1_DATABASE_ID: ${{ vars.CF_D1_DATABASE_ID }}
-      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-      BALI_ID_STAGE_APPLY: ${{ inputs.apply_staging }}
+      BALI_ID_STAGE_APPLY: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_staging == 'true' && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,13 +38,14 @@ jobs:
           node-version: '22'
       - name: Reject unconfigured identity before accessing Firebase
         run: |
-          test -n "$FIREBASE_WIF_PROVIDER"
-          test -n "$FIREBASE_DEPLOY_SERVICE_ACCOUNT"
+          test -n "$FIREBASE_WIF_PROVIDER" || (echo '::error::FIREBASE_WIF_PROVIDER is missing in firebase-production' && exit 1)
+          test -n "$FIREBASE_DEPLOY_SERVICE_ACCOUNT" || (echo '::error::FIREBASE_DEPLOY_SERVICE_ACCOUNT is missing in firebase-production' && exit 1)
           test "$FIREBASE_PROJECT_ID" = "bali-menu-5a48b"
           node --check scripts/export-bali-id-to-d1.mjs
       - name: Validate source schema, balances and unchanged Staff interface
         run: |
           node --experimental-sqlite scripts/test-bali-id-source-snapshot.mjs
+          node --experimental-sqlite scripts/test-bali-id-export-runner.mjs
           node scripts/test-staff-appearance-locked.mjs
       - name: Obtain short-lived Google identity (no service account key)
         uses: google-github-actions/auth@v2
@@ -49,10 +55,14 @@ jobs:
       - name: Install Firebase Admin
         run: npm install --prefix functions --no-audit --no-fund
       - name: Require D1 secrets only for staging writes
-        if: inputs.apply_staging == 'true'
+        if: github.event_name == 'workflow_dispatch' && inputs.apply_staging == 'true'
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: |
           test -n "$CF_ACCOUNT_ID"
           test -n "$CF_D1_DATABASE_ID"
           test -n "$CF_API_TOKEN"
       - name: Inventory and optionally stage Firebase records with source parity
+        env:
+          CF_API_TOKEN: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_staging == 'true' && secrets.CF_API_TOKEN || '' }}
         run: node scripts/export-bali-id-to-d1.mjs

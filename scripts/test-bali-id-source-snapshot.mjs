@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {DatabaseSync} from "node:sqlite";
-import {canonicalize,record,manifest} from "./bali-id-source-snapshot.mjs";
+import {canonicalize,record,manifest,snapshotTable} from "./bali-id-source-snapshot.mjs";
 const uidA="firebase_uid_example_001",uidB="firebase_uid_example_002";
 const card=(uid,num)=>record("cards","baliIds/"+uid,{uid,number:num});
 const profile=(uid)=>record("profiles","users/"+uid,{
@@ -70,6 +70,8 @@ const wrong={...source[0],digest:"f".repeat(64)};
 assert.throws(()=>manifest([wrong,...source.slice(1)]),/snapshot-digest-mismatch/);
 const db=new DatabaseSync(":memory:");
 db.exec(readFileSync("cloudflare-pages/d1/migrations/0006_bali_source_snapshots.sql","utf8"));
+db.exec(readFileSync("cloudflare-pages/d1/migrations/0007_bali_nested_history.sql","utf8"));
+db.exec(readFileSync("cloudflare-pages/d1/migrations/0008_bali_loyalty_source_snapshots.sql","utf8"));
 const id="f".repeat(32),save=db.prepare(
  "INSERT INTO bali_source_snapshots (snapshot_id,source_path,scope,firebase_uid,payload_json,source_digest,staged_at_ms) VALUES(?,?,?,?,?,?,?)");
 for(const r of source)save.run(id,r.path,r.scope,r.uid,r.payload,r.digest,1792723861000);
@@ -123,6 +125,51 @@ assert.equal(report.cutoverAllowed,false);
 assert.equal(report.stagedDocuments,12);
 assert.equal(report.scopes.wallets,2);
 assert(!JSON.stringify(report).includes(uidA),"Audit must not reveal Firebase UIDs");
+const nested=[
+ record("event-checkins","users/"+uidA+"/eventCheckins/event_one",{eventId:"event_one"}),
+ record("transfer-inbox","baliTransferInbox/"+uidB+"/items/transfer_one",{fromUid:uidA})
+];
+const saveNested=db.prepare("INSERT INTO bali_nested_source_snapshots "+
+ "(snapshot_id,source_path,scope,firebase_uid,payload_json,source_digest,staged_at_ms) VALUES(?,?,?,?,?,?,?)");
+for(const r of nested)saveNested.run(id,r.path,r.scope,r.uid,r.payload,r.digest,1792723861000);
+const complete=manifest([...source,...nested]);
+db.prepare("UPDATE bali_snapshot_manifests SET document_count=?,source_manifest_digest=?,staged_manifest_digest=? WHERE snapshot_id=?")
+ .run(complete.total,complete.digest,complete.digest,id);
+const authorized=()=>audit.onRequestGet({request:new Request(url,{
+ headers:{Authorization:"Bearer owner-test"}
+}),env:{BALI_OPERATIONS_DB:store}});
+let fullReport=await (await authorized()).json();
+assert.equal(fullReport.stagedDocuments,14,"Audit includes nested history in total");
+assert.equal(fullReport.scopes["event-checkins"],1);
+assert.equal(fullReport.scopes["transfer-inbox"],1);
+assert.equal(fullReport.sourceVerified,true);
+assert.equal(fullReport.cutoverAllowed,false);
+const loyalty=[
+ record("coin-accounts","baliCoinAccounts/"+uidA,{balance:17}),
+ record("coin-history","baliCoinAccounts/"+uidA+"/history/example_credit",{balance:17,count:17}),
+ record("qr-codes","baliBonusQRCodes/example_private_code",{active:true})
+];
+for(const r of loyalty){
+ assert.equal(snapshotTable(r.scope),"bali_loyalty_source_snapshots");
+ db.prepare("INSERT INTO bali_loyalty_source_snapshots "+
+  "(snapshot_id,source_path,scope,firebase_uid,payload_json,source_digest,staged_at_ms) VALUES(?,?,?,?,?,?,?)")
+  .run(id,r.path,r.scope,r.uid,r.payload,r.digest,1792723861000);
+}
+assert.throws(()=>manifest([...source,record("coin-accounts","baliCoinAccounts/"+uidA,{balance:-1})]),/invalid-coin-balance/);
+assert.throws(()=>manifest([...source,record("coin-history","baliCoinAccounts/orphan_uid_123/history/operation",{})]),/orphan-loyalty-account/);
+const withLoyalty=manifest([...source,...nested,...loyalty]);
+db.prepare("UPDATE bali_snapshot_manifests SET document_count=?,source_manifest_digest=?,staged_manifest_digest=? WHERE snapshot_id=?")
+ .run(withLoyalty.total,withLoyalty.digest,withLoyalty.digest,id);
+fullReport=await (await authorized()).json();
+assert.equal(fullReport.stagedDocuments,17);
+assert.equal(fullReport.sourceVerified,true,"Audit includes QR and COIN snapshots");
+assert.equal(fullReport.scopes["coin-history"],1);
+assert(!JSON.stringify(fullReport).includes("example_private_code"),"No QR secrets in audit response");
+db.prepare("DELETE FROM bali_nested_source_snapshots WHERE source_path=?").run(nested[0].path);
+fullReport=await (await authorized()).json();
+assert.equal(fullReport.sourceVerified,false,"Missing nested history blocks verification");
+assert.equal(fullReport.manifestConsistent,false);
+assert.equal(fullReport.cutoverAllowed,false);
 db.close();
 const script=readFileSync("scripts/export-bali-id-to-d1.mjs","utf8");
 assert(script.includes('expectedAccount="399972c0a0358037b0cb4d0d46ce69a3"'));

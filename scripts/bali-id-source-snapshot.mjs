@@ -15,6 +15,41 @@ export const SOURCE_COLLECTIONS=Object.freeze({
   "bonus-kinds":"baliBonusKinds",
   "privilege-rules":"privilegeRules"
 });
+// Include the current QR backend and the PR #104 wallet, without enabling it.
+export const LOYALTY_COLLECTIONS=Object.freeze({
+ "qr-codes":"baliBonusQRCodes","qr-locks":"baliBonusQRLocks",
+ "recipient-qr":"guestRecipientQr",
+ "coin-accounts":"baliCoinAccounts","coin-requests":"baliCoinRequests",
+ "coin-lots":"baliCoinLots","coin-vouchers":"baliCoinVouchers",
+ "coin-rewards":"baliCoinRewards",
+ "brsm-cards":"brsmCards","brsm-promos":"brsmPromos",
+ "brsm-events":"brsmEvents","brsm-visit-qrs":"brsmVisitQrs",
+ "brsm-draws":"brsmDraws","brsm-draw-private":"brsmDrawPrivate",
+ "brsm-audit":"brsmAudit","brsm-campaigns":"brsmCampaigns",
+ "brsm-campaign-state":"brsmCampaignState","brsm-campaign-qrs":"brsmCampaignQrs",
+ "brsm-canonical-ids":"brsmCanonicalIds","brsm-canonical-numbers":"brsmCanonicalNumbers"
+});
+export const NESTED_SOURCES=Object.freeze({
+ agreements:{group:"baliIdAgreements",path:/^users\/[^/]+\/baliIdAgreements\/[^/]+$/},
+ "event-checkins":{group:"eventCheckins",path:/^users\/[^/]+\/eventCheckins\/[^/]+$/},
+ "transfer-inbox":{group:"items",path:/^baliTransferInbox\/[^/]+\/items\/[^/]+$/},
+ "coin-history":{group:"history",path:/^baliCoinAccounts\/[^/]+\/history\/[^/]+$/},
+ "coin-user-vouchers":{group:"vouchers",path:/^baliCoinAccounts\/[^/]+\/vouchers\/[^/]+$/},
+ "brsm-entries":{group:"entries",path:/^brsmCampaigns\/[^/]+\/entries\/[^/]+$/},
+ "brsm-campaign-events":{group:"events",path:/^brsmCampaigns\/[^/]+\/events\/[^/]+$/},
+ "brsm-rounds":{group:"rounds",path:/^brsmCampaigns\/[^/]+\/rounds\/[^/]+$/},
+ "brsm-round-private":{group:"roundPrivate",path:/^brsmCampaigns\/[^/]+\/roundPrivate\/[^/]+$/},
+ "brsm-campaign-audit":{group:"audit",path:/^brsmCampaigns\/[^/]+\/audit\/[^/]+$/}
+});
+export const SNAPSHOT_TABLES=Object.freeze([
+ "bali_source_snapshots","bali_nested_source_snapshots","bali_loyalty_source_snapshots"
+]);
+export function snapshotTable(scope){
+ if(Object.hasOwn(SOURCE_COLLECTIONS,scope)||scope==="agreements")return SNAPSHOT_TABLES[0];
+ if(["event-checkins","transfer-inbox"].includes(scope))return SNAPSHOT_TABLES[1];
+ if(Object.hasOwn(LOYALTY_COLLECTIONS,scope)||Object.hasOwn(NESTED_SOURCES,scope))return SNAPSHOT_TABLES[2];
+ throw Error("invalid-snapshot-scope");
+}
 const hex=s=>createHash("sha256").update(s).digest("hex");
 export const newSnapshotId=()=>randomBytes(16).toString("hex");
 
@@ -51,19 +86,11 @@ export function encode(data){
   return JSON.stringify(canonicalize(data));
 }
 export function record(scope,path,data,{updateTime=null}={}){
-  if(!Object.hasOwn(SOURCE_COLLECTIONS,scope)&&!["agreements","event-checkins","transfer-inbox"].includes(scope))
-    throw Error("invalid-snapshot-scope");
+  snapshotTable(scope);
   const base=path.split("/").filter(Boolean);
-  if(scope==="agreements"){
-    if(base.length!==4||base[0]!=="users"||base[2]!=="baliIdAgreements")
-      throw Error("unexpected-agreement-source");
-  }else if(scope==="event-checkins"){
-    if(base.length!==4||base[0]!=="users"||base[2]!=="eventCheckins")
-      throw Error("unexpected-checkin-source");
-  }else if(scope==="transfer-inbox"){
-    if(base.length!==4||base[0]!=="baliTransferInbox"||base[2]!=="items")
-      throw Error("unexpected-inbox-source");
-  }else if(base.length!==2||base[0]!==SOURCE_COLLECTIONS[scope])
+  if(Object.hasOwn(NESTED_SOURCES,scope)){
+    if(!NESTED_SOURCES[scope].path.test(path))throw Error("unexpected-nested-source");
+  }else if(base.length!==2||base[0]!==({...SOURCE_COLLECTIONS,...LOYALTY_COLLECTIONS})[scope])
     throw Error("unexpected-source-path");
   if(!data||typeof data!=="object"||Array.isArray(data))
     throw Error("invalid-source-document");
@@ -73,7 +100,9 @@ export function record(scope,path,data,{updateTime=null}={}){
   const uid=["profiles","cards","privileges","wallets"].includes(scope)
     ?base[1]:scope==="operations"?data.guestUid:
     scope==="transfers"?data.fromUid:
-    ["agreements","event-checkins","transfer-inbox"].includes(scope)?base[1]:null;
+    ["agreements","event-checkins","transfer-inbox","coin-accounts","coin-history",
+     "coin-user-vouchers","brsm-cards","brsm-canonical-ids"].includes(scope)?base[1]:
+    scope==="brsm-entries"?base[3]:null;
   if(uid!==null&&(typeof uid!=="string"||!/^[A-Za-z0-9_-]{8,128}$/.test(uid)))
     throw Error("invalid-firebase-uid");
   const payload=encode({fields:details,
@@ -131,6 +160,11 @@ export function validateRecords(rows){
     if(r.scope==="transfers"&&
       (!cards.has(fields.fromUid)||!cards.has(fields.toUid)))
       throw Error("orphan-transfer-participant");
+    if(["coin-accounts","coin-history","coin-user-vouchers","brsm-cards","brsm-entries",
+        "brsm-canonical-ids"].includes(r.scope)&&!cards.has(r.uid))
+      throw Error("orphan-loyalty-account");
+    if(r.scope==="coin-accounts"&&(!Number.isSafeInteger(fields.balance)||fields.balance<0))
+      throw Error("invalid-coin-balance");
   }
   return count;
 }

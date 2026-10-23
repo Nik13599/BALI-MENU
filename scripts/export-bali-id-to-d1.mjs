@@ -6,7 +6,8 @@
  */
 import {createRequire} from "node:module";
 import {createHash} from "node:crypto";
-import {newSnapshotId,SNAPSHOT_PROJECT,SOURCE_COLLECTIONS,record,manifest}
+import {newSnapshotId,SNAPSHOT_PROJECT,SOURCE_COLLECTIONS,LOYALTY_COLLECTIONS,
+ NESTED_SOURCES,SNAPSHOT_TABLES,snapshotTable,record,manifest}
  from "./bali-id-source-snapshot.mjs";
 const functionsRequire=createRequire(new URL("../functions/package.json",import.meta.url));
 const admin=functionsRequire("firebase-admin");
@@ -18,11 +19,10 @@ const started=Date.now(),snapshotId=newSnapshotId();
 admin.initializeApp({credential:admin.credential.applicationDefault(),projectId:project});
 const firestore=admin.firestore();
 const PAGE=250,MAX_PER_COLLECTION=15000,MAX_ALL=50000;
-async function listCollection(name){
+async function listCollection(ref){
  const docs=[];let cursor=null;
  for(let page=0;page<=Math.ceil(MAX_PER_COLLECTION/PAGE);page++){
-  let q=firestore.collection(name)
-   .orderBy(admin.firestore.FieldPath.documentId()).limit(PAGE);
+  let q=ref.orderBy(admin.firestore.FieldPath.documentId()).limit(PAGE);
   if(cursor)q=q.startAfter(cursor);
   const batch=await q.get();
   if(batch.empty)return docs;
@@ -36,36 +36,21 @@ async function listCollection(name){
 }
 async function source(){
  const records=[];
- for(const [scope,name] of Object.entries(SOURCE_COLLECTIONS)){
-  const docs=await listCollection(name);
+ for(const [scope,name] of Object.entries({...SOURCE_COLLECTIONS,...LOYALTY_COLLECTIONS})){
+  const docs=await listCollection(firestore.collection(name));
   for(const item of docs)records.push(record(scope,item.ref.path,item.data(),
     {updateTime:item.updateTime}));
   if(records.length>MAX_ALL)throw Error("Total source exceeds safety bound");
  }
- const profiles=records.filter(x=>x.scope==="profiles");
- for(const profile of profiles){
-  // Keep past consents, visits, incoming transfer notices and unfinished
-  // onboarding. Source collections are paginated, not silently truncated.
-  for(const [scope,path] of [
-    ["agreements","users/"+profile.uid+"/baliIdAgreements"],
-    ["event-checkins","users/"+profile.uid+"/eventCheckins"],
-    ["transfer-inbox","baliTransferInbox/"+profile.uid+"/items"]
-  ]){
-    let cursor=null,count=0;
-    do{
-      let q=firestore.collection(path)
-        .orderBy(admin.firestore.FieldPath.documentId()).limit(PAGE);
-      if(cursor)q=q.startAfter(cursor);
-      const docs=await q.get();
-      for(const doc of docs.docs)records.push(record(scope,doc.ref.path,
-        doc.data(),{updateTime:doc.updateTime}));
-      count+=docs.size;
-      if(records.length>MAX_ALL||count>MAX_PER_COLLECTION)
-        throw Error("Nested source exceeds migration safety bound");
-      if(docs.size<PAGE)break;
-      cursor=docs.docs.at(-1);
-    }while(true);
+ // Collection-group queries retain nested history even when a parent document
+ // is missing. Validation blocks orphan accounts instead of silently omitting them.
+ for(const [scope,{group,path}] of Object.entries(NESTED_SOURCES)){
+  const docs=await listCollection(firestore.collectionGroup(group));
+  for(const doc of docs){
+   if(path.test(doc.ref.path))records.push(record(scope,doc.ref.path,
+    doc.data(),{updateTime:doc.updateTime}));
   }
+  if(records.length>MAX_ALL)throw Error("Total source exceeds safety bound");
  }
  if(records.length>MAX_ALL)throw Error("Total source exceeds safety bound");
  return records;
@@ -102,13 +87,18 @@ async function query(sql,params=[]){
   throw Error("Cloudflare D1 rejected a statement; migration stopped");
  return result.result[0]?.results||[];
 }
-const tables=await query("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('bali_source_snapshots','bali_snapshot_manifests','bali_nested_source_snapshots')");
-if(tables.length!==3)throw Error("Apply D1 migrations 0006 and 0007 before staging");
+const tables=await query("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('bali_source_snapshots','bali_snapshot_manifests','bali_nested_source_snapshots','bali_loyalty_source_snapshots')");
+if(tables.length!==4)throw Error("Apply D1 migrations 0006, 0007 and 0008 before staging");
 if(expected.total===0)throw Error("Empty Firebase export is not eligible for staging");
+await query("INSERT INTO bali_snapshot_manifests "+
+ "(snapshot_id,source_project,state,document_count,source_manifest_digest,"+
+ "staged_manifest_digest,started_at_ms,notes) VALUES (?,?,?,?,?,?,?,?)",
+ [snapshotId,project,"pending",expected.total,expected.digest,"0".repeat(64),started,
+  "Copy in progress; source Firebase remains authoritative"]);
+try{
 for(let index=0;index<original.length;index++){
  const r=original[index];
- const nested=["event-checkins","transfer-inbox"].includes(r.scope);
- const table=nested?"bali_nested_source_snapshots":"bali_source_snapshots";
+ const table=snapshotTable(r.scope);
  await query("INSERT INTO "+table+
   " (snapshot_id,source_path,scope,firebase_uid,payload_json,source_digest,staged_at_ms) "+
   "VALUES (?,?,?,?,?,?,?) ON CONFLICT(snapshot_id,source_path) DO NOTHING",
@@ -116,29 +106,40 @@ for(let index=0;index<original.length;index++){
  if((index+1)%1000===0)console.log("Staged documents:",index+1);
 }
 const staged=[];
-for(let offset=0;offset<expected.total;offset+=PAGE){
- const chunk=await query("SELECT source_path,source_digest FROM ("+
-  "SELECT source_path,source_digest FROM bali_source_snapshots WHERE snapshot_id=? "+
-  "UNION ALL SELECT source_path,source_digest FROM bali_nested_source_snapshots WHERE snapshot_id=?"+
-  ") ORDER BY source_path LIMIT ? OFFSET ?",
-  [snapshotId,snapshotId,PAGE,offset]);
- for(const row of chunk)staged.push(row.source_path+"\t"+row.source_digest);
+for(const table of SNAPSHOT_TABLES){
+ for(let offset=0;;offset+=PAGE){
+  const chunk=await query("SELECT source_path,payload_json,source_digest FROM "+table+
+   " WHERE snapshot_id=? ORDER BY source_path LIMIT ? OFFSET ?",
+   [snapshotId,PAGE,offset]);
+  for(const row of chunk){
+   const digest=createHash("sha256").update(row.payload_json).digest("hex");
+   if(digest!==row.source_digest)throw Error("Staged payload digest mismatch");
+   staged.push(row.source_path+"\t"+digest);
+  }
+  if(staged.length>MAX_ALL)throw Error("Staged readback exceeds safety bound");
+  if(chunk.length<PAGE)break;
+ }
 }
 if(staged.length!==expected.total)throw Error("Readback count differs from Firebase");
-const stagedDigest=createHash("sha256").update(staged.join("\n")).digest("hex");
+const stagedDigest=createHash("sha256").update(staged.sort().join("\n")).digest("hex");
 if(stagedDigest!==expected.digest)
  throw Error("D1 digest mismatch: verification forbidden");
 const current=await source(),latest=manifest(current);
 const stable=latest.total===expected.total&&latest.digest===expected.digest;
 const state=stable?"verified":"blocked";
-await query("INSERT INTO bali_snapshot_manifests "+
- "(snapshot_id,source_project,state,document_count,source_manifest_digest,"+
- "staged_manifest_digest,started_at_ms,finished_at_ms,notes) VALUES (?,?,?,?,?,?,?,?,?)",
- [snapshotId,project,state,expected.total,expected.digest,stagedDigest,started,
+await query("UPDATE bali_snapshot_manifests SET state=?,staged_manifest_digest=?,finished_at_ms=?,notes=? WHERE snapshot_id=? AND state='pending'",
+ [state,stagedDigest,
   Date.now(),stable?"Immutable source snapshot; no wallet cutover":
-  "Firebase changed during staging; do not apply"]);
+  "Firebase changed during staging; do not apply",snapshotId]);
 console.log(JSON.stringify({snapshotId,state,sourceCount:expected.total,
  sourceManifest:expected.digest,stagedDigest,
  firebaseSourceUnchanged:stable,cutoverAllowed:false}));
 if(!stable)throw Error("Firebase source changed during copy; snapshot blocked");
 console.log("Snapshot verified. Source Firebase remains authoritative.");
+}catch(error){
+ // Do not publish raw Firebase errors, paths, QR codes, guest data or balances.
+ await query("UPDATE bali_snapshot_manifests SET state='blocked',finished_at_ms=?,notes=? WHERE snapshot_id=? AND state='pending'",
+  [Date.now(),"Copy or verification failed; source unchanged; cutover forbidden",snapshotId])
+  .catch(()=>{});
+ throw Error("Snapshot staging failed; source Firebase remains authoritative");
+}

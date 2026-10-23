@@ -6,9 +6,11 @@ on:
     paths:
       - 'cloudflare-pages/d1/migrations/0006_bali_source_snapshots.sql'
       - 'cloudflare-pages/d1/migrations/0007_bali_nested_history.sql'
+      - 'cloudflare-pages/d1/migrations/0008_bali_loyalty_source_snapshots.sql'
       - 'scripts/bali-id-source-snapshot.mjs'
       - 'scripts/export-bali-id-to-d1.mjs'
       - 'scripts/test-bali-id-source-snapshot.mjs'
+      - 'scripts/test-bali-id-export-runner.mjs'
       - 'cloudflare-pages/functions/api/admin/bali-id-source-snapshot-status.js'
       - '.github/workflows/bali-id-source-migration-ci.yml'
 permissions:
@@ -28,6 +30,8 @@ jobs:
           node --check scripts/test-bali-id-source-snapshot.mjs
           node --input-type=module --check < cloudflare-pages/functions/api/admin/bali-id-source-snapshot-status.js
       - name: Test lossless UID, wallet and operation import in SQLite
-        run: node --experimental-sqlite scripts/test-bali-id-source-snapshot.mjs
+        run: |
+          node --experimental-sqlite scripts/test-bali-id-source-snapshot.mjs
+          node --experimental-sqlite scripts/test-bali-id-export-runner.mjs
       - name: Prevent accidental Staff visual changes
         run: node scripts/test-staff-appearance-locked.mjs

@@ -18,9 +18,12 @@ export async function onRequestGet({request,env}){
     "FROM bali_snapshot_manifests ORDER BY started_at_ms DESC LIMIT 1").first();
   if(!row)return out({mode:"read-only",snapshot:"not-started",
     sourceOfTruth:"firebase",cutoverAllowed:false});
-  const grouped=await db.prepare("SELECT scope,COUNT(*) AS count "+
-    "FROM bali_source_snapshots WHERE snapshot_id=? GROUP BY scope ORDER BY scope")
-    .bind(row.snapshot_id).all();
+  const grouped=await db.prepare("SELECT scope,COUNT(*) AS count FROM ("+
+    "SELECT scope FROM bali_source_snapshots WHERE snapshot_id=? UNION ALL "+
+    "SELECT scope FROM bali_nested_source_snapshots WHERE snapshot_id=? UNION ALL "+
+    "SELECT scope FROM bali_loyalty_source_snapshots WHERE snapshot_id=?"+
+    ") GROUP BY scope ORDER BY scope")
+    .bind(row.snapshot_id,row.snapshot_id,row.snapshot_id).all();
   const counts=Object.fromEntries((grouped.results||[])
     .map(x=>[x.scope,Number(x.count)]));
   const actual=Object.values(counts).reduce((sum,n)=>sum+n,0);
