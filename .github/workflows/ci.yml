@@ -45,6 +45,7 @@ jobs:
           node --check functions/brsm-campaigns.js
           node --check functions/brsm-identity.js
           node --check functions/bali-coin.js
+          node --check functions/coin-rollout.js
           node --check functions/brsm-coin-awards.js
           node --input-type=module --check < bali-coin-firebase-api.js
           node --check functions/brsm-core.js
@@ -113,7 +114,7 @@ jobs:
         run: |
           node scripts/verify-bali-transfers.mjs
           node scripts/test-bali-backend.mjs
-          node --test scripts/test-bali-coin.cjs
+          node --test scripts/test-bali-coin.cjs scripts/test-coin-rollout.cjs
           node --test scripts/test-brsm.cjs
           node --test scripts/test-brsm-service.cjs
           # Legacy Sheets COIN test intentionally excluded: that backend is no longer authoritative.
@@ -125,6 +126,7 @@ jobs:
 
   browser:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

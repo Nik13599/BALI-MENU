@@ -79,6 +79,34 @@ history cannot be used.
 **Actual import status: not run.** No complete export or live Firebase
 permissions have been supplied for this migration.
 
+## Server-side COIN release gate
+
+**Default is frozen**, even when a Cloud Functions deployment succeeds.
+Balance-changing operations (transfer, manual credit/debit, attendance/activity
+rewards and bar/prize purchase) require server-side release settings.
+No client-provided flag can bypass the gate. BRSM attendance is recorded while
+COIN is frozen with `coinsAwarded: 0`, and may be credited later using the
+existing idempotent visit-claim operation. Reversing a visit with existing
+COIN credit is blocked during a freeze to avoid leaving an inconsistent ledger.
+
+Configure these server environment variables outside the public repository:
+- For **pilot** testing: `BALI_COIN_WRITE_MODE=pilot`,
+  `BALI_COIN_PILOT_CONFIRM=ALLOW_TEST_COIN_WRITES` and
+  `BALI_COIN_PILOT_UIDS=<comma-separated dedicated test Firebase UIDs>`.
+  Both transfer endpoints must be in the pilot allowlist.
+- For **live** operation, only after reconciliation and signed-off review:
+  `BALI_COIN_WRITE_MODE=live`,
+  `BALI_COIN_VERIFIED_EXPORT_SHA256=<64-char approved source file hash>`,
+  `BALI_COIN_LIVE_CONFIRM=VERIFIED_SOURCE_AND_WALLETS`.
+- Omitting any required value keeps the ledger frozen. Never commit
+  `functions/.env` or production wallet export contents into GitHub.
+- Fulfilling an already-paid voucher remains possible during a freeze: it
+  does not credit/debit guest coin accounts.
+
+This operational release flag is an **additional guard**, not evidence that
+legacy balances were successfully imported. Pilot accounts must be verified
+and isolated from existing guest history before enabling pilot mode.
+
 ## Deployment checklist
 1. Run all backend, Firestore emulator, BRSM, admin and mobile tests.
 2. Validate source-to-target BALI IDs, final COIN sums and histories using a

@@ -5,6 +5,7 @@ on:
     paths:
       - "functions/brsm*.js"
       - "functions/bali-coin.js"
+      - "functions/coin-rollout.js"
       - "brsm-*"
       - "bali-coin-*"
       - "google-apps-script/BaliBackend.gs"
@@ -16,6 +17,7 @@ on:
       - "firestore.rules"
       - "scripts/test-brsm*"
       - "scripts/test-bali-coin*"
+      - "scripts/test-coin-rollout.cjs"
       - "scripts/migrate-bali-coins.cjs"
       - "tests/brsm-card.spec.cjs"
       - ".github/workflows/brsm-checks.yml"
@@ -59,6 +61,7 @@ jobs:
           node --check functions/brsm-campaigns.js
           node --check functions/brsm-identity.js
           node --check functions/bali-coin.js
+          node --check functions/coin-rollout.js
           node --check functions/brsm-coin-awards.js
           node --input-type=module --check < bali-coin-firebase-api.js
           node --input-type=module --check < brsm-card.js
@@ -70,7 +73,7 @@ jobs:
           node --input-type=module --check < brsm-coin-admin.js
           node --check < google-apps-script/BaliBackend.gs
       - name: Test shared Firebase COIN, bar and transfers
-        run: node --test scripts/test-bali-coin.cjs
+        run: node --test scripts/test-bali-coin.cjs scripts/test-coin-rollout.cjs
       - name: Test offline COIN export validation (no Firebase credentials)
         run: node --test scripts/test-bali-coin-migration-offline.cjs
       - name: Test cards, promo codes, QR and stage draws
