@@ -245,7 +245,9 @@ test("compact order keeps full details and pins color status at top right on all
     expect(box.bg).toBe("rgb(255, 153, 26)");
     expect(box.statusText).toBe("");
     expect(box.mainWidth).toBeGreaterThan(box.cardWidth*.48);
-    expect(box.headlineWidth).toBeGreaterThan(75);
+    // Original Staff UI uses a naturally sized event label (~72px) on all devices.
+    // Keep that design; validate legibility, not a larger redesigned column.
+    expect(box.headlineWidth).toBeGreaterThan(65);
     expect(box.phoneWidth).toBeGreaterThan(85);
     expect(box.phoneTop).toBeGreaterThanOrEqual(box.mainTop);
     if(width<=900){

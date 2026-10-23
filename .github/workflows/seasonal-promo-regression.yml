@@ -1,0 +1,29 @@
+name: BALI seasonal promo regression
+on:
+  push:
+    branches:
+      - fix/promo-test-isolation-20261023
+  pull_request:
+    paths:
+      - 'tests/home-seasonal-aspect.spec.cjs'
+      - 'tests/new-year-mobile-promo.spec.cjs'
+permissions:
+  contents: read
+jobs:
+  seasonal-verified:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check tests/home-seasonal-aspect.spec.cjs
+      - run: node --check tests/new-year-mobile-promo.spec.cjs
+      - run: node --check tests/preorders-workspace.spec.cjs
+      - run: npx playwright install --with-deps chromium
+      - name: Seasonal banner isolation for small phones
+        run: npx playwright test tests/home-seasonal-aspect.spec.cjs tests/new-year-mobile-promo.spec.cjs --project=small-phone
+      - name: Preserve original Staff card geometry at all breakpoints
+        run: npx playwright test tests/preorders-workspace.spec.cjs --project=phone --project=small-phone --project=tablet --project=desktop --grep 'compact order keeps full details'

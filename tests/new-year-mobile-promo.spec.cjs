@@ -12,6 +12,9 @@ const savedHoliday=()=>({
 
 // Isolate the promotional renderer from the production Firebase connection.
 test.beforeEach(async({page})=>{
+  // Every scenario supplies an explicit published offer or editor fixture.
+  // The real async guest renderer would race and clear those isolated slides.
+  await page.route('**/bali-pc-offers.js*',route=>route.fulfill({contentType:'text/javascript',body:'export {};'}));
   await page.route("**/*",route=>
     new URL(route.request().url()).hostname==="127.0.0.1"?
       route.continue():route.abort());
@@ -75,6 +78,9 @@ test("Desktop keeps the complete original holiday artwork",async({page})=>{
 });
 
 test("Published seasonal campaign can replace saved artwork and still be resized in the visual builder",async({page})=>{
+  // Do not let the real public renderer overwrite the isolated, explicitly
+  // published admin fixture during its asynchronous first snapshot.
+  await page.route('**/bali-pc-offers.js*',route=>route.fulfill({contentType:'text/javascript',body:'export {};'}));
   await page.goto("/index.html");
   const source=fs.readFileSync(path.join(__dirname,"..","bali-pc-offers.js"),"utf8")
     .replace(/^import\s+.*?;\s*$/gm,"");
