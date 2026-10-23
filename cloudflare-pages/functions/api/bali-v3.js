@@ -1,3 +1,5 @@
+import {catalog,checkEvent,priceLines,validatedCustomer,
+  createOrder,toError} from "../_lib/d1-preorders.js";
 /* Same-origin Sheets API for Cloudflare Pages.
  * Configure SHEETS_SCRIPT_URL and BALI_BRIDGE_KEY as encrypted runtime variables.
  * Calls are verified again by Apps Script against Firebase Auth, not by a claimed UID. */
@@ -35,8 +37,6 @@ const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:
 export async function onRequestPost({request,env}){
   if(new URL(request.url).origin!==request.headers.get("Origin")&&request.headers.get("Origin"))
     return json({ok:false,error:{code:"origin",message:"Недопустимый источник."}},403);
-  if(!env.SHEETS_SCRIPT_URL||!env.BALI_BRIDGE_KEY)
-    return json({ok:false,error:{code:"not-configured",message:"BALI Sheets API пока не подключён."}},503);
   let input;
   try{
     if(Number(request.headers.get("Content-Length"))>110000)return json({ok:false},413);
@@ -60,7 +60,60 @@ export async function onRequestPost({request,env}){
     if(!verification.ok)
       return json({ok:false,error:{code:verification.code,message:verification.message}},verification.status);
     payload.guestVerified=true;
+    // Switch ONLY when a verified D1 migration is active. No dual writes:
+    // after activation an unavailable D1 must never fall back to Sheets.
+    const db=env?.BALI_OPERATIONS_DB;
+    if(db){
+      let state;
+      try{state=await db.prepare(
+        "SELECT status FROM migration_state WHERE id='preorders'").first();}
+      catch{return json({ok:false,error:{code:"unavailable",
+        message:"База предзаказов временно недоступна."}},503);}
+      if(state?.status==="complete"){
+        try{
+          const {events,menu}=await catalog(env);
+          const event=checkEvent(events,payload.eventId,payload.eventDate);
+          const {lines}=priceLines(menu,payload.items);
+          const customer=validatedCustomer(payload);
+          const requestId=String(payload.requestId);
+          if(!/^[a-f0-9]{32}$/.test(requestId))
+            return json({ok:false,error:{code:"invalid-argument",
+              message:"Неверный идентификатор отправки."}},400);
+          // Optional Google Auth is verified by Firebase, not by guest claims.
+          let uid="";
+          if(typeof input.token==="string"&&input.token){
+            const verify=await fetch(
+              "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key="+
+              "AIzaSyAiGyt5O6x2V0pBNIJ2pOlXxXBgaYqzzUA",{
+                method:"POST",headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({idToken:input.token}),
+                signal:AbortSignal.timeout(7000)
+              });
+            if(!verify.ok)return json({ok:false,error:{code:"unauthenticated",
+              message:"Сессия Google истекла. Войдите снова."}},401);
+            const profile=(await verify.json()).users?.[0];
+            if(profile?.disabled||!profile?.localId||!profile?.emailVerified)
+              return json({ok:false,error:{code:"unauthenticated",
+                message:"Аккаунт Google не подтверждён."}},401);
+            uid=profile.localId;
+          }
+          const order=await createOrder(db,{
+            id:"o_"+requestId,eventId:event.id,eventDate:event.date,
+            eventTitle:event.title,customer,lines,status:"pending",ownerUid:uid
+          });
+          return json({ok:true,data:{order:{
+            id:order.id,orderNumber:order.orderNumber,
+            eventTitle:order.eventTitle,total:order.total
+          }}});
+        }catch(error){
+          const response=toError(error);
+          return json(await response.json(),response.status);
+        }
+      }
+    }
   }
+  if(!env.SHEETS_SCRIPT_URL||!env.BALI_BRIDGE_KEY)
+    return json({ok:false,error:{code:"not-configured",message:"BALI Sheets API пока не подключён."}},503);
   try{
     const res=await fetch(env.SHEETS_SCRIPT_URL,{method:"POST",redirect:"follow",
       headers:{"Content-Type":"text/plain;charset=UTF-8"},
