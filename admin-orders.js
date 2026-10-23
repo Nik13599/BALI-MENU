@@ -22,8 +22,9 @@ const auth=getAuth(app),db=sheetsEnabled()?null:getFirestore(app),$=id=>document
 let unsubOrders=null,unsubMenu=null,unsubEvents=null,generation=0,authorized=false,orders=[],catalog=[];
 let events=new Map(),dateOrders=[],loadedDate="",unsubDateOrders=null,dateRevision=0;
 let calendarSourceLoaded=false,calendarLastRead=0,calendarReadPromise=null;
-let preorderOnlyStaff=false,sheetsCanEditOrders=false;
+let preorderOnlyStaff=false,sheetsCanEditOrders=false,sheetsCanCreateOrders=false;
 let editOrder=null,editLines=[],originalIds=new Set(),creatingOrder=false;
+let createOrderRequestId=null;
 const statuses={pending:"Ожидает подтверждения",confirmed:"Подтверждён",cancelled:"Отменён"};
 const normalizedOrderStatus=status=>status==="completed"?"confirmed":status;
 const compactWorkspace=document.body.classList.contains("bali-preorders-workspace");
@@ -876,16 +877,34 @@ $("editOrderDate").addEventListener("change",()=>{
 function openCreateOrder(){
   ensureAdmin();
   creatingOrder=true;editOrder=null;editLines=[];originalIds=new Set();
+  createOrderRequestId=crypto.randomUUID();
   $("orderEditTitle").textContent="Новый предзаказ · по телефону";
   $("manualOrderGuestLink").hidden=preorderOnlyStaff;
   $("editOrderGuestEmail").value="";
   fillOrderDateOptions($("ordersDateFilter").value||
     [...events.values()].find(x=>!compactWorkspace||activeCalendarEvent(x))?.date||"");
   fillOrderEventOptions();
+  const currentDate=$("editOrderDate").value;
+  const eligible=[...events.values()].filter(e=>e.date===currentDate&&activeCalendarEvent(e));
+  if(eligible.length===1)$("editOrderEvent").value=eligible[0].id;
   $("editOrderStatus").value="pending";
   for(const id of ["editOrderName","editOrderPhone","editOrderReference","editOrderNotes"])$(id).value="";
-  if($("editOrderExtra"))$("editOrderExtra").open=false;
-  $("orderEditStatus").textContent="Ручной заказ: учётная запись гостя не обязательна.";
+  // Guests and table number are mandatory for a new order, so expose the
+  // fields immediately instead of hiding them in the edit-only disclosure.
+  if($("editOrderExtra"))$("editOrderExtra").open=true;
+  $("orderEditStatus").textContent=sheetsEnabled()&&!sheetsCanCreateOrders
+    ?"Создание заказа требует новой версии Google Apps Script. Обновите сервер, затем сохраните заказ."
+    :"Выберите мероприятие, укажите гостя и добавьте блюда.";
+  if(sheetsEnabled()&&!catalog.length){
+    void sheetsRequest("menu").then(({menu})=>{
+      if(!creatingOrder)return;
+      catalog=(menu||[]).map(item=>({...item,id:Number(item.id),available:true}))
+        .filter(item=>Number.isSafeInteger(item.id)&&Number.isFinite(item.price));
+      menuSelect();
+    }).catch(e=>{
+      if(creatingOrder)$("orderEditStatus").textContent="Не удалось загрузить блюда: "+(e.message||e.code);
+    });
+  }
   menuSelect();renderEditLines();
   $("orderEditDialog").showModal();
 }
@@ -1011,6 +1030,36 @@ $("orderEditForm").addEventListener("submit",async event=>{
   $("orderEditStatus").textContent="Сохраняем изменения...";
   try{
     if(creatingOrder){
+      if(sheetsEnabled()){
+        if(!sheetsCanCreateOrders)
+          throw new Error("Новая функция ещё не опубликована в Google Apps Script. Опубликуйте новую версию сервера.");
+        const {order:created}=await sheetsRequest("staffCreateOrder",{
+          requestId:createOrderRequestId,eventDate,eventId,customerName,customerPhone,
+          tableNumber,bookingId,notes,status,
+          items:editLines.map(item=>({id:item.id,quantity:item.quantity}))
+        });
+        if(!created?.id)throw new Error("Сервер не подтвердил создание заказа.");
+        const saved=normalizeStaffOrder(created);
+        // Show a newly created order instantly, including under a previously
+        // selected date. The next queue refresh reconciles the same ID.
+        orders=[saved,...orders.filter(row=>row.id!==saved.id)];
+        if(loadedDate===saved.eventDate)
+          dateOrders=[saved,...dateOrders.filter(row=>row.id!==saved.id)];
+        creatingOrder=false;createOrderRequestId=null;
+        $("orderEditDialog").close();
+        const dateSelect=$("ordersDateFilter");
+        const filterEvent=$("ordersEventFilter");
+        if(dateSelect.value&&
+          (dateSelect.value!==saved.eventDate||
+           (filterEvent.value&&filterEvent.value!==saved.eventId))){
+          dateSelect.value="";
+          dateOrders=[];loadedDate="";
+        }
+        renderDates();renderOrders();
+        setStatus("Предзаказ «"+orderLabel(saved)+"» создан. Сумма: "+fmt(saved.total));
+        return;
+      }
+      // Legacy Firestore mode remains intact on non-Sheets admin pages.
       let ownerUid="";
       let ownerEmail="";
       if(linkedEmail){
@@ -1028,7 +1077,7 @@ $("orderEditForm").addEventListener("submit",async event=>{
         items:editLines.map(line=>({...line})),ownerUid,ownerEmail
       });
       const assignedNumber=saved.orderNumber;
-      creatingOrder=false;
+      creatingOrder=false;createOrderRequestId=null;
       $("orderEditDialog").close();
       setStatus("Ручной предзаказ «"+chosenTitle+" №"+assignedNumber+"» создан. Сумма: "+fmt(total(editLines)));
       return;
@@ -1124,6 +1173,7 @@ async function subscribe(user) {
   const current=++generation;
   statusOutbox.deactivate();
   orders=[];catalog=[];events=new Map();calendarSourceLoaded=false;calendarLastRead=0;
+  createOrderRequestId=null;creatingOrder=false;sheetsCanCreateOrders=false;
   authorized=false;preorderOnlyStaff=false;sheetsCanEditOrders=false;
   window.dispatchEvent(new CustomEvent("bali:admin:session",{detail:{uid:null}}));
   $("ordersAdminList").textContent="Проверяем права...";
@@ -1138,6 +1188,7 @@ async function subscribe(user) {
       if(current!==generation)return;
       // Older live Apps Script versions do not advertise order editing.
       sheetsCanEditOrders=recent.canEditOrders===true;
+      sheetsCanCreateOrders=recent.canCreateOrders===true;
       preorderOnlyStaff=true;
       authorized=true;
       statusOutbox.activate(user.uid);
@@ -1151,9 +1202,9 @@ async function subscribe(user) {
       void refreshCalendarEvents({force:true,quiet:true}).catch(()=>{});
       orders=staffOrdersFromApi(recent.orders);
       renderDates();renderOrders();menuSelect();syncWorkspaceReportScope();
-      // The server authorizes staff edits and reports. Manual creation and
-      // permanent deletion stay disabled until separate server routes exist.
-      for(const id of ["createManualOrder"])if($(id))$(id).disabled=true;
+      // Manual create is authorised by staffCreateOrder on the server; leave
+      // the button clickable even during a staggered Apps Script rollout.
+      if($("createManualOrder"))$("createManualOrder").disabled=false;
       window.dispatchEvent(new CustomEvent("bali:admin:orders",{detail:{
         ownerUid:user.uid,orders:orders.filter(o=>activePreorderEvent(o.eventId,o.eventDate)).map(({id,status,orderNumber})=>({id,status,orderNumber})),
         count:orders.length,pending:orders.filter(o=>o.status==="pending"&&!o.archived).length
@@ -1167,10 +1218,11 @@ async function subscribe(user) {
         if(refreshing||Date.now()-lastRefreshAt<15000)return;
         refreshing=true;
         try{
-          const {orders:incoming,canEditOrders}=await sheetsRequest("staffRecentOrders");
+          const {orders:incoming,canEditOrders,canCreateOrders}=await sheetsRequest("staffRecentOrders");
           sheetsCanEditOrders=canEditOrders===true;
+          sheetsCanCreateOrders=canCreateOrders===true;
           if(current!==generation)return;
-          orders=(incoming||[]).filter(withinOrderRetention);
+          orders=staffOrdersFromApi(incoming);
           renderDates();renderOrders();
         }catch(e){if(current===generation)setStatus("Не удалось обновить очередь: "+(e.message||e.code));}
         finally{refreshing=false;lastRefreshAt=Date.now();}
