@@ -8,6 +8,7 @@ on:
       - 'preorders-access.js'
       - 'cloudflare-pages/functions/_lib/staff-web-push.js'
       - 'cloudflare-pages/functions/api/staff-push.js'
+      - 'cloudflare-pages/functions/staff-install.js'
       - 'cloudflare-pages/functions/api/bali-v3.js'
       - 'cloudflare-pages/functions/api/d1-preorders.js'
       - 'cloudflare-pages/functions/_lib/d1-orders.js'
@@ -44,6 +45,24 @@ jobs:
           node --input-type=module --check < cloudflare-pages/functions/api/d1-preorders.js
           node --input-type=module --check < bali-staff-push.js
           node --check bali-staff-sw.js
+          node --input-type=module --check < cloudflare-pages/functions/staff-install.js
+      - name: Verify Web Clip installer payload
+        run: |
+          node --input-type=module - <<'NODE'
+          import fs from "node:fs";
+          import assert from "node:assert/strict";
+          const src=fs.readFileSync("cloudflare-pages/functions/staff-install.js","utf8");
+          const module=await import("data:text/javascript;base64,"+Buffer.from(src).toString("base64"));
+          const env={ASSETS:{fetch:async()=>new Response(new Uint8Array([137,80,78,71]))}};
+          const response=await module.onRequestGet({env,request:new Request("https://baliminsk.by/staff-install")});
+          const text=await response.text();
+          assert.equal(response.status,200);
+          assert.match(response.headers.get("Content-Type"),/application\/x-apple-aspen-config/);
+          assert(text.includes("com.apple.webClip.managed")&&text.includes("https://baliminsk.by/preorders.html"));
+          assert(text.includes("IsRemovable")&&text.includes("BALI STAFF"));
+          assert(!text.includes("VPN")&&!text.includes("Password"));
+          console.log("Apple Web Clip configuration profile PASS");
+          NODE
       - name: Verify Web Push encryption, VAPID and receipt handling
         run: node scripts/test-staff-web-push.mjs
       - name: Verify existing guest/Staff order contract
