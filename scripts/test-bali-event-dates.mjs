@@ -54,8 +54,11 @@ const staffAllowed=vm.runInNewContext(staffHelpers+"\n[...events.values()].filte
   calendarSourceLoaded:true
 });
 assert.deepEqual(Array.from(staffAllowed),["today-open","future-open"]);
+// The staff interface stays unchanged on phone and desktop. Validate the
+// existing select and date statuses, not an unapproved visual redesign.
 assert.match(readFileSync("preorders-workspace.css","utf8"),
-  /ordersDateFilter\[data-date-state="today"\]/);
+  /preorder-filters select/);
+assert.ok(staff.includes('option.dataset.dateState=date===minskToday()?'));
 assert.ok(readFileSync("admin.html","utf8").includes("bali-calendar-date-status-20261023"));
 assert.ok(readFileSync("index.html","utf8").includes("bali-calendar-date-status-20261023"));
 console.log("BALI admin dates, guest eligible events and staff date colors PASS");
