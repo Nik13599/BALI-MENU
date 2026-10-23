@@ -1,0 +1,113 @@
+name: BALI COIN + BRSM — protected test pilot
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Production Firebase test-only operations; no real guests"
+        type: choice
+        required: true
+        options:
+          - CHECK_ONLY
+          - ENABLE_TEST_COIN_PILOT
+        default: CHECK_ONLY
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: bali-coin-brsm-firebase-pilot
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GCLOUD_PROJECT: demo-bali-menu
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci --no-audit --no-fund
+      - run: npm install --prefix functions --no-audit --no-fund
+      - name: Verify wallet, lottery, QR and freeze logic
+        run: |
+          node --test scripts/test-bali-coin.cjs scripts/test-coin-rollout.cjs
+          node --test scripts/test-brsm.cjs scripts/test-brsm-service.cjs
+          node --test scripts/test-bali-coin-migration-offline.cjs
+      - name: Test real Firestore transaction contention in demo only
+        run: npx firebase emulators:exec --config firebase.emulator.json --project demo-bali-menu --only firestore "node scripts/test-bali-coin-firestore.mjs"
+
+  deploy-pilot:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/feature/brsm-card-lotto-20261023' &&
+      inputs.confirmation == 'ENABLE_TEST_COIN_PILOT'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: firebase-production
+    env:
+      FIREBASE_PROJECT_ID: bali-menu-5a48b
+      FIREBASE_WIF_PROVIDER: ${{ vars.FIREBASE_WIF_PROVIDER || 'projects/855889005555/locations/global/workloadIdentityPools/bali-github-pool/providers/bali-github' }}
+      FIREBASE_DEPLOY_SERVICE_ACCOUNT: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Refuse incomplete project credentials
+        run: |
+          test "$FIREBASE_PROJECT_ID" = "bali-menu-5a48b"
+          test -n "$FIREBASE_WIF_PROVIDER"
+          test -n "$FIREBASE_DEPLOY_SERVICE_ACCOUNT"
+          grep -q '"codebase": "bali-id"' firebase.json
+      - name: Prepare TEST-ONLY runtime settings from protected secret
+        env:
+          PILOT_UIDS: ${{ secrets.BALI_COIN_PILOT_UIDS }}
+        run: |
+          node -e '
+          const fs=require("node:fs");
+          const raw=process.env.PILOT_UIDS||"";
+          const ids=raw.split(",").map(x=>x.trim());
+          const ok=ids.length>=2&&ids.length<=10&&
+            ids.every(x=>/^[A-Za-z0-9_-]{8,128}$/.test(x))&&
+            new Set(ids).size===ids.length;
+          if(!ok)throw Error("Configure at least 2 distinct dedicated test Firebase UIDs in the protected BALI_COIN_PILOT_UIDS secret");
+          fs.writeFileSync("functions/.env.bali-menu-5a48b",
+            "BALI_COIN_WRITE_MODE=pilot\n"+
+            "BALI_COIN_PILOT_CONFIRM=ALLOW_TEST_COIN_WRITES\n"+
+            "BALI_COIN_PILOT_UIDS="+ids.join(",")+"\n",
+            {mode:0o600});
+          '
+      - name: Install Firebase deploy dependencies
+        run: |
+          npm ci --no-audit --no-fund
+          npm install --prefix functions --no-audit --no-fund
+      - name: Authenticate Google Cloud with short-lived WIF identity
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.FIREBASE_WIF_PROVIDER }}
+          service_account: ${{ env.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Deploy COIN read and administration callables (test ledger frozen for real guests)
+        run: |
+          npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:coinMe,functions:bali-id:coinCard,functions:bali-id:coinAdminCard,functions:bali-id:coinHistory,functions:bali-id:coinRecipient,functions:bali-id:coinLots,functions:bali-id:coinVouchers,functions:bali-id:coinSetReward"
+      - name: Deploy COIN pilot mutations and voucher fulfilment
+        run: |
+          npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:coinTransfer,functions:bali-id:coinChange,functions:bali-id:coinClaimVisit,functions:bali-id:coinAwardActivity,functions:bali-id:coinLotManage,functions:bali-id:coinRedeemLot,functions:bali-id:coinVoucherFulfill"
+      - name: Deploy BRSM campaign read and setup callables
+        run: |
+          npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:getCurrentBrsmCampaign,functions:bali-id:createBrsmCampaign,functions:bali-id:updateBrsmCampaignDraft,functions:bali-id:activateBrsmCampaign,functions:bali-id:archiveBrsmCampaign,functions:bali-id:listBrsmCampaigns,functions:bali-id:addBrsmCampaignEvent,functions:bali-id:listBrsmCampaignEvents,functions:bali-id:getBrsmCampaignEntry"
+      - name: Deploy BRSM QR attendance and protected lottery rounds
+        run: |
+          npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:issueBrsmCampaignQrs,functions:bali-id:claimBrsmCampaignVisit,functions:bali-id:manualBrsmCampaignVisit,functions:bali-id:undoBrsmCampaignVisit,functions:bali-id:beginBrsmCampaignRound,functions:bali-id:manageBrsmCampaignBall,functions:bali-id:getBrsmCampaignReport"
+      - name: Remove local test UIDs on runner
+        if: always()
+        run: rm -f functions/.env.bali-menu-5a48b
