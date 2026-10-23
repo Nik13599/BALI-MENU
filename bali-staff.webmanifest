@@ -14,9 +14,9 @@
   "lang": "ru",
   "icons": [
     {
-      "src": "/bali-staff-icon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any",
+      "src": "/bali-staff-approved-icon.png?v=20261023-1",
+      "sizes": "256x256",
+      "type": "image/png",
       "purpose": "any"
     }
   ]
