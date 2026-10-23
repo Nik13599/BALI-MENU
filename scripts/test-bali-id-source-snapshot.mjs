@@ -41,6 +41,12 @@ assert.equal(m.scopes.wallets,2);
 assert.equal(m.scopes.operations,1);
 assert.equal(m.scopes.transfers,1);
 assert.equal(m.scopes.agreements,1);
+const uidWithoutCard="firebase_uid_example_003";
+const pendingConsent=record("agreements",
+ "users/"+uidWithoutCard+"/baliIdAgreements/privilege",{version:1});
+assert.equal(manifest([...source,profile(uidWithoutCard),pendingConsent]).scopes.agreements,2,
+ "Save consent even when card allocation has not completed");
+assert.throws(()=>manifest([...source,pendingConsent]),/agreement-without-profile/);
 assert.equal(m.digest.length,64);
 assert.equal(manifest([...source].reverse()).digest,m.digest,"Stable order-independent source checksum");
 assert.notEqual(manifest([...source.slice(0,4),
