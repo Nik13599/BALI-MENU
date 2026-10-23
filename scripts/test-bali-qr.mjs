@@ -254,3 +254,36 @@ await test("recipient QR is opaque and expires after five minutes; own and expir
   h.advance(300000);
   await assert.rejects(h.call("previewBaliRecipientQr",{code},other),errorCode("failed-precondition"));
 });
+
+await test("manual bonus grant uses an immutable request ID and cannot double-credit on retry",async()=>{
+  const h=harness(),requestId="e".repeat(32);
+  const input={uid:guest,kind:"shot",quantity:3,transferable:true,
+    reason:"Начисление за участие",requestId};
+  const first=await h.call("issueBaliQuantity",input,staff);
+  assert.equal(first.ok,true);assert.equal(first.alreadyProcessed,false);
+  const again=await h.call("issueBaliQuantity",input,staff);
+  assert.equal(again.alreadyProcessed,true);
+  assert.equal(again.grantId,first.grantId);
+  assert.equal(h.wallet(guest).length,1);
+  assert.equal(h.wallet(guest)[0].remaining,3);
+  const history=[...h.memory].filter(([path])=>path.startsWith("walletOperations/"));
+  assert.equal(history.length,1,"The same manual request has exactly one receipt");
+  assert.equal(history[0][1].requestId,requestId);
+  await assert.rejects(h.call("issueBaliQuantity",{...input,quantity:4},staff),
+    errorCode("already-exists"));
+  await assert.rejects(h.call("issueBaliQuantity",{...input,requestId:"invalid"},staff),
+    errorCode("invalid-argument"));
+  await assert.rejects(h.call("issueBaliQuantity",input,guest),
+    errorCode("permission-denied"));
+  assert.equal(h.wallet(guest).length,1);
+});
+
+await test("new bonus and recipient QR links use production HTTPS BALI domain",async()=>{
+  const h=harness(),[{code,url}]=await h.batch();
+  assert.equal(new URL(url).origin,"https://baliminsk.by");
+  assert.equal(new URL(url).searchParams.get("baliQrBonus"),code);
+  const recipient=await h.call("issueGuestQr");
+  const target=new URL(await decode(recipient.qrDataUrl));
+  assert.equal(target.origin,"https://baliminsk.by");
+  assert.match(target.searchParams.get("baliRecipientQr"),/^[a-f0-9]{48}$/);
+});
