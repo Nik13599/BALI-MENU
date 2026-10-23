@@ -174,7 +174,7 @@ async function create(db,env,input,request,{staff=false,guest=false}={}){
   return order?good({order}):error("service-unavailable","Запись заказа недоступна.",503);
  }
  const {event,items}=await priced(env,data);
- const orderId=crypto.randomUUID(),now=Date.now();
+ const orderId="o_"+reqId,now=Date.now();
  // D1 batches execute in one transaction: counter -> order -> items -> receipt.
  // The order's number comes from the counter WITHIN the same transaction,
  // not from a racy read and a second write.
