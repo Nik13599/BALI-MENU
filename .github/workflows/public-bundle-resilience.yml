@@ -1,0 +1,29 @@
+name: BALI public bundle resilience
+on:
+  push:
+    branches:
+      - fix/public-bundle-recovery-20261023
+  pull_request:
+    paths:
+      - 'bali-public-reader.js'
+      - 'scripts/test-public-bundle-recovery.mjs'
+      - 'scripts/test-public-bundle.mjs'
+      - '.github/workflows/public-bundle-resilience.yml'
+permissions:
+  contents: read
+jobs:
+  public-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify public snapshot resilience and quotas
+        run: |
+          node --input-type=module --check < bali-public-reader.js
+          node scripts/test-public-bundle-recovery.mjs
+          node scripts/test-public-bundle.mjs
+          node scripts/test-public-cache.mjs
+      - name: Check static Pages build
+        run: node cloudflare-pages/build.mjs

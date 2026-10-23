@@ -11,11 +11,17 @@ const inFlight=new Map();
 // All public readers share ONE HTTP request per visible guest every 5 minutes.
 // Existing per-path endpoint remains the safe fallback during staged rollout.
 const BUNDLE_REFRESH_MS=5*60*1000;
-let bundleAt=0,bundlePending=null;
+const BUNDLE_FAILURE_RETRY_MS=20*1000;
+const FOCUS_REFRESH_MIN_MS=15*1000;
+let bundleAt=0,bundlePending=null,bundleFailed=false;
 async function publicBundle(){
-  if(bundlePending&&Date.now()-bundleAt<BUNDLE_REFRESH_MS)return bundlePending;
+  // A failed response must not pin every reader to the per-path fallback
+  // for five minutes. Retry the bundle with a short shared backoff.
+  const ttl=bundleFailed?BUNDLE_FAILURE_RETRY_MS:BUNDLE_REFRESH_MS;
+  if(bundlePending&&Date.now()-bundleAt<ttl)return bundlePending;
   bundleAt=Date.now();
-  bundlePending=(async()=>{
+  bundleFailed=false;
+  const pending=(async()=>{
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),11000);
     try{
@@ -31,7 +37,14 @@ async function publicBundle(){
       return data.sources;
     }finally{clearTimeout(timeout);}
   })();
-  return bundlePending;
+  bundlePending=pending;
+  pending.catch(()=>{
+    // Ignore an old failed request if a newer request is already active.
+    if(bundlePending!==pending)return;
+    bundleFailed=true;
+    bundleAt=Date.now();
+  });
+  return pending;
 }
 const config=()=>window.BALI_FIREBASE_CONFIG;
 let sdkPromise;
@@ -150,7 +163,7 @@ export function onSnapshot(ref,...args){
         detail:{path:ref.path}
       })));
   };
-  let active=true,busy=false,unsubSdk=null,usingSdk=false,lastVersion="";
+  let active=true,busy=false,unsubSdk=null,usingSdk=false,lastVersion="",lastAttempt=0;
   const original=cached(ref);
   if(original)queueMicrotask(()=>{if(active&&!usingSdk)send(original);});
   // A single bundle clock supersedes per-collection 45/90/120s polling.
@@ -174,6 +187,10 @@ export function onSnapshot(ref,...args){
   }
   async function poll(force=false){
     if(!active||busy||usingSdk||(document.hidden&&!force))return;
+    // Focus, pageshow and visibilitychange can fire together.
+    // One refresh attempt is enough; do not fan out redundant reads.
+    if(force&&lastAttempt&&Date.now()-lastAttempt<FOCUS_REFRESH_MIN_MS)return;
+    lastAttempt=Date.now();
     busy=true;
     try{
       const result=await read(ref,{fresh:force});
@@ -183,7 +200,9 @@ export function onSnapshot(ref,...args){
         [result.exists?.(),result.data?.()]);
       const changed=version!==lastVersion;
       lastVersion=version;
-      if(changed||force){remember(ref,result);send(result);}
+      // Re-entering a visible tab must not re-render unchanged catalogues
+      // or trigger fresh carousels, animations and menus repeatedly.
+      if(changed){remember(ref,result);send(result);}
     }catch(error){
       if(!active)return;
       if(error.code==="edge-missing")await fallbackSdk();
