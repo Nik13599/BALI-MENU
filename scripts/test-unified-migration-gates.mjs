@@ -32,7 +32,7 @@ const auth=`
    if(!adminOnly)throw Error("owner role is required");
    return {uid:"owner_UID",role:"admin"};
  };
- const handlerError=e=>errorJson(e.status===403?403:503,e.status===403?"access-denied":"service-unavailable");
+ const handlerError=e=>{console.error("[mock-migration-error]",String(e?.message||e));return errorJson(e.status===403?403:503,e.status===403?"access-denied":"service-unavailable");};
 `;
 const load=async path=>{
  let src=readFileSync(path,"utf8");
