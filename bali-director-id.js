@@ -79,7 +79,7 @@ async function findGuest(){
   const raw=$("directorGuestNumber").value.trim();
   const number=Number(raw);
   if(!/^\d{1,9}$/.test(raw)||!Number.isSafeInteger(number)||number<1){
-    status("directorSearchStatus","Укажите действительный персональный номер BALI ID.");
+    status("directorSearchStatus","Укажите действительный персональный номер Bali Card.");
     return;
   }
   isBusy=true;$("directorFind").disabled=true;
@@ -99,7 +99,7 @@ async function findGuest(){
     const tier=privilege.data()?.tier||"Member";
     const personal=privilege.data()?.benefits;
     $("directorGuestName").textContent=selectedGuestName;
-    $("directorGuestId").textContent="BALI ID № "+selectedId;
+    $("directorGuestId").textContent="Bali Card № "+selectedId;
     $("directorGuestCurrent").textContent="Текущая категория: "+displayTier(tier);
     $("directorTier").value=TIERS.includes(tier)?tier:"Member";
     $("directorBenefits").value=Array.isArray(personal)?personal.join("\n"):"";
@@ -144,7 +144,7 @@ const issueQuantity=httpsCallable(functions,"issueBaliQuantity");
 $("directorBonusGrantForm")?.addEventListener("submit",async event=>{
   event.preventDefault();
   if(!authorized||!selectedUid||!auth.currentUser?.emailVerified){
-    status("directorBonusGrantStatus","Выберите гостя с активным BALI ID.");return;
+    status("directorBonusGrantStatus","Выберите гостя с активной Bali Card.");return;
   }
   const kind=$("directorBonusType").value;
   const quantity=Number($("directorBonusQuantity").value);
@@ -154,7 +154,7 @@ $("directorBonusGrantForm")?.addEventListener("submit",async event=>{
     status("directorBonusGrantStatus","Укажите вид, количество 1–999 и основание (не менее 5 символов).");return;
   }
   const destination=selectedUid,guestName=selectedGuestName,number=selectedId;
-  if(!confirm("Начислить "+quantity+" ед. ("+kind+") гостю "+guestName+" · BALI ID "+number+"?"))return;
+  if(!confirm("Начислить "+quantity+" ед. ("+kind+") гостю "+guestName+" · Bali Card "+number+"?"))return;
   const button=event.currentTarget.querySelector('button[type="submit"]');
   button.disabled=true;status("directorBonusGrantStatus","Сохраняем начисление на сервере…");
   try{

@@ -99,7 +99,7 @@ test('director role loads active custom kinds and can grant them through the sam
   await expect(page.locator('#directorBonusGrantStatus')).toContainText('Успешно начислено');
   expect(await page.evaluate(()=>window.__calls.find(x=>x.name==='issueBaliQuantity').data)).toEqual({uid:'guest_fixture_001',kind:'dessert',quantity:3,transferable:true,reason:'Подарок за посещение'});
   await expect(page.locator('[data-bali-transfer-submit]')).toBeDisabled();
-  await expect(page.locator('[data-bali-transfer-status]')).toContainText('собственную BALI ID');
+  await expect(page.locator('[data-bali-transfer-status]')).toContainText('собственную Bali Card');
 });
 
 test('guest transfer choices include active custom grants with their display names and exclude unlisted kinds',async({page})=>{

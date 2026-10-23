@@ -373,7 +373,7 @@ function renderGuestPage(page,{scroll=true}={}) {
         }
     }
     document.title = ({home:'BALI NIGHTCLUB · Минск',menu:'Меню · BALI',events:'Календарь · BALI',
-        profile:'Личный кабинет · BALI',id:'BALI ID',contacts:'Информация · BALI',about:'О клубе · BALI'})[selected];
+        profile:'Личный кабинет · BALI',id:'Bali Card',contacts:'Информация · BALI',about:'О клубе · BALI'})[selected];
     // Корзина не остаётся открытой при переходе из меню.
     if(selected!=="menu" && typeof closeCart==="function")closeCart();
     if(selected!=="about"){
@@ -1143,7 +1143,7 @@ function attachEventListeners() {
         if(detail?.registered && openOrdersAfterSignIn)void openMyOrders();
         const mobileId=document.getElementById("baliMobileIdBtn");
         const mobileProfile=document.getElementById("baliMobileProfileBtn");
-        if(mobileId)mobileId.setAttribute("aria-label",detail?.registered?"Открыть мою BALI ID карту":"Войти, чтобы получить BALI ID");
+        if(mobileId)mobileId.setAttribute("aria-label",detail?.registered?"Открыть мою карту Bali Card":"Войти, чтобы получить Bali Card");
         if(mobileProfile)mobileProfile.setAttribute("aria-label",detail?.registered?"Открыть мой профиль":"Войти в личный кабинет");
         if(!detail?.registered&&document.body.dataset.baliPage==="id")navigateGuestPage("profile",{replace:true});
         const name=document.getElementById("baliProfileName");

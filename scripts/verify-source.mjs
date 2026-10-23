@@ -461,7 +461,7 @@ assert(referenceBottomNav.includes('.bali-bottom-nav button.active::after') &&
   referenceBottomNav.includes('button.active .bali-nav-glyph') &&
   referenceBottomNav.includes('clamp(26px,7.8vw,36px)') &&
   referenceBottomNav.includes('clamp(10px,3vw,14px)') &&
-  /<button[^>]*data-bali-nav="profile"[^>]*>[\s\S]*?BALI ID[\s\S]*?<\/button>/.test(html) &&
+  /<button[^>]*data-bali-nav="profile"[^>]*>[\s\S]*?Bali Card[\s\S]*?<\/button>/.test(html) &&
   html.includes('id="profileInfoBtn" data-bali-nav="contacts"'),
   "Mobile navigation must retain four working actions, selected state and dot.");
 assert(source("bali-mobile-reference.css").includes('Floating "Корзина" shortcut on mobile') &&
@@ -565,7 +565,7 @@ assert(html.includes('class="bali-pc-sidebar-contacts"') &&
 const infoCss=source("bali-info-page.css");
 const infoClient=source("bali-info-page.js");
 const infoSection=html.slice(html.indexOf('id="contactsSection"'),html.indexOf('id="profileSection"'));
-for(const term of ["Контакты и социальные сети","Режим работы","Посещение клуба","Меню и предзаказы","BALI ID · Privilege","Правовая информация","Сведения об организации","Персональные данные","Предзаказы, оплата и обращения"]){
+for(const term of ["Контакты и социальные сети","Режим работы","Посещение клуба","Меню и предзаказы","Bali Card","Правовая информация","Сведения об организации","Персональные данные","Предзаказы, оплата и обращения"]){
   assert(infoSection.includes(term),"Info is missing required club/site section: "+term);
 }
 assert(html.includes('bali-info-page.css?v=') &&

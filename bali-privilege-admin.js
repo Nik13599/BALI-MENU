@@ -58,7 +58,7 @@ window.addEventListener("bali:admin:select-privilege",async({detail})=>{
       $("baliPrivilegeTier").value=tier;
       $("baliPrivilegePersonal").value=(card.benefits||[]).join("\n");
       setStatus("baliPrivilegeAssignStatus",
-        "BALI ID: "+(card.activated?card.number:"ещё не активирован")+
+        "Bali Card: "+(card.activated?card.number:"ещё не активирован")+
         " · статус: "+tier);
       $("baliPrivilegeAdmin").scrollIntoView({behavior:"smooth",block:"nearest"});
       return;
@@ -72,7 +72,7 @@ window.addEventListener("bali:admin:select-privilege",async({detail})=>{
     $("baliPrivilegeTier").value=TIERS.includes(tier)?tier:"Member";
     $("baliPrivilegePersonal").value=(assignment.data()?.benefits||[]).join("\n");
     setStatus("baliPrivilegeAssignStatus",
-      "BALI ID: "+(id.exists()?String(id.data().number).padStart(6,"0"):"ещё не активирован")+
+      "Bali Card: "+(id.exists()?String(id.data().number).padStart(6,"0"):"ещё не активирован")+
       " · статус: "+tier);
     $("baliPrivilegeAdmin").scrollIntoView({behavior:"smooth",block:"nearest"});
   }catch(e){setStatus("baliPrivilegeAssignStatus","Ошибка загрузки статуса: "+(e.code||"unknown"));}

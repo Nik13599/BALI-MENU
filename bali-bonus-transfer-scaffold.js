@@ -51,7 +51,7 @@ export function initBonusTransferScaffold() {
     form.addEventListener("submit",event=>{
       event.preventDefault();
       const status=form.querySelector("[data-bali-transfer-status]");
-      if(status)status.textContent="Служебный перевод от имени гостя недоступен. Для перевода гость использует собственную BALI ID.";
+      if(status)status.textContent="Служебный перевод от имени гостя недоступен. Для перевода гость использует собственную Bali Card.";
     });
   });
 }

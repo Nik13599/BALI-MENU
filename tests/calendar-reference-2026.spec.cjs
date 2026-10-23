@@ -147,7 +147,7 @@ test('BALI ID keeps its enlarged card on-screen without redundant heading',async
   });
   expect(layout.left).toBeGreaterThanOrEqual(8);
   expect(layout.right).toBeLessThanOrEqual(layout.viewport-8);
-  expect(layout.accessibleName).toBe('BALI ID');
+  expect(layout.accessibleName).toBe('Bali Card');
   await expect(page.locator('#baliIdPageHeading')).toHaveCount(0);
   expect(layout.overflow).toBe('visible');
   expect(layout.pageScrollable).toBe(false);

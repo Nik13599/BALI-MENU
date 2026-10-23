@@ -56,7 +56,7 @@ async function check(){
     result("Персональный профиль",hasProfile,hasProfile?"Имя и телефон присутствуют в новой базе.":"В новой таблице нет заполненного имени или телефона.",hasProfile?"ok":"warn");
     result("Роль доступа",true,me.role==="admin"?"Администратор.":me.role==="staff"?"Сотрудник.":"Гость без административных прав.");
     for(const task of [
-      ["Моя BALI ID","card",data=>{
+      ["Моя Bali Card","card",data=>{
         const card=data.card||{};activeCard=card.activated===true;
         return {ok:true,detail:card.activated?
           "Карта активна, номер указан сервером. Статус "+String(card.tier||"Member")+
@@ -118,7 +118,7 @@ $("activateButton").addEventListener("click",async()=>{
   try{
     const data=await call("activateCard",{accepted:true});
     activeCard=data.card?.activated===true;
-    state("cardState",activeCard?"BALI ID активирована в новой базе. Баланс BALI COIN: "+
+    state("cardState",activeCard?"Bali Card активирована в новой базе. Баланс BALI COIN: "+
       String(data.card?.coinBalance??"—")+".":"Сервер не подтвердил активацию.");
   }catch(e){state("cardState","Не удалось активировать карту: "+safeError(e));}
   finally{running=false;buttons();}
