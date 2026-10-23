@@ -22,8 +22,6 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
   const voucherRef=code=>db.doc("baliCoinVouchers/"+hash(code));
   const rewardRef=(campaignId,kind,itemId)=>db.doc("baliCoinRewards/"+hash(campaignId+"|"+kind+"|"+itemId));
   const balance=snap=>{
-    if(rollout.phase==="pilot"&&snap.exists&&snap.data().source!=="bali-coin-pilot")
-      fail("failed-precondition","Тестовые COIN нельзя использовать с существующим кошельком гостя.");
     if(snap.exists&&snap.data().source==="legacy-sheets-migration"&&snap.data().migrationComplete!==true)
       fail("failed-precondition","Перенос истории BALI COIN ещё не завершён.");
     const value=snap.exists?snap.data().balance:0;
@@ -31,6 +29,8 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
     return value;
   };
   const verifiedWallet=snap=>{
+    if(rollout.phase==="pilot"&&snap.exists&&snap.data().source!=="bali-coin-pilot")
+      fail("failed-precondition","Тестовые COIN нельзя использовать с существующим кошельком гостя.");
     // Do not invent a zero COIN balance for a guest whose original wallet
     // has not yet been reconciled. Test-pilot identities are separately gated.
     if(rollout.phase==="live"&&!snap.exists)
