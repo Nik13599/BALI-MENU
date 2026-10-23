@@ -1,0 +1,80 @@
+name: Firebase BALI COIN + BRSM — read-only IAM readiness
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  verify-firebase-access:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment: firebase-production
+    env:
+      FIREBASE_PROJECT_ID: bali-menu-5a48b
+      FIREBASE_WIF_PROVIDER: ${{ vars.FIREBASE_WIF_PROVIDER || 'projects/855889005555/locations/global/workloadIdentityPools/bali-github-pool/providers/bali-github' }}
+      FIREBASE_DEPLOY_SERVICE_ACCOUNT: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      PILOT_UIDS: ${{ secrets.BALI_COIN_PILOT_UIDS }}
+    steps:
+      - name: Check configuration without printing test identities or secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$FIREBASE_PROJECT_ID" = "bali-menu-5a48b"
+          test -n "$FIREBASE_WIF_PROVIDER"
+          if [ -z "$FIREBASE_DEPLOY_SERVICE_ACCOUNT" ]; then
+            echo "::error::Set FIREBASE_DEPLOY_SERVICE_ACCOUNT in the firebase-production environment or repository variables."
+            exit 1
+          fi
+          node <<'NODE'
+          const ids=String(process.env.PILOT_UIDS||"").split(",").map(x=>x.trim());
+          const valid=ids.length>=2&&ids.length<=10&&
+            ids.every(x=>/^[A-Za-z0-9_-]{8,128}$/.test(x))&&
+            new Set(ids).size===ids.length;
+          if(!valid){
+            console.error("::error::Configure BALI_COIN_PILOT_UIDS as 2-10 distinct dedicated Firebase test UIDs in firebase-production secrets.");
+            process.exitCode=1;
+          }else console.log("Dedicated test UID allowlist format OK (values hidden).");
+          NODE
+      - name: Authenticate Firebase deployer without a static JSON key
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.FIREBASE_WIF_PROVIDER }}
+          service_account: ${{ env.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Install gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: bali-menu-5a48b
+      - name: Read-only check of runtime IAM actAs for Cloud Functions v2
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROJECT_NUMBER="$(gcloud projects describe "$FIREBASE_PROJECT_ID" --format='value(projectNumber)')"
+          [[ "$PROJECT_NUMBER" =~ ^[0-9]+$ ]]
+          TARGET="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+          TOKEN="$(gcloud auth print-access-token)"
+          RESULT="$(curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Authorization: Bearer $TOKEN" \
+            --header "Content-Type: application/json" \
+            --data '{"permissions":["iam.serviceAccounts.actAs"]}' \
+            "https://iam.googleapis.com/v1/projects/-/serviceAccounts/$TARGET:testIamPermissions")"
+          printf '%s' "$RESULT" | node -e '
+            let input="";
+            process.stdin.on("data",chunk=>input+=chunk);
+            process.stdin.on("end",()=>{
+              const value=JSON.parse(input);
+              if(!Array.isArray(value.permissions)||!value.permissions.includes("iam.serviceAccounts.actAs")){
+                console.error("::error::GitHub deployer lacks roles/iam.serviceAccountUser on the Compute Engine default service account used by Firebase Functions v2.");
+                process.exitCode=1;
+              }else console.log("Firebase Functions v2 runtime IAM permission OK.");
+            });
+          '
+      - name: Summarize results without releasing anything
+        run: |
+          echo "### Firebase BALI COIN + BRSM read-only readiness" >> "$GITHUB_STEP_SUMMARY"
+          echo "OAuth/WIF credentials and v2 runtime actAs are valid." >> "$GITHUB_STEP_SUMMARY"
+          echo "Dedicated test Firebase UID allowlist is configured (UIDs not displayed)." >> "$GITHUB_STEP_SUMMARY"
+          echo "No Firebase deployment, wallet writes, BRSM entries, secrets or Cloudflare changes were performed." >> "$GITHUB_STEP_SUMMARY"
