@@ -96,6 +96,35 @@ jobs:
         with:
           workload_identity_provider: ${{ env.FIREBASE_WIF_PROVIDER }}
           service_account: ${{ env.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Verify deployer may act as the Firebase functions runtime identity
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: bali-menu-5a48b
+      - name: Check iam.serviceAccounts.actAs before any Firebase changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET="bali-menu-5a48b@appspot.gserviceaccount.com"
+          TOKEN="$(gcloud auth print-access-token)"
+          RESULT="$(curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Authorization: Bearer $TOKEN" \
+            --header "Content-Type: application/json" \
+            --data '{"permissions":["iam.serviceAccounts.actAs"]}' \
+            "https://iam.googleapis.com/v1/projects/-/serviceAccounts/$TARGET:testIamPermissions")"
+          if ! printf '%s' "$RESULT" | node -e '
+            let raw="";
+            process.stdin.on("data",x=>raw+=x);
+            process.stdin.on("end",()=>{
+              const p=JSON.parse(raw);
+              if(!Array.isArray(p.permissions)||!p.permissions.includes("iam.serviceAccounts.actAs")){
+                console.error("::error::Missing iam.serviceAccounts.actAs on bali-menu-5a48b@appspot.gserviceaccount.com. Grant roles/iam.serviceAccountUser to the deployer on this service account only.");
+                process.exitCode=1;
+              }else console.log("Firebase runtime actAs permission verified.");
+            });
+          '; then
+            exit 1
+          fi
       - name: Deploy COIN read and administration callables (test ledger frozen for real guests)
         run: |
           npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:coinMe,functions:bali-id:coinCard,functions:bali-id:coinAdminCard,functions:bali-id:coinHistory,functions:bali-id:coinRecipient,functions:bali-id:coinLots,functions:bali-id:coinVouchers,functions:bali-id:coinSetReward"
