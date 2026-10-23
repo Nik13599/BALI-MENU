@@ -12,11 +12,15 @@ admin.initializeApp({projectId:'demo-bali-menu'});
 const db=admin.firestore(),TS=admin.firestore.Timestamp;
 const sha=s=>createHash('sha256').update(s).digest('hex');
 const failure=(code,message)=>Object.assign(Error(message),{code});
+const createRollout=require('./coin-rollout.js');
 const fail=(code,message)=>{throw failure(code,message)};
+const coinRollout=createRollout({fail,env:{BALI_COIN_WRITE_MODE:'live',
+  BALI_COIN_VERIFIED_EXPORT_SHA256:'a'.repeat(64),
+  BALI_COIN_LIVE_CONFIRM:'VERIFIED_SOURCE_AND_WALLETS'}});
 const staff='emulator_coin_staff_01',campaignId='emulator_campaign_01',eventId='emulator_event_01';
 const guests=Array.from({length:96},(_,i)=>'emulator_coin_guest_'+String(i).padStart(3,'0'));
 const buyers=Array.from({length:8},(_,i)=>'emulator_coin_buyer_'+String(i).padStart(2,'0'));
-const backend=require('./bali-coin.js')({api:(_name,handler)=>handler,admin,db,TS,
+const backend=require('./bali-coin.js')({api:(_name,handler)=>handler,admin,db,TS,coinRollout,
  verified:req=>{if(!req.auth?.uid)fail('unauthenticated','Missing fixture identity');return req.auth.uid},
  privileged:async uid=>uid===staff,fail,
  nameAndId:async uid=>{
@@ -25,7 +29,7 @@ const backend=require('./bali-coin.js')({api:(_name,handler)=>handler,admin,db,T
   return {uid,name:p.get('name'),number:String(c.get('number')).padStart(6,'0')};
  }
 });
-const awards=require('./brsm-coin-awards.js')({db,TS,fail});
+const awards=require('./brsm-coin-awards.js')({db,TS,fail,coinRollout});
 const call=(name,uid,data)=>backend[name]({auth:{uid},data});
 // Retry only an explicitly transient Firestore abort using the SAME request ID.
 // Validation, insufficient funds and every other application error are final.

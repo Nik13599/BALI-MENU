@@ -1,6 +1,7 @@
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const create=require("../functions/bali-coin.js");
+const createRollout=require("../functions/coin-rollout.js");
 function setup(){
   const records=new Map();
   let serial=0;
@@ -56,7 +57,10 @@ function setup(){
   };
   const functions=create({api:(_n,fn)=>fn,admin:{},db,TS:{now:stamp},
     verified:req=>{if(!req.auth?.uid)fail("unauthenticated","sign in");return req.auth.uid;},
-    privileged:async uid=>uid==="director",fail,nameAndId});
+    privileged:async uid=>uid==="director",fail,nameAndId,
+    coinRollout:createRollout({fail,env:{BALI_COIN_WRITE_MODE:"live",
+      BALI_COIN_VERIFIED_EXPORT_SHA256:"a".repeat(64),
+      BALI_COIN_LIVE_CONFIRM:"VERIFIED_SOURCE_AND_WALLETS"}})});
   const call=(name,uid,data={})=>functions[name]({auth:{uid},data});
   function person(uid,number){
     records.set("users/"+uid,{name:uid});

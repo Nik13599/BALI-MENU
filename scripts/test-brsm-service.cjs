@@ -5,6 +5,7 @@ const fs=require("node:fs");
 const vm=require("node:vm");
 const crypto=require("node:crypto");
 const {ticket,replay}=require("../functions/brsm-core");
+const createRollout=require("../functions/coin-rollout");
 
 function prepare(moduleName="brsm"){
   const records=new Map();
@@ -85,7 +86,10 @@ function prepare(moduleName="brsm"){
   };
   const ctx={api:(_name,fn)=>fn,admin:{firestore:{FieldValue}},db,TS:Timestamp,
     verified:req=>{if(!req.auth?.uid)fail("unauthenticated","Sign in");return req.auth.uid;},
-    privileged:async uid=>uid==="director",fail,nameAndId};
+    privileged:async uid=>uid==="director",fail,nameAndId,
+    coinRollout:createRollout({fail,env:{BALI_COIN_WRITE_MODE:"live",
+      BALI_COIN_VERIFIED_EXPORT_SHA256:"a".repeat(64),
+      BALI_COIN_LIVE_CONFIRM:"VERIFIED_SOURCE_AND_WALLETS"}})};
   const module={exports:{}};
   vm.runInNewContext(fs.readFileSync("functions/"+moduleName+".js","utf8"),{
     module,exports:module.exports,
