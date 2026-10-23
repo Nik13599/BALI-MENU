@@ -160,7 +160,7 @@ service cloud.firestore {
       return data.keys().hasAll(['uid','tier','benefits','updatedAt','updatedBy'])
         && data.keys().hasOnly(['uid','tier','benefits','updatedAt','updatedBy'])
         && data.uid == uid
-        && data.tier in ['Member','Silver','Gold','Platinum','Black','Private','ResidentDJ','BigBoss','BigBoss','BigBoss']
+        && data.tier in ['Member','Silver','Gold','Platinum','Black','Private','ResidentDJ','BigBoss']
         && data.benefits is list && data.benefits.size() <= 5
         && data.updatedAt == request.time
         && data.updatedBy == request.auth.uid;
@@ -187,8 +187,8 @@ service cloud.firestore {
         && request.resource.data.keys().hasAll(['levels','updatedAt'])
         && request.resource.data.keys().hasOnly(['levels','updatedAt'])
         && request.resource.data.levels is map
-        && request.resource.data.levels.keys().hasAll(['Member','Silver','Gold','Platinum','Black','Private','ResidentDJ'])
-        && request.resource.data.levels.keys().hasOnly(['Member','Silver','Gold','Platinum','Black','Private','ResidentDJ'])
+        && request.resource.data.levels.keys().hasAll(['Member','Silver','Gold','Platinum','Black','Private','ResidentDJ','BigBoss'])
+        && request.resource.data.levels.keys().hasOnly(['Member','Silver','Gold','Platinum','Black','Private','ResidentDJ','BigBoss'])
         && request.resource.data.updatedAt == request.time;
     }
 
