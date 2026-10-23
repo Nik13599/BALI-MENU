@@ -14,7 +14,7 @@ function config(raw,fail){
   const title=clean(raw.title,96),requiredVisits=Number(raw.requiredVisits);
   const ballCount=Number(raw.ballCount),ticketSize=Number(raw.ticketSize);
   const winMatches=Number(raw.winMatches),prizes=raw.prizes;
-  const idMode="firestore"; // All BALI ID numbers use Firebase.
+  const idMode="firestore"; // All Bali Card numbers use Firebase.
   if(!title||title.length<3)fail("invalid-argument","Укажите название кампании.");
   if(!Number.isInteger(requiredVisits)||requiredVisits<1||requiredVisits>12)
     fail("invalid-argument","Посещений: от 1 до 12.");
@@ -55,7 +55,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId})=>{
     }
     const n=Number(data?.number);
     if(!Number.isInteger(n)||n<1||n>999999)
-      fail("invalid-argument","Неверный шестизначный BALI ID.");
+      fail("invalid-argument","Неверный шестизначный Bali Card.");
     const hits=await db.collection("baliIds").where("number","==",n).limit(1).get();
     if(hits.empty)fail("not-found","Гость не найден.");
     return hits.docs[0].id;

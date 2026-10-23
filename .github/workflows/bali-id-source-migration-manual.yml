@@ -1,11 +1,16 @@
 name: BALI ID — protected Firebase to D1 staging (manual)
 on:
   push:
-    branches: [feature/bali-id-firestore-d1-snapshot-20261023]
+    # Production identity is restricted to trusted main by the existing WIF
+    # provider. Feature branches run only the credential-free integrity tests.
+    branches: [main]
     paths:
       - '.github/workflows/bali-id-source-migration-manual.yml'
       - 'scripts/export-bali-id-to-d1.mjs'
       - 'scripts/bali-id-source-snapshot.mjs'
+      - 'scripts/bali-id-sealed-snapshot.mjs'
+      - 'scripts/bali-id-snapshot-recipient.pem'
+      - 'scripts/audit-published-bali-qr.mjs'
   workflow_dispatch:
     inputs:
       apply_staging:
@@ -26,7 +31,8 @@ jobs:
     environment: firebase-production
     env:
       FIREBASE_PROJECT_ID: bali-menu-5a48b
-      FIREBASE_WIF_PROVIDER: ${{ vars.FIREBASE_WIF_PROVIDER }}
+      # Same existing identity used by the preorder and guest diagnostics.
+      FIREBASE_WIF_PROVIDER: ${{ vars.FIREBASE_WIF_PROVIDER || 'projects/855889005555/locations/global/workloadIdentityPools/bali-github-pool/providers/bali-github' }}
       FIREBASE_DEPLOY_SERVICE_ACCOUNT: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
       CF_ACCOUNT_ID: ${{ vars.CF_ACCOUNT_ID }}
       CF_D1_DATABASE_ID: ${{ vars.CF_D1_DATABASE_ID }}
@@ -46,11 +52,12 @@ jobs:
         run: |
           node --experimental-sqlite scripts/test-bali-id-source-snapshot.mjs
           node --experimental-sqlite scripts/test-bali-id-export-runner.mjs
+          node scripts/test-bali-id-sealed-snapshot.mjs
           node scripts/test-staff-appearance-locked.mjs
       - name: Obtain short-lived Google identity (no service account key)
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ vars.FIREBASE_WIF_PROVIDER }}
+          workload_identity_provider: ${{ env.FIREBASE_WIF_PROVIDER }}
           service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
       - name: Install Firebase Admin
         run: npm install --prefix functions --no-audit --no-fund
@@ -65,4 +72,18 @@ jobs:
       - name: Inventory and optionally stage Firebase records with source parity
         env:
           CF_API_TOKEN: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_staging == 'true' && secrets.CF_API_TOKEN || '' }}
+          # Explicit one-off export requested in a reviewed main merge title.
+          BALI_SNAPSHOT_SEAL_PATH: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[sealed-snapshot]') && 'private-export/bali-source.sealed.json' || '' }}
+          BALI_SNAPSHOT_PUBLIC_KEY_FILE: scripts/bali-id-snapshot-recipient.pem
         run: node scripts/export-bali-id-to-d1.mjs
+      - name: Upload encrypted source only (never profiles or credential files)
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[sealed-snapshot]')
+        uses: actions/upload-artifact@v4
+        with:
+          name: bali-source-sealed
+          path: private-export/bali-source.sealed.json
+          retention-days: 1
+          if-no-files-found: error
+          overwrite: true
+      - name: Inspect published QR source (read-only, no bonus operations)
+        run: node scripts/audit-published-bali-qr.mjs

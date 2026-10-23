@@ -8,6 +8,10 @@ on:
       - 'cloudflare-pages/functions/api/staff-preorder-status.js'
       - 'cloudflare-pages/d1/migrations/0002_staff_status.sql'
       - 'scripts/test-d1-staff-status.mjs'
+      - 'scripts/test-d1-staff-access.mjs'
+      - 'cloudflare-pages/functions/_lib/staff-auth.js'
+      - 'cloudflare-pages/functions/_lib/d1-orders.js'
+      - 'cloudflare-pages/d1/migrations/0009_preorder_staff_access.sql'
       - '.github/workflows/d1-staff-status.yml'
 permissions:
   contents: read
@@ -23,5 +27,14 @@ jobs:
         run: node --input-type=module --check < cloudflare-pages/functions/api/staff-preorder-status.js
       - name: Verify D1 guarded status and idempotency on real SQLite
         run: node --experimental-sqlite scripts/test-d1-staff-status.mjs
+      - name: Check D1 role-verification and order-service syntax
+        run: |
+          node --input-type=module --check < cloudflare-pages/functions/_lib/staff-auth.js
+          node --input-type=module --check < cloudflare-pages/functions/_lib/d1-orders.js
+          node --check scripts/test-d1-staff-access.mjs
+      - name: Verify employee identities, revocation, D1 scoped grants
+        run: node scripts/test-d1-staff-access.mjs
+      - name: Verify D1 live-order workflow is unchanged
+        run: node --experimental-sqlite scripts/test-d1-live-preorders.mjs
       - name: Cloudflare Pages static build
         run: node cloudflare-pages/build.mjs

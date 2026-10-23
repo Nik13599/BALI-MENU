@@ -31,7 +31,7 @@ const verified=req=>{
 };
 const number6=value=>{
   if(typeof value!=="string"||!/^\d{6}$/.test(value)||Number(value)<1)
-    fail("invalid-argument","Укажите шестизначный BALI ID.");
+    fail("invalid-argument","Укажите шестизначный Bali Card.");
   return Number(value);
 };
 const formatNumber=value=>String(value).padStart(6,"0");
@@ -41,7 +41,7 @@ const kinds=new Set(["shot","cocktail","hookah","entry"]);
 const historyPage=25;
 async function nameAndId(uid){
   const [person,id]=await Promise.all([db.doc("users/"+uid).get(),db.doc("baliIds/"+uid).get()]);
-  if(!person.exists||!id.exists)fail("failed-precondition","BALI ID не активирована.");
+  if(!person.exists||!id.exists)fail("failed-precondition","Bali Card не активирована.");
   const number=id.data().number;
   if(!Number.isSafeInteger(number)||number<1||number>999999)
     fail("failed-precondition","Номер карты не соответствует шестизначному формату.");
@@ -49,7 +49,7 @@ async function nameAndId(uid){
 }
 async function findRecipient(uid,number){
   const ids=await db.collection("baliIds").where("number","==",number).limit(1).get();
-  if(ids.empty)fail("not-found","Получатель с таким BALI ID не найден.");
+  if(ids.empty)fail("not-found","Получатель с таким Bali Card не найден.");
   if(ids.docs[0].id===uid)fail("failed-precondition","Нельзя перевести бонусы самому себе.");
   const recipient=await nameAndId(ids.docs[0].id);
   if(Number(recipient.number)!==number)fail("failed-precondition","Получатель изменился. Повторите поиск.");
@@ -266,7 +266,7 @@ exports.issueBaliQuantity=api("issueBaliQuantity",async req=>{
   const id=randomBytes(16).toString("hex"),opRef=db.doc("walletOperations/"+id);
   await db.runTransaction(async tx=>{
     const [guest,old]=await Promise.all([tx.get(guestRef),tx.get(ref)]);
-    if(!guest.exists)fail("not-found","BALI ID гостя не найдена.");
+    if(!guest.exists)fail("not-found","Bali Card гостя не найдена.");
     const w=wallet(guestUid,old);
     const now=Date.now();
     const balance=w.grants.filter(g=>g.kind===kind&&Number.isInteger(g.remaining)&&g.remaining>0&&

@@ -128,3 +128,33 @@ test('BALI ID: both top tools equal size and near the header, card gently lifted
   expect(g.card.width/g.card.height).toBeGreaterThan(1.6);
   expect(g.card.width/g.card.height).toBeLessThan(1.8);
 });
+
+test('Bali Card naming keeps every tier treatment and the bottom card shortcut',async({page})=>{
+  await page.goto('/index.html#id');
+  await page.evaluate(()=>navigateGuestPage('id'));
+  const shortcut=page.locator('.bali-bottom-nav [data-bali-nav="id"]');
+  await expect(shortcut.locator('small')).toHaveText('Bali Card');
+  await expect(shortcut).toHaveAttribute('aria-label','Bali Card');
+  await expect(shortcut.locator('.bali-nav-glyph svg')).toHaveCount(1);
+  const label=page.locator('#baliIdFront .bali-id-brand-label');
+  await expect(label).toHaveText('Bali Card');
+  await expect(page.locator('.bali-id-mini-heading > span:first-child')).toHaveText(['Bali Card','Bali Card','Bali Card']);
+  const treatments=await page.evaluate(()=>{
+    const scene=document.getElementById('baliIdFlipScene');
+    const brand=scene.querySelector('.bali-id-brand-label');
+    const front=document.getElementById('baliIdFront');
+    const appearance=()=>{
+      const b=getComputedStyle(brand),c=getComputedStyle(front);
+      return {font:b.fontFamily,size:b.fontSize,weight:b.fontWeight,spacing:b.letterSpacing,
+        color:b.color,background:c.backgroundImage,border:c.borderColor};
+    };
+    return ['member','silver','gold','platinum','black','private','residentdj'].map(tier=>{
+      scene.dataset.baliTier=tier;
+      brand.textContent='BALI ID · PRIVILEGE';const before=appearance();
+      brand.textContent='Bali Card';return {tier,before,after:appearance()};
+    });
+  });
+  for(const {before,after} of treatments)expect(after).toEqual(before);
+  const fit=await shortcut.locator('small').evaluate(el=>({width:el.clientWidth,content:el.scrollWidth}));
+  expect(fit.content).toBeLessThanOrEqual(fit.width+1);
+});

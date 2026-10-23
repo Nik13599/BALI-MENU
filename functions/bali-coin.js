@@ -54,9 +54,9 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId})=>{
     return uid;
   };
   async function recipient(sender,number){
-    if(!validNumber(number))fail("invalid-argument","Введите шестизначный BALI ID.");
+    if(!validNumber(number))fail("invalid-argument","Введите шестизначный Bali Card.");
     const rows=await db.collection("baliIds").where("number","==",Number(number)).limit(1).get();
-    if(rows.empty)fail("not-found","BALI ID не найдена.");
+    if(rows.empty)fail("not-found","Bali Card не найдена.");
     const person=await nameAndId(rows.docs[0].id);
     if(person.uid===sender)fail("invalid-argument","Перевести себе нельзя.");
     return person;
@@ -117,9 +117,9 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId})=>{
       tx.set(target,{balance:other+amount,updatedAt:at},{merge:true});
       tx.create(op,{action:"transfer",fromUid:uid,toUid:to.uid,amount,comment,balance:after,createdAt:at});
       tx.create(hist(uid,id+"_out"),{type:"transfer-out",count:amount,balance:after,
-        reason:"Перевод на BALI ID "+to.number+(comment?" · "+comment:""),createdAt:at});
+        reason:"Перевод на Bali Card "+to.number+(comment?" · "+comment:""),createdAt:at});
       tx.create(hist(to.uid,id+"_in"),{type:"transfer-in",count:amount,balance:other+amount,
-        reason:"Перевод от BALI ID "+sender.number,createdAt:at});
+        reason:"Перевод от Bali Card "+sender.number,createdAt:at});
       return {result:{ok:true,balance:after,recipientNumber:to.number,amount}};
     });
   });
@@ -285,7 +285,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId})=>{
   const coinVoucherFulfill=api("coinVoucherFulfill",async req=>{
     const by=await operator(req),number=text(req.data?.number,6),code=text(req.data?.voucher,255);
     if(!validNumber(number)||!/^LOT:[a-zA-Z0-9_-]{3,80}:[a-zA-Z0-9_-]{3,80}:[a-f0-9]{32}$/.test(code))
-      fail("invalid-argument","Неверный BALI ID или код.");
+      fail("invalid-argument","Неверный Bali Card или код.");
     const owner=await recipient(by,number); // recipient rejects self, as staff must not self-issue.
     const ref=voucherRef(code);
     return db.runTransaction(async tx=>{

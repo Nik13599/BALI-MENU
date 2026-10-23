@@ -1,7 +1,7 @@
 import {initializeApp,getApps} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signInWithEmailAndPassword,signOut,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {preorderServiceEnabled,sheetsRequest} from "./bali-sheets-api.js?v=20261023-d1-live1";
-// The Sheets workspace uses Firebase Auth only; load Firestore for its legacy mode.
+// D1 staff sessions use Firebase Auth for identity; legacy Firestore mode reads roles directly.
 const {getFirestore,doc,getDoc}=preorderServiceEnabled()?{}:await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
 const app=getApps().find(app=>app.name==="bali-staff")||initializeApp(window.BALI_FIREBASE_CONFIG,"bali-staff");
 const auth=getAuth(app),db=preorderServiceEnabled()?null:getFirestore(app),$=id=>document.getElementById(id);
@@ -43,15 +43,20 @@ $("adminSignIn").addEventListener("click",async()=>{
   catch(error){status("Вход не завершён: "+(error.code||error.message));}
   finally{$("adminSignIn").disabled=false;}
 });
-$("adminSignOut").addEventListener("click",()=>void signOut(auth));
-$("adminSwitchAccount").addEventListener("click",()=>void signOut(auth));
+const closeStaffSession=async()=>{
+  try{await window.BaliStaffPushDisable?.();}
+  catch(error){console.warn("BALI Staff device push unsubscription failed.");}
+  await signOut(auth);
+};
+$("adminSignOut").addEventListener("click",()=>void closeStaffSession());
+$("adminSwitchAccount").addEventListener("click",()=>void closeStaffSession());
 onAuthStateChanged(auth,async user=>{
   const current=++seq;
   $("adminView").hidden=true;$("loginView").hidden=true;
   $("staffSessionLoading").hidden=false;
   $("staffHeaderAccount").hidden=true;
   $("adminSwitchAccount").hidden=!user;
-  if(!user){status("Введите логин и пароль сотрудника или используйте вход через Google.");return;}
+  if(!user){window.dispatchEvent(new Event("bali-staff-signed-out"));status("Введите логин и пароль сотрудника или используйте вход через Google.");return;}
   if(!user.emailVerified){status("Нет подтверждённого доступа к предзаказам.");return;}
   // Never reveal the order workspace before the backend has confirmed
   // the current staff role. Keep the session splash visible until authorization.
@@ -63,6 +68,7 @@ onAuthStateChanged(auth,async user=>{
       $("adminEmail").textContent=user.displayName||user.email||"Сотрудник BALI";
       $("adminView").hidden=false;$("loginView").hidden=true;
       $("staffHeaderAccount").hidden=false;status("");
+      window.dispatchEvent(new Event("bali-staff-authorized"));
       return;
     }
     const adminRole=await getDoc(doc(db,"admins",user.uid));
@@ -75,5 +81,17 @@ onAuthStateChanged(auth,async user=>{
     $("adminEmail").textContent=staff?staffRole.data().name:(user.displayName||user.email||"Администратор");
     $("adminView").hidden=false;$("loginView").hidden=true;
     $("staffHeaderAccount").hidden=false;status("");
-  }catch(error){if(current===seq)status("Ошибка проверки прав: "+(error.code||error.message));}
+  }catch(error){
+    if(current!==seq)return;
+    if(error?.code==="permission-denied"){
+      const staffAccount=/^staff\+[a-z][a-z0-9_-]{2,31}@staff\.baliminsk\.by$/i.test(user.email||"");
+      status(staffAccount
+        ?"Пароль принят, но сервер не подтвердил роль сотрудника. Руководителю необходимо проверить роль доступа в BALI STAFF."
+        :"У текущей учётной записи нет прав на предзаказы. Введите логин и пароль сотрудника.");
+    }else if(error?.code==="unauthenticated"){
+      status("Сессия устарела. Войдите в предзаказы повторно.");
+    }else{
+      status("Не удалось проверить доступ к предзаказам. Повторите вход. ("+(error?.code||"ошибка сервера")+")");
+    }
+  }
 });

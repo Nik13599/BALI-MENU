@@ -616,10 +616,10 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
           <p id="clientsAdminStatus" class="status" aria-live="polite"></p>
           <div id="clientList" class="client-list" aria-live="polite">Загрузка базы клиентов...</div>
         </section>
-        <details class="bali-admin-tool" id="baliGuestPrivilegeTools"><summary><strong>Статусы BALI ID</strong><span>Уровни гостей и персональные преимущества</span></summary><section class="card bali-privilege-admin" id="baliPrivilegeAdmin" aria-labelledby="baliPrivilegeAdminTitle">
-          <div class="card-heading"><h3 id="baliPrivilegeAdminTitle">BALI ID · управление Privilege</h3><span class="tag">Администратор</span></div>
+        <details class="bali-admin-tool" id="baliGuestPrivilegeTools"><summary><strong>Статусы Bali Card</strong><span>Уровни гостей и персональные преимущества</span></summary><section class="card bali-privilege-admin" id="baliPrivilegeAdmin" aria-labelledby="baliPrivilegeAdminTitle">
+          <div class="card-heading"><h3 id="baliPrivilegeAdminTitle">Bali Card · управление Privilege</h3><span class="tag">Администратор</span></div>
           <p><a href="director-id.html" target="_blank" rel="noopener noreferrer">Открыть отдельный интерфейс директора →</a></p>
-          <p class="hint">Присвоение уровня вручную. Номер BALI ID выдаётся автоматически при первой загрузке карты гостя и не меняется при повышении статуса.</p>
+          <p class="hint">Присвоение уровня вручную. Номер Bali Card выдаётся автоматически при первой загрузке карты гостя и не меняется при повышении статуса.</p>
           <form id="baliPrivilegeAssignForm" class="bali-privilege-form">
             <label>Гость из списка (нажмите «Privilege» рядом с именем)<input id="baliPrivilegeGuest" readonly placeholder="Выберите гостя" required></label>
             <input type="hidden" id="baliPrivilegeGuestUid">
@@ -668,7 +668,7 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
 @media(max-width:450px){.bali-coin-admin-form{grid-template-columns:1fr}}
 </style>
 <details class="bali-admin-tool" id="baliGuestBonusTools"><summary><strong>Бонусы и QR-коды</strong><span>Начисления, новые направления и печать кодов</span></summary><section class="card bali-qr-admin" id="baliQrAdminPanel">
-  <div class="card-heading"><h3>BALI ID · QR-БОНУСЫ</h3><span class="tag">Управление</span></div>
+  <div class="card-heading"><h3>Bali Card · QR-БОНУСЫ</h3><span class="tag">Управление</span></div>
   <p class="hint">Создавайте разовые и многоразовые QR-коды для начисления и списания. Каждая операция подтверждается пользователем и фиксируется на сервере.</p>
   <form id="baliAdminBonusGrantForm" class="bali-qr-admin-form" autocomplete="off">
     <h4>Начислить бонусы выбранному гостю</h4>
@@ -710,16 +710,16 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
         <details class="bali-admin-tool" id="baliGuestTransferHelp"><summary><strong>Переводы бонусов</strong><span>Как гости передают накопленные бонусы</span></summary><section class="card bali-transfer-management" id="baliBonusTransfersAdmin">
   <section class="bali-transfer-scaffold" aria-labelledby="baliTransferTitle">
   <h3 id="baliTransferTitle">Переводы накопленных бонусов</h3>
-  <p>Гости переводят доступные бонусы из своей BALI ID по кнопке «Перевести». Служебный перевод от имени гостя здесь пока недоступен.</p>
+  <p>Гости переводят доступные бонусы из своей Bali Card по кнопке «Перевести». Служебный перевод от имени гостя здесь пока недоступен.</p>
   <form data-bali-transfer-form autocomplete="off" hidden>
     <div class="bali-transfer-fields">
-      <label>Отправитель — номер BALI ID<input type="text" inputmode="numeric" pattern="[0-9]{1,9}" maxlength="9" placeholder="000001" name="fromCardNumber"></label>
-      <label>Получатель — номер BALI ID<input type="text" inputmode="numeric" pattern="[0-9]{1,9}" maxlength="9" placeholder="000025" name="toCardNumber"></label>
+      <label>Отправитель — номер Bali Card<input type="text" inputmode="numeric" pattern="[0-9]{1,9}" maxlength="9" placeholder="000001" name="fromCardNumber"></label>
+      <label>Получатель — номер Bali Card<input type="text" inputmode="numeric" pattern="[0-9]{1,9}" maxlength="9" placeholder="000025" name="toCardNumber"></label>
       <label>Тип накопленного бонуса<select name="kind"><option value="cocktail">Коктейли · шт.</option><option value="shot">Шоты · шт.</option><option value="hookah">Кальяны · шт.</option><option value="entry">Проходки · шт. (если разрешены)</option></select></label>
       <label>Количество, шт.<input name="quantity" type="number" min="1" max="500" step="1" value="1"></label>
     </div>
     <button type="submit" data-bali-transfer-submit disabled title="Служебные переводы от имени гостя не подключены">Служебный перевод недоступен</button>
-    <p data-bali-transfer-status role="status" aria-live="polite">Для перевода гость использует собственную BALI ID.</p>
+    <p data-bali-transfer-status role="status" aria-live="polite">Для перевода гость использует собственную Bali Card.</p>
   </form>
   <p class="bali-transfer-footnote">Подтверждённые переводы отображаются в истории отправителя и получателя. Статусы карт, скидки и безлимитные привилегии не передаются.</p>
 </section>
@@ -1153,10 +1153,10 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
           <div id="baliMobileAboutAdminList" class="bali-mobile-about-admin-list" aria-live="polite"></div>
         </section>
         <section class="card bali-design-id-editor" data-design-editor="idCard" hidden>
-          <div class="card-heading"><h3>BALI ID · цифровая карта гостя</h3><span class="tag">Персональная карта</span></div>
-          <p>На главной странице ПК вместо товарной витрины теперь показана персональная BALI ID. Имя, номер и уровень автоматически берутся из аккаунта гостя.</p>
-          <p class="hint">Статусы Member, Silver, Gold, Platinum, Black и Private назначаются в разделе управления BALI PRIVILEGE. Данные пользователя и QR-код не редактируются как рекламный баннер.</p>
-          <p><a href="director-id.html" target="_blank" rel="noopener noreferrer">Управление BALI ID и Privilege ↗</a></p>
+          <div class="card-heading"><h3>Bali Card · цифровая карта гостя</h3><span class="tag">Персональная карта</span></div>
+          <p>На главной странице ПК вместо товарной витрины теперь показана персональная Bali Card. Имя, номер и уровень автоматически берутся из аккаунта гостя.</p>
+          <p class="hint">Статусы Member, Silver, Gold, Platinum, Black и Private назначаются в разделе управления Bali Card. Данные пользователя и QR-код не редактируются как рекламный баннер.</p>
+          <p><a href="director-id.html" target="_blank" rel="noopener noreferrer">Управление Bali Card и Privilege ↗</a></p>
         </section>
         <section class="card bali-promo-editor" id="baliPromoEditor" data-design-editor="privilege" hidden>
           <div class="card-heading"><h3>BALI PRIVILEGE · Спецпредложения</h3><span class="tag">Главная страница ПК</span></div>

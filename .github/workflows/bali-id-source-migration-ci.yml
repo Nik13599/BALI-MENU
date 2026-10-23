@@ -11,6 +11,12 @@ on:
       - 'scripts/export-bali-id-to-d1.mjs'
       - 'scripts/test-bali-id-source-snapshot.mjs'
       - 'scripts/test-bali-id-export-runner.mjs'
+      - 'scripts/bali-id-sealed-snapshot.mjs'
+      - 'scripts/test-bali-id-sealed-snapshot.mjs'
+      - 'scripts/audit-published-bali-qr.mjs'
+      - 'scripts/test-published-bali-qr-audit.mjs'
+      - 'scripts/bali-id-snapshot-recipient.pem'
+      - '.github/workflows/bali-id-source-migration-manual.yml'
       - 'cloudflare-pages/functions/api/admin/bali-id-source-snapshot-status.js'
       - '.github/workflows/bali-id-source-migration-ci.yml'
 permissions:
@@ -33,5 +39,7 @@ jobs:
         run: |
           node --experimental-sqlite scripts/test-bali-id-source-snapshot.mjs
           node --experimental-sqlite scripts/test-bali-id-export-runner.mjs
+          node scripts/test-bali-id-sealed-snapshot.mjs
+          node scripts/test-published-bali-qr-audit.mjs
       - name: Prevent accidental Staff visual changes
         run: node scripts/test-staff-appearance-locked.mjs

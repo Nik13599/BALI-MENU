@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/provision-existing-preorder-staff.yml'
+      - 'scripts/provision-existing-preorder-staff.cjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -13,7 +14,6 @@ concurrency:
   cancel-in-progress: false
 jobs:
   provision:
-    if: github.event_name == 'workflow_dispatch' || github.event.head_commit.message == 'Provision existing BALI staff01 account'
     runs-on: ubuntu-latest
     timeout-minutes: 8
     environment: firebase-production
@@ -34,9 +34,9 @@ jobs:
           service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
       - run: npm install --prefix functions --no-audit --no-fund
       - run: node --check scripts/provision-existing-preorder-staff.cjs
-      - name: Verify restricted staff permissions in the existing Sheets backend
-        run: node scripts/test-bali-sheets-backend.mjs
+      - name: Verify Cloudflare D1 preorder workflow without production writes
+        run: node scripts/test-d1-live-preorders.mjs
       - name: Inspect the exact existing Firebase employee identity
         run: node scripts/provision-existing-preorder-staff.cjs
-      - name: Verify the existing dedicated Firebase staff account
+      - name: Grant and verify the minimal preorderStaff role for this exact UID
         run: node scripts/provision-existing-preorder-staff.cjs --apply

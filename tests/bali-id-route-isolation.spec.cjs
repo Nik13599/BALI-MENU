@@ -62,5 +62,5 @@ test("PC home card and unified profile retain their BALI ID entry points",async(
   await expect(page.locator("#accountBtn")).toHaveCount(1);
   await expect(page.locator("#profileBaliIdBtn")).toHaveAttribute("data-bali-nav","id");
   await expect(page.locator('[data-bali-profile-action="id"]')).toHaveCount(1);
-  expect(await page.locator("#baliHomeIdCard").getAttribute("aria-label")).toContain("BALI");
+  expect(await page.locator("#baliHomeIdCard").getAttribute("aria-label")).toContain("Bali Card");
 });

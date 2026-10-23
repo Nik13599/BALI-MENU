@@ -19,7 +19,7 @@ const homeBlocks=[
  ["Календарь · заголовок",".bali-pc-events-title"],
  ["Карточки мероприятий","#homeEventCarousel"],
  ["О клубе",".bali-pc-about"],
- ["BALI ID / Privilege","#baliHomeIdCard"],
+ ["Bali Card","#baliHomeIdCard"],
  ["Меню · большая кнопка","#menuNavBtn"],
  ["Контактный блок",".bali-home-contacts-card, .bali-pc-sidebar-contacts"],
  ["Контакты · заголовок",".bali-home-contacts-heading h2"],
@@ -37,7 +37,7 @@ const homeBlocks=[
  ["Кнопка Площадка и аренда",".bali-pc-about-action"],
  ["Кнопка Афиша вечеринок",".bali-pc-about-events-link"],
  ["Профиль · телефон","#baliMobileProfileBtn"],
- ["BALI ID · телефон","#baliMobileIdBtn"],
+ ["Bali Card · телефон","#baliMobileIdBtn"],
  ["ПК · Главная",'.bali-pc-navigation [data-bali-nav="home"]'],
  ["ПК · Календарь",'.bali-pc-navigation [data-bali-nav="events"]'],
  ["ПК · Меню",'.bali-pc-navigation [data-bali-nav="menu"]'],
@@ -241,7 +241,7 @@ function initialize(){
  linkSelect.append(optionList([
  ["","Не менять переход"],["route:home","Главная"],["route:events","Календарь"],["route:menu","Меню"],
  ["route:info","Инфо / контакты"],["route:about","О клубе"],["route:profile","Профиль"],
- ["route:id","BALI ID"],["route:cart","Корзина"],["custom","Внешняя ссылка / телефон"]
+ ["route:id","Bali Card"],["route:cart","Корзина"],["custom","Внешняя ссылка / телефон"]
  ]));
  content.querySelector('[data-builder-main="text"]').addEventListener("change",e=>changeMain("text",e.target.value));
  content.querySelector('[data-builder-main="image"]').addEventListener("change",e=>changeMain("image",e.target.value));

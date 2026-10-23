@@ -11,7 +11,7 @@ module.exports=({api,db,TS,verified,privileged,fail,nameAndId})=>{
   async function staff(req){
     const uid=verified(req);
     if(!await privileged(uid))
-      fail("permission-denied","Подтверждать номера BALI ID может только руководство.");
+      fail("permission-denied","Подтверждать номера Bali Card может только руководство.");
     return uid;
   }
   const getBrsmCanonicalId=api("getBrsmCanonicalId",async req=>{

@@ -10,10 +10,10 @@ const TIERS=["Member","Silver","Gold","Platinum","Black","Private","ResidentDJ"]
 // Default copy mirrors the six approved BALI ID category references.
 // These descriptions do not issue free products or discounts.
 const DEFAULTS={
-  Member:{description:"Ваш первый уровень BALI PRIVILEGE.",criteria:"После ознакомления с условиями BALI ID.",benefits:["Персональная цифровая карта гостя"]},
+  Member:{description:"Ваш первый уровень Bali Card.",criteria:"После ознакомления с условиями Bali Card.",benefits:["Персональная цифровая карта гостя"]},
   Silver:{description:"Ваш уровень с первыми дополнительными привилегиями.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Дополнительные клубные преимущества"]},
   Gold:{description:"Ваш уровень с расширенными преимуществами.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Расширенные клубные привилегии"]},
-  Platinum:{description:"Ваш премиальный уровень BALI PRIVILEGE.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Премиальные преимущества"]},
+  Platinum:{description:"Ваш премиальный уровень Bali Card.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Премиальные преимущества"]},
   Black:{description:"Ваш уровень с особыми клубными привилегиями.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Особые клубные привилегии"]},
   Private:{description:"Закрытый статус по приглашению.",criteria:"Назначают директор или администратор.",benefits:["Персональная цифровая карта гостя","Индивидуальные привилегии по решению администрации"]},
   ResidentDJ:{description:"",criteria:"Только по назначению директора или администратора для DJ-резидентов BALI.",benefits:["Безлимит замесов","Возможность ночевки в клубе","Работать за бесплатно"]}
@@ -87,7 +87,7 @@ async function allocate(uid,run){
       const [existing,counter]=await Promise.all([tx.get(idRef),tx.get(counterRef)]);
       if(existing.exists())return existing.data().number;
       const number=(counter.exists()?Number(counter.data()?.count)||0:0)+1;
-      if(number>999999999)throw Error("Лимит нумерации BALI ID исчерпан");
+      if(number>999999999)throw Error("Лимит нумерации Bali Card исчерпан");
       tx.set(idRef,{uid,number,createdAt:serverTimestamp()});
       tx.set(counterRef,{count:number,lastUid:uid,updatedAt:serverTimestamp()});
       return number;
@@ -98,8 +98,8 @@ async function allocate(uid,run){
   }catch(e){
     if(session!==run)return;
     setText("baliIdStatus",e.code==="permission-denied"
-      ?"Не удалось активировать номер BALI ID. Повторите попытку позже."
-      :"Не удалось получить BALI ID. Повторите попытку позже.");
+      ?"Не удалось активировать номер Bali Card. Повторите попытку позже."
+      :"Не удалось получить Bali Card. Повторите попытку позже.");
     offerRetry();
     return false;
   }

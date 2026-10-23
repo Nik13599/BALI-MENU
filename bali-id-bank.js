@@ -38,14 +38,14 @@ const logged=()=>Boolean(uid&&auth.currentUser?.uid===uid&&auth.currentUser.emai
 function readable(error){
   const code=String(error?.code||"");
   if(code.includes("not-found")||code.includes("unimplemented")||code.includes("unavailable"))
-    return "Сервис BALI ID временно недоступен. Перевод не выполнен.";
+    return "Сервис Bali Card временно недоступен. Перевод не выполнен.";
   if(code.includes("unauthenticated"))return "Войдите в подтверждённый аккаунт BALI.";
   if(code.includes("permission-denied"))return "Нет доступа к операции. Проверьте аккаунт.";
   if(code.includes("resource-exhausted"))return "Слишком много запросов. Повторите позднее.";
   if(code.includes("failed-precondition"))return "Получатель или остатки изменились. Начните заново.";
   if(code.includes("already-exists"))return "Этот запрос уже использован.";
   if(code.includes("invalid-argument"))return "Проверьте данные перевода.";
-  return "Не удалось связаться с сервером BALI ID. Перевод не подтверждён.";
+  return "Не удалось связаться с сервером Bali Card. Перевод не подтверждён.";
 }
 const transferDlg=$("baliTransferDialog"),historyDlg=$("baliHistoryDialog");
 let uid=null,walletStop=null,walletReady=false,grants=[],recipient=null,selected=new Map();
@@ -114,7 +114,7 @@ window.addEventListener("bali:transfer-qr",e=>{
   ++run;recipient={number:data.number,name:data.name.trim()};
   $("baliTransferRecipient").value=recipient.number;
   say("baliTransferRecipientName",recipient.name);
-  say("baliTransferRecipientCode","BALI ID · "+recipient.number);
+  say("baliTransferRecipientCode","Bali Card · "+recipient.number);
   $("baliTransferRecipientPreview").hidden=false;
   say("baliTransferLookupStatus","Получатель найден по QR-коду. Проверьте имя.");
 });
@@ -143,7 +143,7 @@ $("baliTransferLookupForm")?.addEventListener("submit",async event=>{
   const button=event.currentTarget.querySelector('button[type="submit"]');
   button.disabled=true;
   const token=++run,myUid=uid;
-  say("baliTransferLookupStatus","Проверяем BALI ID…");
+  say("baliTransferLookupStatus","Проверяем Bali Card…");
   $("baliTransferRecipientPreview").hidden=true;
   try{
     const info=(await lookupFn({number})).data;
@@ -152,7 +152,7 @@ $("baliTransferLookupForm")?.addEventListener("submit",async event=>{
       throw Error("Invalid preview");
     recipient={number,name:info.name.trim()};
     say("baliTransferRecipientName",recipient.name);
-    say("baliTransferRecipientCode","BALI ID · "+recipient.number);
+    say("baliTransferRecipientCode","Bali Card · "+recipient.number);
     $("baliTransferRecipientPreview").hidden=false;
     say("baliTransferLookupStatus","Убедитесь, что имя правильное.");
   }catch(error){
@@ -167,7 +167,7 @@ $("baliTransferNext")?.addEventListener("click",()=>{
 });
 $("baliTransferChangeRecipient")?.addEventListener("click",()=>{
   ++run;recipient=null;$("baliTransferRecipientPreview").hidden=true;
-  say("baliTransferLookupStatus","Введите другой BALI ID.");showStage("lookup");
+  say("baliTransferLookupStatus","Введите номер другой Bali Card.");showStage("lookup");
 });
 function transferItems(){
   return transferList().filter(g=>(selected.get(g.id)||0)>0)
@@ -225,7 +225,7 @@ $("baliTransferReviewOpen")?.addEventListener("click",()=>{
   const combined=new Map();
   for(const line of items)combined.set(line.kind,(combined.get(line.kind)||0)+line.quantity);
   const host=$("baliTransferReviewList");host.replaceChildren();
-  say("baliTransferReviewRecipient","Получатель: "+recipient.name+" · BALI ID "+recipient.number);
+  say("baliTransferReviewRecipient","Получатель: "+recipient.name+" · Bali Card "+recipient.number);
   for(const [kind,count] of combined){
     const row=node("div","bali-bank-review-row");
     row.append(node("span","",names[kind]||kind),node("strong","",count+" шт."));
@@ -364,7 +364,7 @@ function startWallet(user){
     }).catch(()=>{
       if(uid!==user.uid||round!==kindsRound)return;
       walletReady=false;grants=[];renderBalance();
-      say("baliIdStatus","Не удалось загрузить бонусы BALI ID.");
+      say("baliIdStatus","Не удалось загрузить бонусы Bali Card.");
     });
     return;
   }

@@ -33,9 +33,9 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId})=>{
       return {uid,...guest};
     }
     const n=Number(number);
-    if(!Number.isInteger(n)||n<1||n>999999)fail("invalid-argument","Неверный шестизначный номер BALI ID.");
+    if(!Number.isInteger(n)||n<1||n>999999)fail("invalid-argument","Неверный шестизначный номер Bali Card.");
     const hits=await db.collection("baliIds").where("number","==",n).limit(1).get();
-    if(hits.empty)fail("not-found","BALI ID не найден.");
+    if(hits.empty)fail("not-found","Bali Card не найден.");
     return {uid:hits.docs[0].id,...await nameAndId(hits.docs[0].id)};
   }
   function initCard(guest,source,by){
