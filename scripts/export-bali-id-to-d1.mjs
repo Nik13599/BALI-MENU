@@ -45,7 +45,7 @@ async function source(){
     {updateTime:item.updateTime}));
   if(records.length>MAX_ALL)throw Error("Total source exceeds safety bound");
  }
- // Global collectionGroup('items'|'history'|'events') scans unrelated app
+ // Generic collectionGroup('items'|'history'|'events') scans unrelated app
  // data and can exhaust Firestore reads before BALI source is captured.
  // Query only the immediate subcollections under each known BALI root.
  // listDocuments() includes missing parent documents with live subcollections,
@@ -61,6 +61,18 @@ async function source(){
  const parentsByRoot=new Map();
  let scopedQueries=0;
  for(const [scope,{group,path}] of Object.entries(NESTED_SOURCES)){
+  // These names are specific to BALI and cost one collection-group query
+  // instead of thousands of empty per-user subcollection queries. Generic
+  // names (items/history/events/vouchers/entries/...) MUST stay scoped.
+  if(scope==="agreements"||scope==="event-checkins"){
+   const docs=await listCollection(firestore.collectionGroup(group));
+   for(const doc of docs){
+    if(path.test(doc.ref.path))records.push(record(scope,doc.ref.path,
+      doc.data(),{updateTime:doc.updateTime}));
+   }
+   if(records.length>MAX_ALL)throw Error("Total source exceeds safety bound");
+   continue;
+  }
   const root=parentRoots[scope];
   if(!root)throw Error("Unmapped nested snapshot scope");
   if(!parentsByRoot.has(root)){
