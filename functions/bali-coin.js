@@ -72,7 +72,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
     ]);
     return {card:{uid,number:person.number,name:person.name,activated:true,agreed:true,
       tier:tier.exists?tier.data().tier:"Member",benefits:tier.exists?tier.data().benefits||[]:[],
-      coinBalance:balance(snap)}};
+      coinBalance:balance(snap),coinWritable:rollout.eligible([uid])}};
   });
   const coinAdminCard=api("coinAdminCard",async req=>{
     await director(req);const uid=text(req.data?.uid,128);

@@ -1,5 +1,5 @@
 /* Shared BALI COIN market for all BALI ID tiers, including BRSM.
- * Card balance stays in the existing Sheets journal. No browser-side balance writes.
+ * Firebase owns the ledger. All balance changes use server-only callables.
  */
 import {getApp,getApps,initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
@@ -37,7 +37,7 @@ const box=element("dialog",undefined,"bali-coins-dialog");box.id="baliCoinMarket
 box.innerHTML='<div class="coins-head"><strong>МЕНЮ ЗА BALI COIN</strong><button type="button" id="coinsRefresh" aria-label="Обновить баланс">⟳ Обновить</button><button type="button" id="coinsClose" aria-label="Закрыть">×</button></div><p id="coinsMarketBalance" class="coins-balance">Загрузка…</p><nav class="coins-tabs" aria-label="Разделы BALI COIN"></nav><section id="coinsMarketBody" class="coins-body" aria-live="polite"></section><p id="coinsMarketStatus" class="coins-message" role="status" aria-live="polite"></p>';
 document.body.append(box);
 const status=s=>{$("coinsMarketStatus").textContent=s};
-let currentCampaign="",balance=null,tab="bar",loading=false,serial=0,items=[],vouchers=[],number="";
+let currentCampaign="",balance=null,tab="bar",loading=false,serial=0,items=[],vouchers=[],number="",coinWritable=false;
 const titles={bar:"Бар",prize:"Призовые лоты",transfer:"Перевести",vouchers:"Мои покупки"};
 function allowed(){
   if(!coinEnabled()){status("BALI COIN станет доступен после включения BALI API.");return false;}
@@ -55,7 +55,7 @@ function paintTabs(){
   }
 }
 async function reload(){
-  const id=++serial;if(!allowed())return;
+  const id=++serial;coinWritable=false;if(!allowed())return;
   status("Получаем актуальный баланс и позиции…");
   try{
     const [state,card]=await Promise.all([
@@ -65,6 +65,7 @@ async function reload(){
     if(id!==serial||!box.open)return;
     currentCampaign=state?.exists()?state.data().campaignId:"";
     balance=card.card?.coinBalance;
+    coinWritable=card.card?.coinWritable===true;
     number=card.card?.number||"";
     if(!card.card?.activated)throw Error("Сначала активируйте личную Bali Card.");
     $("coinsMarketBalance").textContent="Баланс всех ваших карт: "+money(balance);
@@ -78,7 +79,7 @@ async function reload(){
     }else{
       items=[];vouchers=(await coinRequest("coinVouchers")).vouchers||[];
     }
-    status("");render();
+    status(coinWritable?"":"Начисления, переводы и покупки за BALI COIN пока приостановлены. Баланс и оплаченные ваучеры доступны для просмотра.");render();
   }catch(e){if(id===serial){status("Не удалось загрузить: "+(e.message||"Ошибка соединения"));render();}}
 }
 function render(){
@@ -95,7 +96,7 @@ function render(){
       const left=element("div");left.append(element("strong",item.name),
         element("small","Доступно: "+item.remaining+" · "+money(item.price)));
       const buy=element("button","Получить", "coins-buy");
-      buy.type="button";buy.disabled=loading||item.remaining<1||balance<item.price;
+      buy.type="button";buy.disabled=loading||!coinWritable||item.remaining<1||balance<item.price;
       buy.addEventListener("click",async()=>{
         if(!confirm("Обменять "+money(item.price)+" на «"+item.name+"»?"))return;
         loading=true;render();status("Резервируем позицию и списываем баллы…");
@@ -115,8 +116,10 @@ function render(){
   }else if(tab==="transfer"){
     const form=element("form",undefined,"coins-form");form.id="coinsTransferForm";
     form.innerHTML='<label>Bali Card получателя<input name="number" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000001" required></label><label>Количество BALI COIN<input name="amount" type="number" min="1" max="1000000" step="1" required></label><label>Комментарий (необязательно)<input name="comment" maxlength="100" placeholder="Подарок другу"></label><button type="submit">Перевести баллы</button>';
+    form.querySelector('button[type="submit"]').disabled=loading||!coinWritable;
     form.addEventListener("submit",async e=>{
       e.preventDefault();
+      if(!coinWritable)return status("Переводы BALI COIN сейчас приостановлены.");
       if(loading)return;
       const fields=new FormData(form),to=String(fields.get("number")),
         amount=Number(fields.get("amount")),comment=String(fields.get("comment")||"");
@@ -162,7 +165,7 @@ const open=async()=>{
 };
 $("coinsRefresh").addEventListener("click",()=>void reload());
 $("coinsClose").addEventListener("click",()=>box.close());
-box.addEventListener("close",()=>{serial++;currentCampaign="";items=[];vouchers=[];});
+box.addEventListener("close",()=>{serial++;currentCampaign="";items=[];vouchers=[];coinWritable=false;});
 box.addEventListener("click",e=>{if(e.target===box)box.close()});
 window.BaliCoinMarket=Object.freeze({open,refresh:()=>box.open?reload():undefined});
 function publishBalance(){
@@ -186,7 +189,7 @@ if(brsmToolbar){
     if(!coinEnabled()||!auth.currentUser?.emailVerified){balanceBadge.textContent="— BALI COIN";return;}
     try{
       const {card}=await coinRequest("card");
-      if(seq===balanceSerial)balanceBadge.textContent=money(card.coinBalance);
+      if(seq===balanceSerial)balanceBadge.textContent=money(card.coinBalance)+(card.coinWritable?"":" · операции приостановлены");
     }catch{if(seq===balanceSerial)balanceBadge.textContent="Баланс недоступен";}
   }
   window.addEventListener("bali:auth-state",()=>void refreshBrsmBalance());

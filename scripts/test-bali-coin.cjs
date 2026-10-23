@@ -2,7 +2,7 @@
 const test=require("node:test"),assert=require("node:assert/strict");
 const create=require("../functions/bali-coin.js");
 const createRollout=require("../functions/coin-rollout.js");
-function setup(){
+function setup(rolloutEnv){
   const records=new Map();
   let serial=0;
   const stamp=()=>({toMillis:()=>Date.now()});
@@ -58,7 +58,7 @@ function setup(){
   const functions=create({api:(_n,fn)=>fn,admin:{},db,TS:{now:stamp},
     verified:req=>{if(!req.auth?.uid)fail("unauthenticated","sign in");return req.auth.uid;},
     privileged:async uid=>uid==="director",fail,nameAndId,
-    coinRollout:createRollout({fail,env:{BALI_COIN_WRITE_MODE:"live",
+    coinRollout:createRollout({fail,env:rolloutEnv||{BALI_COIN_WRITE_MODE:"live",
       BALI_COIN_VERIFIED_EXPORT_SHA256:"a".repeat(64),
       BALI_COIN_LIVE_CONFIRM:"VERIFIED_SOURCE_AND_WALLETS"}})});
   const call=(name,uid,data={})=>functions[name]({auth:{uid},data});
@@ -139,4 +139,26 @@ test("bar stock, vouchers, server-only redemption and double-spend protection",a
   assert.equal(again.result.alreadyFulfilled,true);
   assert.equal((await call("coinVouchers","guest_alice_0001")).vouchers[0].status,"served");
   assert.equal(records.get("baliCoinAccounts/guest_alice_0001").balance,25);
+});
+
+test("frozen rollout keeps the balance readable but denies new debits and credits",async()=>{
+  const {records,call,person}=setup({});
+  person("guest_alice_0001",1);person("guest_bobby_0002",2);
+  records.set("admins/director",{active:true});
+  records.set("baliCoinAccounts/guest_alice_0001",{balance:90});
+  const {card}=await call("coinCard","guest_alice_0001");
+  assert.equal(card.coinBalance,90);
+  assert.equal(card.coinWritable,false);
+  await assert.rejects(call("coinChange","director",{
+    uid:"guest_alice_0001",operation:"credit",amount:10,
+    reason:"paused test",requestId:"frozen_credit_0001"
+  }),e=>e.code==="failed-precondition");
+  await assert.rejects(call("coinTransfer","guest_alice_0001",{
+    number:"000002",amount:1,requestId:"frozen_send_0001"
+  }),e=>e.code==="failed-precondition");
+  await assert.rejects(call("coinRedeemLot","guest_alice_0001",{
+    campaignId:"contact_2026",lotId:"offer_01",requestId:"frozen_buy_00001"
+  }),e=>e.code==="failed-precondition");
+  assert.equal(records.get("baliCoinAccounts/guest_alice_0001").balance,90);
+  assert.equal(records.get("baliCoinAccounts/guest_bobby_0002"),undefined);
 });
