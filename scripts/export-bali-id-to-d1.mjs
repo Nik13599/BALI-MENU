@@ -82,10 +82,12 @@ if(!apply){
 const account=process.env.CF_ACCOUNT_ID;
 const database=process.env.CF_D1_DATABASE_ID;
 const token=process.env.CF_API_TOKEN;
+const expectedAccount="399972c0a0358037b0cb4d0d46ce69a3";
+const expectedDatabase="6ec5e063-e2b7-48ce-beb9-d59af7207353";
 if(!account||!database||!token)
  throw Error("Staging blocked: protected Cloudflare credentials missing");
-if(!/^[a-f0-9-]{30,40}$/i.test(database))
- throw Error("Unrecognized D1 database identifier");
+if(account!==expectedAccount||database!==expectedDatabase)
+ throw Error("Staging blocked: Cloudflare account or D1 database mismatch");
 const endpoint="https://api.cloudflare.com/client/v4/accounts/"+account+
  "/d1/database/"+database+"/query";
 async function query(sql,params=[]){
