@@ -106,13 +106,21 @@ async function list(db,{date="",eventId="",uid="",limit=100}={}){
  args.push(Math.min(limit,1500));
  const orders=(await db.prepare(sql).bind(...args).all()).results||[];
  if(!orders.length)return [];
- const ids=orders.map(o=>o.id),placeholders=ids.map(()=>"?").join(",");
- const rows=(await db.prepare("SELECT * FROM preorder_items WHERE order_id IN ("+placeholders+") ORDER BY item_name")
-  .bind(...ids).all()).results||[];
- const byId=new Map();
- for(const line of rows){
-  if(!byId.has(line.order_id))byId.set(line.order_id,[]);
-  byId.get(line.order_id).push(line);
+ // Cloudflare D1 places a cap on SQL bound parameters and rows returned
+ // per statement. Chunk order lines so a busy Staff queue cannot break when
+ // hundreds of guests preorder during the same event.
+ const ids=orders.map(o=>o.id),byId=new Map();
+ const BATCH_SIZE=80;
+ for(let offset=0;offset<ids.length;offset+=BATCH_SIZE){
+  const batch=ids.slice(offset,offset+BATCH_SIZE);
+  const placeholders=batch.map(()=>"?").join(",");
+  const rows=(await db.prepare(
+    "SELECT * FROM preorder_items WHERE order_id IN ("+placeholders+") ORDER BY item_name"
+  ).bind(...batch).all()).results||[];
+  for(const line of rows){
+   if(!byId.has(line.order_id))byId.set(line.order_id,[]);
+   byId.get(line.order_id).push(line);
+  }
  }
  return orders.map(o=>normalized(o,byId.get(o.id)||[]));
 }
@@ -319,12 +327,12 @@ export async function handleD1OrderAction(input,request,env){
    await authorizeStaff(staffRequest);
    const data=await catalog(env);return good(data);
   }
-  if(action==="guestCreateOrder")return create(db,env,input,staffRequest,{guest:true});
-  if(action==="createOrder")return create(db,env,input,staffRequest);
-  if(action==="staffCreateOrder")return create(db,env,input,staffRequest,{staff:true});
-  if(action==="staffStatus")return updateStatus(db,input,staffRequest);
-  if(action==="editOrder")return change(db,env,input,staffRequest);
-  if(action==="staffEditOrder")return change(db,env,input,staffRequest,{staff:true});
+  if(action==="guestCreateOrder")return await create(db,env,input,staffRequest,{guest:true});
+  if(action==="createOrder")return await create(db,env,input,staffRequest);
+  if(action==="staffCreateOrder")return await create(db,env,input,staffRequest,{staff:true});
+  if(action==="staffStatus")return await updateStatus(db,input,staffRequest);
+  if(action==="editOrder")return await change(db,env,input,staffRequest);
+  if(action==="staffEditOrder")return await change(db,env,input,staffRequest,{staff:true});
   if(action==="myOrders"){
    const user=await verifiedIdentity(input,staffRequest);
    return good({orders:await list(db,{uid:user.uid,limit:40})});

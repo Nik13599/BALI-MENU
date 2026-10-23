@@ -1,0 +1,29 @@
+name: BALI D1 bulk Staff queue
+on:
+  push:
+    branches: [fix/d1-batched-staff-lines-20261023]
+  pull_request:
+    paths:
+      - 'cloudflare-pages/functions/_lib/d1-orders.js'
+      - 'scripts/test-d1-batched-staff-lines.mjs'
+      - '.github/workflows/d1-batched-staff-queue.yml'
+permissions:
+  contents: read
+jobs:
+  bulk-queue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check backend module syntax
+        run: node --input-type=module --check < cloudflare-pages/functions/_lib/d1-orders.js
+      - name: Verify 220 order lines under D1 bound-parameter limit
+        run: node --experimental-sqlite scripts/test-d1-batched-staff-lines.mjs
+      - name: Verify guest, Staff and account orders through unified D1 service
+        run: node --experimental-sqlite scripts/test-d1-live-orders.mjs
+      - name: Verify approved Staff PC and phone appearance is unchanged
+        run: node scripts/test-staff-appearance-locked.mjs
+      - name: Build Cloudflare Pages
+        run: node cloudflare-pages/build.mjs
