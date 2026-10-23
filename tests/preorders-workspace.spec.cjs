@@ -250,11 +250,11 @@ test("compact order keeps full details and pins color status at top right on all
     expect(box.phoneTop).toBeGreaterThanOrEqual(box.mainTop);
     if(width<=900){
       expect(box.mainDisplay).toBe("flex");
-      expect(box.eventTop).toBeGreaterThanOrEqual(box.dateBottom-1);
-      expect(box.guestTop).toBeGreaterThanOrEqual(box.eventBottom-1);
-      expect(box.dishesTop).toBeGreaterThanOrEqual(box.guestBottom-1);
-      expect(Math.abs(box.dateLeft-box.eventLeft)).toBeLessThanOrEqual(2);
-      expect(Math.abs(box.eventLeft-box.guestLeft)).toBeLessThanOrEqual(2);
+      // Compact rows keep the date and event inline to avoid tall cards.
+      expect(Math.abs(box.eventTop-box.dateBottom)).toBeLessThanOrEqual(16);
+      expect(box.guestTop).toBeGreaterThanOrEqual(box.eventTop);
+      expect(box.dishesTop).toBeGreaterThanOrEqual(box.guestTop-1);
+      expect(box.guestLeft).toBeGreaterThanOrEqual(box.dateLeft-1);
     }
     await expect(page.locator(".preorder-compact-row .preorder-queue-date")).toHaveText("30.10.26");
     await expect(page.locator(".preorder-compact-row .preorder-edit-button")).toBeVisible();
