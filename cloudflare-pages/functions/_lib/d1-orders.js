@@ -7,7 +7,8 @@
  */
 import {authorizeStaff,authorizeUser} from "./staff-auth.js";
 const orderActions=new Set(["guestCreateOrder","createOrder","editOrder","cancelOrder","myOrders",
- "staffRecentOrders","staffOrders","staffCreateOrder","staffEditOrder","staffStatus","menu"]);
+ "staffRecentOrders","staffOrders","staffCreateOrder","staffEditOrder","staffStatus","menu",
+ "staffArchiveOrder","staffDeleteOrder","staffClearExpiredOrders"]);
 const error=(code,message,status=400)=>({ok:false,error:{code,message},status});
 const good=data=>({ok:true,data,status:200});
 const idPattern=/^[A-Za-z0-9_-]{8,128}$/;
@@ -102,7 +103,7 @@ async function list(db,{date="",eventId="",uid="",limit=100}={}){
  if(eventId){sql+=" AND event_id=?";args.push(eventId);}
  if(uid){sql+=" AND owner_uid=?";args.push(uid);}
  sql+=" ORDER BY event_date DESC, created_at_ms DESC LIMIT ?";
- args.push(limit);
+ args.push(Math.min(limit,1500));
  const orders=(await db.prepare(sql).bind(...args).all()).results||[];
  if(!orders.length)return [];
  const ids=orders.map(o=>o.id),placeholders=ids.map(()=>"?").join(",");
@@ -229,14 +230,22 @@ async function updateStatus(db,input,request){
  const queries=[
   db.prepare("INSERT INTO preorder_status_actions "+
    "(actor_uid,request_id,order_id,new_status,expected_updated_at_ms,applied_updated_at_ms,created_at_ms) "+
-   "VALUES (?,?,?,?,?,?,?)").bind(staff.uid,requestId,id,status,current.updated_at_ms,now,now),
-  db.prepare("UPDATE preorder_orders SET status=?,updated_at_ms=? WHERE id=? AND updated_at_ms=?")
-   .bind(status,now,id,current.updated_at_ms),
-  db.prepare("INSERT INTO preorder_audit (order_id,actor_uid,action,created_at_ms,details) VALUES (?,?,?,?,?)")
-   .bind(id,staff.uid,"status",now,JSON.stringify({status}))
+   "SELECT ?,?,?,?,?,?,? WHERE EXISTS "+
+   "(SELECT 1 FROM preorder_orders WHERE id=? AND updated_at_ms=?)")
+   .bind(staff.uid,requestId,id,status,current.updated_at_ms,now,now,id,current.updated_at_ms),
+  db.prepare("UPDATE preorder_orders SET status=?,updated_at_ms=? WHERE id=? AND updated_at_ms=? "+
+   "AND EXISTS(SELECT 1 FROM preorder_status_actions WHERE actor_uid=? AND request_id=?)")
+   .bind(status,now,id,current.updated_at_ms,staff.uid,requestId),
+  db.prepare("INSERT INTO preorder_audit (order_id,actor_uid,action,created_at_ms,details) "+
+   "SELECT ?,?,?,?,? WHERE EXISTS(SELECT 1 FROM preorder_status_actions "+
+   "WHERE actor_uid=? AND request_id=? AND applied_updated_at_ms=?)")
+   .bind(id,staff.uid,"status",now,JSON.stringify({status}),staff.uid,requestId,now)
  ];
- try{await db.batch(queries);}
+ let changes;
+ try{changes=await db.batch(queries);}
  catch{return error("order-conflict","Параллельное изменение статуса.",409);}
+ if(changes.some(result=>Number(result?.meta?.changes)!==1))
+  return error("order-conflict","Заказ изменён другим сотрудником.",409);
  return good({result:{id,status,updatedAt:iso(now)}});
 }
 async function change(db,env,input,request,{staff=false}={}){
@@ -271,14 +280,24 @@ async function change(db,env,input,request,{staff=false}={}){
    data.eventId,data.eventDate,event.title,...(moved?[data.eventId]:[]),
    data.customerName,data.customerPhone,data.tableNumber,data.bookingId,data.notes,data.status,now,id,old.updated_at_ms
   ));
- stmts.push(db.prepare("DELETE FROM preorder_items WHERE order_id=?").bind(id));
+ const updateIndex=stmts.length-1;
+ stmts.push(db.prepare("DELETE FROM preorder_items WHERE order_id=? "+
+  "AND EXISTS(SELECT 1 FROM preorder_orders WHERE id=? AND updated_at_ms=?)")
+  .bind(id,id,now));
  for(const x of items)stmts.push(db.prepare("INSERT INTO preorder_items "+
-  "(order_id,menu_id,item_name,unit_price_minor,quantity) VALUES (?,?,?,?,?)")
-  .bind(id,String(x.id),x.name,x.minor,x.quantity));
- stmts.push(db.prepare("INSERT INTO preorder_audit (order_id,actor_uid,action,created_at_ms,details) VALUES (?,?,?,?,?)")
-  .bind(id,user.uid,"edited",now,JSON.stringify({moved})));
- try{await db.batch(stmts);}
+  "(order_id,menu_id,item_name,unit_price_minor,quantity) "+
+  "SELECT ?,?,?,?,? WHERE EXISTS "+
+  "(SELECT 1 FROM preorder_orders WHERE id=? AND updated_at_ms=?)")
+  .bind(id,String(x.id),x.name,x.minor,x.quantity,id,now));
+ stmts.push(db.prepare("INSERT INTO preorder_audit (order_id,actor_uid,action,created_at_ms,details) "+
+  "SELECT ?,?,?,?,? WHERE EXISTS "+
+  "(SELECT 1 FROM preorder_orders WHERE id=? AND updated_at_ms=?)")
+  .bind(id,user.uid,"edited",now,JSON.stringify({moved}),id,now));
+ let outcome;
+ try{outcome=await db.batch(stmts);}
  catch{return error("order-conflict","Заказ уже изменён.",409);}
+ if(Number(outcome?.[updateIndex]?.meta?.changes)!==1)
+  return error("order-conflict","Заказ был изменён в другой вкладке.",409);
  const order=await readOne(db,id);
  return good({order});
 }
@@ -315,16 +334,49 @@ export async function handleD1OrderAction(input,request,env){
    if(!order||order.owner_uid!==user.uid)return error("not-found","Заказ не найден.",404);
    if(order.status!=="pending")return error("order-not-editable","Нельзя отменить подтверждённый заказ.",409);
    const now=Math.max(Date.now(),Number(order.updated_at_ms)+1);
-   await db.prepare("UPDATE preorder_orders SET status='cancelled',updated_at_ms=? WHERE id=? AND updated_at_ms=?")
+   const saved=await db.prepare("UPDATE preorder_orders SET status='cancelled',updated_at_ms=? WHERE id=? AND updated_at_ms=?")
     .bind(now,id,order.updated_at_ms).run();
+   if(Number(saved?.meta?.changes)!==1)return error("order-conflict","Заказ уже изменён.",409);
    return good({ok:true});
+  }
+  if(action==="staffArchiveOrder"||action==="staffDeleteOrder"){
+   const staff=await authorizeStaff(staffRequest),id=String(input.payload?.id||"");
+   if(!idPattern.test(id))return error("invalid-argument","Неверный номер заказа.",400);
+   const current=await db.prepare("SELECT * FROM preorder_orders WHERE id=?").bind(id).first();
+   if(!current)return error("not-found","Заказ не найден.",404);
+   if(action==="staffDeleteOrder"){
+    // Cascades to items, receipts, status actions. Audit is intentionally preserved.
+    const result=await db.prepare("DELETE FROM preorder_orders WHERE id=? AND updated_at_ms=?")
+      .bind(id,current.updated_at_ms).run();
+    if(Number(result?.meta?.changes)!==1)return error("order-conflict","Заказ изменён.",409);
+    return good({deleted:id});
+   }
+   const archived=Boolean(input.payload?.archived),now=Math.max(Date.now(),current.updated_at_ms+1);
+   const result=await db.prepare("UPDATE preorder_orders SET archived_at_ms=?,"+
+    "status=CASE WHEN ?=1 THEN 'cancelled' ELSE status END,updated_at_ms=? "+
+    "WHERE id=? AND updated_at_ms=?")
+    .bind(archived?now:null,archived?1:0,now,id,current.updated_at_ms).run();
+   if(Number(result?.meta?.changes)!==1)return error("order-conflict","Заказ изменён.",409);
+   return good({order:await readOne(db,id)});
+  }
+  if(action==="staffClearExpiredOrders"){
+   await authorizeStaff(staffRequest);
+   const cutoff=Date.now()-30*86400000;
+   const old=await db.prepare("SELECT id FROM preorder_orders WHERE created_at_ms<? LIMIT 50")
+    .bind(cutoff).all();
+   const found=old.results||[];
+   if(!found.length)return good({removed:0});
+   const statements=found.map(x=>db.prepare("DELETE FROM preorder_orders WHERE id=? AND created_at_ms<?")
+    .bind(x.id,cutoff));
+   await db.batch(statements);
+   return good({removed:found.length});
   }
   if(action==="staffOrders"||action==="staffRecentOrders"){
    await authorizeStaff(staffRequest);
    const p=input.payload||{};
    const date=String(p.date||""),eventId=String(p.eventId||"");
    if(date&&!datePattern.test(date))return error("invalid-argument","Неверная дата.",400);
-   const orders=await list(db,{date,eventId,limit:action==="staffOrders"?250:100});
+   const orders=await list(db,{date,eventId,limit:action==="staffOrders"?1500:100});
    return good({orders,canEditOrders:true,canCreateOrders:true});
   }
   return error("unsupported-order-action","Неизвестная операция.",400);
