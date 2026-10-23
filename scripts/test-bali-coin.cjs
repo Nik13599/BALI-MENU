@@ -162,3 +162,34 @@ test("frozen rollout keeps the balance readable but denies new debits and credit
   assert.equal(records.get("baliCoinAccounts/guest_alice_0001").balance,90);
   assert.equal(records.get("baliCoinAccounts/guest_bobby_0002"),undefined);
 });
+
+test("BRSM visit can be credited once after revocation, reinstatement and frozen COIN",async()=>{
+  const {records,call,person}=setup();
+  const uid="guest_alice_0001",campaignId="contact_2026",eventId="contact_2026_01";
+  person(uid,1);records.set("admins/director",{active:true});
+  await call("coinSetReward","director",{campaignId,itemId:eventId,kind:"EVENT",
+    label:"CONTACT attendance",amount:40});
+  const entry="brsmCampaigns/"+campaignId+"/entries/"+uid;
+  const requestId="visit_"+require("node:crypto").createHash("sha256")
+    .update(campaignId+"|"+eventId).digest("hex");
+  const operation="baliCoinRequests/"+require("node:crypto").createHash("sha256")
+    .update(uid+"|"+requestId).digest("hex");
+  records.set(entry,{visits:[{eventId,source:"qr"}]});
+  assert.equal((await call("coinClaimVisit",uid,{campaignId,eventId})).result.balance,40);
+  // An administrator cancelled the entry and atomically reversed the credit.
+  records.set(entry,{visits:[]});
+  records.set(operation,{...records.get(operation),revoked:true,reissues:0,balance:0});
+  records.set("baliCoinAccounts/"+uid,{balance:0});
+  await assert.rejects(call("coinClaimVisit",uid,{campaignId,eventId}),
+    e=>e.code==="failed-precondition");
+  // A new verified QR visit was registered while COIN was disabled.
+  records.set(entry,{visits:[{eventId,source:"qr"}]});
+  const reissued=await call("coinClaimVisit",uid,{campaignId,eventId});
+  assert.equal(reissued.result.reissued,true);
+  assert.equal(reissued.result.balance,40);
+  const retry=await call("coinClaimVisit",uid,{campaignId,eventId});
+  assert.equal(retry.result.alreadyProcessed,true);
+  assert.equal(records.get("baliCoinAccounts/"+uid).balance,40);
+  const history=[...records.keys()].filter(p=>p.startsWith("baliCoinAccounts/"+uid+"/history/"));
+  assert.equal(history.length,2,"one original receipt and exactly one reissue receipt");
+});

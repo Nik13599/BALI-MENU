@@ -25,7 +25,10 @@ if(panel){
     if(!uid||!id||!Array.isArray(visits)||!active()||!coinEnabled())return;
     const generation=++claimSequence;
     for(const visit of visits){
-      const eventId=visit.eventId, key="bali-coin-visit-v1:"+uid+":"+id+":"+eventId;
+      // Include the visit issuance timestamp. A corrected/reissued attendance
+      // must not inherit the browser's success marker from a revoked visit.
+      const eventId=visit.eventId,visitVersion=visit.at?.toMillis?.()||visit.at?.seconds||"unknown";
+      const key="bali-coin-visit-v2:"+uid+":"+id+":"+eventId+":"+visitVersion;
       if(localStorage.getItem(key)==="success"||coinClaimPending.has(key))continue;
       coinClaimPending.add(key);
       try{

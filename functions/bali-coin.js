@@ -173,8 +173,26 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
         const p=prior.data();
         if(p.action!=="award"||p.uid!==uid||p.reason!==reason)
           fail("already-exists","Несовпадающая повторная операция.");
-        if(p.revoked===true)
-          fail("failed-precondition","Начисление за это посещение отменено. Проверьте подтверждение входа.");
+        if(p.revoked===true){
+          // A reversed BRSM visit may be revalidated later if the visit was
+          // reissued while COIN rollout was frozen. A new verified attendance
+          // is mandatory; never reopen revoked activity awards.
+          if(!operationId.startsWith("visit_"))
+            fail("failed-precondition","Повторное начисление недоступно.");
+          const checked=await validator(tx),old=await tx.get(account);
+          const count=p.reissues??0;
+          if(!Number.isSafeInteger(count)||count<0||count>1000)
+            fail("failed-precondition","Неверный счётчик повторных начислений.");
+          const issueCount=count+1,before=balance(old),next=before+checked.amount;
+          if(!coins(next))fail("resource-exhausted","Превышен лимит BALI COIN.");
+          const at=TS.now();
+          tx.set(account,{balance:next,updatedAt:at},{merge:true});
+          tx.update(op,{revoked:false,reissues:issueCount,amount:checked.amount,
+            balance:next,updatedAt:at});
+          tx.create(hist(uid,id+"_reissue_"+issueCount),{type:"credit",
+            count:checked.amount,balance:next,reason,createdAt:at});
+          return {result:{ok:true,reissued:true,balance:next,amount:checked.amount}};
+        }
         return {result:{ok:true,alreadyProcessed:true,balance:p.balance,amount:p.amount}};
       }
       // Read reward, verified attendance and balance before any writes.
