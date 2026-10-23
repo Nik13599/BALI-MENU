@@ -17,6 +17,7 @@ export const SOURCE_COLLECTIONS=Object.freeze({
 });
 // Include the current QR backend and the PR #104 wallet, without enabling it.
 export const LOYALTY_COLLECTIONS=Object.freeze({
+ "card-counters":"baliCounters",
  "qr-codes":"baliBonusQRCodes","qr-locks":"baliBonusQRLocks",
  "recipient-qr":"guestRecipientQr",
  "coin-accounts":"baliCoinAccounts","coin-requests":"baliCoinRequests",
@@ -165,6 +166,9 @@ export function validateRecords(rows){
       throw Error("orphan-loyalty-account");
     if(r.scope==="coin-accounts"&&(!Number.isSafeInteger(fields.balance)||fields.balance<0))
       throw Error("invalid-coin-balance");
+    if(r.scope==="card-counters"&&r.path==="baliCounters/guests"&&
+      (!Number.isSafeInteger(fields.count)||fields.count<0||
+       [...numbers].some(n=>n>fields.count)))throw Error("card-counter-behind-existing-numbers");
   }
   return count;
 }

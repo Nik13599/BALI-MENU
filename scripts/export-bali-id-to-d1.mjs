@@ -6,6 +6,9 @@
  */
 import {createRequire} from "node:module";
 import {createHash} from "node:crypto";
+import {readFileSync,writeFileSync,mkdirSync} from "node:fs";
+import {dirname} from "node:path";
+import {sealSnapshot} from "./bali-id-sealed-snapshot.mjs";
 import {newSnapshotId,SNAPSHOT_PROJECT,SOURCE_COLLECTIONS,LOYALTY_COLLECTIONS,
  NESTED_SOURCES,SNAPSHOT_TABLES,snapshotTable,record,manifest}
  from "./bali-id-source-snapshot.mjs";
@@ -60,6 +63,20 @@ const expected=manifest(original);
 console.log(JSON.stringify({mode:apply?"staging":"dry-run",sourceProject:project,
  scopes:expected.scopes,totalDocuments:expected.total,
  sourceManifest:expected.digest,activeWalletsStay:"firebase",cutoverAllowed:false}));
+if(process.env.BALI_SNAPSHOT_SEAL_PATH){
+ // The public Actions artifact contains ciphertext only. Recipient private key
+ // never enters GitHub. Re-read the source before releasing the sealed copy.
+ const current=manifest(await source());
+ if(current.total!==expected.total||current.digest!==expected.digest)
+  throw Error("Source changed before encrypted export; no artifact released");
+ const sealed=sealSnapshot({project,snapshotId,startedAtMs:started,
+  records:original,manifest:expected},
+  readFileSync(process.env.BALI_SNAPSHOT_PUBLIC_KEY_FILE,"utf8"));
+ mkdirSync(dirname(process.env.BALI_SNAPSHOT_SEAL_PATH),{recursive:true,mode:0o700});
+ writeFileSync(process.env.BALI_SNAPSHOT_SEAL_PATH,JSON.stringify(sealed),{mode:0o600,flag:"wx"});
+ console.log(JSON.stringify({sealedSnapshotId:snapshotId,recipient:sealed.recipient,
+  totalDocuments:expected.total,sourceManifest:expected.digest,containsPlaintext:false}));
+}
 if(!apply){
  console.log("No Cloudflare writes executed. Snapshot validated only.");
  process.exit(0);
