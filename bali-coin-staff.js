@@ -52,7 +52,7 @@ $("barStaffForm").addEventListener("submit",async event=>{
   if(!staff||busy)return;
   const form=event.currentTarget,data=new FormData(form),number=String(data.get("number")),
     voucher=String(data.get("voucher")).trim();
-  if(!confirm("Выдать позицию за BALI COIN владельцу BALI ID "+number+"?"))return;
+  if(!confirm("Выдать позицию за BALI COIN владельцу Bali Card "+number+"?"))return;
   busy=true;notice("Проверяем ваучер и фиксируем выдачу…");
   try{
     const {result}=await coinRequest("coinVoucherFulfill",{number,voucher});

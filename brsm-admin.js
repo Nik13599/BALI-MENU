@@ -22,7 +22,7 @@ function drawView(d){
     " · порог: "+d.target+" · претендентов: "+d.contenderCount+" · "+d.phase;
   for(const n of d.drawn)add(balls,"span",String(n));
   $("brsmDrawWinner").textContent=d.winnerNumber?
-    (d.phase==="provisional"?"ПРЕДВАРИТЕЛЬНЫЙ ПОБЕДИТЕЛЬ · BALI ID ":"ПОБЕДИТЕЛЬ · BALI ID ")+d.winnerNumber:
+    (d.phase==="provisional"?"ПРЕДВАРИТЕЛЬНЫЙ ПОБЕДИТЕЛЬ · Bali Card ":"ПОБЕДИТЕЛЬ · Bali Card ")+d.winnerNumber:
     d.phase==="tie"?"НИЧЬЯ · ДОПОЛНИТЕЛЬНЫЙ ЖРЕБИЙ":"";
   $("brsmTieDraw").hidden=d.phase!=="tie";
   $("brsmFinalizeDraw").hidden=d.phase!=="provisional";
@@ -97,7 +97,7 @@ $("brsmFindCardForm").addEventListener("submit",async e=>{
     const resolved=await resolveBrsmGuest(number);
     const r=(await calls.getBrsmCardAdmin(resolved)).data.card;
     target.replaceChildren();
-    add(target,"div","BALI ID "+r.number+" · "+r.name+" · "+(r.active?"Активна":"Заблокирована"));
+    add(target,"div","Bali Card "+r.number+" · "+r.name+" · "+(r.active?"Активна":"Заблокирована"));
     add(target,"div","Посещения: "+r.visits.length+"/3 · "+(r.eligible?"Билет выдан":"Билет пока не выдан"));
     for(const v of r.visits){
       const date=v.atMillis?new Date(v.atMillis).toLocaleString("ru-RU",{timeZone:"Europe/Minsk"}):"";
@@ -113,7 +113,7 @@ $("brsmManageForm").addEventListener("submit",async e=>{
   try{
     const resolved=await resolveBrsmGuest(f.get("number"));
     await action("manageBrsmCard",{...resolved,op});
-  }catch(err){status("Проверьте BALI ID: "+error(err));}
+  }catch(err){status("Проверьте Bali Card: "+error(err));}
 });
 $("brsmPromoCreateForm").addEventListener("submit",async e=>{
   e.preventDefault();const f=new FormData(e.currentTarget);
@@ -155,7 +155,7 @@ $("brsmManualForm").addEventListener("submit",async e=>{
   try{
     const resolved=await resolveBrsmGuest(f.get("number"));
     await action("manualBrsmVisit",{...resolved,eventId:String(f.get("eventId"))});
-  }catch(err){status("Проверьте BALI ID: "+error(err));}
+  }catch(err){status("Проверьте Bali Card: "+error(err));}
 });
 $("brsmUndoVisitForm").addEventListener("submit",async e=>{
   e.preventDefault();const f=new FormData(e.currentTarget);
@@ -164,7 +164,7 @@ $("brsmUndoVisitForm").addEventListener("submit",async e=>{
   try{
     const resolved=await resolveBrsmGuest(number);
     await action("undoBrsmVisit",{...resolved,eventId,reason});
-  }catch(err){status("Проверьте BALI ID: "+error(err));}
+  }catch(err){status("Проверьте Bali Card: "+error(err));}
 });
 $("brsmBeginDraw").addEventListener("click",async()=>{
   if(confirm("Зафиксировать всех участников и запустить тираж? После этого нельзя выдавать карты или засчитывать посещения."))
@@ -186,7 +186,7 @@ $("brsmTieDraw").addEventListener("click",()=>{if(confirm("Окончатель�
 $("brsmFinalizeDraw").addEventListener("click",async()=>{
   if(!authorized)return;
   const confirmed=window.confirm(
-    "Подтвердить победителя BALI ID и окончательно закрыть тираж? После этого числа нельзя исправить."
+    "Подтвердить победителя Bali Card и окончательно закрыть тираж? После этого числа нельзя исправить."
   );
   if(confirmed)await action("finalizeBrsmDraw",{});
 });
@@ -201,7 +201,7 @@ $("brsmExportReport").addEventListener("click",async()=>{
       const protectedValue=/^[=+@\-\t\r]/.test(value)?"'"+value:value;
       return '"'+protectedValue.replace(/"/g,'""')+'"';
     };
-    const lines=[["BALI ID","Числа билета","Совпадений","Победитель"].map(escaped).join(",")];
+    const lines=[["Bali Card","Числа билета","Совпадений","Победитель"].map(escaped).join(",")];
     for(const p of report.participants){
       lines.push([p.number,p.numbers.join(" "),p.matches,p.winner?"ДА":"НЕТ"].map(escaped).join(","));
     }

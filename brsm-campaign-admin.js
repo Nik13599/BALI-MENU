@@ -250,7 +250,7 @@ $("brsmCampaignReport").addEventListener("click",async()=>{
   message("Формируем протокол всех раундов…");
   try{
     const report=(await call.getBrsmCampaignReport({campaignId:selected})).data;
-    const csv=[["Раунд","Приз","BALI ID","Числа","Совпадения","Победитель"].join(";")];
+    const csv=[["Раунд","Приз","Bali Card","Числа","Совпадения","Победитель"].join(";")];
     const quote=x=>'"'+String(x??"").replace(/^[=+\-@]/,"'$&").replace(/"/g,'""')+'"';
     for(const round of report.rounds)for(const t of round.entries)csv.push([
       round.roundId,round.prize,t.number,t.numbers.join(" "),t.matches,

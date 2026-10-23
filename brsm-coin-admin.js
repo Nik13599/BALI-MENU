@@ -66,7 +66,7 @@ $("brsmCoinActivityForm").addEventListener("submit",async event=>{
 $("brsmCoinAwardForm").addEventListener("submit",async event=>{
   event.preventDefault();const id=requireCampaign();if(!id)return;
   const f=new FormData(event.currentTarget),number=String(f.get("number"));
-  if(!confirm("Начислить баллы за активность пользователю BALI ID "+number+"?"))return;
+  if(!confirm("Начислить баллы за активность пользователю Bali Card "+number+"?"))return;
   const result=await invoke("coinAwardActivity",{
     campaignId:id,activityId:String(f.get("activityId")),number,
     requestId:nonce()

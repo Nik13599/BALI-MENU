@@ -4,7 +4,7 @@
 <link rel="icon" href="assets/bali-favicon.svg"><link rel="stylesheet" href="brsm-admin.css?v=1">
 <script src="firebase-config.js?v=20261020-2"></script></head>
 <body>
-<header class="top"><a href="admin.html">← Админка BALI</a><strong>BALI CARD · BRSM</strong><button id="brsmSignOut" type="button" hidden>Выйти</button></header>
+<header class="top"><a href="admin.html">← Админка BALI</a><strong>Bali Card · BRSM</strong><button id="brsmSignOut" type="button" hidden>Выйти</button></header>
 <main>
 <section id="brsmLogin" class="brsm-login box">
   <h1>УПРАВЛЕНИЕ BRSM</h1><p>Вход только для директора или администратора с подтверждённым аккаунтом Google.</p>
@@ -15,7 +15,7 @@
 <section id="brsmCoinWorkspace" class="box">
     <h2>BALI COIN · ОБЩИЙ БАЛАНС ВСЕХ КАРТ</h2>
     <details id="brsmCoinSettingsDetails"><summary>Начисления · барное меню · призовые лоты · выдача</summary>
-    <p>Баллы доступны на обычной BALI ID и BRSM. Награды назначаются для мероприятия и активностей. Призы и специальное барное меню доступны участникам во время открытой кампании.</p>
+    <p>Баллы доступны на обычной Bali Card и BRSM. Награды назначаются для мероприятия и активностей. Призы и специальное барное меню доступны участникам во время открытой кампании.</p>
     <p id="brsmCoinAdminStatus" class="notice" role="status" aria-live="polite">Проверка прав BALI COIN…</p>
     <div class="admin-grid">
       <section class="box">
@@ -38,7 +38,7 @@
         </form>
         <form id="brsmCoinAwardForm" class="inline-form">
           <input name="activityId" placeholder="ID активности" required>
-          <input name="number" placeholder="6-значный BALI ID" pattern="[0-9]{6}" inputmode="numeric" maxlength="6" required>
+          <input name="number" placeholder="6-значный Bali Card" pattern="[0-9]{6}" inputmode="numeric" maxlength="6" required>
           <button type="submit">Начислить гостю</button>
         </form>
       </section>
@@ -62,9 +62,9 @@
       </section>
       <section class="box">
         <h3>Выдача оплаченного BALI COIN заказа</h3>
-        <p>Сотрудник сверяет BALI ID гостя и его код. Каждый ваучер может быть погашен только один раз.</p>
+        <p>Сотрудник сверяет Bali Card гостя и его код. Каждый ваучер может быть погашен только один раз.</p>
         <form id="brsmCoinFulfillForm" class="inline-form">
-          <input name="number" pattern="[0-9]{6}" maxlength="6" inputmode="numeric" placeholder="BALI ID владельца" required>
+          <input name="number" pattern="[0-9]{6}" maxlength="6" inputmode="numeric" placeholder="Bali Card владельца" required>
           <input name="voucher" placeholder="LOT:... код выдачи" required>
           <button type="submit">Подтвердить выдачу</button>
         </form>
@@ -119,12 +119,12 @@
         <section class="box">
           <h3>Корректировка посещений</h3>
           <form id="brsmCampaignManualForm" class="inline-form">
-            <input name="number" inputmode="numeric" required placeholder="BALI ID">
+            <input name="number" inputmode="numeric" required placeholder="Bali Card">
             <select name="eventId" class="campaign-event-choice" required><option value="">Мероприятие</option></select>
             <button type="submit">Зачесть</button>
           </form>
           <form id="brsmCampaignUndoForm" class="inline-form">
-            <input name="number" inputmode="numeric" required placeholder="BALI ID">
+            <input name="number" inputmode="numeric" required placeholder="Bali Card">
             <select name="eventId" class="campaign-event-choice" required><option value="">Мероприятие</option></select>
             <input name="reason" required minlength="5" maxlength="160" placeholder="Причина отмены">
             <button type="submit">Отменить отметку</button>
@@ -164,9 +164,9 @@
   <div class="admin-grid">
     <section class="box">
       <h2>Выдача карты BRSM</h2>
-      <p>Номер существующей BALI ID, например 000001.</p>
+      <p>Номер существующей Bali Card, например 000001.</p>
       <form id="brsmManageForm" class="inline-form">
-        <input name="number" required inputmode="numeric" pattern="[0-9]{1,9}" maxlength="9" placeholder="Номер BALI ID">
+        <input name="number" required inputmode="numeric" pattern="[0-9]{1,9}" maxlength="9" placeholder="Номер Bali Card">
         <select name="op" aria-label="Действие"><option value="assign">Выдать карту</option><option value="revoke">Заблокировать</option><option value="restore">Восстановить</option></select>
         <button type="submit">Выполнить</button>
       </form>
@@ -212,12 +212,12 @@
       <h2>Ручная корректировка посещения</h2>
       <p>Доступно руководству только до начала розыгрыша. Каждое изменение сохраняется с идентификатором сотрудника.</p>
       <form id="brsmManualForm" class="inline-form">
-        <input name="number" required inputmode="numeric" placeholder="Номер BALI ID">
+        <input name="number" required inputmode="numeric" placeholder="Номер Bali Card">
         <select name="eventId" id="brsmManualEventSelect" required><option value="">Мероприятие</option></select>
         <button type="submit">Зачесть вход</button>
       </form>
       <form id="brsmUndoVisitForm" class="inline-form">
-        <input name="number" required inputmode="numeric" pattern="[0-9]{1,9}" placeholder="BALI ID">
+        <input name="number" required inputmode="numeric" pattern="[0-9]{1,9}" placeholder="Bali Card">
         <select name="eventId" id="brsmUndoEventSelect" required><option value="">Отменяемое мероприятие</option></select>
         <input name="reason" required minlength="5" maxlength="160" placeholder="Причина отмены">
         <button type="submit">Отменить ошибочную отметку</button>
@@ -246,13 +246,13 @@
     <div id="brsmDrawWinner" class="winner"></div>
   </section>
   <section class="box"><h2>Карты участников</h2>
-    <p>Здесь отображаются последние 80 карт. Любого гостя можно найти по BALI ID без загрузки всей базы.</p>
+    <p>Здесь отображаются последние 80 карт. Любого гостя можно найти по Bali Card без загрузки всей базы.</p>
     <form id="brsmFindCardForm" class="inline-form">
-      <input name="number" inputmode="numeric" pattern="[0-9]{1,6}" maxlength="6" placeholder="6-значный BALI ID" required>
+      <input name="number" inputmode="numeric" pattern="[0-9]{1,6}" maxlength="6" placeholder="6-значный Bali Card" required>
       <button type="submit">Найти карту</button>
     </form>
     <div id="brsmFoundCard" class="summary-list" aria-live="polite" role="status"></div>
-    <div class="table-scroller"><table><thead><tr><th>BALI ID</th><th>Имя</th><th>Посещения</th><th>Билет</th><th>Состояние</th></tr></thead><tbody id="brsmCardsTable"></tbody></table></div>
+    <div class="table-scroller"><table><thead><tr><th>Bali Card</th><th>Имя</th><th>Посещения</th><th>Билет</th><th>Состояние</th></tr></thead><tbody id="brsmCardsTable"></tbody></table></div>
   </section>
   <section id="brsmPrintArea" aria-label="QR-коды для печати"></section>
 </div></main>

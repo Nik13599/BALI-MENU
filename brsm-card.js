@@ -129,7 +129,7 @@ if(panel){
       el("brsmBack").querySelector(".brsm-ticket strong").textContent=
         "РАУНД "+(roundIndex+1)+" · "+maximum+" ЧИСЕЛ";
       el("brsmTicketStatus").textContent=issued?
-        (draw?.phase==="finished"?"Победитель BALI ID "+draw.winnerNumber:
+        (draw?.phase==="finished"?"Победитель Bali Card "+draw.winnerNumber:
         draw?.phase==="provisional"?"Ожидается подтверждение победителя":
         draw?.phase==="tie"?"Дополнительный жребий":
         draw?.drawn?.length?"Выпало "+draw.drawn.length+" из "+cfg.ballCount:"Билет на раунд готов"):
@@ -154,7 +154,7 @@ if(panel){
       if(active()&&mode)node.style.setProperty("display","none","important");
       else node.style.removeProperty("display");
     }
-    el("brsmSwitchCard").textContent=mode?"Обычная BALI ID":"Показать карту BRSM";
+    el("brsmSwitchCard").textContent=mode?"Обычная Bali Card":"Показать карту BRSM";
     if(!active()){if(authorized)status("Карту BRSM можно получить у директора или по промокоду.");return;}
     el("brsmName").textContent=card?.name||"ГОСТЬ BALI";
     // The immutable Firebase BALI ID is shared by BRSM, COIN and privilege tiers.

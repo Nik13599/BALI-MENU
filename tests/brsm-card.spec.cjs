@@ -29,7 +29,7 @@ test("BRSM front has white brand, owner name and personal ID, without MEMBER",as
   await showCard(page,false);
   const card=page.locator("#brsmFront");
   await expect(card).toBeVisible();
-  await expect(card.locator(".brsm-head")).toContainText("BALI CARD");
+  await expect(card.locator(".brsm-head")).toContainText("Bali Card");
   await expect(card.locator(".brsm-head")).toContainText("BRSM");
   await expect(card.locator("#brsmName")).toContainText("ГОСТЬ BALI");
   await expect(card.locator("#brsmNumber")).toHaveText("000000");

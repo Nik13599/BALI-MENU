@@ -42,7 +42,7 @@ const titles={bar:"Бар",prize:"Призовые лоты",transfer:"Пере�
 function allowed(){
   if(!coinEnabled()){status("BALI COIN станет доступен после включения BALI API.");return false;}
   if(!auth.currentUser?.emailVerified||!window.BaliAuth?.isRegistered?.()){
-    status("Войдите и активируйте свою BALI ID.");return false;
+    status("Войдите и активируйте свою Bali Card.");return false;
   }
   return true;
 }
@@ -66,7 +66,7 @@ async function reload(){
     currentCampaign=state?.exists()?state.data().campaignId:"";
     balance=card.card?.coinBalance;
     number=card.card?.number||"";
-    if(!card.card?.activated)throw Error("Сначала активируйте личную BALI ID.");
+    if(!card.card?.activated)throw Error("Сначала активируйте личную Bali Card.");
     $("coinsMarketBalance").textContent="Баланс всех ваших карт: "+money(balance);
     if(currentCampaign){
       const [result,history]=await Promise.all([
@@ -114,17 +114,17 @@ function render(){
     }
   }else if(tab==="transfer"){
     const form=element("form",undefined,"coins-form");form.id="coinsTransferForm";
-    form.innerHTML='<label>BALI ID получателя<input name="number" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000001" required></label><label>Количество BALI COIN<input name="amount" type="number" min="1" max="1000000" step="1" required></label><label>Комментарий (необязательно)<input name="comment" maxlength="100" placeholder="Подарок другу"></label><button type="submit">Перевести баллы</button>';
+    form.innerHTML='<label>Bali Card получателя<input name="number" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000001" required></label><label>Количество BALI COIN<input name="amount" type="number" min="1" max="1000000" step="1" required></label><label>Комментарий (необязательно)<input name="comment" maxlength="100" placeholder="Подарок другу"></label><button type="submit">Перевести баллы</button>';
     form.addEventListener("submit",async e=>{
       e.preventDefault();
       if(loading)return;
       const fields=new FormData(form),to=String(fields.get("number")),
         amount=Number(fields.get("amount")),comment=String(fields.get("comment")||"");
-      if(to===number)return status("Нельзя отправить баллы на собственную BALI ID.");
+      if(to===number)return status("Нельзя отправить баллы на собственную Bali Card.");
       if(!Number.isInteger(amount)||amount<1||amount>balance)return status("Недостаточно баллов.");
       try{
         const {recipient}=await coinRequest("coinRecipient",{number:to});
-        if(!confirm("Перевести "+money(amount)+" пользователю "+recipient.name+" (BALI ID "+to+")?"))return;
+        if(!confirm("Перевести "+money(amount)+" пользователю "+recipient.name+" (Bali Card "+to+")?"))return;
         loading=true;status("Выполняем защищённый перевод…");
         const {result}=await coinRequest("coinTransfer",{
           number:to,amount,comment,requestId:operationId("transfer",to+"|"+amount+"|"+comment)
