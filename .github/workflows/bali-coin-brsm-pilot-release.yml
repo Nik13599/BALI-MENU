@@ -104,7 +104,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TARGET="bali-menu-5a48b@appspot.gserviceaccount.com"
+          # Firebase Functions v2 uses the project's Compute Engine default
+          # runtime service account unless serviceAccount is explicitly set.
+          PROJECT_NUMBER="$(gcloud projects describe "$FIREBASE_PROJECT_ID" --format='value(projectNumber)')"
+          test -n "$PROJECT_NUMBER"
+          [[ "$PROJECT_NUMBER" =~ ^[0-9]+$ ]]
+          TARGET="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
           TOKEN="$(gcloud auth print-access-token)"
           RESULT="$(curl --fail-with-body --silent --show-error \
             --request POST \
@@ -118,7 +123,7 @@ jobs:
             process.stdin.on("end",()=>{
               const p=JSON.parse(raw);
               if(!Array.isArray(p.permissions)||!p.permissions.includes("iam.serviceAccounts.actAs")){
-                console.error("::error::Missing iam.serviceAccounts.actAs on bali-menu-5a48b@appspot.gserviceaccount.com. Grant roles/iam.serviceAccountUser to the deployer on this service account only.");
+                console.error("::error::Missing iam.serviceAccounts.actAs on the Firebase Functions v2 COMPUTE runtime service account. Grant roles/iam.serviceAccountUser to the deployer on that account only.");
                 process.exitCode=1;
               }else console.log("Firebase runtime actAs permission verified.");
             });
