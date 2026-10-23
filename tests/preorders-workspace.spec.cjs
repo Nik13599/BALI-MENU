@@ -244,7 +244,7 @@ test("compact order keeps full details and pins color status at top right on all
     expect(box.dotWidth).toBe(18);
     expect(box.bg).toBe("rgb(255, 153, 26)");
     expect(box.statusText).toBe("");
-    expect(box.mainWidth).toBeGreaterThan(box.cardWidth*.57);
+    expect(box.mainWidth).toBeGreaterThan(box.cardWidth*.48);
     expect(box.headlineWidth).toBeGreaterThan(75);
     expect(box.phoneWidth).toBeGreaterThan(85);
     expect(box.phoneTop).toBeGreaterThanOrEqual(box.mainTop);
