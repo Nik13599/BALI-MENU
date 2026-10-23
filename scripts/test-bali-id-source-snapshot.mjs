@@ -78,5 +78,44 @@ assert.throws(()=>db.prepare("INSERT INTO bali_snapshot_manifests (snapshot_id,s
 const actual=db.prepare("SELECT source_path,source_digest FROM bali_source_snapshots ORDER BY source_path").all();
 assert.deepEqual(actual.map(r=>r.source_path),source.map(r=>r.path).sort());
 assert.equal(db.prepare("SELECT state FROM bali_snapshot_manifests").get().state,"verified");
+const mockAuth=[
+ 'const errorJson=(status,error)=>new Response(JSON.stringify({error}),{status});',
+ 'const handlerError=e=>errorJson(e.status===403?403:503,"service-unavailable");',
+ 'const authorizeStaff=async(req,{adminOnly}={})=>{',
+ ' if(req.headers.get("Authorization")!=="Bearer owner-test"||adminOnly!==true)',
+ ' throw Object.assign(Error("denied"),{status:403});',
+ ' return {uid:"owner"};',
+ '};'
+].join("\n");
+const auditSource=readFileSync("cloudflare-pages/functions/api/admin/bali-id-source-snapshot-status.js","utf8");
+const importLine='import {authorizeStaff,handlerError,errorJson} from "../../_lib/staff-auth.js";';
+assert(auditSource.includes(importLine));
+const audit=await import("data:text/javascript;base64,"+
+ Buffer.from(auditSource.replace(importLine,mockAuth)).toString("base64"));
+const store={
+ prepare(sql){
+  const q=db.prepare(sql);
+  return {
+   first:async()=>q.get()||null,
+   bind(...args){return {all:async()=>({results:q.all(...args)})};}
+  };
+ }
+};
+const url="https://baliminsk.by/api/admin/bali-id-source-snapshot-status";
+let response=await audit.onRequestGet({request:new Request(url),env:{BALI_OPERATIONS_DB:store}});
+assert.equal(response.status,403,"Non-owners cannot inspect migration metadata");
+response=await audit.onRequestPost();
+assert.equal(response.status,405,"Snapshot audit must never accept writes");
+response=await audit.onRequestGet({request:new Request(url,{
+ headers:{Authorization:"Bearer owner-test"}
+}),env:{BALI_OPERATIONS_DB:store}});
+assert.equal(response.status,200);
+const report=await response.json();
+assert.equal(report.sourceOfTruth,"firebase");
+assert.equal(report.sourceVerified,true);
+assert.equal(report.cutoverAllowed,false);
+assert.equal(report.stagedDocuments,12);
+assert.equal(report.scopes.wallets,2);
+assert(!JSON.stringify(report).includes(uidA),"Audit must not reveal Firebase UIDs");
 db.close();
 console.log("BALI ID source snapshots: complete guest profiles, linked UID/cards, exact grants, operations, transfers, nanosecond timestamps, SQL integrity PASS");
