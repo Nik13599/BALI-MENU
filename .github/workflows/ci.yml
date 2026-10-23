@@ -126,7 +126,11 @@ jobs:
 
   browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -141,11 +145,11 @@ jobs:
           google-chrome --version
           echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
       - name: Проверка гостевых сценариев на телефоне и ПК (без доступа к Firebase)
-        run: npm run test:browser
+        run: npm run test:browser -- --shard=${{ matrix.shard }}/4
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: browser-test-results
+          name: browser-test-results-${{ matrix.shard }}
           path: test-results/
           retention-days: 7
 
