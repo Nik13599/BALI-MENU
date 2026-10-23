@@ -951,3 +951,21 @@ body.bali-preorders-workspace{
     min-width:28px;padding:0 4px;
   }
 }
+
+
+/* Compact, explicit reference kind in the staff editor. */
+.bali-preorders-workspace #orderEditDialog .order-reference-entry{
+  display:flex;align-items:stretch;gap:6px;min-width:0;margin-top:4px;
+}
+.bali-preorders-workspace #orderEditDialog .order-reference-entry select{
+  box-sizing:border-box;flex:0 0 102px;width:102px;min-width:0;max-width:102px;
+  margin:0;padding:5px 5px;font-size:12px;
+}
+.bali-preorders-workspace #orderEditDialog .order-reference-entry input{
+  box-sizing:border-box;flex:1 1 0;width:0;min-width:0;margin:0;
+}
+@media(max-width:360px){
+  .bali-preorders-workspace #orderEditDialog .order-reference-entry select{
+    flex-basis:92px;width:92px;max-width:92px;font-size:11px;
+  }
+}
