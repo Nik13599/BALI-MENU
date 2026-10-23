@@ -124,4 +124,8 @@ assert.equal(report.stagedDocuments,12);
 assert.equal(report.scopes.wallets,2);
 assert(!JSON.stringify(report).includes(uidA),"Audit must not reveal Firebase UIDs");
 db.close();
+const script=readFileSync("scripts/export-bali-id-to-d1.mjs","utf8");
+assert(script.includes('expectedAccount="399972c0a0358037b0cb4d0d46ce69a3"'));
+assert(script.includes('expectedDatabase="6ec5e063-e2b7-48ce-beb9-d59af7207353"'));
+assert(script.includes("Cloudflare account or D1 database mismatch"));
 console.log("BALI ID source snapshots: complete guest profiles, linked UID/cards, exact grants, operations, transfers, nanosecond timestamps, SQL integrity PASS");
