@@ -7,6 +7,7 @@ on:
     paths:
       - 'functions/bonus-qr.js'
       - 'scripts/test-bali-qr.mjs'
+      - 'scripts/test-bali-qr-firestore.mjs'
       - 'bali-qr-admin.js'
       - '.github/workflows/qr-mass-redemption.yml'
 permissions:
@@ -14,12 +15,18 @@ permissions:
 jobs:
   qr-transactions:
     runs-on: ubuntu-latest
+    env:
+      GCLOUD_PROJECT: demo-bali-menu
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
       - run: npm ci --no-audit --no-fund
       - run: npm install --prefix functions --no-audit --no-fund
       - name: Verify production QR code and transaction tests
@@ -28,3 +35,5 @@ jobs:
           node --input-type=module --check < bali-qr-admin.js
           node scripts/test-bali-qr.mjs
           node scripts/test-bali-backend.mjs
+      - name: Verify 96 concurrent QR transactions using real Firestore emulator
+        run: npx firebase emulators:exec --config firebase.emulator.json --project demo-bali-menu --only firestore "node scripts/test-bali-qr-firestore.mjs"
