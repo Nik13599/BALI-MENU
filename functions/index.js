@@ -319,7 +319,7 @@ exports.issueGuestQr=api("issueGuestQr",async req=>{
   await db.doc("guestRecipientQr/"+digest(code)).create({
     uid,createdAt:TS.now(),expiresAt:TS.fromMillis(expiresAt)
   });
-  const url="https://nik13599.github.io/BALI-MENU/?baliRecipientQr="+code+"#id";
+  const url="https://baliminsk.by/?baliRecipientQr="+code+"#id";
   const qrDataUrl=await QRForCard.toDataURL(url,{errorCorrectionLevel:"M",width:340,margin:3,
     color:{dark:"#0b0d0e",light:"#ffffff"}});
   return {qrDataUrl,expiresAt,number:guest.number};
