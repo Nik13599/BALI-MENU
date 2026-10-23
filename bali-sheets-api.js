@@ -10,7 +10,7 @@ export const sheetsEnabled=()=>window.BALI_SHEETS_API_ENABLED===true||
 const pendingRoles=new Map();
 export async function sheetsRequest(action,payload={},options={}){
   const orderActions=new Set(["menu","createOrder","guestCreateOrder","editOrder","cancelOrder",
-    "myOrders","staffOrders","staffRecentOrders","staffCreateOrder","staffEditOrder","staffStatus"]);
+    "myOrders","staffOrders","staffRecentOrders","staffCreateOrder","staffEditOrder","staffStatus","staffArchiveOrder","staffDeleteOrder","staffClearExpiredOrders"]);
   if(!sheetsEnabled()&&!(preordersD1Enabled()&&orderActions.has(action)))
     throw Object.assign(new Error("Этот раздел базы не активирован."),{code:"not-configured"});
   const provider=window.BaliAuth?.getIdToken||window.BaliSheetsToken;
