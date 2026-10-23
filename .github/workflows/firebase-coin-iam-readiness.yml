@@ -2,6 +2,12 @@ name: Firebase BALI COIN + BRSM — read-only IAM readiness
 
 on:
   workflow_dispatch:
+  # One-time read-only diagnosis whenever this workflow itself is reviewed and
+  # updated on the protected default branch; never deploy on this event.
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/firebase-coin-iam-readiness.yml'
 
 permissions:
   contents: read
