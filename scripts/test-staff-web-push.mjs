@@ -1,7 +1,5 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {webcrypto} from "node:crypto";
-globalThis.crypto=webcrypto;
 const encode=x=>Buffer.from(x).toString("base64url");
 const decoder=new TextDecoder(),encoder=new TextEncoder();
 const src=readFileSync("cloudflare-pages/functions/_lib/staff-web-push.js","utf8");
