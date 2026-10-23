@@ -1,0 +1,37 @@
+name: BALI release regression fixes
+on:
+  push:
+    branches:
+      - fix/release-regressions-20261023
+  pull_request:
+    paths:
+      - 'admin-orders.js'
+      - 'preorders-access.js'
+      - 'preorders-workspace.css'
+      - 'scripts/test-bali-event-dates.mjs'
+      - 'tests/guest.spec.cjs'
+      - 'tests/preorders-workspace.spec.cjs'
+      - 'tests/release-interface.spec.cjs'
+      - 'tests/calendar-three-posters.spec.cjs'
+      - 'tests/calendar-reference-2026.spec.cjs'
+permissions:
+  contents: read
+jobs:
+  focused-regressions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify scripts and browser bundles
+        run: |
+          node scripts/test-bali-event-dates.mjs
+          node --input-type=module --check < admin-orders.js
+          node --input-type=module --check < preorders-access.js
+          npm run check:styles
+      - run: npx playwright install --with-deps chromium
+      - name: Checkout, Staff and calendar release regressions on phone
+        run: npx playwright test tests/guest.spec.cjs tests/preorders-workspace.spec.cjs tests/release-interface.spec.cjs tests/calendar-three-posters.spec.cjs tests/calendar-reference-2026.spec.cjs --project=phone --grep 'order database is loaded|storage failure does not break|guest chooses a date|cancelled editing|dedicated preorder page|compact order keeps|all calendar states|custom event dot|completed parties retain|planned future date stays|planned future date keeps'
