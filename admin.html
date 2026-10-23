@@ -886,7 +886,153 @@ body.bali-admin-workspace .dialog-actions{gap:7px;margin-top:8px}
           <section class="card catalog-form-card" id="eventEditorCard">
             <div class="card-heading"><h3>Настройки мероприятия</h3><span class="tag">Минск</span></div>
             <form id="eventForm">
-              <label>Дата мероприятия <i…6757 tokens truncated…8я применяет его на сайте. Сетка существующих карточек сохраняется.</p><p>Рекламные слайды сохраняются отдельно — в редакторе баннера.</p></details>
+              <label>Дата мероприятия <input type="date" id="eventDateAdmin" required></label>
+              <label>Мероприятие в эту дату
+                <select id="eventSlotAdmin" aria-label="Номер мероприятия в выбранный день">
+                  <option value="1">№ 1 — основное</option>
+                  <option value="2">№ 2 — дополнительное</option>
+                  <option value="3">№ 3 — дополнительное</option>
+                </select>
+                <small class="hint">Можно создать до трёх отдельных мероприятий на одну дату. У каждого будет своя афиша, описание, время и цвет точки.</small>
+              </label>
+              <label>Название мероприятия <input id="eventTitle" minlength="2" maxlength="150" placeholder="Например, BALI ICE NIGHT" required></label>
+              <label>Описание мероприятия
+                <textarea id="eventDescription" maxlength="600" rows="3" placeholder="Кратко расскажите о программе, артистах или атмосфере"></textarea>
+              </label>
+              <label>Цвет точки этого мероприятия в календаре
+                <input id="eventDotColor" type="color" value="#b9ff51" aria-label="Цвет точки мероприятия">
+                <small class="hint">Выбирается отдельно для каждой афиши. Даты в «Моих планах» подсвечиваются зелёным с чёрными точками.</small>
+              </label>
+              <div class="double">
+                <label>Начало мероприятия (Минск) <input id="eventStartTime" type="time" value="23:00"></label>
+                <label>Окончание мероприятия (Минск) <input id="eventEndTime" type="time" value="06:00"></label>
+              </div>
+              <div class="actions"><button type="button" data-bali-time-preset="23:00,06:00">Ночь · 23:00–06:00</button><button type="button" data-bali-time-preset="19:00,22:30">Вечер · 19:00–22:30</button></div>
+              <p class="hint">Время события отображается под афишей, например 20:00–23:00. Время закрытия предзаказов настраивается отдельно.</p>
+              <label>Принимать предзаказы до (по Минску)
+                <input id="eventCutoff" type="time" step="60" required>
+                <small class="hint">Для каждого мероприятия вручную: например 17:00 или 22:30. По наступлении этого времени новые заявки автоматически закрываются.</small>
+              </label>
+              <label class="check"><input id="eventCutoffNextDay" type="checkbox"> Время окончания предзаказов — на следующий календарный день (после полуночи)</label>
+              <div class="image-upload-area">
+                <label for="eventPosterFile">Афиша мероприятия (загрузить JPG/PNG/WebP)</label>
+                <input type="file" id="eventPosterFile" accept="image/*">
+                <img id="eventPosterPreview" class="image-preview poster-preview" alt="Предпросмотр афиши" hidden>
+                <p class="hint">Все афиши сохраняются квадратными — 1:1 (рекомендуется 1000 × 1000 px). Название, дата, время и описание отображаются только при открытии афиши. На главной — маленькое сердечко, в календаре — кнопки действий.</p>
+              </div>
+              <label class="check availability-toggle"><input id="eventOpen" type="checkbox" checked><span>Разрешить предзаказы</span></label>
+              <p class="hint" id="eventSlotPreorderHint" hidden>Для каждого мероприятия предзаказ включается отдельно. Гость выбирает дату, название мероприятия и позиции кухни.</p>
+              <div class="actions">
+                <button type="submit" class="primary">Сохранить мероприятие</button>
+                <button id="clearEvent" type="button">Сбросить</button>
+              </div>
+              <p id="eventStatus" class="status" role="status" aria-live="polite"></p>
+              <p id="eventRulesHelp" class="hint" hidden>
+                <a href="https://github.com/Nik13599/BALI-MENU/blob/main/firestore.rules" target="_blank" rel="noopener noreferrer">Скопировать актуальные правила с GitHub</a>
+                → <a href="https://console.firebase.google.com/project/bali-menu-5a48b/firestore/rules" target="_blank" rel="noopener noreferrer">открыть Firebase Rules и нажать Publish</a>.
+                Не удаляйте коллекции и документы Firestore.
+              </p>
+            </form>
+          </section>
+          <section class="card catalog-list-card">
+            <div class="card-heading"><h3>Календарь BALI</h3><span class="tag">Сегодня · будущие · прошедшие</span></div>
+            <div id="eventList" class="scroll-list">Загрузка...</div>
+          </section>
+        </div>
+
+        <section class="card bali-event-placeholder-editor" id="baliEventPlaceholderEditor"
+                 aria-labelledby="baliEventPlaceholderHeading">
+          <div class="card-heading">
+            <div>
+              <div class="eyebrow">ОФОРМЛЕНИЕ ГЛАВНОЙ · ВСЕ УСТРОЙСТВА</div>
+              <h3 id="baliEventPlaceholderHeading">Единая заглушка мероприятий</h3>
+              <p class="hint">Отдельно от мероприятий. Один квадратный шаблон SECRET заполняет свободные места на главной: три на телефоне и планшете, пять на ПК. Если все мероприятия завершились, автоматически показываются заглушки. В календаре остаются настоящие события.</p>
+            </div>
+            <span class="tag">Общий шаблон</span>
+          </div>
+          <div class="bali-placeholder-editor-grid">
+            <form id="baliEventPlaceholderForm" class="bali-placeholder-edit-form">
+              <label>Основная надпись на изображении
+                <input id="baliPlaceholderPosterTitle" type="text" minlength="1" maxlength="40" value="SECRET" required>
+              </label>
+              <div class="double bali-placeholder-legacy-fields" hidden>
+                <label>Заголовок внизу
+                  <input id="baliPlaceholderFooterTitle" type="text" minlength="1" maxlength="52" value="СКОРО В BALI" required>
+                </label>
+                <label>Описание внизу
+                  <input id="baliPlaceholderFooterSubtitle" type="text" minlength="1" maxlength="85" value="Совсем скоро узнаете" required>
+                </label>
+              </div>
+              <div class="bali-placeholder-poster-upload">
+                <strong>Квадратное изображение · 1000 × 1000 px · 1:1</strong>
+                <small>По умолчанию — чёрный фон с надписью SECRET. При желании можно загрузить собственную картинку JPG/PNG/WebP или добавить HTTPS-ссылку. Картинка сохраняется квадратной (WebP) и используется на всех устройствах.</small>
+                <label>Загрузить картинку
+                  <input type="file" id="baliPlaceholderImageFile" accept="image/png,image/jpeg,image/webp,image/heic,image/heif">
+                </label>
+                <label>Или ссылка на изображение
+                  <input type="url" id="baliPlaceholderImageUrl" maxlength="2048" placeholder="https://...">
+                </label>
+                <button type="button" id="baliPlaceholderResetImage">Вернуть чёрный фон</button>
+              </div>
+              <div class="double">
+                <label>Цвет акцентов
+                  <input id="baliPlaceholderAccentColor" type="color" value="#b9ff51">
+                </label>
+                <label>Фон нижней подписи
+                  <input id="baliPlaceholderBackgroundColor" type="color" value="#12171c">
+                </label>
+              </div>
+              <div class="actions">
+                <button type="submit" class="primary" id="baliPlaceholderSave">Сохранить все заглушки</button>
+                <button type="button" id="baliPlaceholderRestoreDefaults">Вернуть исходный шаблон</button>
+              </div>
+              <p id="baliPlaceholderStatus" class="status" role="status" aria-live="polite"></p>
+            </form>
+            <div class="bali-placeholder-preview-wrap">
+              <strong>Предпросмотр общей заглушки</strong>
+              <article id="baliPlaceholderAdminPreview" class="bali-placeholder-preview-card"
+                       aria-label="Предпросмотр заглушки ближайшего мероприятия">
+                <div class="bali-placeholder-preview-art" id="baliPlaceholderPreviewArt">
+                  <img id="baliPlaceholderPreviewImage" alt="Пользовательское изображение заглушки" hidden>
+                  <div class="bali-placeholder-preview-overlay">
+                    <strong id="baliPlaceholderPreviewTitle">SECRET</strong>
+                  </div>
+                </div>
+                <div class="bali-placeholder-preview-footer" id="baliPlaceholderPreviewFooter" hidden>
+                  <strong id="baliPlaceholderPreviewFooterTitle">СКОРО В BALI</strong>
+                  <span id="baliPlaceholderPreviewFooterSubtitle">Совсем скоро узнаете</span>
+                </div>
+              </article>
+              <p class="hint">Видна только квадратная картинка с SECRET посередине, без надписей сверху или снизу. Заглушки автоматически заменяются реальными афишами.</p>
+            </div>
+          </div>
+        </section>
+
+      </section>
+
+      <section class="admin-panel" id="adminDesignPanel" data-admin-panel="design" aria-labelledby="designHeading" hidden>
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">BALI / ОФОРМЛЕНИЕ САЙТА</div>
+            <h2 id="designHeading">Конструктор сайта BALI</h2>
+            <p>Тексты, фотографии, значки и оформление. Проверьте результат на трёх устройствах перед публикацией.</p>
+          </div>
+          <a href="index.html" target="_blank" rel="noopener noreferrer" class="bali-design-view-site">Открыть сайт ↗</a>
+        </div>
+        <details class="bali-experience-admin-guide">
+          <summary>Правила публикации в стиле BALI · откройте перед сохранением</summary>
+          <p>Каждый экран должен отвечать на три вопроса: что здесь происходит, чем это интересно гостю и куда нажать дальше.</p>
+          <ul>
+            <li>Афиша: проверенная дата, время, название и читаемая картинка. Не обещайте то, чего нет в программе.</li>
+            <li>Аренда: конкретный формат события и достоверные преимущества площадки. Одна главная кнопка действия.</li>
+            <li>Изображения: проверьте кадрирование отдельно на телефоне, планшете и компьютере. Не размещайте мелкий текст внутри фото.</li>
+            <li>Цены, состав блюд и привилегии: обновляйте только по подтверждённым данным, после сохранения проверяйте гостевую версию.</li>
+            <li>Контроль: проверьте контраст, размер на телефоне, работу кнопок, доступность с клавиатуры и отсутствие лишней анимации.</li>
+          </ul>
+        </details>
+<section class="bali-builder-top" aria-label="Визуальный конструктор сайта">
+  <div class="bali-builder-title"><strong>Редактор главной страницы</strong><span>Выберите устройство → выберите блок → сохраните результат.</span></div>
+  <details class="bali-builder-help"><summary>Как работает конструктор</summary><p>Нажмите на блок в предпросмотре или выберите его из списка. Для вложенного текста используйте Alt + клик. Настройки ПК, планшета и телефона независимы. Черновик виден только сотрудникам; публикация применяет его на сайте. Сетка существующих карточек сохраняется.</p><p>Рекламные слайды сохраняются отдельно — в редакторе баннера.</p></details>
   <div class="bali-builder-toolbar">
     <label class="bali-builder-field"><span>Страница</span><select id="baliBuilderPage"><option value="home">Главная</option></select></label>
     <label class="bali-builder-viewport-field">Ширина предпросмотра<input id="baliBuilderViewportWidth" type="number" min="320" max="3840" value="1440" aria-label="Ширина окна предпросмотра в пикселях"></label>
