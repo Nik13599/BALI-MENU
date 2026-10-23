@@ -26,7 +26,8 @@ jobs:
     environment: firebase-production
     env:
       FIREBASE_PROJECT_ID: bali-menu-5a48b
-      FIREBASE_WIF_PROVIDER: ${{ vars.FIREBASE_WIF_PROVIDER }}
+      # Same existing identity used by the preorder and guest diagnostics.
+      FIREBASE_WIF_PROVIDER: ${{ vars.FIREBASE_WIF_PROVIDER || 'projects/855889005555/locations/global/workloadIdentityPools/bali-github-pool/providers/bali-github' }}
       FIREBASE_DEPLOY_SERVICE_ACCOUNT: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
       CF_ACCOUNT_ID: ${{ vars.CF_ACCOUNT_ID }}
       CF_D1_DATABASE_ID: ${{ vars.CF_D1_DATABASE_ID }}
@@ -50,7 +51,7 @@ jobs:
       - name: Obtain short-lived Google identity (no service account key)
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ vars.FIREBASE_WIF_PROVIDER }}
+          workload_identity_provider: ${{ env.FIREBASE_WIF_PROVIDER }}
           service_account: ${{ vars.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
       - name: Install Firebase Admin
         run: npm install --prefix functions --no-audit --no-fund
