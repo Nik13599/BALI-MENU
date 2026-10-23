@@ -1398,9 +1398,15 @@ html.bali-booting .bali-startup-splash {
                     <p class="auth-help">Предзаказ оформляется на выбранную дату и конкретное мероприятие BALI.</p>
                 </div>
                 <div class="form-group">
-                    <label for="orderReference">ID брони / номер стола *</label>
-                    <input type="text" id="orderReference" maxlength="100" required placeholder="Например, BALI-4826 или 12" autocomplete="off">
-                    <p class="auth-help">Введи ID бронирования или номер своего столика в одно поле.</p>
+                    <label for="orderReference">Бронь или столик *</label>
+                    <div class="bali-reference-entry" style="display:flex;gap:8px;align-items:stretch">
+                      <select id="orderReferenceType" aria-label="Тип брони" style="flex:0 0 115px;min-width:0">
+                        <option value="table">Столик №</option>
+                        <option value="booking">ID брони</option>
+                      </select>
+                      <input type="text" id="orderReference" maxlength="60" required placeholder="Номер столика" autocomplete="off" style="flex:1;min-width:0">
+                    </div>
+                    <p class="auth-help">Выбери «Столик» или «ID брони», затем введи номер.</p>
                 </div>
 
                 <div class="form-group">
@@ -1550,7 +1556,7 @@ html.bali-booting .bali-startup-splash {
     <script type="module" src="bali-age-gate.js?v=20261021-fast1"></script>
     <script src="bali-event-lifecycle.js?v=20261021-home-plus60m"></script>
     <script src="bali-guest-preorder-config.js?v=20261022-guest-public1"></script>
-    <script src="app.js?v=20261023-guest-dates1"></script>
+    <script src="app.js?v=20261023-reference-kind1"></script>
     <script src="bali-calendar.js?v=20261022-browse-rings2"></script>
     <script src="bali-calendar-coverflow.js?v=20261022-browse-rings2"></script>
     <script src="bali-pc-reference.js?v=20261021-anchored-home1"></script>
