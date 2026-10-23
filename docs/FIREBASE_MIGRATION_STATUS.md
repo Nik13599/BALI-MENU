@@ -116,6 +116,40 @@ be recorded for that guest; automatic COIN credit is deferred until the
 preexisting wallet has been verified and imported. The idempotent guest visit
 claim can then complete the missed award.
 
+## Firebase Functions v2 IAM readiness (read-only)
+
+The COIN and BRSM callables are deployed using `firebase-functions/v2/https`
+in project `bali-menu-5a48b`. Unless a runtime `serviceAccount` is
+explicitly configured, **Firebase 2nd-generation functions run as the Compute
+Engine default service account**, `PROJECT_NUMBER-compute@developer.gserviceaccount.com`.
+The old App Engine account `PROJECT_ID@appspot.gserviceaccount.com` is the
+default for **1st-generation** functions, not these v2 callables. Never grant
+project-wide Owner/Editor merely to bypass a missing `actAs` permission.
+
+GitHub Actions now offers the **manual and read-only**
+`Firebase BALI COIN + BRSM — read-only IAM readiness` workflow on main.
+It checks:
+
+- A configured `FIREBASE_DEPLOY_SERVICE_ACCOUNT` environment/repository variable.
+- A correctly formatted `BALI_COIN_PILOT_UIDS` environment secret with at
+  least two distinct, dedicated test Firebase Authentication UIDs.
+- Workload Identity Federation and whether the deployer has
+  `iam.serviceAccounts.actAs` on the **actual** v2 Compute runtime service
+  account resolved from the Google Cloud project number.
+
+It **does not** deploy any function, modify Firestore, create test users,
+transfer COIN, or use Cloudflare MCP. If `actAs` is denied, a project owner
+must grant `roles/iam.serviceAccountUser` **on that one Compute runtime
+service account** to the dedicated GitHub deployment principal
+`bali-firestore-deploy@bali-menu-5a48b.iam.gserviceaccount.com`.
+A separate 1st-gen deployment, if used in future, may require an independent
+grant on the App Engine account.
+
+A successful readiness check does **not** prove legacy balance reconciliation
+and does not activate COIN for real customers. Only the separate pilot release,
+selected explicitly with `ENABLE_TEST_COIN_PILOT`, may deploy test-only
+mutations; the final live release remains gated by imported, verified wallets.
+
 ## Deployment checklist
 1. Run all backend, Firestore emulator, BRSM, admin and mobile tests.
 2. Validate source-to-target BALI IDs, final COIN sums and histories using a
