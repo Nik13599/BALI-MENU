@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - 'cloudflare-pages/d1/migrations/0006_bali_source_snapshots.sql'
+      - 'cloudflare-pages/d1/migrations/0007_bali_nested_history.sql'
       - 'scripts/bali-id-source-snapshot.mjs'
       - 'scripts/export-bali-id-to-d1.mjs'
       - 'scripts/test-bali-id-source-snapshot.mjs'
