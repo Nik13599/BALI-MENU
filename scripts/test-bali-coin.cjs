@@ -234,3 +234,42 @@ test("pilot cannot alter a pre-existing ordinary or migrated guest wallet",async
   const card=(await call("coinCard",uid)).card;
   assert.equal(card.coinWritable,false);
 });
+
+test("idempotent retries return the current balance, never a stale historical receipt",async()=>{
+  const {records,call,person}=setup();
+  const uid="guest_alice_0001",other="guest_bobby_0002";
+  person(uid,1);person(other,2);
+  records.set("admins/director",{active:true});
+  const credit={uid,operation:"credit",amount:100,reason:"Initial test reward",requestId:"retry_initial_0001"};
+  await call("coinChange","director",credit);
+  const transfer={number:"000002",amount:25,comment:"test",requestId:"retry_transfer_0001"};
+  await call("coinTransfer",uid,transfer);
+  await call("coinChange","director",{uid,operation:"credit",amount:20,
+    reason:"Second test reward",requestId:"retry_additional_0002"});
+  assert.equal(records.get("baliCoinAccounts/"+uid).balance,95);
+  assert.equal((await call("coinTransfer",uid,transfer)).result.balance,95);
+  assert.equal((await call("coinChange","director",credit)).result.balance,95);
+  assert.equal(records.get("baliCoinAccounts/"+other).balance,25);
+});
+test("retry of earlier visit or bar purchase never overwrites newer wallet balance in UI",async()=>{
+  const {records,call,person}=setup();
+  const uid="guest_alice_0001";person(uid,1);
+  records.set("admins/director",{active:true});
+  const campaignId="contact_2026",eventId="contact_2026_a";
+  await call("coinSetReward","director",{campaignId,itemId:eventId,
+    kind:"EVENT",label:"Test attendance",amount:80});
+  records.set("brsmCampaigns/"+campaignId+"/entries/"+uid,
+    {visits:[{eventId,source:"qr"}]});
+  const claim={campaignId,eventId};
+  assert.equal((await call("coinClaimVisit",uid,claim)).result.balance,80);
+  await call("coinLotManage","director",{campaignId,lotId:"refreshment",
+    name:"Pilot mocktail",category:"bar",price:20,stock:4,active:true});
+  const buy={campaignId,lotId:"refreshment",requestId:"retry_purchase_0001"};
+  assert.equal((await call("coinRedeemLot",uid,buy)).result.balance,60);
+  await call("coinChange","director",{uid,operation:"credit",amount:10,
+    reason:"Late adjustment",requestId:"retry_adjust_0003"});
+  assert.equal((await call("coinClaimVisit",uid,claim)).result.balance,70);
+  assert.equal((await call("coinRedeemLot",uid,buy)).result.balance,70);
+  assert.equal(records.get("baliCoinAccounts/"+uid).balance,70);
+  assert.equal(records.get("baliCoinLots/"+campaignId+"_refreshment").sold,1);
+});

@@ -127,7 +127,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
         const p=previous.data();
         if(p.action!=="transfer"||p.toUid!==to.uid||p.amount!==amount||p.comment!==comment)
           fail("already-exists","ID операции уже использован для других условий.");
-        return {result:{ok:true,alreadyProcessed:true,balance:p.balance,recipientNumber:to.number}};
+        return {result:{ok:true,alreadyProcessed:true,balance:balance(left),recipientNumber:to.number}};
       }
       const before=verifiedWallet(left),other=verifiedWallet(right);
       if(before<amount)fail("failed-precondition","Недостаточно BALI COIN.");
@@ -157,7 +157,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
         const p=previous.data();
         if(p.action!=="manual"||p.uid!==uid||p.amount!==amount||p.operation!==action||p.reason!==reason)
           fail("already-exists","Этот ID операции занят.");
-        return {result:{ok:true,alreadyProcessed:true,balance:p.balance}};
+        return {result:{ok:true,alreadyProcessed:true,balance:balance(old)}};
       }
       const before=verifiedWallet(old),next=before+(action==="credit"?amount:-amount);
       if(!coins(next))fail("failed-precondition","Недостаточно BALI COIN или превышен лимит.");
@@ -211,7 +211,8 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
             count:checked.amount,balance:next,reason,createdAt:at});
           return {result:{ok:true,reissued:true,balance:next,amount:checked.amount}};
         }
-        return {result:{ok:true,alreadyProcessed:true,balance:p.balance,amount:p.amount}};
+        const latest=await tx.get(account);
+        return {result:{ok:true,alreadyProcessed:true,balance:balance(latest),amount:p.amount}};
       }
       // Read reward, verified attendance and balance before any writes.
       const checked=await validator(tx),old=await tx.get(account);
@@ -294,7 +295,7 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
         const p=previous.data();
         if(p.action!=="redeem"||p.campaignId!==campaignId||p.lotId!==lotId)
           fail("already-exists","ID операции уже занят.");
-        return {result:{ok:true,alreadyProcessed:true,balance:p.balance,
+        return {result:{ok:true,alreadyProcessed:true,balance:balance(old),
           prize:p.name,voucher:p.voucher,category:p.category}};
       }
       if(!listing.exists||!listing.data().active)fail("failed-precondition","Эта позиция недоступна.");
