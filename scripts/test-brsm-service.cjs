@@ -150,6 +150,8 @@ test("BRSM full lifecycle: promotion, 3 distinct events, immutable ticket, draws
   assert.equal([...records.keys()].filter(x=>x.startsWith("brsmAudit/")).length,1);
   await call("manualBrsmVisit","director",{number:"000001",eventId:eventIds[2]});
   assert.equal(records.get("brsmCards/alice").numbers.length,10);
+  assert.equal(JSON.stringify(records.get("brsmCards/alice").numbers),JSON.stringify(numbers),
+    "Legacy BRSM attendance correction must restore identical lottery numbers");
   assert.equal((await call("beginBrsmDraw","director",{})).participants,1);
   await assert.rejects(call("manualBrsmVisit","director",{number:"000002",eventId:eventIds[2]}),e=>e.code==="failed-precondition");
   await assert.rejects(call("issueBrsmQrs","director",{eventId:eventIds[0],count:1,hours:24}),e=>e.code==="failed-precondition");

@@ -47,8 +47,17 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId})=>{
     if(data.visits.some(x=>x.eventId===eventId))fail("already-exists","Это мероприятие уже засчитано.");
     if(data.visits.length>=3)fail("failed-precondition","Три посещения уже собраны.");
     const visits=[...data.visits,visit(eventId,label,source)];
-    return {visits,eligible:visits.length===3,numbers:visits.length===3?ticket():[],
-      ticketIssuedAt:visits.length===3?TS.now():null,updatedAt:TS.now()};
+    const eligible=visits.length===3;
+    if(!eligible)return {visits,eligible:false,numbers:[],updatedAt:TS.now()};
+    const saved=data.reservedNumbers?.length?data.reservedNumbers:
+      data.numbers?.length?data.numbers:null;
+    if(saved&&(!Array.isArray(saved)||saved.length!==10||
+      new Set(saved).size!==10||saved.some(n=>!Number.isInteger(n)||n<1||n>90)))
+      fail("failed-precondition","Старый лотерейный билет повреждён. Повторная выдача запрещена.");
+    const numbers=saved?[...saved]:ticket();
+    const issuedAt=data.originalTicketIssuedAt||data.ticketIssuedAt||TS.now();
+    return {visits,eligible:true,numbers,reservedNumbers:numbers,
+      ticketIssuedAt:issuedAt,originalTicketIssuedAt:issuedAt,updatedAt:TS.now()};
   };
 
   const activateBrsmPromo=api("activateBrsmPromo",async req=>{
@@ -195,9 +204,13 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId})=>{
       if(!Array.isArray(data.visits)||!data.visits.some(x=>x.eventId===eventId))
         fail("not-found","Это посещение не было зафиксировано.");
       const remaining=data.visits.filter(x=>x.eventId!==eventId);
-      // A previously issued ticket is invalidated whenever the third visit is reversed.
+      // The ticket is unavailable while ineligible, but its original numbers
+      // are retained so that restoring a visit cannot be used to reroll.
+      const reservedNumbers=data.reservedNumbers?.length?data.reservedNumbers:data.numbers||[];
       tx.update(getCard(guest.uid),{
-        visits:remaining,eligible:false,numbers:[],ticketIssuedAt:null,updatedAt:TS.now()
+        visits:remaining,eligible:false,numbers:[],reservedNumbers,
+        originalTicketIssuedAt:data.originalTicketIssuedAt||data.ticketIssuedAt||null,
+        ticketIssuedAt:null,updatedAt:TS.now()
       });
       tx.create(db.collection("brsmAudit").doc(),{
         action:"undo-visit",uid:guest.uid,number:guest.number,eventId,reason,
