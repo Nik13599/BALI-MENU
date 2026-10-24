@@ -273,3 +273,22 @@ test("retry of earlier visit or bar purchase never overwrites newer wallet balan
   assert.equal(records.get("baliCoinAccounts/"+uid).balance,70);
   assert.equal(records.get("baliCoinLots/"+campaignId+"_refreshment").sold,1);
 });
+
+test("pilot wallet remains quarantined after real COIN launch",async()=>{
+  const live={BALI_COIN_WRITE_MODE:"live",
+    BALI_COIN_VERIFIED_EXPORT_SHA256:"a".repeat(64),
+    BALI_COIN_LIVE_CONFIRM:"VERIFIED_SOURCE_AND_WALLETS"};
+  const {records,call,person}=setup(live);
+  const uid="guest_alice_0001";person(uid,1);
+  records.set("admins/director",{active:true});
+  records.set("baliCoinAccounts/"+uid,{balance:500,source:"bali-coin-pilot"});
+  const wallet=(await call("coinCard",uid)).card;
+  assert.equal(wallet.coinBalance,null);
+  assert.equal(wallet.walletReady,false);
+  assert.equal(wallet.coinWritable,false);
+  await assert.rejects(call("coinChange","director",{
+    uid,operation:"credit",amount:10,reason:"Real credit must be blocked",
+    requestId:"testcoins_to_live_0001"
+  }),e=>e.code==="failed-precondition");
+  assert.equal(records.get("baliCoinAccounts/"+uid).balance,500);
+});

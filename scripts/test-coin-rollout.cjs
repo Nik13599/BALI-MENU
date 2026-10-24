@@ -61,3 +61,23 @@ test("BRSM live QR attendance defers COIN when the guest wallet is not migrated"
   });
   assert.deepEqual(result,{amount:0,sourceWalletUnverified:true});
 });
+
+test("live BRSM QR attendance defers COIN for a quarantined pilot wallet",async()=>{
+  const guard=policy({BALI_COIN_WRITE_MODE:"live",
+    BALI_COIN_VERIFIED_EXPORT_SHA256:"a".repeat(64),
+    BALI_COIN_LIVE_CONFIRM:"VERIFIED_SOURCE_AND_WALLETS"});
+  const blocked=()=>{throw Error("Pilot balance mutated during live rollout")};
+  const awards=require("../functions/brsm-coin-awards")({coinRollout:guard,
+    db:{doc:path=>({path})},TS:{now:()=>new Date()},fail});
+  const tx={
+    get:async ref=>ref.path.startsWith("baliCoinRewards/")?
+      {exists:true,data:()=>({active:true,amount:50})}:
+      ref.path.startsWith("baliCoinAccounts/")?
+        {exists:true,data:()=>({balance:100,source:"bali-coin-pilot"})}:
+        {exists:false},
+    set:blocked,create:blocked,update:blocked
+  };
+  const result=await awards.award(tx,{
+    uid:"pilot_guest_00001",campaignId:"contact_2026",eventId:"contact_01"});
+  assert.deepEqual(result,{amount:0,sourceWalletUnverified:true});
+});

@@ -31,7 +31,7 @@ module.exports=({db,TS,fail,coinRollout})=>{
       rate.data().amount<=0)return {amount:0,notConfigured:true};
     // QR attendance must succeed even if the guest's old wallet has
     // not been reconciled. COIN is deferred until that balance exists.
-    if(rollout.phase==="live"&&!account.exists)
+    if(rollout.phase==="live"&&(!account.exists||account.data().source==="bali-coin-pilot"))
       return {amount:0,sourceWalletUnverified:true};
     if(rollout.phase==="pilot"&&account.exists&&account.data().source!=="bali-coin-pilot")
       fail("failed-precondition","Нельзя начислять тестовые COIN на существующий кошелёк.");
@@ -66,6 +66,8 @@ module.exports=({db,TS,fail,coinRollout})=>{
     if(!previous.exists||previous.data().revoked)return {amount:0};
     // Do not cancel credited attendance without reversing its COIN receipt.
     rollout.assertWrite([uid]);
+    if(rollout.phase==="live"&&account.exists&&account.data().source==="bali-coin-pilot")
+      fail("failed-precondition","Тестовые COIN нельзя списывать в рабочем режиме.");
     if(account.exists&&account.data().source==="legacy-sheets-migration"&&
       account.data().migrationComplete!==true)
       fail("failed-precondition","История BALI COIN ещё переносится.");
