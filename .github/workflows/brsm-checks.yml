@@ -23,6 +23,7 @@ on:
       - "scripts/migrate-bali-coins.cjs"
       - "tests/brsm-card.spec.cjs"
       - ".github/workflows/brsm-checks.yml"
+      - ".github/workflows/bali-coin-brsm-pilot-release.yml"
   workflow_dispatch:
 
 permissions:
@@ -79,7 +80,7 @@ jobs:
       - name: Test offline COIN export validation (no Firebase credentials)
         run: node --test scripts/test-bali-coin-migration-offline.cjs
       - name: Test cards, promo codes, QR and stage draws
-        run: node --test scripts/test-brsm.cjs scripts/test-brsm-service.cjs
+        run: node --test scripts/test-brsm.cjs scripts/test-brsm-service.cjs scripts/test-brsm-release.cjs
       # Historical Apps Script COIN test removed from BRSM pipeline after Firebase cutover.
       # The authoritative transaction/transfer/bar cases are in test-bali-coin.cjs.
 

@@ -41,7 +41,7 @@ jobs:
         run: |
           node --test scripts/test-bali-coin.cjs scripts/test-coin-rollout.cjs
           node --test scripts/test-bali-coin-pilot.cjs
-          node --test scripts/test-brsm.cjs scripts/test-brsm-service.cjs
+          node --test scripts/test-brsm.cjs scripts/test-brsm-service.cjs scripts/test-brsm-release.cjs
           node --test scripts/test-bali-coin-migration-offline.cjs
       - name: Test real Firestore transaction contention in demo only
         run: npx firebase emulators:exec --config firebase.emulator.json --project demo-bali-menu --only firestore "node scripts/test-bali-coin-firestore.mjs"
@@ -145,6 +145,12 @@ jobs:
       - name: Deploy BRSM and COIN Firestore read protections
         run: |
           npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only firestore:rules
+      - name: Deploy BRSM membership and promo callables
+        run: |
+          npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:activateBrsmPromo,functions:bali-id:manageBrsmCard,functions:bali-id:createBrsmPromo,functions:bali-id:disableBrsmPromo,functions:bali-id:getBrsmCardAdmin,functions:bali-id:listBrsmAdmin"
+      - name: Deploy CONTACT attendance and immutable legacy lottery callables
+        run: |
+          npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:createBrsmEvent,functions:bali-id:disableBrsmEvent,functions:bali-id:issueBrsmQrs,functions:bali-id:revokeBrsmQr,functions:bali-id:claimBrsmVisit,functions:bali-id:manualBrsmVisit,functions:bali-id:undoBrsmVisit,functions:bali-id:beginBrsmDraw,functions:bali-id:updateBrsmDraw,functions:bali-id:finalizeBrsmDraw,functions:bali-id:getBrsmDrawReport"
       - name: Deploy BRSM campaign read and setup callables
         run: |
           npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:getCurrentBrsmCampaign,functions:bali-id:createBrsmCampaign,functions:bali-id:updateBrsmCampaignDraft,functions:bali-id:activateBrsmCampaign,functions:bali-id:archiveBrsmCampaign,functions:bali-id:listBrsmCampaigns,functions:bali-id:addBrsmCampaignEvent,functions:bali-id:listBrsmCampaignEvents,functions:bali-id:getBrsmCampaignEntry"
