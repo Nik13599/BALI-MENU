@@ -17,16 +17,16 @@ async function check(ids,{auth,db}){
     catch{throw Error("One or more pilot UIDs do not exist in Firebase Auth or the deployer lacks Firebase Auth read permission.");}
     if(!person||person.uid!==uid||person.disabled||person.emailVerified!==true)
       throw Error("Every pilot identity must be an enabled, email-verified Firebase Auth user.");
-    const refs=["users/","baliIds/","baliCoinAccounts/","admins/","preorderStaff/"].map(prefix=>db.doc(prefix+uid));
-    const [user,card,wallet,admin,staff]=await Promise.all(refs.map(ref=>ref.get()));
+    const refs=["users/","baliIds/","baliCoinAccounts/","admins/","preorderStaff/","staffRoles/"].map(prefix=>db.doc(prefix+uid));
+    const [user,card,wallet,admin,preorderStaff,staffRole]=await Promise.all(refs.map(ref=>ref.get()));
     if(!user.exists||!card.exists)
       throw Error("One or more pilot UIDs have no registered users/{uid} and baliIds/{uid} Bali Card.");
     const number=card.data().number;
     if(!Number.isSafeInteger(number)||number<1||number>999999||seen.has(number))
       throw Error("Pilot Bali Card numbers must exist, be numeric, distinct and within 000001–999999.");
     seen.add(number);
-    if(admin.exists||staff.exists)
-      throw Error("Do not use a BALI administrator or preorder Staff identity as a test guest.");
+    if(admin.exists||preorderStaff.exists||staffRole.exists)
+      throw Error("Do not use a BALI administrator, director, bar operator or preorder Staff identity as a test guest.");
     if(wallet.exists){
       const data=wallet.data();
       if(data.source!=="bali-coin-pilot"||

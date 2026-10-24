@@ -38,3 +38,20 @@ test("pilot rejects absent Bali Cards",async()=>{
   env.db.doc=path=>path==="baliIds/"+b?{get:async()=>({exists:false})}:old(path);
   await assert.rejects(check([a,b],env),/registered/);
 });
+
+test("pilot refuses an account with an active BALI director/bar staff role",async()=>{
+  const env=mk(),original=env.db.doc;
+  env.db.doc=path=>path==="staffRoles/"+a?{
+    get:async()=>({exists:true,data:()=>({active:true,role:"director"})})
+  }:original(path);
+  await assert.rejects(check([a,b],env),/director, bar operator/);
+});
+test("pilot also refuses a preorder Staff or general administrator identity",async()=>{
+  for(const collection of ["admins","preorderStaff"]){
+    const env=mk(),original=env.db.doc;
+    env.db.doc=path=>path===collection+"/"+b?{
+      get:async()=>({exists:true,data:()=>({active:true})})
+    }:original(path);
+    await assert.rejects(check([a,b],env),/preorder Staff identity/);
+  }
+});
