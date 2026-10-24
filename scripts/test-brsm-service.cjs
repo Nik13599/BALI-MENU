@@ -315,6 +315,37 @@ test("BRSM campaigns: configurable visits, ball pools, prizes, rounds and immuta
   assert.equal((await call("getCurrentBrsmCampaign","alice",{})).campaign.id,next.campaign.id);
 });
 
+test("corrupted held BRSM lottery tickets are never silently rerolled",async()=>{
+  const {records,call}=prepare("brsm-campaigns");
+  const date=new Date(Date.now()+3*3600000).toISOString().slice(0,10);
+  const uid="test_member_0001",eventId="contact_integrity_01";
+  records.set("users/"+uid,{name:"Test guest"});
+  records.set("baliIds/"+uid,{uid,number:102});
+  records.set("brsmCards/"+uid,{uid,number:"000102",active:true});
+  records.set("events/"+eventId,{
+    date,title:"CONTACT integrity event",startTime:"00:00",endTime:"23:59"
+  });
+  const created=await call("createBrsmCampaign","director",{
+    title:"CONTACT ticket integrity",requiredVisits:1,ballCount:30,
+    ticketSize:5,winMatches:3,prizes:["Fixture prize"]
+  });
+  const campaignId=created.campaign.id;
+  await call("activateBrsmCampaign","director",{campaignId});
+  await call("addBrsmCampaignEvent","director",{campaignId,eventId});
+  await call("manualBrsmCampaignVisit","director",{campaignId,eventId,uid});
+  const location="brsmCampaigns/"+campaignId+"/entries/"+uid;
+  assert.equal(records.get(location).tickets[0].numbers.length,5);
+  await call("undoBrsmCampaignVisit","director",{
+    campaignId,eventId,uid,reason:"Correct test attendance"
+  });
+  records.get(location).reservedTickets[0].numbers=[1,1,1,1,1];
+  await assert.rejects(call("manualBrsmCampaignVisit","director",{
+    campaignId,eventId,uid
+  }),e=>e.code==="failed-precondition");
+  assert.equal(records.get(location).visits.length,0,
+    "Invalid stored ticket must not create a fresh visit");
+});
+
 test("director can resolve BRSM membership by stable UID while guest cannot",async()=>{
   const {records,call}=prepare();
   const uid="guest_uid_0001";
