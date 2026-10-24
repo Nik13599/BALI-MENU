@@ -271,6 +271,19 @@ test("BRSM campaigns: configurable visits, ball pools, prizes, rounds and immuta
   assert.equal(records.get("baliCoinAccounts/alice").balance,40);
   assert.equal(JSON.stringify(records.get(entryPath).tickets),originalTickets,
     "Corrected attendance must retain the originally issued lottery numbers");
+  // A second correction followed by a newly issued QR must not reroll either.
+  await call("undoBrsmCampaignVisit","director",{
+    campaignId:id,eventId:eventIds[1],number:1,reason:"Вторая корректировка отметки"
+  });
+  const restoredQr=await call("issueBrsmCampaignQrs","director",{
+    campaignId:id,eventId:eventIds[1],count:1,hours:24
+  });
+  const restoredToken=new URL(restoredQr.items[0].url).searchParams.get("brsmCampaignVisit");
+  const restored=await call("claimBrsmCampaignVisit","alice",{token:restoredToken});
+  assert.equal(restored.coinsAwarded,25);
+  assert.equal(records.get("baliCoinAccounts/alice").balance,40);
+  assert.equal(JSON.stringify(records.get(entryPath).tickets),originalTickets,
+    "QR reissue after staff cancellation must preserve immutable tickets");
   const e=await call("getBrsmCampaignEntry","alice",{campaignId:id});
   assert.equal(e.entry.visits.length,2);
   assert.equal(e.entry.tickets.length,2);
