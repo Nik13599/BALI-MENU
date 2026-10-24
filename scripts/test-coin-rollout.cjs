@@ -81,3 +81,17 @@ test("live BRSM QR attendance defers COIN for a quarantined pilot wallet",async(
     uid:"pilot_guest_00001",campaignId:"contact_2026",eventId:"contact_01"});
   assert.deepEqual(result,{amount:0,sourceWalletUnverified:true});
 });
+
+test("pilot refuses incomplete, duplicate, or malformed allowlists even if confirmation is set",()=>{
+  const base={BALI_COIN_WRITE_MODE:"pilot",
+    BALI_COIN_PILOT_CONFIRM:"ALLOW_TEST_COIN_WRITES"};
+  const candidates=[a,a+","+a,a+",invalid UID",a+","+b+",",
+    [a,b,...Array.from({length:9},(_,i)=>"pilot_extra_0000"+i)].join(",")];
+  for(const uids of candidates){
+    const guard=policy({...base,BALI_COIN_PILOT_UIDS:uids});
+    assert.equal(guard.phase,"frozen","rejected misconfigured pilot UID allowlist");
+    assert.equal(guard.eligible([a]),false);
+  }
+  const good=policy({...base,BALI_COIN_PILOT_UIDS:a+","+b});
+  assert.equal(good.phase,"pilot");
+});
