@@ -175,6 +175,24 @@ missing, invalid or non-existent test identities; no placeholder UIDs are
 accepted. The diagnostic automatically runs on reviewed updates to its own
 workflow file on main, but never deploys Firebase.
 
+## Immutable BRSM lotto tickets after attendance corrections
+
+A valid BRSM ticket is generated **once**, on reaching the campaign's required
+number of different CONTACT visits. If a director cancels an attendance record
+before the draw, the guest becomes ineligible and the public-facing
+`tickets` array is cleared. The original tickets remain in
+`reservedTickets` on the Firestore entry; after a verified manual or
+QR reinstatement, the guest receives **the same numbers**. The old single-
+campaign BRSM path likewise stores `reservedNumbers`, preserving its original
+ten-number ticket.
+
+Malformed, duplicate, out-of-range or wrong-size saved tickets fail closed
+rather than being silently replaced with newly randomized numbers. Once a
+draw has begun, attendance changes are still blocked. Two correction cycles,
+including re-entry through a *different* QR token, are covered by automated
+tests. This prevents staff attendance corrections from becoming unlimited
+lottery-ticket rerolls.
+
 ## Deployment checklist
 1. Run all backend, Firestore emulator, BRSM, admin and mobile tests.
 2. Validate source-to-target BALI IDs, final COIN sums and histories using a
