@@ -251,15 +251,24 @@ test("BRSM campaigns: configurable visits, ball pools, prizes, rounds and immuta
   const rewardKey=crypto.createHash("sha256").update("alice|visit_"+
     crypto.createHash("sha256").update(id+"|"+eventIds[0]).digest("hex")).digest("hex");
   assert(records.has("baliCoinRequests/"+rewardKey));
+  const entryPath="brsmCampaigns/"+id+"/entries/alice";
+  const originalTickets=JSON.stringify(records.get(entryPath).tickets);
   await call("undoBrsmCampaignVisit","director",{
     campaignId:id,eventId:eventIds[1],number:1,reason:"Ошибочная отметка в тестовом событии"
   });
   assert.equal(records.get("baliCoinAccounts/alice").balance,15);
+  assert.equal(records.get(entryPath).tickets.length,0);
+  assert.equal(JSON.stringify(records.get(entryPath).reservedTickets),originalTickets);
+  const hidden=await call("getBrsmCampaignEntry","alice",{campaignId:id});
+  assert.equal(hidden.entry.eligible,false);
+  assert.equal(hidden.entry.tickets.length,0);
   const reissued=await call("manualBrsmCampaignVisit","director",{
     campaignId:id,eventId:eventIds[1],number:1
   });
   assert.equal(reissued.coinsAwarded,25);
   assert.equal(records.get("baliCoinAccounts/alice").balance,40);
+  assert.equal(JSON.stringify(records.get(entryPath).tickets),originalTickets,
+    "Corrected attendance must retain the originally issued lottery numbers");
   const e=await call("getBrsmCampaignEntry","alice",{campaignId:id});
   assert.equal(e.entry.visits.length,2);
   assert.equal(e.entry.tickets.length,2);

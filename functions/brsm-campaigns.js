@@ -73,6 +73,21 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
     idMode:d.idMode||"firestore",rounds:d.rounds,roundIndex:d.roundIndex??-1,createdAtMillis:d.createdAt?.toMillis?.()||null
   });
   const coinAwards=require("./brsm-coin-awards")({db,TS,fail,coinRollout});
+  // A correction of attendance must never reroll an issued lottery ticket.
+  function immutableTickets(previous,config){
+    const saved=previous?.reservedTickets?.length?previous.reservedTickets:
+      previous?.tickets?.length?previous.tickets:null;
+    if(!saved)return config.rounds.map(r=>({
+      id:r.id,numbers:ticket(config.ballCount,config.ticketSize)
+    }));
+    if(!Array.isArray(saved)||saved.length!==config.rounds.length||
+      saved.some((row,i)=>row?.id!==config.rounds[i].id||
+        !Array.isArray(row.numbers)||row.numbers.length!==config.ticketSize||
+        new Set(row.numbers).size!==config.ticketSize||
+        row.numbers.some(n=>!Number.isInteger(n)||n<1||n>config.ballCount)))
+      fail("failed-precondition","Номера выданного билета повреждены. Повторная выдача запрещена.");
+    return saved.map(row=>({id:row.id,numbers:[...row.numbers]}));
+  }
   const getCurrentBrsmCampaign=api("getCurrentBrsmCampaign",async req=>{
     verified(req);
     const p=await pointer.get();
@@ -211,9 +226,10 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
       visits.push({eventId,label:e.data().label,source:"qr",at:stamp()});
       const eligible=visits.length>=d.data().requiredVisits;
       const update={uid,campaignId:id,visits,eligible,updatedAt:stamp()};
-      if(eligible)update.tickets=d.data().rounds.map(r=>({
-        id:r.id,numbers:ticket(d.data().ballCount,d.data().ticketSize)
-      }));
+      if(eligible){
+        update.tickets=immutableTickets(old.exists?old.data():null,d.data());
+        update.reservedTickets=update.tickets;
+      }
       if(old.exists)tx.update(entry(id,uid),update);
       else tx.create(entry(id,uid),{...update,tickets:update.tickets||[],createdAt:stamp()});
       tx.update(qrRef,{used:true,usedAt:stamp(),usedBy:uid});
@@ -239,7 +255,10 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
       visits.push({eventId,label:e.data().label,source:"manual:"+staffId,at:stamp()});
       const eligible=visits.length===d.data().requiredVisits;
       const data={uid,campaignId:id,visits,eligible,updatedAt:stamp()};
-      if(eligible)data.tickets=d.data().rounds.map(r=>({id:r.id,numbers:ticket(d.data().ballCount,d.data().ticketSize)}));
+      if(eligible){
+        data.tickets=immutableTickets(old.exists?old.data():null,d.data());
+        data.reservedTickets=data.tickets;
+      }
       if(old.exists)tx.update(entry(id,uid),data);
       else tx.create(entry(id,uid),{...data,tickets:data.tickets||[],createdAt:stamp()});
       tx.create(db.collection("brsmCampaigns/"+id+"/audit").doc(),{
@@ -262,7 +281,13 @@ module.exports=({api,admin,db,TS,verified,privileged,fail,nameAndId,coinRollout}
         fail("not-found","Посещение не найдено.");
       const visits=old.data().visits.filter(v=>v.eventId!==eventId);
       const adjustment=await coinAwards.reverse(tx,{uid,campaignId:id,eventId,reason,staffUid:staffId});
-      tx.update(entry(id,uid),{visits,eligible:false,tickets:[],updatedAt:stamp()});
+      // Tickets are hidden while ineligible, but their original numbers
+      // survive the correction so that the guest cannot reroll.
+      const previous=old.data();
+      const reservedTickets=previous.reservedTickets?.length?previous.reservedTickets:
+        previous.tickets||[];
+      tx.update(entry(id,uid),{visits,eligible:false,tickets:[],reservedTickets,
+        updatedAt:stamp()});
       tx.create(db.collection("brsmCampaigns/"+id+"/audit").doc(),{
         action:"undo-visit",uid,eventId,reason,staffId,at:stamp()
       });
