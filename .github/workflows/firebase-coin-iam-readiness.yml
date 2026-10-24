@@ -74,45 +74,90 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: bali-menu-5a48b
-      - name: Identify the actual default Compute runtime and distinguish HTTP 404 from denied actAs
+      - name: Determine existing runtime identities and active Cloud Functions v2 configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          NUMBER="$(gcloud projects describe "$FIREBASE_PROJECT_ID" --format='value(projectNumber)')"
+          [[ "$NUMBER" =~ ^[0-9]+$ ]]
+          COMPUTE="${NUMBER}-compute@developer.gserviceaccount.com"
+          APPENGINE="${FIREBASE_PROJECT_ID}@appspot.gserviceaccount.com"
+          echo "Project number resolved (not printed); inspecting two known default runtime identities."
+
+          check_identity() {
+            local name="$1" email="$2" output
+            output="$(mktemp)"
+            if gcloud iam service-accounts describe "$email" --project "$FIREBASE_PROJECT_ID" \
+                --format='value(disabled)' >"$output" 2>&1; then
+              echo "$name: service account exists and is readable."
+              if grep -q '^True$' "$output"; then
+                echo "::error::$name is disabled. A project IAM owner must enable or replace it."
+                rm -f "$output"
+                return 1
+              fi
+            else
+              echo "::warning::$name: unable to read account. It may be absent, deleted, or hidden by IAM policy. No account was created."
+            fi
+            rm -f "$output"
+            return 0
+          }
+          check_identity "Compute Engine default" "$COMPUTE"
+          check_identity "App Engine default" "$APPENGINE"
+
+          # Lookup is optional: the deployment identity may not have permission
+          # to list Cloud Functions. This never blocks a correct IAM check.
+          if gcloud functions list --gen2 --regions=europe-west1 \
+            --project="$FIREBASE_PROJECT_ID" \
+            --format='value(serviceConfig.serviceAccountEmail)' >/tmp/bali-v2-runtime-ids 2>/dev/null; then
+            if [ -s /tmp/bali-v2-runtime-ids ]; then
+              echo "Existing v2 function runtime accounts (deduplicated, no identifiers printed):"
+              sort -u /tmp/bali-v2-runtime-ids | while IFS= read -r actual; do
+                [ -n "$actual" ] || continue
+                if [ "$actual" = "$COMPUTE" ]; then echo "  - Compute Engine default"
+                elif [ "$actual" = "$APPENGINE" ]; then echo "  - App Engine default"
+                else echo "  - Dedicated custom service account"; fi
+              done
+            else
+              echo "No current Cloud Functions v2 runtimes were listed."
+            fi
+          else
+            echo "::notice::Unable to list existing Cloud Functions v2 runtimes with this deployer. IAM probe continues."
+          fi
+          rm -f /tmp/bali-v2-runtime-ids
+
+      - name: Check IAM actAs for the default v2 runtime only if it exists
         shell: bash
         run: |
           set -euo pipefail
           PROJECT_NUMBER="$(gcloud projects describe "$FIREBASE_PROJECT_ID" --format='value(projectNumber)')"
           [[ "$PROJECT_NUMBER" =~ ^[0-9]+$ ]]
           TARGET="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+          RESP="$(mktemp)"
+          trap 'rm -f "$RESP"' EXIT
           TOKEN="$(gcloud auth print-access-token)"
-          RESPONSE_FILE="$(mktemp)"
-          trap 'rm -f "$RESPONSE_FILE"' EXIT
-          HTTP_STATUS="$(curl --silent --show-error --output "$RESPONSE_FILE" --write-out '%{http_code}' \
+          STATUS="$(curl --silent --show-error --output "$RESP" --write-out '%{http_code}' \
             --request POST \
             --header "Authorization: Bearer $TOKEN" \
             --header "Content-Type: application/json" \
             --data '{"permissions":["iam.serviceAccounts.actAs"]}' \
-            "https://iam.googleapis.com/v1/projects/-/serviceAccounts/$TARGET:testIamPermissions")"
-          if [ "$HTTP_STATUS" = "404" ]; then
-            if gcloud iam service-accounts describe "$TARGET" --project "$FIREBASE_PROJECT_ID" \
-              --format='value(email)' >/dev/null 2>&1; then
-              echo "::error::The IAM testIamPermissions API returned HTTP 404 for a service account which is readable. Check the IAM API endpoint and enabled Google APIs; no Firebase changes were made."
-            else
-              echo "::error::HTTP 404: the default Cloud Functions v2 Compute service account is missing or cannot be read. Check Google Cloud > IAM > Service Accounts for the PROJECT_NUMBER-compute account, and confirm the runtime serviceAccount configured on deployed functions. Do not grant roles blindly."
-            fi
+            "https://iam.googleapis.com/v1/projects/$FIREBASE_PROJECT_ID/serviceAccounts/$TARGET:testIamPermissions")"
+          if [ "$STATUS" = 404 ]; then
+            echo "::error::Compute Engine default service account returned HTTP 404. It is missing or invisible to this IAM caller. Google Cloud owner: inspect Service Accounts and either restore the default or configure an approved least-privileged custom v2 runtime identity with actAs. Do not deploy with a guessed account."
+            echo "### Blocked: default Cloud Functions v2 identity not found (HTTP 404)" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
-          if [ "$HTTP_STATUS" != "200" ]; then
-            echo "::error::The read-only IAM probe returned HTTP $HTTP_STATUS, not a permissions verdict. Verify IAM API access and service account visibility."
+          if [ "$STATUS" != 200 ]; then
+            echo "::error::Service-account IAM probe returned HTTP $STATUS. This is NOT proof that iam.serviceAccounts.actAs is missing."
             exit 1
           fi
-          if ! node -e '
-            const fs=require("node:fs");
-            const data=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
-            if(!Array.isArray(data.permissions)||!data.permissions.includes("iam.serviceAccounts.actAs")){
-              console.error("::error::The actual Compute runtime service account exists, but the GitHub deployment principal does not have iam.serviceAccounts.actAs. Grant roles/iam.serviceAccountUser on this single service account.");
-              process.exitCode=1;
-            }else console.log("Cloud Functions v2 runtime IAM permission OK.");
-          ' "$RESPONSE_FILE"; then
-            exit 1
-          fi
+          node - "$RESP" <<'NODE'
+          const fs=require("node:fs");
+          const data=JSON.parse(fs.readFileSync(process.argv[2],"utf8"));
+          if(!Array.isArray(data.permissions)||!data.permissions.includes("iam.serviceAccounts.actAs")){
+            console.error("::error::Firebase deployer lacks iam.serviceAccounts.actAs on the default Compute runtime account. Grant roles/iam.serviceAccountUser on that identity only.");
+            process.exitCode=1;
+          }else console.log("Cloud Functions v2 default runtime actAs: confirmed.");
+          NODE
       - name: Summarize read-only IAM result
         run: |
           echo "### Firebase Functions v2 IAM readiness" >> "$GITHUB_STEP_SUMMARY"
