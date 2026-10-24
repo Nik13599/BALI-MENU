@@ -1098,7 +1098,7 @@ assert(!adminClient.includes('" · Хочет пойти: "') &&
   adminClient.includes('payload,{merge:true}'),
   "Admin event editor must not display RSVP counts");
 assert(interestCss.includes('.event-want-to-go'), "Heart controls must remain styled");
-assert((rules.match(/match \/events\/\{eventId\}/g)||[]).length===1 &&
+assert((rules.match(/^    match \/events\/\{eventId\}/gm)||[]).length===1 &&
   (rules.match(/match \/\{document=\*\*\}/g)||[]).length===1,
   "Firestore Rules must contain one event match and one catchall");
 const landingCss = source("bali-pages.css");

@@ -40,7 +40,8 @@ jobs:
       - name: Verify wallet, lottery, QR and freeze logic
         run: |
           node --test scripts/test-bali-coin.cjs scripts/test-coin-rollout.cjs
-          node --test scripts/test-brsm.cjs scripts/test-brsm-service.cjs
+          node --test scripts/test-bali-coin-pilot.cjs
+          node --test scripts/test-brsm.cjs scripts/test-brsm-service.cjs scripts/test-brsm-release.cjs
           node --test scripts/test-bali-coin-migration-offline.cjs
       - name: Test real Firestore transaction contention in demo only
         run: npx firebase emulators:exec --config firebase.emulator.json --project demo-bali-menu --only firestore "node scripts/test-bali-coin-firestore.mjs"
@@ -96,6 +97,45 @@ jobs:
         with:
           workload_identity_provider: ${{ env.FIREBASE_WIF_PROVIDER }}
           service_account: ${{ env.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Verify deployer may act as the Firebase functions runtime identity
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: bali-menu-5a48b
+      - name: Check iam.serviceAccounts.actAs before any Firebase changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Firebase Functions v2 uses the project's Compute Engine default
+          # runtime service account unless serviceAccount is explicitly set.
+          PROJECT_NUMBER="$(gcloud projects describe "$FIREBASE_PROJECT_ID" --format='value(projectNumber)')"
+          test -n "$PROJECT_NUMBER"
+          [[ "$PROJECT_NUMBER" =~ ^[0-9]+$ ]]
+          TARGET="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+          TOKEN="$(gcloud auth print-access-token)"
+          RESULT="$(curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Authorization: Bearer $TOKEN" \
+            --header "Content-Type: application/json" \
+            --data '{"permissions":["iam.serviceAccounts.actAs"]}' \
+            "https://iam.googleapis.com/v1/projects/-/serviceAccounts/$TARGET:testIamPermissions")"
+          if ! printf '%s' "$RESULT" | node -e '
+            let raw="";
+            process.stdin.on("data",x=>raw+=x);
+            process.stdin.on("end",()=>{
+              const p=JSON.parse(raw);
+              if(!Array.isArray(p.permissions)||!p.permissions.includes("iam.serviceAccounts.actAs")){
+                console.error("::error::Missing iam.serviceAccounts.actAs on the Firebase Functions v2 COMPUTE runtime service account. Grant roles/iam.serviceAccountUser to the deployer on that account only.");
+                process.exitCode=1;
+              }else console.log("Firebase runtime actAs permission verified.");
+            });
+          '; then
+            exit 1
+          fi
+      - name: Verify real test Firebase Authentication users and Bali Card identities
+        env:
+          PILOT_UIDS: ${{ secrets.BALI_COIN_PILOT_UIDS }}
+        run: |
+          node scripts/verify-bali-coin-pilot.cjs
       - name: Deploy COIN read and administration callables (test ledger frozen for real guests)
         run: |
           npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:coinMe,functions:bali-id:coinCard,functions:bali-id:coinAdminCard,functions:bali-id:coinHistory,functions:bali-id:coinRecipient,functions:bali-id:coinLots,functions:bali-id:coinVouchers,functions:bali-id:coinSetReward"
@@ -105,6 +145,12 @@ jobs:
       - name: Deploy BRSM and COIN Firestore read protections
         run: |
           npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only firestore:rules
+      - name: Deploy BRSM membership and promo callables
+        run: |
+          npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:activateBrsmPromo,functions:bali-id:manageBrsmCard,functions:bali-id:createBrsmPromo,functions:bali-id:disableBrsmPromo,functions:bali-id:getBrsmCardAdmin,functions:bali-id:listBrsmAdmin"
+      - name: Deploy CONTACT attendance and immutable legacy lottery callables
+        run: |
+          npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:createBrsmEvent,functions:bali-id:disableBrsmEvent,functions:bali-id:issueBrsmQrs,functions:bali-id:revokeBrsmQr,functions:bali-id:claimBrsmVisit,functions:bali-id:manualBrsmVisit,functions:bali-id:undoBrsmVisit,functions:bali-id:beginBrsmDraw,functions:bali-id:updateBrsmDraw,functions:bali-id:finalizeBrsmDraw,functions:bali-id:getBrsmDrawReport"
       - name: Deploy BRSM campaign read and setup callables
         run: |
           npx firebase deploy --project "$FIREBASE_PROJECT_ID" --non-interactive --only "functions:bali-id:getCurrentBrsmCampaign,functions:bali-id:createBrsmCampaign,functions:bali-id:updateBrsmCampaignDraft,functions:bali-id:activateBrsmCampaign,functions:bali-id:archiveBrsmCampaign,functions:bali-id:listBrsmCampaigns,functions:bali-id:addBrsmCampaignEvent,functions:bali-id:listBrsmCampaignEvents,functions:bali-id:getBrsmCampaignEntry"

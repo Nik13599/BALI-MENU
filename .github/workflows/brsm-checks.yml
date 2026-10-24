@@ -1,0 +1,108 @@
+name: BRSM Card — isolated verification
+
+on:
+  pull_request:
+    paths:
+      - "functions/brsm*.js"
+      - "functions/bali-coin.js"
+      - "functions/coin-rollout.js"
+      - "brsm-*"
+      - "bali-coin-*"
+      - "google-apps-script/BaliBackend.gs"
+      - "scripts/test-bali-sheets-backend.mjs"
+      - "cloudflare-pages/functions/api/bali-v3.js"
+      - "cloudflare-worker/BaliSheetsGateway.js"
+      - "index.html"
+      - "admin.html"
+      - "firestore.rules"
+      - "scripts/test-brsm*"
+      - "scripts/test-bali-coin*"
+      - "scripts/test-coin-rollout.cjs"
+      - "scripts/test-bali-coin-pilot.cjs"
+      - "scripts/verify-bali-coin-pilot.cjs"
+      - "scripts/migrate-bali-coins.cjs"
+      - "tests/brsm-card.spec.cjs"
+      - ".github/workflows/brsm-checks.yml"
+      - ".github/workflows/bali-coin-brsm-pilot-release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  coin-firestore-transactions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GCLOUD_PROJECT: demo-bali-menu
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci --no-audit --no-fund
+      - run: npm install --prefix functions --no-audit --no-fund
+      - name: Test actual ledger contention in the isolated demo Firestore
+        run: npx firebase emulators:exec --config firebase.emulator.json --project demo-bali-menu --only firestore "node scripts/test-bali-coin-firestore.mjs"
+
+  brsm-service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate BRSM backend and frontend syntax
+        run: |
+          node --check functions/brsm-core.js
+          node --check functions/brsm.js
+          node --check functions/brsm-campaigns.js
+          node --check functions/brsm-identity.js
+          node --check functions/bali-coin.js
+          node --check functions/coin-rollout.js
+          node --check functions/brsm-coin-awards.js
+          node --input-type=module --check < bali-coin-firebase-api.js
+          node --input-type=module --check < brsm-card.js
+          node --input-type=module --check < brsm-admin.js
+          node --input-type=module --check < brsm-id-resolver.js
+          node --input-type=module --check < brsm-campaign-admin.js
+          node --input-type=module --check < bali-coin-market.js
+          node --input-type=module --check < bali-coin-staff.js
+          node --input-type=module --check < brsm-coin-admin.js
+          node --check < google-apps-script/BaliBackend.gs
+      - name: Test shared Firebase COIN, bar and transfers
+        run: node --test scripts/test-bali-coin.cjs scripts/test-coin-rollout.cjs scripts/test-bali-coin-pilot.cjs
+      - name: Test offline COIN export validation (no Firebase credentials)
+        run: node --test scripts/test-bali-coin-migration-offline.cjs
+      - name: Test cards, promo codes, QR and stage draws
+        run: node --test scripts/test-brsm.cjs scripts/test-brsm-service.cjs scripts/test-brsm-release.cjs
+      # Historical Apps Script COIN test removed from BRSM pipeline after Firebase cutover.
+      # The authoritative transaction/transfer/bar cases are in test-bali-coin.cjs.
+
+  brsm-visual:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Use preinstalled Google Chrome for Playwright
+        run: |
+          command -v google-chrome
+          google-chrome --version
+          echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+      - name: Test card and operator panel (phone + desktop, no Firebase)
+        run: npx playwright test tests/brsm-card.spec.cjs --project=phone --project=desktop
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: brsm-card-test-results
+          path: test-results/
+          retention-days: 7

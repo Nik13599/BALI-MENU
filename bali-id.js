@@ -2,7 +2,7 @@
 import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,onSnapshot,runTransaction,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import {sheetsEnabled,sheetsRequest} from "./bali-sheets-api.js";
+
 const $=id=>document.getElementById(id);
 const app=getApps().length?getApp():initializeApp(window.BALI_FIREBASE_CONFIG);
 const auth=getAuth(app),db=getFirestore(app);
@@ -19,7 +19,7 @@ const DEFAULTS={
   ResidentDJ:{description:"",criteria:"Только по назначению директора или администратора для DJ-резидентов BALI.",benefits:["Безлимит замесов","Возможность ночевки в клубе","Работать за бесплатно"]},
   BigBoss:{description:"",criteria:"Только собственнику заведения, по ручному назначению директора или администратора.",benefits:["Полное управление клубом","Безлимитный доступ","Персональный бар и обслуживание","Индивидуальные условия"]}
 };
-let privilegedUnsub=null,rulesUnsub=null,session=0,profile=null,rules=DEFAULTS,privilege=null,activeUid=null;
+let privilegedUnsub=null,rulesUnsub=null,coinUnsub=null,session=0,profile=null,rules=DEFAULTS,privilege=null,activeUid=null;
 const setLoading=value=>{
   const scene=$("baliIdFlipScene");
   if(scene){scene.dataset.baliLoading=String(value);scene.setAttribute("aria-busy",String(value===true));}
@@ -139,6 +139,7 @@ async function initializeForUser(user,{force=false}={}){
   const run=++session;
   privilegedUnsub?.();privilegedUnsub=null;
   rulesUnsub?.();rulesUnsub=null;
+  coinUnsub?.();coinUnsub=null;
   profile=null;privilege=null;rules=DEFAULTS;activeUid=null;
   setText("baliIdStatus","");setText("baliCardNumber","— — — — — —");
   setText("baliIdCoinAmount","—");
@@ -149,29 +150,6 @@ async function initializeForUser(user,{force=false}={}){
     if(run!==session||auth.currentUser?.uid!==user.uid)return;
     const profileData=window.BaliAuth?.getProfile?.();
     if(!profileData){render();setLoading(false);return;}
-    if(sheetsEnabled()){
-      const {card}=await sheetsRequest("card");
-      if(run!==session||auth.currentUser?.uid!==user.uid)return;
-      if(!card?.activated||!card?.agreed){render();setLoading(false);return;}
-      activeUid=user.uid;
-      profile=profileData;
-      privilege={tier:TIERS.includes(card.tier)?card.tier:"Member",
-        benefits:Array.isArray(card.benefits)?card.benefits:[]};
-      const values=card.tierRules||{};
-      rules=Object.fromEntries(Object.keys(DEFAULTS).map(tier=>[tier,{
-        description:cleanText(values[tier]?.description)||DEFAULTS[tier].description,
-        criteria:cleanText(values[tier]?.criteria)||DEFAULTS[tier].criteria,
-        benefits:Array.isArray(values[tier]?.benefits)?values[tier].benefits.filter(v=>typeof v==="string").slice(0,5):DEFAULTS[tier].benefits
-      }]));
-      render();
-      setText("baliCardNumber",/^\d{6}$/.test(card.number)?card.number:"— — — — — —");
-      setText("baliIdCoinAmount",Number.isSafeInteger(card.coinBalance)&&card.coinBalance>=0?
-        new Intl.NumberFormat("ru-RU").format(card.coinBalance):"—");
-      setText("baliIdStatus","");
-      setLoading(false);
-      window.dispatchEvent(new CustomEvent("bali:sheets-card",{detail:{uid:user.uid,card}}));
-      return;
-    }
     // Check persisted acknowledgement before ANY writes (Member or ID counter).
     const consent=await getDoc(doc(db,"users",user.uid,"baliIdAgreements","privilege"));
     if(run!==session||auth.currentUser?.uid!==user.uid)return;
@@ -186,6 +164,15 @@ async function initializeForUser(user,{force=false}={}){
     ]);
     if(run!==session)return;
     if(allocated)setText("baliIdStatus","");
+    if(allocated){
+      // Watch the single Firebase COIN balance only while the BALI ID page is open.
+      coinUnsub=onSnapshot(doc(db,"baliCoinAccounts",user.uid),snapshot=>{
+        if(run!==session)return;
+        const value=snapshot.exists()?snapshot.data().balance:0;
+        setText("baliIdCoinAmount",Number.isSafeInteger(value)&&value>=0?
+          new Intl.NumberFormat("ru-RU").format(value):"—");
+      },()=>{if(run===session)setText("baliIdCoinAmount","—");});
+    }
     if(tierRules?.exists()){
       const values=tierRules.data()?.levels||{};
       rules=Object.fromEntries(Object.keys(DEFAULTS).map(tier=>[tier,{
@@ -228,7 +215,4 @@ window.addEventListener("bali:guest-page",event=>{
   else void initializeForUser(null); // Also invalidate any asynchronous card setup in flight.
 });
 onAuthStateChanged(auth,resumeCard);
-window.addEventListener("bali:coin-updated",()=>{
-  if(sheetsEnabled()&&cardIsOpen()&&auth.currentUser?.uid)
-    void initializeForUser(auth.currentUser,{force:true});
-});
+// Firestore coin account listener updates the displayed balance automatically.

@@ -1,0 +1,44 @@
+<section id="brsmGuestPanel" class="brsm-guest" hidden aria-label="Карта БРСМ">
+  <div class="brsm-guest-toolbar">
+    <strong>Bali Card · BRSM</strong>
+    <button id="brsmSwitchCard" type="button" hidden>Обычная Bali Card</button>
+  </div>
+  <div id="brsmFlip" class="brsm-flip" hidden>
+    <button type="button" class="brsm-face brsm-front" id="brsmFront" aria-label="Bali Card BRSM. Нажмите, чтобы перевернуть">
+      <span class="brsm-head"><span>Bali Card</span><strong>BRSM</strong></span>
+      <img class="brsm-brand-image" src="assets/bali-id-card-readable.svg?v=20261020-no-subtitle" alt="BALI">
+      <span class="brsm-foot"><strong id="brsmName">ГОСТЬ BALI</strong><span id="brsmNumber">000000</span></span>
+    </button>
+    <button type="button" class="brsm-face brsm-back" id="brsmBack" aria-label="Посещения и десять номеров. Нажмите, чтобы перевернуть" hidden>
+      <span class="brsm-head"><span>Bali Card</span><strong>BRSM</strong></span>
+      <span class="brsm-subtitle">3 ВЕЧЕРИНКИ · 10 ЧИСЕЛ · iPhone 18 Pro</span>
+      <span class="brsm-info">Только разные вечеринки КОНТАКТ</span>
+      <span class="brsm-back-layout">
+        <span class="brsm-visits">
+          <span class="brsm-slot"><b>1</b><small>1-я вечеринка</small><em>Ожидается</em></span>
+          <span class="brsm-slot"><b>2</b><small>2-я вечеринка</small><em>Ожидается</em></span>
+          <span class="brsm-slot"><b>3</b><small>3-я вечеринка</small><em>Ожидается</em></span>
+        </span>
+        <span class="brsm-ticket">
+          <strong>ТВОИ 10 ЧИСЕЛ</strong>
+          <span class="brsm-digits">
+            <span class="brsm-digit">?</span><span class="brsm-digit">?</span><span class="brsm-digit">?</span><span class="brsm-digit">?</span><span class="brsm-digit">?</span>
+            <span class="brsm-digit">?</span><span class="brsm-digit">?</span><span class="brsm-digit">?</span><span class="brsm-digit">?</span><span class="brsm-digit">?</span>
+          </span>
+        </span>
+      </span>
+      <span class="brsm-hint" id="brsmTicketStatus">Посещения 0/3 · номерa откроются после третьего входа</span>
+    </button>
+  </div>
+  <form id="brsmPromoForm" class="brsm-action">
+    <label for="brsmPromoInput">Получить карту БРСМ по промокоду</label>
+    <div><input id="brsmPromoInput" required maxlength="24" autocomplete="off" placeholder="BRSM-XXXXXXXXXX">
+      <button type="submit">Активировать</button></div>
+  </form>
+  <form id="brsmVisitForm" class="brsm-action" hidden>
+    <label for="brsmVisitToken">Зачесть QR-код посещения КОНТАКТ</label>
+    <div><input id="brsmVisitToken" autocomplete="off" placeholder="Вставьте ссылку или код QR">
+      <button type="submit">Подтвердить вход</button></div>
+  </form>
+  <p class="brsm-message" id="brsmGuestStatus" role="status" aria-live="polite"></p>
+</section>

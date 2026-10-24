@@ -240,6 +240,70 @@ service cloud.firestore {
       allow get: if isAdmin() || signedInAs(uid);
       allow list, create, update, delete: if false;
     }
+    // BRSM server-only writes; guests can only view their own cards.
+    // Staff-certified cross-backend card IDs; only callable server functions write them.
+    match /brsmCanonicalIds/{uid} {
+      allow get: if signedInAs(uid) || isAdmin() || isDirector();
+      allow list, create, update, delete: if false;
+    }
+    match /brsmCanonicalNumbers/{number} {
+      allow read, write: if false;
+    }
+    // BALI COIN is one Firestore account per BALI ID, not per card tier.
+    match /baliCoinAccounts/{uid} {
+      allow get: if signedInAs(uid) || isAdmin() || isDirector();
+      allow list, create, update, delete: if false;
+      match /history/{opId} {
+        allow get, list: if signedInAs(uid) || isAdmin() || isDirector();
+        allow create, update, delete: if false;
+      }
+      match /vouchers/{voucherId} {
+        allow get, list: if signedInAs(uid) || isAdmin() || isDirector();
+        allow create, update, delete: if false;
+      }
+    }
+    match /baliCoinRequests/{id} { allow read, write: if false; }
+    match /baliCoinRewards/{id} { allow read, write: if false; }
+    match /baliCoinLots/{id} {
+      allow get, list: if request.auth != null && request.auth.token.email_verified == true;
+      allow create, update, delete: if false;
+    }
+    match /baliCoinVouchers/{id} { allow read, write: if false; }
+    match /brsmCards/{uid} {
+      allow get: if signedInAs(uid) || isAdmin() || isDirector();
+      allow list: if isAdmin() || isDirector();
+      allow create, update, delete: if false;
+    }
+    match /brsmDraws/{drawId} {
+      allow get: if request.auth != null && request.auth.token.email_verified == true;
+      allow list, create, update, delete: if false;
+    }
+    match /brsmDrawPrivate/{drawId} { allow read, write: if false; }
+    match /brsmEvents/{id} { allow read, write: if false; }
+    match /brsmVisitQrs/{id} { allow read, write: if false; }
+    match /brsmPromos/{id} { allow read, write: if false; }
+    match /brsmAudit/{id} { allow read, write: if false; }
+    // Independent BRSM campaigns: immutable public draw, private participants and QR tokens.
+    match /brsmCampaignState/{id} {
+      allow get: if request.auth != null && request.auth.token.email_verified == true;
+      allow list, create, update, delete: if false;
+    }
+    match /brsmCampaigns/{campaignId} {
+      allow get: if request.auth != null && request.auth.token.email_verified == true;
+      allow list, create, update, delete: if false;
+      match /entries/{uid} {
+        allow get: if signedInAs(uid) || isAdmin() || isDirector();
+        allow list, create, update, delete: if false;
+      }
+      match /rounds/{roundId} {
+        allow get: if request.auth != null && request.auth.token.email_verified == true;
+        allow list, create, update, delete: if false;
+      }
+      match /roundPrivate/{roundId} { allow read, write: if false; }
+      match /events/{eventId} { allow read, write: if false; }
+      match /audit/{auditId} { allow read, write: if false; }
+    }
+    match /brsmCampaignQrs/{tokenHash} { allow read, write: if false; }
     match /staffRoles/{uid} {
       allow get: if signedInAs(uid) || isAdmin();
       allow list, create, update, delete: if false;

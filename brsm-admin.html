@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BALI · БРСМ — управление</title><meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="assets/bali-favicon.svg"><link rel="stylesheet" href="brsm-admin.css?v=1">
+<script src="firebase-config.js?v=20261020-2"></script></head>
+<body>
+<header class="top"><a href="admin.html">← Админка BALI</a><strong>Bali Card · BRSM</strong><button id="brsmSignOut" type="button" hidden>Выйти</button></header>
+<main>
+<section id="brsmLogin" class="brsm-login box">
+  <h1>УПРАВЛЕНИЕ BRSM</h1><p>Вход только для директора или администратора с подтверждённым аккаунтом Google.</p>
+  <button id="brsmSignIn" type="button">Войти через Google</button>
+  <p id="brsmAuthMessage" role="status">Проверка доступа…</p>
+</section>
+<div id="brsmWorkspace" hidden>
+<section id="brsmCoinWorkspace" class="box">
+    <h2>BALI COIN · ОБЩИЙ БАЛАНС ВСЕХ КАРТ</h2>
+    <details id="brsmCoinSettingsDetails"><summary>Начисления · барное меню · призовые лоты · выдача</summary>
+    <p>Баллы доступны на обычной Bali Card и BRSM. Награды назначаются для мероприятия и активностей. Призы и специальное барное меню доступны участникам во время открытой кампании.</p>
+    <p id="brsmCoinAdminStatus" class="notice" role="status" aria-live="polite">Проверка прав BALI COIN…</p>
+    <div class="admin-grid">
+      <section class="box">
+        <h3>Начисление за вход</h3>
+        <form id="brsmCoinEventForm" class="inline-form">
+          <select name="eventId" id="brsmCoinEventSelect" required><option value="">Выберите событие</option></select>
+          <input name="label" placeholder="Название награды" value="Посещение КОНТАКТ" required>
+          <label>Баллов<input name="amount" type="number" min="0" max="100000" value="100" required></label>
+          <button type="submit">Сохранить награду</button>
+        </form>
+        <p>Размер 0 отключает начисление для события. Повторная отметка за то же событие не приносит баллы.</p>
+      </section>
+      <section class="box">
+        <h3>Баллы за активности</h3>
+        <form id="brsmCoinActivityForm" class="inline-form">
+          <input name="activityId" placeholder="ID активности, напр. dance_contest" pattern="[A-Za-z0-9_-]{3,80}" required>
+          <input name="label" placeholder="Название активности" required>
+          <label>Баллов<input name="amount" type="number" min="0" max="100000" value="50" required></label>
+          <button type="submit">Сохранить активность</button>
+        </form>
+        <form id="brsmCoinAwardForm" class="inline-form">
+          <input name="activityId" placeholder="ID активности" required>
+          <input name="number" placeholder="6-значный Bali Card" pattern="[0-9]{6}" inputmode="numeric" maxlength="6" required>
+          <button type="submit">Начислить гостю</button>
+        </form>
+      </section>
+      <section class="box">
+        <h3>Специальное меню бара и призовые лоты</h3>
+        <form id="brsmCoinLotForm" class="inline-form">
+          <select name="category" aria-label="Категория позиции">
+            <option value="bar">Бар за BALI COIN</option>
+            <option value="prize">Призовой лот</option>
+          </select>
+          <input name="lotId" pattern="[A-Za-z0-9_-]{3,80}" placeholder="ID позиции" required>
+          <input name="name" maxlength="100" placeholder="Название напитка или приза" required>
+          <label>Цена в COIN<input name="price" type="number" min="1" max="1000000" required></label>
+          <label>Всего единиц<input name="stock" type="number" min="0" max="10000" value="50" required></label>
+          <label><input name="active" type="checkbox" checked> Доступно гостям</label>
+          <button type="submit">Сохранить позицию</button>
+        </form>
+        <button id="brsmCoinReloadMenu" type="button">Посмотреть доступные позиции</button>
+        <div id="brsmCoinMenuList" class="summary-list"></div>
+        <p>Изменять цену можно только для будущих покупок. Уже списанные баллы и выданные ваучеры сохраняются.</p>
+      </section>
+      <section class="box">
+        <h3>Выдача оплаченного BALI COIN заказа</h3>
+        <p>Сотрудник сверяет Bali Card гостя и его код. Каждый ваучер может быть погашен только один раз.</p>
+        <form id="brsmCoinFulfillForm" class="inline-form">
+          <input name="number" pattern="[0-9]{6}" maxlength="6" inputmode="numeric" placeholder="Bali Card владельца" required>
+          <input name="voucher" placeholder="LOT:... код выдачи" required>
+          <button type="submit">Подтвердить выдачу</button>
+        </form>
+        <p>Для персонала бара предусмотрен отдельный ограниченный интерфейс выдачи без доступа к управлению призами. Алкогольные позиции выдаются только после проверки возраста.</p>
+        <a href="bali-coin-staff.html" style="color:#bcffd1">Открыть экран выдачи бара →</a>
+      </section>
+    </div>
+    </details>
+  </section>
+<section id="brsmCampaignWorkspace" class="box campaign-workspace">
+    <h2>КАМПАНИИ BRSM · ГИБКИЕ УСЛОВИЯ</h2>
+    <p>Создавайте неограниченное количество кампаний. Количество посещений, чисел в билете, бочонков, призы и раунды задаются отдельно. Активированные условия блокируются от изменений.</p>
+    <div class="campaign-line">
+      <label>Кампания <select id="brsmCampaignSelect"><option value="">Нет кампаний</option></select></label>
+      <button id="brsmCampaignRefresh" type="button">Обновить</button>
+      <button id="brsmCampaignActivate" type="button" hidden>Начать регистрацию</button>
+      <button id="brsmCampaignArchive" type="button" hidden>Архивировать завершённую</button>
+      <button id="brsmCampaignReport" type="button" hidden>Скачать отчёт кампании</button>
+    </div>
+    <p id="brsmCampaignInfo" role="status" aria-live="polite"></p>
+    <form id="brsmCampaignForm" class="campaign-config">
+      <h3>Новая кампания / редактирование черновика</h3>
+      <label>Название <input name="title" required maxlength="96" placeholder="КОНТАКТ · Новогодний розыгрыш"></label>
+      <label>Посещений для допуска <input name="requiredVisits" required type="number" min="1" max="12" value="3"></label>
+      <label>Всего бочонков <input name="ballCount" required type="number" min="10" max="120" value="90"></label>
+      <label>Чисел в билете <input name="ticketSize" required type="number" min="1" max="30" value="10"></label>
+      <label>Совпадений для победы <input name="winMatches" required type="number" min="1" max="30" value="5"></label>
+      <label class="campaign-wide">Призы по раундам, каждый с новой строки (1–12 раундов)
+        <textarea name="prizes" rows="3" required placeholder="iPhone 18 Pro&#10;Подарок от BALI">iPhone 18 Pro</textarea>
+      </label>
+      <div class="campaign-actions">
+        <button type="submit" id="brsmCampaignSave">Создать кампанию</button>
+        <button type="button" id="brsmCampaignNew">Новый черновик</button>
+      </div>
+    </form>
+    <div id="brsmCampaignOperations" hidden>
+      <div class="admin-grid">
+        <section class="box">
+          <h3>Мероприятия и QR входа</h3>
+          <p>Мероприятие должно существовать в календаре BALI и содержать «КОНТАКТ» / CONTACT.</p>
+          <form id="brsmCampaignEventForm" class="inline-form">
+            <input name="eventId" required placeholder="ID события из календаря">
+            <button type="submit">Привязать мероприятие</button>
+          </form>
+          <select id="brsmCampaignEventSelect"><option value="">Выберите вечеринку</option></select>
+          <form id="brsmCampaignQrForm" class="inline-form">
+            <label>QR <input name="count" type="number" min="1" max="100" value="30" required></label>
+            <label>Часов <input name="hours" type="number" min="1" max="72" value="12" required></label>
+            <button type="submit">Подготовить QR</button>
+          </form>
+        </section>
+        <section class="box">
+          <h3>Корректировка посещений</h3>
+          <form id="brsmCampaignManualForm" class="inline-form">
+            <input name="number" inputmode="numeric" required placeholder="Bali Card">
+            <select name="eventId" class="campaign-event-choice" required><option value="">Мероприятие</option></select>
+            <button type="submit">Зачесть</button>
+          </form>
+          <form id="brsmCampaignUndoForm" class="inline-form">
+            <input name="number" inputmode="numeric" required placeholder="Bali Card">
+            <select name="eventId" class="campaign-event-choice" required><option value="">Мероприятие</option></select>
+            <input name="reason" required minlength="5" maxlength="160" placeholder="Причина отмены">
+            <button type="submit">Отменить отметку</button>
+          </form>
+        </section>
+        <section class="box">
+          <h3>Раунды и призы</h3>
+          <div id="brsmCampaignRounds" class="summary-list"></div>
+          <button id="brsmCampaignStartRound" type="button">Открыть следующий раунд</button>
+        </section>
+        <section class="box">
+          <h3>Бочонки · сценический экран</h3>
+          <form id="brsmCampaignDrawForm" class="inline-form">
+            <input name="number" type="number" min="1" max="120" required placeholder="Номер бочонка">
+            <button type="submit">Зачесть число</button>
+          </form>
+          <div class="action-row">
+            <button id="brsmCampaignUndoBall" type="button">Исправить последнее</button>
+            <button id="brsmCampaignTie" type="button" hidden>Решить ничью</button>
+            <button id="brsmCampaignConfirm" type="button" hidden>Подтвердить победителя</button>
+            <button id="brsmCampaignStageFullscreen" type="button">Полный экран</button>
+          </div>
+        </section>
+      </div>
+      <section class="live-stage" id="brsmCampaignStage">
+        <div class="stage-title" id="brsmCampaignStageTitle">КОНТАКТ · BRSM</div>
+        <div class="stage-info" id="brsmCampaignStageInfo">Ожидание раунда</div>
+        <div class="number-grid" id="brsmCampaignBalls"></div>
+        <div class="winner" id="brsmCampaignWinner"></div>
+      </section>
+    </div>
+    <button id="brsmCampaignPrint" type="button" hidden>Распечатать QR-коды</button>
+    <section id="brsmCampaignPrintArea" class="campaign-print" aria-label="QR-коды для печати"></section>
+  </section>
+  <div class="page-heading"><div><h1>BRSM · УПРАВЛЕНИЕ</h1><p>Карты, промокоды, посещения КОНТАКТ и лото</p></div><button id="brsmRefresh" type="button">Обновить данные</button></div>
+  <p id="brsmAdminStatus" class="notice" role="status" aria-live="polite"></p>
+  <div class="admin-grid">
+    <section class="box">
+      <h2>Выдача карты BRSM</h2>
+      <p>Номер существующей Bali Card, например 000001.</p>
+      <form id="brsmManageForm" class="inline-form">
+        <input name="number" required inputmode="numeric" pattern="[0-9]{1,9}" maxlength="9" placeholder="Номер Bali Card">
+        <select name="op" aria-label="Действие"><option value="assign">Выдать карту</option><option value="revoke">Заблокировать</option><option value="restore">Восстановить</option></select>
+        <button type="submit">Выполнить</button>
+      </form>
+    </section>
+    <section class="box">
+      <h2>Промокоды BRSM</h2>
+      <p>Код показывается только при создании, сохраните его для распространения.</p>
+      <form id="brsmPromoCreateForm" class="inline-form">
+        <label>Активаций<input name="maxUses" type="number" min="1" max="10000" value="50" required></label>
+        <label>Дней<input name="days" type="number" min="1" max="365" value="30" required></label>
+        <button type="submit">Создать промокод</button>
+      </form>
+      <output id="brsmNewPromo" class="new-code" aria-live="polite"></output>
+      <div id="brsmPromosList" class="summary-list"></div>
+      <form id="brsmPromoDisableForm" class="inline-form"><input name="code" placeholder="Промокод для отключения" required><button type="submit">Отключить код</button></form>
+    </section>
+    <section class="box">
+      <h2>Вечеринки КОНТАКТ</h2>
+      <p>Предварительно создайте вечеринку КОНТАКТ в календаре BALI. Здесь используйте её точный ID (дата или дата__2).</p>
+      <form id="brsmEventCreateForm" class="inline-form">
+        <input name="eventId" placeholder="ID из календаря, напр. 2026-11-07" pattern="[A-Za-z0-9_-]{3,90}" required>
+        <input name="label" placeholder="КОНТАКТ · NIGHT PARTY" required>
+        <input name="date" type="date" required>
+        <button type="submit">Добавить мероприятие</button>
+      </form>
+      <div id="brsmEventsList" class="summary-list"></div>
+      <form id="brsmEventDisableForm" class="inline-form"><input name="eventId" placeholder="ID события для отключения" required><button type="submit">Отключить событие</button></form>
+    </section>
+    <section class="box">
+      <h2>Одноразовые QR на браслеты</h2>
+      <p>Каждый QR используется один раз и действует только для выбранного мероприятия.</p>
+      <form id="brsmQrCreateForm" class="inline-form">
+        <select name="eventId" id="brsmEventSelect" required><option value="">Выберите вечеринку</option></select>
+        <label>Количество<input type="number" name="count" min="1" max="100" value="30" required></label>
+        <label>Часов<input type="number" name="hours" min="1" max="72" value="12" required></label>
+        <button type="submit">Сгенерировать QR</button>
+      </form>
+      <p>QR-коды для печати отображаются только после генерации. Повторное открытие той же партии недоступно.</p>
+      <button id="brsmPrintQrs" type="button" disabled>Распечатать QR-коды</button>
+      <form id="brsmQrDisableForm" class="inline-form"><input name="token" placeholder="Ссылка или код QR для отключения" required><button type="submit">Отключить QR</button></form>
+    </section>
+    <section class="box">
+      <h2>Ручная корректировка посещения</h2>
+      <p>Доступно руководству только до начала розыгрыша. Каждое изменение сохраняется с идентификатором сотрудника.</p>
+      <form id="brsmManualForm" class="inline-form">
+        <input name="number" required inputmode="numeric" placeholder="Номер Bali Card">
+        <select name="eventId" id="brsmManualEventSelect" required><option value="">Мероприятие</option></select>
+        <button type="submit">Зачесть вход</button>
+      </form>
+      <form id="brsmUndoVisitForm" class="inline-form">
+        <input name="number" required inputmode="numeric" pattern="[0-9]{1,9}" placeholder="Bali Card">
+        <select name="eventId" id="brsmUndoEventSelect" required><option value="">Отменяемое мероприятие</option></select>
+        <input name="reason" required minlength="5" maxlength="160" placeholder="Причина отмены">
+        <button type="submit">Отменить ошибочную отметку</button>
+      </form>
+    </section>
+    <section class="box">
+      <h2>КОНТАКТ · LIVE LOTTO</h2>
+      <p>Все билеты фиксируются в момент начала. Затем вносите номера бочонков, фактически вытянутых на сцене.</p>
+      <button id="brsmBeginDraw" type="button">Зафиксировать участников и начать</button>
+      <form id="brsmDrawForm" class="inline-form">
+        <input name="number" inputmode="numeric" type="number" min="1" max="90" required placeholder="Число 1–90">
+        <button type="submit">Зачесть бочонок</button>
+      </form>
+      <div class="action-row"><button id="brsmUndoDraw" type="button">Отменить последнее число</button>
+        <button id="brsmTieDraw" type="button" hidden>Дополнительный жребий при ничьей</button>
+        <button id="brsmFullscreen" type="button">На полный экран</button>
+        <button id="brsmFinalizeDraw" type="button" hidden>Подтвердить победителя</button>
+        <button id="brsmExportReport" type="button" disabled>Скачать протокол CSV + JSON</button>
+      </div>
+    </section>
+  </div>
+  <section id="brsmLiveStage" class="box live-stage" aria-live="polite">
+    <div class="stage-title">КОНТАКТ · LIVE LOTTO</div>
+    <div class="stage-info" id="brsmDrawMeta">Розыгрыш не запущен</div>
+    <div class="number-grid" id="brsmDrawnBalls"></div>
+    <div id="brsmDrawWinner" class="winner"></div>
+  </section>
+  <section class="box"><h2>Карты участников</h2>
+    <p>Здесь отображаются последние 80 карт. Любого гостя можно найти по Bali Card без загрузки всей базы.</p>
+    <form id="brsmFindCardForm" class="inline-form">
+      <input name="number" inputmode="numeric" pattern="[0-9]{1,6}" maxlength="6" placeholder="6-значный Bali Card" required>
+      <button type="submit">Найти карту</button>
+    </form>
+    <div id="brsmFoundCard" class="summary-list" aria-live="polite" role="status"></div>
+    <div class="table-scroller"><table><thead><tr><th>Bali Card</th><th>Имя</th><th>Посещения</th><th>Билет</th><th>Состояние</th></tr></thead><tbody id="brsmCardsTable"></tbody></table></div>
+  </section>
+  <section id="brsmPrintArea" aria-label="QR-коды для печати"></section>
+</div></main>
+<script type="module" src="brsm-admin.js?v=1"></script>
+<script type="module" src="brsm-campaign-admin.js?v=1"></script>
+<script type="module" src="brsm-coin-admin.js?v=1"></script>
+</body></html>

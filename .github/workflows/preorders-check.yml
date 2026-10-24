@@ -38,5 +38,9 @@ jobs:
       - run: npm test
       - run: node scripts/test-preorder-reports.mjs
       - run: npm run test:firebase
-      - run: npx playwright install --with-deps chromium
+      - name: Use preinstalled Google Chrome for Playwright
+        run: |
+          command -v google-chrome
+          google-chrome --version
+          echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
       - run: npx playwright test tests/preorders-workspace.spec.cjs --project=desktop

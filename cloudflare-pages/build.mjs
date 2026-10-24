@@ -11,7 +11,7 @@
  * scripts, tests, Firestore rules and configuration outside the public site.
  * No backend or DNS changes are performed by this script.
  */
-import { existsSync, mkdirSync, readdirSync, copyFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, copyFileSync, rmSync, statSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -75,6 +75,20 @@ const missing = requiredFiles.filter(file => !existsSync(join(outDir, file)));
 if (missing.length) {
   throw new Error("Cloudflare Pages build is missing required public files: " + missing.join(", "));
 }
+// Every non-main Cloudflare Pages build must visibly say it is staging.
+// The notice is generated only into dist/, never into tracked HTML or production.
+if (process.env.CF_PAGES_BRANCH && process.env.CF_PAGES_BRANCH !== "main") {
+  const note = '<div role="status" aria-label="Тестовая версия BALI" style="position:fixed;bottom:0;left:0;right:0;z-index:999999;box-sizing:border-box;padding:7px 12px;background:#5b3010;color:#fff;border-top:1px solid #d9a25c;text-align:center;font:700 12px/1.4 system-ui,sans-serif">ТЕСТОВАЯ ВЕРСИЯ BRSM · Не используйте для реальных переводов, выдачи призов и предзаказов</div>';
+  for (const name of ["index.html", "brsm-admin.html", "bali-coin-staff.html"]) {
+    const file = join(outDir, name);
+    if (!existsSync(file)) continue;
+    let html = readFileSync(file, "utf8");
+    html = html.replace("</head>", '<meta name="robots" content="noindex,nofollow"></head>');
+    html = html.replace("</body>", note + "</body>");
+    writeFileSync(file, html, "utf8");
+  }
+}
+
 // Cloudflare Pages reads _headers at deploy time. Keep camera availability for BALI QR scanning.
 writeFileSync(join(outDir, "_headers"), [
   "/*",

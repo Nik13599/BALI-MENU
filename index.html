@@ -602,6 +602,98 @@ html.bali-booting .bali-startup-splash {
   .bali-startup-splash{transition:none}
 }
 </style>
+<style id="bali-brsm-card-style">
+/* BRSM: independent guest card; BALI ID is preserved and switchable. */
+#baliIdSection .brsm-guest[hidden],#baliIdSection .brsm-face[hidden],#baliIdSection .brsm-action[hidden]{display:none!important}
+#baliIdSection .brsm-guest{width:min(100%,690px);margin:4px auto 12px;color:#fff;font-family:Manrope,Inter,system-ui,sans-serif}
+#baliIdSection .brsm-guest-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:4px 0 10px}
+#baliIdSection .brsm-guest-toolbar strong{font-size:13px;letter-spacing:.07em}
+#baliIdSection .brsm-guest-toolbar button{border:1px solid #95b4a0;color:#fff;background:#122015;border-radius:9px;padding:7px 10px;font:600 12px inherit}
+/* BRSM is an alternate card, not a second stacked card. Higher specificity
+   is required because the existing premium BALI ID uses !important display. */
+body.bali-guest-theme #baliIdSection .container > #brsmGuestPanel.brsm-open ~ .bali-profile-card.bali-id-profile,
+#baliIdSection #brsmGuestPanel.brsm-open ~ .bali-profile-card.bali-id-profile,
+body.bali-guest-theme #baliIdSection .container > #brsmGuestPanel.brsm-open ~ .bali-id-page-tools,
+#baliIdSection .container:has(#brsmGuestPanel.brsm-open)>.bali-id-page-tools{display:none!important}
+#baliIdSection .brsm-face{position:relative;display:block;isolation:isolate;box-sizing:border-box;width:100%;aspect-ratio:1.83/1;overflow:hidden;border-radius:clamp(13px,3vw,24px);padding:clamp(13px,2.6vw,20px);background:linear-gradient(138deg,#170707 0%,#1b090a 35%,#080e0b 68%,#002618 100%);border:2px solid transparent;background-clip:padding-box;box-shadow:inset 1px 1px 2px #ff9191,0 6px 20px #000b;color:#fff;text-align:left;cursor:pointer}
+#baliIdSection .brsm-face:before{content:"";position:absolute;z-index:-1;inset:-1px;border-radius:inherit;background:radial-gradient(ellipse at 35% 60%,transparent 0 27%,#c40022aa 28%,transparent 49%),radial-gradient(ellipse at 89% 91%,#00bb4d9c,transparent 57%),linear-gradient(105deg,#ed163733,transparent 50%,#00dd4c22)}
+#baliIdSection .brsm-face:after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;border-right:2px solid #1de780;border-left:2px solid #ff293f}
+#baliIdSection .brsm-head{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;font:700 clamp(11px,2.5vw,18px)/1.2 Manrope,system-ui,sans-serif;letter-spacing:.03em}
+#baliIdSection .brsm-head strong{font-size:1.3em}
+#baliIdSection .brsm-brand-image{position:absolute;width:31%;height:61%;object-fit:contain;top:18%;left:35%;filter:brightness(0) invert(1);pointer-events:none}
+#baliIdSection .brsm-foot{position:absolute;inset:auto clamp(15px,2vw,22px) clamp(11px,2vw,20px);display:flex;justify-content:space-between;gap:8px;font-size:clamp(13px,2.5vw,19px);font-weight:800;letter-spacing:.045em}
+#baliIdSection .brsm-back{border-color:#8c2534;background:linear-gradient(120deg,#220406 0%,#060b07 55%,#01321c 100%)}
+#baliIdSection .brsm-back .brsm-head{font-size:clamp(10px,1.9vw,13px)}
+#baliIdSection .brsm-subtitle{display:block;font-weight:850;font-size:clamp(12px,2.5vw,19px);margin-top:clamp(8px,1.9vw,16px);white-space:nowrap}
+#baliIdSection .brsm-info{display:block;font-size:clamp(8px,1.4vw,11px);letter-spacing:.06em;opacity:.9;margin:2px 0 8px}
+#baliIdSection .brsm-back-layout{display:grid;grid-template-columns:1.04fr .94fr;gap:clamp(6px,1.5vw,12px)}
+#baliIdSection .brsm-visits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+#baliIdSection .brsm-slot{display:flex;align-items:center;flex-direction:column;justify-content:center;gap:3px;min-width:0;min-height:clamp(64px,13vw,122px);border:1px solid #ff465e;border-bottom-color:#11e877;border-radius:9px;background:#090f0dc4}
+#baliIdSection .brsm-slot b{font-size:clamp(19px,4vw,36px);color:#d7e2db}
+#baliIdSection .brsm-slot small{font-size:clamp(7px,1vw,10px);white-space:nowrap}
+#baliIdSection .brsm-slot em{font-style:normal;font-size:clamp(7px,1vw,10px);color:#c1ceca}
+#baliIdSection .brsm-slot.done{border-color:#1dff8c}
+#baliIdSection .brsm-slot.done b,#baliIdSection .brsm-slot.done em{color:#56ff9c}
+#baliIdSection .brsm-ticket{display:grid;grid-template-rows:auto 1fr;gap:6px;border:1px solid #efb887;border-radius:9px;padding:clamp(5px,1vw,9px);text-align:center;min-width:0;background:#090c0a9c}
+#baliIdSection .brsm-ticket strong{font-size:clamp(8px,1.5vw,13px)}
+#baliIdSection .brsm-digits{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(2,1fr);gap:4px}
+#baliIdSection .brsm-digit{border:1px solid #d6ad70;border-radius:6px;display:grid;place-items:center;font-size:clamp(10px,1.8vw,17px);font-weight:850}
+#baliIdSection .brsm-digit.hit{background:#18b75c;color:white;text-decoration:line-through;border-color:#6affb4}
+#baliIdSection .brsm-hint{display:block;margin-top:clamp(4px,1.4vw,14px);font-size:clamp(8px,1.4vw,11px);opacity:.85}
+#baliIdSection .brsm-action{display:grid;gap:6px;margin:10px 0 0;padding:10px;border:1px solid #315942;border-radius:12px;background:#06110c}
+#baliIdSection .brsm-action label{font-size:12px}
+#baliIdSection .brsm-action>div{display:flex;gap:7px}
+#baliIdSection .brsm-action input{min-width:0;flex:1;padding:10px;color:white;background:#0d1812;border:1px solid #386c4c;border-radius:8px}
+#baliIdSection .brsm-action button{background:#114529;color:#fff;border:1px solid #238a52;border-radius:8px;padding:8px;font-weight:700}
+#baliIdSection .brsm-message{font-size:12px;margin:7px 0;min-height:17px;color:#ddf8e7}
+#baliIdSection .brsm-round-picker{margin-top:8px;text-align:center}
+#baliIdSection .brsm-round-picker[hidden]{display:none!important}
+#baliIdSection .brsm-round-picker label{display:inline-flex;gap:8px;align-items:center;font-size:12px;font-weight:700}
+#baliIdSection .brsm-round-picker select{max-width:245px;border:1px solid #4b9568;border-radius:8px;padding:7px;background:#0b1710;color:#fff}
+#baliIdSection .brsm-back.brsm-expanded{aspect-ratio:auto;min-height:clamp(300px,45vw,420px)}
+#baliIdSection .brsm-back.brsm-expanded .brsm-back-layout{grid-template-columns:1fr}
+#baliIdSection .brsm-back.brsm-expanded .brsm-visits{grid-template-columns:repeat(var(--brsm-visit-cols,3),minmax(0,1fr))}
+#baliIdSection .brsm-back.brsm-expanded .brsm-slot{min-height:56px}
+#baliIdSection .brsm-back.brsm-expanded .brsm-digits{grid-template-columns:repeat(var(--brsm-number-cols,5),minmax(0,1fr))}
+#baliIdSection .brsm-back.brsm-expanded .brsm-ticket{min-height:100px}
+#baliIdSection .brsm-back.brsm-expanded .brsm-subtitle{white-space:normal;font-size:clamp(11px,2vw,18px)}
+#baliIdSection .brsm-back.brsm-expanded .brsm-hint{line-height:1.3}
+
+@media(max-width:530px){#baliIdSection .brsm-guest{width:100%}#baliIdSection .brsm-face{aspect-ratio:1.62/1}#baliIdSection .brsm-back-layout{gap:4px}#baliIdSection .brsm-slot{gap:1px;border-radius:5px}#baliIdSection .brsm-back .brsm-head{font-size:9px}#baliIdSection .brsm-subtitle{letter-spacing:-.03em}}
+
+  </style>
+<style id="bali-coin-market-style">
+/* BALI COIN belongs to the account, never to an individual card. */
+.bali-coins-dialog{position:fixed;inset:0;margin:auto;width:min(92vw,630px);max-width:630px;max-height:min(86dvh,790px);padding:0;background:#101814;color:#f5fef6;border:1px solid #347a49;border-radius:18px;box-shadow:0 20px 65px #000c;overscroll-behavior:contain}
+.bali-coins-dialog::backdrop{background:#000b;backdrop-filter:blur(4px)}
+.bali-coins-dialog .coins-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px;background:#14251b}
+.bali-coins-dialog .coins-head strong{font-size:16px;letter-spacing:.035em}
+.bali-coins-dialog button{border:1px solid #438e5c;background:#143c25;color:#fff;border-radius:10px;padding:10px;font:700 12px/1.2 system-ui;cursor:pointer}
+.bali-coins-dialog button:disabled{opacity:.45;cursor:not-allowed}
+.bali-coins-dialog #coinsClose{font-size:22px;background:transparent;padding:5px 10px}
+.bali-coins-dialog .coins-balance{font-weight:900;font-size:18px;margin:8px 15px;color:#ccffde}
+.bali-coins-dialog .coins-tabs{display:flex;gap:5px;padding:7px 12px;overflow-x:auto}
+.bali-coins-dialog .coins-tabs button{white-space:nowrap;background:#18221b;color:#c5dacb}
+.bali-coins-dialog .coins-tabs button.selected{background:#1b7040;color:#fff}
+.bali-coins-dialog .coins-body{max-height:44dvh;overflow:auto;padding:10px 15px}
+.bali-coins-dialog .coins-offer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;padding:11px;background:#1a261d;border:1px solid #2b4e38;border-radius:12px}
+.bali-coins-dialog .coins-offer>div,.bali-coins-dialog .coins-voucher{display:grid;gap:5px}
+.bali-coins-dialog small{color:#b6d3c1}
+.bali-coins-dialog .coins-voucher{margin:8px 0;padding:12px;border:1px solid #41624a;background:#17251b;border-radius:12px;overflow-wrap:anywhere}
+.bali-coins-dialog .coins-voucher code{font-size:10px;line-height:1.6}
+.bali-coins-dialog .coins-message{min-height:32px;font-size:12px;padding:6px 16px 15px;color:#cff2d8}
+.bali-coins-dialog .coins-form{display:grid;gap:10px}
+.bali-coins-dialog .coins-form label{display:grid;gap:4px;color:#e4ffeb;font-size:12px}
+.bali-coins-dialog .coins-form input{width:100%;min-width:0;box-sizing:border-box;padding:11px;color:#fff;background:#08130c;border:1px solid #4c7a59;border-radius:10px}
+#baliIdSection #baliCoinMarketOpen{font-size:12px;white-space:nowrap}
+#baliIdSection #brsmCoinMarketOpen{font-size:12px;white-space:nowrap}
+#baliIdSection .brsm-guest-toolbar{flex-wrap:wrap}
+#baliIdSection .brsm-coin-balance{font-size:11px;font-weight:850;border-radius:8px;border:1px solid #409760;padding:5px 8px;background:#112c1c;white-space:nowrap;color:#e8ffee}
+@media(max-width:440px){#baliIdSection .brsm-guest-toolbar strong{flex-basis:100%}
+#baliIdSection .brsm-coin-balance{font-size:10px;margin-right:auto}}
+
+@media(max-width:490px){.bali-coins-dialog{width:96vw;max-height:92dvh}.bali-coins-dialog .coins-head{padding:11px}.bali-coins-dialog .coins-tabs{padding:7px 8px}.bali-coins-dialog .coins-tabs button{padding:9px;font-size:11px}.bali-coins-dialog .coins-body{max-height:52dvh}}
+</style>
 </head>
 
 <body class="bali-guest-theme">
@@ -1251,6 +1343,50 @@ html.bali-booting .bali-startup-splash {
     <!-- Отдельная страница Bali Card -->
     <section id="baliIdSection" class="bali-profile-page bali-id-page" aria-label="Bali Card" hidden>
       <div class="container">
+<section id="brsmGuestPanel" class="brsm-guest" hidden aria-label="Карта БРСМ">
+  <div class="brsm-guest-toolbar">
+    <strong>Bali Card · BRSM</strong>
+    <button id="brsmSwitchCard" type="button" hidden>Обычная Bali Card</button>
+  </div>
+  <div id="brsmFlip" class="brsm-flip" hidden>
+    <button type="button" class="brsm-face brsm-front" id="brsmFront" aria-label="Bali Card BRSM. Нажмите, чтобы перевернуть">
+      <span class="brsm-head"><span>Bali Card</span><strong>BRSM</strong></span>
+      <img class="brsm-brand-image" src="assets/bali-id-card-readable.svg?v=20261020-no-subtitle" alt="BALI">
+      <span class="brsm-foot"><strong id="brsmName">ГОСТЬ BALI</strong><span id="brsmNumber">000000</span></span>
+    </button>
+    <button type="button" class="brsm-face brsm-back" id="brsmBack" aria-label="Посещения и десять номеров. Нажмите, чтобы перевернуть" hidden>
+      <span class="brsm-head"><span>Bali Card</span><strong>BRSM</strong></span>
+      <span class="brsm-subtitle">3 ВЕЧЕРИНКИ · 10 ЧИСЕЛ · iPhone 18 Pro</span>
+      <span class="brsm-info">Только разные вечеринки КОНТАКТ</span>
+      <span class="brsm-back-layout">
+        <span class="brsm-visits">
+          <span class="brsm-slot"><b>1</b><small>1-я вечеринка</small><em>Ожидается</em></span>
+          <span class="brsm-slot"><b>2</b><small>2-я вечеринка</small><em>Ожидается</em></span>
+          <span class="brsm-slot"><b>3</b><small>3-я вечеринка</small><em>Ожидается</em></span>
+        </span>
+        <span class="brsm-ticket">
+          <strong>ТВОИ 10 ЧИСЕЛ</strong>
+          <span class="brsm-digits">
+            <span class="brsm-digit">?</span><span class="brsm-digit">?</span><span class="brsm-digit">?</span><span class="brsm-digit">?</span><span class="brsm-digit">?</span>
+            <span class="brsm-digit">?</span><span class="brsm-digit">?</span><span class="brsm-digit">?</span><span class="brsm-digit">?</span><span class="brsm-digit">?</span>
+          </span>
+        </span>
+      </span>
+      <span class="brsm-hint" id="brsmTicketStatus">Посещения 0/3 · номерa откроются после третьего входа</span>
+    </button>
+  </div>
+  <form id="brsmPromoForm" class="brsm-action">
+    <label for="brsmPromoInput">Получить карту БРСМ по промокоду</label>
+    <div><input id="brsmPromoInput" required maxlength="24" autocomplete="off" placeholder="BRSM-XXXXXXXXXX">
+      <button type="submit">Активировать</button></div>
+  </form>
+  <form id="brsmVisitForm" class="brsm-action" hidden>
+    <label for="brsmVisitToken">Зачесть QR-код посещения КОНТАКТ</label>
+    <div><input id="brsmVisitToken" autocomplete="off" placeholder="Вставьте ссылку или код QR">
+      <button type="submit">Подтвердить вход</button></div>
+  </form>
+  <p class="brsm-message" id="brsmGuestStatus" role="status" aria-live="polite"></p>
+</section>
         <div class="bali-id-page-tools" aria-label="QR-код и история операций">
           <button type="button" class="bali-id-show-qr bali-id-page-qr" id="baliShowQr" aria-label="QR-код карты" title="QR-код карты">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM19 15v3M14 20h7M20 20v-2"/></svg><span>QR-код</span>
@@ -1725,6 +1861,7 @@ html.bali-booting .bali-startup-splash {
     <script type="module" src="bali-profile-media.js?v=20261022-sheets-stage1"></script>
     <script type="module" src="bali-id-onboarding.js?v=20261022-sheets-stage1"></script>
     <script type="module" src="bali-id.js?v=20261023-bigboss1"></script>
+    <script type="module" src="brsm-card.js?v=20261023-1"></script>
     <script src="bali-pc-id-home.js?v=20261021-id-login2"></script>
     <script src="bali-about-teaser.js?v=20261020-1"></script>
     <script src="bali-experience.js?v=20261020-1"></script>
@@ -1732,6 +1869,7 @@ html.bali-booting .bali-startup-splash {
     <script type="module" src="bali-id-flip.js?v=20261021-release1"></script>
     <script type="module" src="bali-id-bank.js?v=20261023-bigboss1"></script>
     <script type="module" src="bali-id-coin.js?v=20261022-coin1"></script>
+<script type="module" src="bali-coin-market.js?v=20261023-1"></script>
     <script type="module" src="bali-transfer-inbox.js?v=20261021-1"></script>
     <script type="module" src="bali-qr-scanner.js?v=20261023-prod-bonus1"></script>
     <script src="bali-share.js?v=20261021-story-publish3"></script>
