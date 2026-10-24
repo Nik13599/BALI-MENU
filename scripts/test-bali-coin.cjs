@@ -36,15 +36,15 @@ function setup(rolloutEnv){
     doc:ref,collection,
     runTransaction:async callback=>{
       const writes=[],tx={
-        get:r=>r.get(),set:(r,v)=>writes.push(["set",r.path,v]),
-        create:(r,v)=>writes.push(["create",r.path,v]),
-        update:(r,v)=>writes.push(["update",r.path,v])
+        get:r=>r.get(),set:(r,v,options)=>writes.push(["set",r.path,v,options?.merge===true]),
+        create:(r,v)=>writes.push(["create",r.path,v,false]),
+        update:(r,v)=>writes.push(["update",r.path,v,true])
       };
       const result=await callback(tx);
       for(const [type,path] of writes)if(type==="create")assert(!records.has(path),"duplicate creation");
-      for(const [type,path,value] of writes){
+      for(const [type,path,value,merge] of writes){
         if(type==="update")assert(records.has(path),"cannot update absent document");
-        records.set(path,type==="update"?{...records.get(path),...value}:value);
+        records.set(path,merge?{...records.get(path),...value}:value);
       }
       return result;
     }
